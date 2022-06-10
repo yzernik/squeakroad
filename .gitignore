@@ -1,0 +1,27 @@
+venv/
+*.pyc
+__pycache__/
+instance/
+.cache/
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+/build/
+*.egg-info/
+.eggs/
+.idea/
+*.swp
+*~
+.tox/
+.mypy_cache/
+
+# Ignore generated python proto files
+*pb2.py
+*pb2_grpc.py
+*.pyi
+
+libs/
+
+# Ignore coverage file
+coverage.xml

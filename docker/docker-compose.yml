@@ -1,0 +1,169 @@
+version: '3'
+services:
+
+  bitcoin-core:
+    image: ruimarinho/bitcoin-core:0.21.1
+    container_name: bitcoin-core
+    volumes:
+      - bitcoin:/home/bitcoin/.bitcoin
+    ports:
+      - 8332:8332
+      - 18332:18332
+      - 28334:28334
+
+  lnd_client:
+    image: lnd
+    container_name: lnd_client
+    build:
+      context: ../
+      dockerfile: docker/lnd/Dockerfile
+    environment:
+      - NETWORK=testnet
+      - RPCHOST=bitcoin-core
+      - BACKEND=bitcoind
+      - TARGETHOST=lnd_client
+    depends_on:
+      - "tor-node"
+    volumes:
+      - lnd_client_dir:/root/.lnd
+      - tor-dir:/var/lib/tor
+    ports:
+      - 10009:10009
+    links:
+      - "bitcoin-core:bitcoin-core"
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+    entrypoint: ["./start-lnd.sh"]
+
+  lnd_server:
+    image: lnd
+    container_name: lnd_server
+    build:
+      context: ../
+      dockerfile: docker/lnd/Dockerfile
+    environment:
+      - NETWORK=testnet
+      - RPCHOST=bitcoin-core
+      - BACKEND=bitcoind
+      - TARGETHOST=lnd_server
+    depends_on:
+      - "tor-node"
+    volumes:
+      - lnd_server_dir:/root/.lnd
+      - tor-dir:/var/lib/tor
+    links:
+      - "bitcoin-core:bitcoin-core"
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+    entrypoint: ["./start-lnd.sh"]
+
+  clightning_client:
+    image: elementsproject/lightningd:v0.11.0.1
+    container_name: clightning_client
+    expose:
+      - "9735"
+      - "19735"
+      - "9835"
+      - "10009"
+    ports:
+      - 10010:10009
+      - 9835:9835
+    volumes:
+      - clightning_client_dir:/root/.lightning
+      - tor-dir:/var/lib/tor
+    links:
+      - "bitcoin-core:bitcoin-core"
+    depends_on:
+      - "tor-node"
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+
+  clightning_server:
+    image: elementsproject/lightningd:v0.11.0.1
+    container_name: clightning_server
+    expose:
+      - "9735"
+      - "19735"
+      - "9835"
+      - "10009"
+    volumes:
+      - clightning_server_dir:/root/.lightning
+      - tor-dir:/var/lib/tor
+    links:
+      - "bitcoin-core:bitcoin-core"
+    depends_on:
+      - "tor-node"
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+
+  tor-node:
+    image: osminogin/tor-simple
+    container_name: tor-node
+    restart: always
+    expose:
+      - "9051"
+    volumes:
+      - ../torrc:/etc/tor/torrc:ro
+      - tor-dir:/var/lib/tor
+
+  squeaknode:
+    image: squeaknode
+    container_name: squeaknode
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    depends_on:
+      - "lnd_server"
+    volumes:
+      - lnd_server_dir:/root/.lnd
+      - squeaknode_dir:/root/.sqk
+      - ./config.ini:/config.ini
+    ports:
+      - 18557:18555
+      - 12995:12994
+    links:
+      - "bitcoin-core:bitcoin-core"
+      - "lnd_server:lnd"
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+    entrypoint: ["./entrypoint.sh"]
+
+  squeaknode_clightning:
+    image: squeaknode
+    container_name: squeaknode_clightning
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    depends_on:
+      - "lnd_server"
+    volumes:
+      - clightning_server_dir:/root/.lightning
+      - squeaknode_clightning_dir:/root/.sqk
+      - ./config-clightning.ini:/config.ini
+    ports:
+      - 18558:18555
+      - 12996:12994
+    links:
+      - "bitcoin-core:bitcoin-core"
+      - "lnd_server:lnd"
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+    entrypoint: ["./entrypoint.sh"]
+
+volumes:
+  bitcoin:
+    driver: local
+  lnd_client_dir:
+    driver: local
+  lnd_server_dir:
+    driver: local
+  clightning_client_dir:
+    driver: local
+  clightning_server_dir:
+    driver: local
+  squeaknode_dir:
+    driver: local
+  squeaknode_clightning_dir:
+    driver: local
+  tor-dir:
+    driver: local

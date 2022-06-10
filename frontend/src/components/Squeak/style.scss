@@ -1,0 +1,293 @@
+.squeak-wrapper{
+    max-width: 600px;
+    border-right: 1px solid rgb(230, 236, 240);
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.squeak-header-wrapper{
+    position: sticky;
+    border-bottom: 1px solid rgb(230, 236, 240);
+    border-left: 1px solid rgb(230, 236, 240);
+    background-color: #fff;
+    z-index: 3;
+    top: 0px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    height: 53px;
+    min-height: 53px;
+    padding-left: 15px;
+    padding-right: 15px;
+    max-width: 1000px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.profile-header-back{
+    min-width: 55px;
+    min-height: 30px;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.header-back-wrapper{
+    margin-left: -5px;
+    width: 39px;
+    height: 39px;
+    transition: 0.2s ease-in-out;
+    will-change: background-color;
+    border: 1px solid rgba(0, 0, 0, 0);
+    border-radius: 9999px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.header-back-wrapper svg{
+    height: 1.5em;
+    fill: rgb(29,161,242);
+}
+
+.squeak-header-content{
+    font-weight: 800;
+    font-size: 19px;
+}
+
+.squeak-body-wrapper{
+    padding: 0 15px;
+    border-bottom: 1px solid rgb(230, 236, 240);
+    // overflow: hidden; causing squeak page info to cuttoff
+}
+
+.missing-squeak{
+    background-color: rgb(211,211,211);
+}
+
+.squeak-header-content{
+    margin-top: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.squeak-user-pic{
+    flex-basis: 49px;
+    margin-right: 10px;
+    img{
+        object-fit: cover;
+    }
+}
+
+.squeak-user-wrap{
+    display: flex;
+    flex-direction: column;
+    justify-content: center
+}
+
+.squeak-user-name{
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    &:hover{
+        text-decoration: underline;
+    }
+}
+
+.squeak-username{
+    font-size: 15.5px;
+    font-weight: 400;
+    color: rgb(101, 119, 134);
+}
+
+.squeak-content{
+    margin-top: 10px;
+    font-size: 23px;
+    margin-bottom: 10px;
+    word-break: break-word;
+}
+
+.locked-content{
+  text-align: center;
+  border-style: solid;
+  border-radius: 25px;
+  background-color: rgb(211,211,211);
+}
+
+.squeak-date{
+    margin: 15px 0;
+    font-size: 15px;
+    color: rgb(101, 119, 134);
+}
+
+.squeak-stats{
+    display: flex;
+    padding: 15px 5px;
+    border-top: 1px solid rgb(230, 236, 240);
+    border-bottom: 1px solid rgb(230, 236, 240);
+    div{
+        display: flex;
+        cursor: pointer;
+        &:hover{
+            text-decoration: underline;
+        }
+    }
+}
+
+.int-num{
+    font-weight: bold;
+    margin-right: 5px;
+    cursor: pointer;
+}
+
+.int-text{
+    color: rgb(101, 119, 134);
+    margin-right: 20px;
+    cursor: pointer;
+}
+
+.squeak-interactions{
+    display: flex;
+    justify-content: space-evenly;
+
+}
+
+.squeak-int-icon{
+    min-height: 49px;
+    width: 100%;
+    padding: 0 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-icon svg{
+    height: 22.5px;
+    width: 22.5px;
+    fill: rgb(101, 119, 134);
+}
+//////////////////////@exten
+
+.squeak-replies-wrapper{
+    padding: 10px 15px 0 15px;
+    transition: 0.2s ease-in-out;
+    display: flex;
+    border-bottom: 1px solid rgb(230, 236, 240);
+    cursor: pointer;
+    &:hover{
+        background-color: rgb(245, 248, 250);
+    }
+}
+
+
+.reply-squeak-username{
+    font-size: 15.5px;
+    margin-right: 5px;
+    color: rgb(101, 119, 134);
+}
+
+.main-squeak-user{
+    color: rgb(27, 149, 224);
+    &:hover{ text-decoration: underline;}
+}
+
+.card-icon{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 7.4px;
+    border-radius: 50%;
+    transition: 0.2s ease-in-out;
+    will-change: background-color;
+    cursor: pointer;
+}
+
+
+.reply-icon:hover{
+    background-color: rgba(29, 161, 242,0.1);
+    svg{ fill: rgb(29, 161, 242) !important; }
+}
+.resqueak-icon:hover{
+    background-color: rgba(23, 191, 99,0.1);
+    svg{ fill: rgb(23, 191, 99) !important; }
+}
+.heart-icon:hover{
+
+    background-color: rgba(224, 36, 94,0.1);
+    svg{ fill: rgb(224, 36, 94) !important; }
+}
+.share-icon:hover{
+    background-color: rgba(29, 161, 242,0.1);
+    svg{ fill: rgb(29, 161, 242) !important; }
+}
+.delete-icon:hover{
+    background-color: rgba(212, 11, 11, 0.1);
+    svg{ fill: red !important; }
+}
+
+.reply-int svg{
+    display: flex;
+    align-items: center;
+    height: 18.75px;
+    width: 18.75px;
+    fill: rgb(101, 119, 134);
+}
+
+.card-icon-value{
+    margin-left: 3px;
+    font-size: 13px;
+}
+
+.resqueak-int:hover{
+    color: rgb(23, 191, 99);
+}
+.heart-int:hover{
+    color: rgb(224, 36, 94);
+}
+
+
+
+////////////@extend
+.squeak-image-wrapper{
+    overflow: hidden;
+    max-height: 730px;
+
+    div{
+        border-radius: 14px;
+        background-position: center center;
+        background-repeat: no-repeat;
+        width: 100%;
+        height: 100%;
+        top: 0px;
+        left: 0px;
+        right: 0px;
+        bottom: 0px;
+        background-size: cover;
+    }
+}
+
+.squeak-unlock-button{
+    min-height: 39px;
+    min-width: 98.8px;
+    transition: 0.2s ease-in-out;
+    cursor: pointer;
+    border: 1px solid rgb(29, 161, 242);
+    border-radius: 9999px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-left: 7px;
+    padding-left: 1em;
+    padding-right: 1em;
+    span{
+        text-align: center;
+        font-weight: 800;
+        color: rgb(29, 161, 242);
+        width: 100%
+    }
+    &:hover{
+        background-color: rgba(29, 161, 242,0.1);
+    }
+}

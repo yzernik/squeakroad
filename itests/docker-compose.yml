@@ -1,0 +1,189 @@
+version: '3'
+services:
+
+  btcd:
+    image: btcd
+    container_name: test_btcd
+    build:
+      context: ../
+      dockerfile: docker/btcd/Dockerfile
+    volumes:
+      - test_shared:/rpc
+      - test_bitcoin:/data
+    environment:
+      - NETWORK=simnet
+      - MINING_ADDRESS
+    entrypoint: ["./start-btcd.sh"]
+
+  btcctl:
+    image: btcd
+    container_name: test_btcctl
+    build:
+      context: ../
+      dockerfile: docker/btcd/Dockerfile
+    volumes:
+      - test_shared:/rpc
+      - test_bitcoin:/data
+    environment:
+      - NETWORK=simnet
+      - RPCHOST=btcd
+      - MINING_ADDRESS
+    links:
+      - "btcd:btcd"
+    entrypoint: ["./start-btcctl.sh"]
+
+  tor-node:
+    image: osminogin/tor-simple
+    container_name: test_tor-node
+    restart: always
+    expose:
+      - "9051"
+    volumes:
+      - ../torrc:/etc/tor/torrc:ro
+      - test_tor-dir:/var/lib/tor
+
+  lnd_client:
+    image: lnd
+    container_name: test_lnd_client
+    build:
+      context: ../
+      dockerfile: docker/lnd/Dockerfile
+    environment:
+      - NETWORK=simnet
+      - RPCHOST=btcd
+      - TARGETHOST=lnd_client
+    volumes:
+      - test_shared:/rpc
+      - test_lnd_client_dir:/root/.lnd
+      - test_tor-dir:/var/lib/tor
+    links:
+      - "btcd:btcd"
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+    entrypoint: ["./start-lnd.sh"]
+
+  lnd_server:
+    image: lnd
+    container_name: test_lnd_server
+    build:
+      context: ../
+      dockerfile: docker/lnd/Dockerfile
+    environment:
+      - NETWORK=simnet
+      - RPCHOST=btcd
+      - TARGETHOST=lnd_server
+    volumes:
+      - test_shared:/rpc
+      - test_lnd_server_dir:/root/.lnd
+      - test_tor-dir:/var/lib/tor
+    links:
+      - "btcd:blockchain"
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+    entrypoint: ["./start-lnd.sh"]
+
+  squeaknode_db:
+    image: postgres
+    container_name: test_squeaknode_db
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - ../createdb.sql:/docker-entrypoint-initdb.d/init.sql
+      - squeaknode_pgdata:/var/lib/postgresql
+
+  squeaknode_other_db:
+    image: postgres
+    container_name: test_squeaknode_other_db
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - ../createdb.sql:/docker-entrypoint-initdb.d/init.sql
+      - squeaknode_other_pgdata:/var/lib/postgresql
+
+  squeaknode:
+    image: squeaknode
+    container_name: test_squeaknode
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    depends_on:
+      - "lnd_server"
+      - "squeaknode_db"
+    environment:
+      - SQUEAKNODE_DB_CONNECTION_STRING=postgresql://postgres:postgres@squeaknode_db/squeaknode
+    volumes:
+      - test_shared:/rpc
+      - test_lnd_server_dir:/root/.lnd
+      - ./config.ini:/config.ini
+    links:
+      - "btcd:btcd"
+      - "lnd_server:lnd"
+      - "squeaknode_db:squeaknode_db"
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+    entrypoint: ["./entrypoint.sh"]
+
+  squeaknode_other:
+    image: squeaknode
+    container_name: test_squeaknode_other
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    environment:
+      - SQUEAKNODE_DB_CONNECTION_STRING=postgresql://postgres:postgres@squeaknode_other_db/squeaknode
+    volumes:
+      - test_shared:/rpc
+      - test_lnd_client_dir:/root/.lnd
+      - ./config.ini:/config.ini
+    links:
+      - "btcd:btcd"
+      - "lnd_client:lnd"
+      - "squeaknode_other_db:squeaknode_other_db"
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+    entrypoint: ["./entrypoint.sh"]
+
+  test:
+    image: test
+    container_name: test
+    build:
+      context: ../
+      dockerfile: docker/test/Dockerfile
+    depends_on:
+      - "lnd_client"
+    volumes:
+      - test_shared:/rpc
+      - test_lnd_client_dir:/root/.lnd
+    links:
+      - "lnd_client:lnd"
+    command: tail -f /dev/null
+
+volumes:
+  # btcctl and lnd containers.
+  test_shared:
+    driver: local
+
+  # test_bitcoin volume is needed for maintaining blockchain persistence
+  # during btcd container recreation.
+  test_bitcoin:
+    driver: local
+
+  # lnd_dir volume is needed for sharing tht tls certificate
+  test_lnd_client_dir:
+    driver: local
+  test_lnd_server_dir:
+    driver: local
+
+  # postgres db data
+  squeaknode_pgdata:
+    driver: local
+  squeaknode_other_pgdata:
+    driver: local
+
+  # tor node data
+  test_tor-dir:
+    driver: local

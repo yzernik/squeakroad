@@ -1,0 +1,15 @@
+
+.loader-wrapper{
+    position: relative;
+    height: 50%;
+    margin: 50px 0;
+}
+
+.loader_svg{
+    fill: yellow;
+    enable-background:new 0 0 50 50;
+    position: absolute;
+    left: 50%;
+    top: 15%;
+    transform: translate(-50%,50%);
+}

@@ -1,0 +1,51 @@
+version: '3'
+services:
+
+  bitcoin-core:
+    command:
+      -printtoconsole
+      -testnet=1
+      -server=1
+      -rpcbind=0.0.0.0
+      -rpcallowip=0.0.0.0/0
+      -rpcuser=devuser
+      -rpcpassword=devpass
+      -zmqpubrawblock=tcp://0.0.0.0:28332
+      -zmqpubrawtx=tcp://0.0.0.0:28333
+      -zmqpubhashblock=tcp://0.0.0.0:28334
+      -zmqpubhashtx=tcp://0.0.0.0:28334
+
+  clightning_client:
+    command:
+      - --bitcoin-rpcconnect=bitcoin-core
+      - --bitcoin-rpcuser=devuser
+      - --bitcoin-rpcpassword=devpass
+      - --network=testnet
+      - --plugin-dir=/usr/libexec/c-lightning/plugins
+      - --alias=myclientningclient
+      - --log-level=debug
+      - --rpc-file=/root/.lightning/lightning-rpc
+      - --rpc-file-mode=0777
+      - --proxy=tor-node:9050
+
+  clightning_server:
+    command:
+      - --bitcoin-rpcconnect=bitcoin-core
+      - --bitcoin-rpcuser=devuser
+      - --bitcoin-rpcpassword=devpass
+      - --network=testnet
+      - --plugin-dir=/usr/libexec/c-lightning/plugins
+      - --alias=myclientningserver
+      - --log-level=debug
+      - --rpc-file=/root/.lightning/lightning-rpc
+      - --rpc-file-mode=0777
+      - --proxy=tor-node:9050
+
+  # squeaknode:
+  #   environment:
+  #     - NETWORK=testnet
+
+volumes:
+  # shared volume is needed for sharing the btcd certificate
+  shared:
+    driver: local

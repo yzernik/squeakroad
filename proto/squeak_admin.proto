@@ -1,0 +1,1561 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.github.yzernik.squeaknode";
+option java_outer_classname = "SqueakAdminProto";
+option objc_class_prefix = "SQK";
+
+package squeaknode;
+
+import "proto/lnd.proto";
+
+// Interface exported by the server.
+service SqueakAdmin {
+
+  /** sqkadmin: `lndgetinfo`
+  */
+  rpc LndGetInfo (lnrpc.GetInfoRequest) returns (lnrpc.GetInfoResponse) {}
+
+  /** sqkadmin: `lndwalletbalance`
+  */
+  rpc LndWalletBalance (lnrpc.WalletBalanceRequest) returns (lnrpc.WalletBalanceResponse) {}
+
+  /** sqkadmin: `lndnewaddress`
+  */
+  rpc LndNewAddress (lnrpc.NewAddressRequest) returns (lnrpc.NewAddressResponse) {}
+
+  /** sqkadmin: `lndlistchannels`
+  */
+  rpc LndListChannels (lnrpc.ListChannelsRequest) returns (lnrpc.ListChannelsResponse) {}
+
+  /** sqkadmin: `lndpendingchannels`
+  */
+  rpc LndPendingChannels (lnrpc.PendingChannelsRequest) returns (lnrpc.PendingChannelsResponse) {}
+
+  /** sqkadmin: `lndgettransactions`
+  */
+  rpc LndGetTransactions (lnrpc.GetTransactionsRequest) returns (lnrpc.TransactionDetails) {}
+
+  /** sqkadmin: `lndlistpeers`
+  */
+  rpc LndListPeers (lnrpc.ListPeersRequest) returns (lnrpc.ListPeersResponse) {}
+
+  /** sqkadmin: `lndconnectpeer`
+  */
+  rpc LndConnectPeer (lnrpc.ConnectPeerRequest) returns (lnrpc.ConnectPeerResponse) {}
+
+  /** sqkadmin: `lnddisconnectpeer`
+  */
+  rpc LndDisconnectPeer (lnrpc.DisconnectPeerRequest) returns (lnrpc.DisconnectPeerResponse) {}
+
+  /** sqkadmin: `lndopenchannelsync`
+  */
+  rpc LndOpenChannelSync (lnrpc.OpenChannelRequest) returns (lnrpc.ChannelPoint) {}
+
+  /** sqkadmin: `lndclosechannel`
+  */
+  rpc LndCloseChannel (lnrpc.CloseChannelRequest) returns (stream lnrpc.CloseStatusUpdate) {}
+
+  /** sqkadmin: `lndsubscribechannelevents`
+  */
+  rpc LndSubscribeChannelEvents (lnrpc.ChannelEventSubscription) returns (stream lnrpc.ChannelEventUpdate) {}
+
+  /** sqkadmin: `lndsendcoins`
+  */
+  rpc LndSendCoins (lnrpc.SendCoinsRequest) returns (lnrpc.SendCoinsResponse) {}
+
+  /** sqkadmin: `createsigningprofile`
+  */
+  rpc CreateSigningProfile (CreateSigningProfileRequest) returns (CreateSigningProfileReply) {}
+
+  /** sqkadmin: `createcontactprofile`
+  */
+  rpc CreateContactProfile (CreateContactProfileRequest) returns (CreateContactProfileReply) {}
+
+  /** sqkadmin: `importsigningprofile`
+  */
+  rpc ImportSigningProfile (ImportSigningProfileRequest) returns (ImportSigningProfileReply) {}
+
+  /** sqkadmin: `getprofiles`
+  */
+  rpc GetProfiles (GetProfilesRequest) returns (GetProfilesReply) {}
+
+  /** sqkadmin: `getsigningprofiles`
+  */
+  rpc GetSigningProfiles (GetSigningProfilesRequest) returns (GetSigningProfilesReply) {}
+
+  /** sqkadmin: `getcontactprofiles`
+  */
+  rpc GetContactProfiles (GetContactProfilesRequest) returns (GetContactProfilesReply) {}
+
+  /** sqkadmin: `getsqueakprofile`
+  */
+  rpc GetSqueakProfile (GetSqueakProfileRequest) returns (GetSqueakProfileReply) {}
+
+  /** sqkadmin: `getsqueakprofilebyaddress`
+  */
+  rpc GetSqueakProfileByPubKey (GetSqueakProfileByPubKeyRequest) returns (GetSqueakProfileByPubKeyReply) {}
+
+  /** sqkadmin: `getsqueakprofilebyname`
+  */
+  rpc GetSqueakProfileByName (GetSqueakProfileByNameRequest) returns (GetSqueakProfileByNameReply) {}
+
+  /** sqkadmin: `setsqueakprofilefollowing`
+  */
+  rpc SetSqueakProfileFollowing (SetSqueakProfileFollowingRequest) returns (SetSqueakProfileFollowingReply) {}
+
+  /** sqkadmin: `renamesqueakprofile`
+  */
+  rpc RenameSqueakProfile (RenameSqueakProfileRequest) returns (RenameSqueakProfileReply) {}
+
+  /** sqkadmin: `getsqueakprofileprivatekey`
+  */
+  rpc GetSqueakProfilePrivateKey (GetSqueakProfilePrivateKeyRequest) returns (GetSqueakProfilePrivateKeyReply) {}
+
+  /** sqkadmin: `deletesqueakprofile`
+  */
+  rpc DeleteSqueakProfile (DeleteSqueakProfileRequest) returns (DeleteSqueakProfileReply) {}
+
+  /** sqkadmin: `setsqueakprofileimage`
+  */
+  rpc SetSqueakProfileImage (SetSqueakProfileImageRequest) returns (SetSqueakProfileImageReply) {}
+
+  /** sqkadmin: `clearsqueakprofileimage`
+  */
+  rpc ClearSqueakProfileImage (ClearSqueakProfileImageRequest) returns (ClearSqueakProfileImageReply) {}
+
+  /** sqkadmin: `makesqueak`
+  */
+  rpc MakeSqueak (MakeSqueakRequest) returns (MakeSqueakReply) {}
+
+  /** sqkadmin: `makeresqueak`
+  */
+  rpc MakeResqueak (MakeResqueakRequest) returns (MakeResqueakReply) {}
+
+  /** sqkadmin: `getsqueakdisplay`
+  */
+  rpc GetSqueakDisplay (GetSqueakDisplayRequest) returns (GetSqueakDisplayReply) {}
+
+  /** sqkadmin: `gettimelinesqueakdisplays`
+  */
+  rpc GetTimelineSqueakDisplays (GetTimelineSqueakDisplaysRequest) returns (GetTimelineSqueakDisplaysReply) {}
+
+  /** sqkadmin: `getaddresssqueakdisplays`
+  */
+  rpc GetPubKeySqueakDisplays (GetPubKeySqueakDisplaysRequest) returns (GetPubKeySqueakDisplaysReply) {}
+
+  /** sqkadmin: `getsearchsqueakdisplays`
+  */
+  rpc GetSearchSqueakDisplays (GetSearchSqueakDisplaysRequest) returns (GetSearchSqueakDisplaysReply) {}
+
+  /** sqkadmin: `getancestorsqueakdisplays`
+  */
+  rpc GetAncestorSqueakDisplays (GetAncestorSqueakDisplaysRequest) returns (GetAncestorSqueakDisplaysReply) {}
+
+  /** sqkadmin: `getreplysqueakdisplays`
+  */
+  rpc GetReplySqueakDisplays (GetReplySqueakDisplaysRequest) returns (GetReplySqueakDisplaysReply) {}
+
+  /** sqkadmin: `deletesqueak`
+  */
+  rpc DeleteSqueak (DeleteSqueakRequest) returns (DeleteSqueakReply) {}
+
+  /** sqkadmin: `addpeer`
+  */
+  rpc CreatePeer (CreatePeerRequest) returns (CreatePeerReply) {}
+
+  /** sqkadmin: `getpeer`
+  */
+  rpc GetPeer (GetPeerRequest) returns (GetPeerReply) {}
+
+  /** sqkadmin: `getpeerbyaddress`
+  */
+  rpc GetPeerByAddress (GetPeerByAddressRequest) returns (GetPeerByAddressReply) {}
+
+  /** sqkadmin: `getpeers`
+  */
+  rpc GetPeers (GetPeersRequest) returns (GetPeersReply) {}
+
+  /** sqkadmin: `setpeerautoconnect`
+  */
+  rpc SetPeerAutoconnect (SetPeerAutoconnectRequest) returns (SetPeerAutoconnectReply) {}
+
+  /** sqkadmin: `setpeershareforfree`
+  */
+  rpc SetPeerShareForFree (SetPeerShareForFreeRequest) returns (SetPeerShareForFreeReply) {}
+
+  /** sqkadmin: `renamepeer`
+  */
+  rpc RenamePeer (RenamePeerRequest) returns (RenamePeerReply) {}
+
+  /** sqkadmin: `deletepeer`
+  */
+  rpc DeletePeer (DeletePeerRequest) returns (DeletePeerReply) {}
+
+  /** sqkadmin: `getbuyoffers`
+  */
+  rpc GetBuyOffers (GetBuyOffersRequest) returns (GetBuyOffersReply) {}
+
+  /** sqkadmin: `getbuyoffer`
+  */
+  rpc GetBuyOffer (GetBuyOfferRequest) returns (GetBuyOfferReply) {}
+
+  /** sqkadmin: `downloadsqueaks`
+  */
+  rpc DownloadSqueaks (DownloadSqueaksRequest) returns (DownloadSqueaksReply) {}
+
+  /** sqkadmin: `downloadsqueak`
+  */
+  rpc DownloadSqueak (DownloadSqueakRequest) returns (DownloadSqueakReply) {}
+
+  /** sqkadmin: `downloadsqueaksecretkey`
+  */
+  rpc DownloadSqueakSecretKey (DownloadSqueakSecretKeyRequest) returns (DownloadSqueakSecretKeyReply) {}
+
+  /** sqkadmin: `downloadoffers`
+  */
+  rpc DownloadOffers (DownloadOffersRequest) returns (DownloadOffersReply) {}
+
+  /** sqkadmin: `downloadreplies`
+  */
+  rpc DownloadReplies (DownloadRepliesRequest) returns (DownloadRepliesReply) {}
+
+  /** sqkadmin: `downloadaddresssqueaks`
+  */
+  rpc DownloadPubKeySqueaks (DownloadPubKeySqueaksRequest) returns (DownloadPubKeySqueaksReply) {}
+
+  /** sqkadmin: `payoffer`
+  */
+  rpc PayOffer (PayOfferRequest) returns (PayOfferReply) {}
+
+  /** sqkadmin: `decryptsqueak`
+  */
+  rpc DecryptSqueak (DecryptSqueakRequest) returns (DecryptSqueakReply) {}
+
+  /** sqkadmin: `getsentpayments`
+  */
+  rpc GetSentPayments (GetSentPaymentsRequest) returns (GetSentPaymentsReply) {}
+
+  /** sqkadmin: `getsentpaymentsforsqueak`
+  */
+  rpc GetSentPaymentsForSqueak (GetSentPaymentsForSqueakRequest) returns (GetSentPaymentsForSqueakReply) {}
+
+  /** sqkadmin: `getsentpaymentsforpubkey`
+  */
+  rpc GetSentPaymentsForPubkey (GetSentPaymentsForPubkeyRequest) returns (GetSentPaymentsForPubkeyReply) {}
+
+  /** sqkadmin: `getsentpaymentsforpeer`
+  */
+  rpc GetSentPaymentsForPeer (GetSentPaymentsForPeerRequest) returns (GetSentPaymentsForPeerReply) {}
+
+  /** sqkadmin: `getsentpayment`
+  */
+  rpc GetSentPayment (GetSentPaymentRequest) returns (GetSentPaymentReply) {}
+
+  /** sqkadmin: `getsentoffers`
+  */
+  rpc GetSentOffers (GetSentOffersRequest) returns (GetSentOffersReply) {}
+
+  /** sqkadmin: `getreceivedpayments`
+  */
+  rpc GetReceivedPayments (GetReceivedPaymentsRequest) returns (GetReceivedPaymentsReply) {}
+
+  /** sqkadmin: `getreceivedpaymentsforsqueak`
+  */
+  rpc GetReceivedPaymentsForSqueak (GetReceivedPaymentsForSqueakRequest) returns (GetReceivedPaymentsForSqueakReply) {}
+
+  /** sqkadmin: `getreceivedpaymentsforpubkey`
+  */
+  rpc GetReceivedPaymentsForPubkey (GetReceivedPaymentsForPubkeyRequest) returns (GetReceivedPaymentsForPubkeyReply) {}
+
+  /** sqkadmin: `getreceivedpaymentsforpeer`
+  */
+  rpc GetReceivedPaymentsForPeer (GetReceivedPaymentsForPeerRequest) returns (GetReceivedPaymentsForPeerReply) {}
+
+  /** sqkadmin: `subscribereceivedpayments`
+  */
+  rpc SubscribeReceivedPayments (SubscribeReceivedPaymentsRequest) returns (stream ReceivedPayment) {}
+
+  /** sqkadmin: `getnetwork`
+  */
+  rpc GetNetwork (GetNetworkRequest) returns (GetNetworkReply) {}
+
+  /** sqkadmin: `getpaymentsummary`
+  */
+  rpc GetPaymentSummary (GetPaymentSummaryRequest) returns (GetPaymentSummaryReply) {}
+
+  /** sqkadmin: `getpaymentsummaryforsqueak`
+  */
+  rpc GetPaymentSummaryForSqueak (GetPaymentSummaryForSqueakRequest) returns (GetPaymentSummaryForSqueakReply) {}
+
+  /** sqkadmin: `getpaymentsummaryforpubkey`
+  */
+  rpc GetPaymentSummaryForPubkey (GetPaymentSummaryForPubkeyRequest) returns (GetPaymentSummaryForPubkeyReply) {}
+
+  /** sqkadmin: `getpaymentsummaryforpeer`
+  */
+  rpc GetPaymentSummaryForPeer (GetPaymentSummaryForPeerRequest) returns (GetPaymentSummaryForPeerReply) {}
+
+  /** sqkadmin: `reprocessreceivedpayments`
+  */
+  rpc ReprocessReceivedPayments (ReprocessReceivedPaymentsRequest) returns (ReprocessReceivedPaymentsReply) {}
+
+  /** sqkadmin: `likesqueak`
+  */
+  rpc LikeSqueak (LikeSqueakRequest) returns (LikeSqueakReply) {}
+
+  /** sqkadmin: `unlikesqueak`
+  */
+  rpc UnlikeSqueak (UnlikeSqueakRequest) returns (UnlikeSqueakReply) {}
+
+  /** sqkadmin: `getlikedsqueakdisplays`
+  */
+  rpc GetLikedSqueakDisplays (GetLikedSqueakDisplaysRequest) returns (GetLikedSqueakDisplaysReply) {}
+
+  /** sqkadmin: `connectpeer`
+  */
+  rpc ConnectPeer (ConnectPeerRequest) returns (ConnectPeerReply) {}
+
+  /** sqkadmin: `getconnectedpeers`
+  */
+  rpc GetConnectedPeers (GetConnectedPeersRequest) returns (GetConnectedPeersReply) {}
+
+  /** sqkadmin: `getconnectedpeer`
+  */
+  rpc GetConnectedPeer (GetConnectedPeerRequest) returns (GetConnectedPeerReply) {}
+
+  /** sqkadmin: `disconnectpeer`
+  */
+  rpc DisconnectPeer (DisconnectPeerRequest) returns (DisconnectPeerReply) {}
+
+  /** sqkadmin: `subscribeconnectedpeers`
+  */
+  rpc SubscribeConnectedPeers (SubscribeConnectedPeersRequest) returns (stream GetConnectedPeersReply) {}
+
+  /** sqkadmin: `subscribeconnectedpeer`
+  */
+  rpc SubscribeConnectedPeer (SubscribeConnectedPeerRequest) returns (stream GetConnectedPeerReply) {}
+
+  /** sqkadmin: `subscribeconnectedpeer`
+  */
+  rpc SubscribeBuyOffers (SubscribeBuyOffersRequest) returns (stream GetBuyOfferReply) {}
+
+  /** sqkadmin: `subscribesqueakdisplay`
+  */
+  rpc SubscribeSqueakDisplay (SubscribeSqueakDisplayRequest) returns (stream GetSqueakDisplayReply) {}
+
+  /** sqkadmin: `subscribereplysqueakdisplays`
+  */
+  rpc SubscribeReplySqueakDisplays (SubscribeReplySqueakDisplaysRequest) returns (stream GetSqueakDisplayReply) {}
+
+  /** sqkadmin: `subscribeaddresssqueakdisplays`
+  */
+  rpc SubscribePubKeySqueakDisplays (SubscribePubKeySqueakDisplaysRequest) returns (stream GetSqueakDisplayReply) {}
+
+  /** sqkadmin: `subscribeancestorsqueakdisplays`
+  */
+  rpc SubscribeAncestorSqueakDisplays (SubscribeAncestorSqueakDisplaysRequest) returns (stream GetAncestorSqueakDisplaysReply) {}
+
+  /** sqkadmin: `subscribesqueakdisplays`
+  */
+  rpc SubscribeSqueakDisplays (SubscribeSqueakDisplaysRequest) returns (stream GetSqueakDisplayReply) {}
+
+  /** sqkadmin: `subscribetimelinesqueakdisplays`
+  */
+  rpc SubscribeTimelineSqueakDisplays (SubscribeTimelineSqueakDisplaysRequest) returns (stream GetSqueakDisplayReply) {}
+
+  /** sqkadmin: `getexternaladdress`
+  */
+  rpc GetExternalAddress (GetExternalAddressRequest) returns (GetExternalAddressReply) {}
+
+  /** sqkadmin: `getdefaultpeerport`
+  */
+  rpc GetDefaultPeerPort (GetDefaultPeerPortRequest) returns (GetDefaultPeerPortReply) {}
+
+  /** sqkadmin: `setsellprice`
+  */
+  rpc SetSellPrice (SetSellPriceRequest) returns (SetSellPriceReply) {}
+
+  /** sqkadmin: `clearsellprice`
+  */
+  rpc ClearSellPrice (ClearSellPriceRequest) returns (ClearSellPriceReply) {}
+
+  /** sqkadmin: `getsellprice`
+  */
+  rpc GetSellPrice (GetSellPriceRequest) returns (GetSellPriceReply) {}
+
+  /** sqkadmin: `addtwitteraccount`
+  */
+  rpc AddTwitterAccount (AddTwitterAccountRequest) returns (AddTwitterAccountReply) {}
+
+  /** sqkadmin: `gettwitteraccounts`
+  */
+  rpc GetTwitterAccounts (GetTwitterAccountsRequest) returns (GetTwitterAccountsReply) {}
+
+  /** sqkadmin: `deletetwitteraccount`
+  */
+  rpc DeleteTwitterAccount (DeleteTwitterAccountRequest) returns (DeleteTwitterAccountReply) {}
+
+}
+
+message CreateSigningProfileRequest {
+    /// The name of the new signing profile
+    string profile_name = 1;
+}
+
+message CreateSigningProfileReply {
+    /// The profile id
+    int32 profile_id = 1;
+}
+
+message ImportSigningProfileRequest {
+    /// The name of the signing profile
+    string profile_name = 1;
+
+    /// The private key of the signing profile
+    string private_key = 2;
+}
+
+message ImportSigningProfileReply {
+    /// The profile id
+    int32 profile_id = 1;
+}
+
+message CreateContactProfileRequest {
+    /// The name of the new signing profile
+    string profile_name = 1;
+
+    /// The pubkey in hex
+    string pubkey = 2;
+}
+
+message CreateContactProfileReply {
+    /// The profile id
+    int32 profile_id = 1;
+}
+
+message GetProfilesRequest {
+}
+
+message GetProfilesReply {
+    /// The squeak profiles
+    repeated SqueakProfile squeak_profiles = 1;
+}
+
+message GetSigningProfilesRequest {
+}
+
+message GetSigningProfilesReply {
+    /// The squeak profiles
+    repeated SqueakProfile squeak_profiles = 1;
+}
+
+message GetContactProfilesRequest {
+}
+
+message GetContactProfilesReply {
+    /// The squeak profiles
+    repeated SqueakProfile squeak_profiles = 1;
+}
+
+message GetSqueakProfileRequest {
+    /// The profile id
+    int32 profile_id = 1;
+}
+
+message GetSqueakProfileReply {
+    /// The squeak profile
+    SqueakProfile squeak_profile = 1;
+}
+
+message GetSqueakProfileByPubKeyRequest {
+    /// The pubkey in hex
+    string pubkey = 1;
+
+
+// /// The address
+//     string address = 1;
+}
+
+message GetSqueakProfileByPubKeyReply {
+    /// The squeak profile
+    SqueakProfile squeak_profile = 1;
+}
+
+message GetSqueakProfileByNameRequest {
+    /// The name
+    string name = 1;
+}
+
+message GetSqueakProfileByNameReply {
+    /// The squeak profile
+    SqueakProfile squeak_profile = 1;
+}
+
+message SetSqueakProfileFollowingRequest {
+    /// The profile id
+    int32 profile_id = 1;
+
+    /// Following
+    bool following = 2;
+}
+
+message SetSqueakProfileFollowingReply {
+}
+
+message RenameSqueakProfileRequest {
+    /// The profile id
+    int32 profile_id = 1;
+
+    /// The new profile name
+    string profile_name = 2;
+}
+
+message RenameSqueakProfileReply {
+}
+
+message GetSqueakProfilePrivateKeyRequest {
+    /// The profile id
+    int32 profile_id = 1;
+}
+
+message GetSqueakProfilePrivateKeyReply {
+    /// The private key
+    string private_key = 1;
+}
+
+message DeleteSqueakProfileRequest {
+    /// The profile id
+    int32 profile_id = 1;
+}
+
+message DeleteSqueakProfileReply {
+}
+
+message SetSqueakProfileImageRequest {
+    /// The profile id
+    int32 profile_id = 1;
+
+    /// The profile image
+    string profile_image = 2;
+}
+
+message SetSqueakProfileImageReply {
+}
+
+message ClearSqueakProfileImageRequest {
+    /// The profile id
+    int32 profile_id = 1;
+}
+
+message ClearSqueakProfileImageReply {
+}
+
+message SqueakProfile {
+    /// The profile id
+    int32 profile_id = 1;
+
+    /// The profile name
+    string profile_name = 2;
+
+    /// Has private key
+    bool has_private_key = 3;
+
+    /// The pubkey in hex
+    string pubkey = 4;
+
+    /// Following
+    bool following = 5;
+
+    /// The profile image
+    string profile_image = 6;
+
+    /// Has custom profile image
+    bool has_custom_profile_image = 7;
+}
+
+message MakeSqueakRequest {
+    /// The profile id
+    int32 profile_id = 1;
+
+    /// The content
+    string content = 2;
+
+    /// The replyto hash
+    string replyto = 3;
+
+    /// Has a recipient
+    bool has_recipient = 4;
+
+    /// The profile id of the recipient if squeak is private
+    int32 recipient_profile_id = 5;
+}
+
+message MakeSqueakReply {
+    /// Hash of the created squeak.
+    string squeak_hash = 1;
+}
+
+message MakeResqueakRequest {
+    /// The profile id
+    int32 profile_id = 1;
+
+    /// The content
+    string resqueaked_hash = 2;
+
+    /// The replyto hash
+    string replyto = 3;
+}
+
+message MakeResqueakReply {
+    /// Hash of the created resqueak.
+    string squeak_hash = 1;
+}
+
+message GetSqueakDisplayRequest {
+    /// Hash of the squeak.
+    string squeak_hash = 1;
+}
+
+message GetSqueakDisplayReply {
+    /// The squeak display entry
+    SqueakDisplayEntry squeak_display_entry = 1;
+}
+
+message SqueakDisplayEntry {
+    /// The squeak hash.
+    string squeak_hash = 1;
+
+    /// Is unlocked
+    bool is_unlocked = 2;
+
+    /// The decrypted content
+    string content_str = 3;
+
+    /// Is reply
+    bool is_reply = 4;
+
+    /// Reply to hash
+    string reply_to = 5;
+
+    /// Block height
+    int32 block_height = 6;
+
+    /// Block hash
+    string block_hash = 7;
+
+    /// Block time
+    int64 block_time = 8;
+
+    /// Squeak time
+    int64 squeak_time = 9;
+
+    /// The author pubkey in hex
+    string author_pubkey = 10;
+
+    /// Is author address known
+    bool is_author_known = 11;
+
+    /// The author name
+    SqueakProfile author = 12;
+
+    /// Liked time
+    int64 liked_time_ms = 13;
+
+    /// The serialized squeak in hex.
+    string serialized_squeak_hex = 14;
+
+    /// The secret key in hex.
+    string secret_key_hex = 15;
+
+    /// Is private
+    bool is_private = 16;
+
+    /// The recipient pubkey in hex
+    string recipient_pubkey = 17;
+
+    /// Is recipient address known
+    bool is_recipient_known = 18;
+
+    /// The recipient name
+    SqueakProfile recipient = 19;
+
+    /// Number of replies
+    int32 num_replies = 20;
+
+    /// Is resqueak
+    bool is_resqueak = 21;
+
+    /// Resqueaked hash
+    string resqueaked_hash = 22;
+
+    /// Resqueaked squeak
+    SqueakDisplayEntry resqueaked_squeak = 23;
+
+    /// Number of resqueaks
+    int32 num_resqueaks = 24;
+}
+
+message GetTimelineSqueakDisplaysRequest {
+    /// Limit number of results
+    int32 limit = 1;
+
+    /// Last entry
+    SqueakDisplayEntry last_entry = 2;
+}
+
+message GetTimelineSqueakDisplaysReply {
+    /// Multiple squeak display entries
+    repeated SqueakDisplayEntry squeak_display_entries = 1;
+}
+
+message GetPubKeySqueakDisplaysRequest {
+    /// The pubkey in hex
+    string pubkey = 1;
+
+    // /// The address
+    // string address = 1;
+
+    /// Limit number of results
+    int32 limit = 2;
+
+    /// Last entry
+    SqueakDisplayEntry last_entry = 3;
+}
+
+message GetPubKeySqueakDisplaysReply {
+    /// Multiple squeak display entries
+    repeated SqueakDisplayEntry squeak_display_entries = 1;
+}
+
+message GetSearchSqueakDisplaysRequest {
+    /// The search text
+    string search_text = 1;
+
+    /// Limit number of results
+    int32 limit = 2;
+
+    /// Last entry
+    SqueakDisplayEntry last_entry = 3;
+}
+
+message GetSearchSqueakDisplaysReply {
+    /// Multiple squeak display entries
+    repeated SqueakDisplayEntry squeak_display_entries = 1;
+}
+
+message GetAncestorSqueakDisplaysRequest {
+    /// Hash of the squeak.
+    string squeak_hash = 1;
+}
+
+message GetAncestorSqueakDisplaysReply {
+    /// Multiple squeak display entries
+    repeated SqueakDisplayEntry squeak_display_entries = 1;
+}
+
+message GetReplySqueakDisplaysRequest {
+    /// Hash of the squeak.
+    string squeak_hash = 1;
+
+    /// Limit number of results
+    int32 limit = 2;
+
+    /// Last entry
+    SqueakDisplayEntry last_entry = 3;
+}
+
+message GetReplySqueakDisplaysReply {
+    /// Multiple squeak display entries
+    repeated SqueakDisplayEntry squeak_display_entries = 1;
+}
+
+message DeleteSqueakRequest {
+    /// Hash of the created squeak.
+    string squeak_hash = 1;
+}
+
+message DeleteSqueakReply {
+}
+
+message CreatePeerRequest {
+    /// Name of the peer
+    string peer_name = 1;
+
+    /// Peer address
+    PeerAddress peer_address = 2;
+}
+
+message CreatePeerReply {
+    /// The peer id
+    int32 peer_id = 1;
+}
+
+message GetPeerRequest {
+    /// The peer id
+    int32 peer_id = 1;
+}
+
+message GetPeerReply {
+    /// The peer
+    SqueakPeer squeak_peer = 1;
+}
+
+message GetPeerByAddressRequest {
+    /// Peer address
+    PeerAddress peer_address = 1;
+}
+
+message GetPeerByAddressReply {
+    /// The peer
+    SqueakPeer squeak_peer = 1;
+}
+
+message GetPeersRequest {
+}
+
+message GetPeersReply {
+    /// The peers
+    repeated SqueakPeer squeak_peers = 1;
+}
+
+message SqueakPeer {
+    /// The peer id
+    int32 peer_id = 1;
+
+    /// The peer name
+    string peer_name = 2;
+
+    /// Peer address
+    PeerAddress peer_address = 3;
+
+    /// Autoconnect
+    bool autoconnect = 4;
+
+    /// Share for free
+    bool share_for_free = 5;
+}
+
+message SetPeerAutoconnectRequest {
+    /// The peer id
+    int32 peer_id = 1;
+
+    /// Autoconnect
+    bool autoconnect = 2;
+}
+
+message SetPeerAutoconnectReply {
+}
+
+message SetPeerShareForFreeRequest {
+    /// The peer id
+    int32 peer_id = 1;
+
+    /// share_for_free
+    bool share_for_free = 2;
+}
+
+message SetPeerShareForFreeReply {
+}
+
+message RenamePeerRequest {
+    /// The peer id
+    int32 peer_id = 1;
+
+    /// Name of the peer
+    string peer_name = 2;
+}
+
+message RenamePeerReply {
+}
+
+message DeletePeerRequest {
+    /// The peer id
+    int32 peer_id = 1;
+}
+
+message DeletePeerReply {
+}
+
+message LoadBuyOffersRequest {
+    /// Hash of the created squeak.
+    string squeak_hash = 1;
+}
+
+message LoadBuyOffersReply {
+}
+
+message GetBuyOffersRequest {
+    /// Hash of the created squeak.
+    string squeak_hash = 1;
+}
+
+message GetBuyOffersReply {
+    /// The offers
+    repeated OfferDisplayEntry offers = 1;
+}
+
+message GetBuyOfferRequest {
+    /// Offer id
+    int32 offer_id = 1;
+}
+
+message GetBuyOfferReply {
+    /// The offer
+    OfferDisplayEntry offer = 1;
+}
+
+message OfferDisplayEntry {
+    /// The offer id
+    int32 offer_id = 1;
+
+    /// The squeak hash.
+    string squeak_hash = 2;
+
+    /// The price in msats
+    int64 price_msat = 3;
+
+    /// The seller node pubkey
+    string node_pubkey = 4;
+
+    // TODO: replace with LightningAddress from lnd.proto
+    /// The host of the seller lightning node
+    string node_host = 5;
+
+    /// The port of the seller lightning node
+    int32 node_port = 6;
+
+    /// The invoice timestamp
+    int32 invoice_timestamp = 7;
+
+    /// The invoice expiry
+    int32 invoice_expiry = 8;
+
+    /// The address of the squeak peer
+    PeerAddress peer_address = 9;
+}
+
+message DownloadSqueaksRequest {
+    /// The interested pubkeys in hex
+    repeated string pubkeys = 1;
+
+// /// The interested addresses
+//     repeated string addreses = 1;
+
+    /// Minimum block height
+    int32 min_block_height = 2;
+
+    /// Maximum block height
+    int32 max_block_height = 3;
+
+    /// The hash replied to
+    string replyto_squeak_hash = 4;
+}
+
+message DownloadResult {
+    /// Number of squeaks downloaded
+    int32 number_downloaded = 1;
+
+    /// Number of squeaks requested
+    int32 number_requested = 2;
+
+    /// Number of peers downloaded from
+    int32 number_peers = 3;
+
+    /// Download time in milliseconds.
+    int32 elapsed_time_ms = 4;
+}
+
+message DownloadSqueaksReply {
+    // The download result
+    DownloadResult download_result = 1;
+}
+
+message PayOfferRequest {
+    /// Offer id
+    int32 offer_id = 1;
+}
+
+message PayOfferReply {
+    /// Sent payment id
+    int32 sent_payment_id = 1;
+}
+
+message DecryptSqueakRequest {
+    /// Hash of the squeak.
+    string squeak_hash = 1;
+
+    /// Has a recipient
+    bool has_recipient = 2;
+
+    /// The profile id of the recipient to decrypt the content
+    int32 recipient_profile_id = 3;
+
+    /// Has a author
+    bool has_author = 4;
+
+    /// The profile id of the author to decrypt the content
+    int32 author_profile_id = 5;
+}
+
+message DecryptSqueakReply {
+}
+
+message GetSentPaymentsRequest {
+    /// Limit number of results
+    int32 limit = 1;
+
+    /// Last entry
+    SentPayment last_sent_payment = 2;
+}
+
+message GetSentPaymentsReply {
+    /// The sent payments
+    repeated SentPayment sent_payments = 1;
+}
+
+message GetSentPaymentsForSqueakRequest {
+    /// Hash of the squeak.
+    string squeak_hash = 1;
+
+    /// Limit number of results
+    int32 limit = 2;
+
+    /// Last entry
+    SentPayment last_sent_payment = 3;
+}
+
+message GetSentPaymentsForSqueakReply {
+    /// The sent payments
+    repeated SentPayment sent_payments = 1;
+}
+
+message GetSentPaymentsForPubkeyRequest {
+    /// The pubkey in hex
+    string pubkey = 1;
+
+    /// Limit number of results
+    int32 limit = 2;
+
+    /// Last entry
+    SentPayment last_sent_payment = 3;
+}
+
+message GetSentPaymentsForPubkeyReply {
+    /// The sent payments
+    repeated SentPayment sent_payments = 1;
+}
+
+message GetSentPaymentsForPeerRequest {
+    /// Peer address
+    PeerAddress peer_address = 1;
+
+    /// Limit number of results
+    int32 limit = 2;
+
+    /// Last entry
+    SentPayment last_sent_payment = 3;
+}
+
+message GetSentPaymentsForPeerReply {
+    /// The sent payments
+    repeated SentPayment sent_payments = 1;
+}
+
+message GetSentPaymentRequest {
+    /// Sent payment id
+    int32 sent_payment_id = 1;
+}
+
+message GetSentPaymentReply {
+    /// The sent payment
+    SentPayment sent_payment = 1;
+}
+
+message SentPayment {
+    /// The sent payment id
+    int32 sent_payment_id = 1;
+
+    /// The squeak hash
+    string squeak_hash = 2;
+
+    /// The payment hash
+    string payment_hash = 3;
+
+    /// The price_msat
+    int64 price_msat = 4;
+
+    /// The seller node pubkey
+    string node_pubkey = 5;
+
+    /// Does the payment unlock a valid key
+    bool valid = 6;
+
+    /// Time of payment
+    int64 time_ms = 7;
+
+    /// The address of the squeak peer
+    PeerAddress peer_address = 8;
+}
+
+message DownloadSqueakRequest {
+    /// The squeak hash.
+    string squeak_hash = 1;
+}
+
+message DownloadSqueakReply {
+    // The download result
+    DownloadResult download_result = 1;
+}
+
+message DownloadSqueakSecretKeyRequest {
+    /// The squeak hash.
+    string squeak_hash = 1;
+}
+
+message DownloadSqueakSecretKeyReply {
+    // The download result
+    DownloadResult download_result = 1;
+}
+
+message DownloadOffersRequest {
+    /// The squeak hash.
+    string squeak_hash = 1;
+}
+
+message DownloadOffersReply {
+    // The download result
+    DownloadResult download_result = 1;
+}
+
+message DownloadRepliesRequest {
+    /// The squeak hash.
+    string squeak_hash = 1;
+}
+
+message DownloadRepliesReply {
+    // The download result
+    DownloadResult download_result = 1;
+}
+
+message DownloadPubKeySqueaksRequest {
+    /// The pubkey in hex
+    string pubkey = 1;
+
+    // /// The address
+    // string address = 1;
+}
+
+message DownloadPubKeySqueaksReply {
+    // The download result
+    DownloadResult download_result = 1;
+}
+
+message GetSentOffersRequest {
+}
+
+message GetSentOffersReply {
+    /// The received payments
+    repeated SentOffer sent_offers = 1;
+}
+
+message SentOffer {
+    /// The received payment id
+    int32 sent_offer_id = 1;
+
+    /// The squeak hash
+    string squeak_hash = 2;
+
+    /// The payment hash
+    string payment_hash = 3;
+
+    /// The price_msat
+    int64 price_msat = 4;
+}
+
+message GetReceivedPaymentsRequest {
+    /// Limit number of results
+    int32 limit = 1;
+
+    /// Last entry
+    ReceivedPayment last_received_payment = 2;
+}
+
+message GetReceivedPaymentsReply {
+    /// The received payments
+    repeated ReceivedPayment received_payments = 1;
+}
+
+message GetReceivedPaymentsForSqueakRequest {
+    /// Hash of the squeak.
+    string squeak_hash = 1;
+
+    /// Limit number of results
+    int32 limit = 2;
+
+    /// Last entry
+    ReceivedPayment last_received_payment = 3;
+}
+
+message GetReceivedPaymentsForSqueakReply {
+    /// The received payments
+    repeated ReceivedPayment received_payments = 1;
+}
+
+message GetReceivedPaymentsForPubkeyRequest {
+    /// The pubkey in hex
+    string pubkey = 1;
+
+    /// Limit number of results
+    int32 limit = 2;
+
+    /// Last entry
+    ReceivedPayment last_received_payment = 3;
+}
+
+message GetReceivedPaymentsForPubkeyReply {
+    /// The received payments
+    repeated ReceivedPayment received_payments = 1;
+}
+
+message GetReceivedPaymentsForPeerRequest {
+    /// Peer address
+    PeerAddress peer_address = 1;
+
+    /// Limit number of results
+    int32 limit = 2;
+
+    /// Last entry
+    ReceivedPayment last_received_payment = 3;
+}
+
+message GetReceivedPaymentsForPeerReply {
+    /// The received payments
+    repeated ReceivedPayment received_payments = 1;
+}
+
+message ReceivedPayment {
+    /// The received payment id
+    int32 received_payment_id = 1;
+
+    /// The squeak hash
+    string squeak_hash = 2;
+
+    /// The payment hash
+    string payment_hash = 3;
+
+    /// The price_msat
+    int64 price_msat = 4;
+
+    /// Time of payment
+    int64 time_ms = 5;
+
+    /// The address of the squeak peer
+    PeerAddress peer_address = 6;
+}
+
+message SubscribeReceivedPaymentsRequest {
+    /// Payment index to start consuming from
+    int64 payment_index = 1;
+}
+
+message GetNetworkRequest {
+}
+
+message GetNetworkReply {
+    /// The network (e.g. mainnet or testnet)
+    string network = 1;
+}
+
+message GetPaymentSummaryRequest {
+}
+
+message GetPaymentSummaryReply {
+    // Payment summary of the node
+    PaymentSummary payment_summary = 1;
+}
+
+message GetPaymentSummaryForSqueakRequest {
+    /// Hash of the squeak.
+    string squeak_hash = 1;
+}
+
+message GetPaymentSummaryForSqueakReply {
+    // Payment summary of the node
+    PaymentSummary payment_summary = 1;
+}
+
+message GetPaymentSummaryForPubkeyRequest {
+    /// The pubkey in hex
+    string pubkey = 1;
+}
+
+message GetPaymentSummaryForPubkeyReply {
+    // Payment summary of the node
+    PaymentSummary payment_summary = 1;
+}
+
+message GetPaymentSummaryForPeerRequest {
+    /// Peer address
+    PeerAddress peer_address = 1;
+}
+
+message GetPaymentSummaryForPeerReply {
+    // Payment summary of the node
+    PaymentSummary payment_summary = 1;
+}
+
+message PaymentSummary {
+    // Number of received payments
+    int32 num_received_payments = 1;
+
+    // Number of sent payments
+    int32 num_sent_payments = 2;
+
+    /// Amount earned in msats
+    int64 amount_earned_msat = 3;
+
+    /// Amount spent in msats
+    int64 amount_spent_msat = 4;
+}
+
+message ReprocessReceivedPaymentsRequest {
+}
+
+message ReprocessReceivedPaymentsReply {
+}
+
+message LikeSqueakRequest {
+    /// Hash of the squeak.
+    string squeak_hash = 1;
+}
+
+message LikeSqueakReply {
+}
+
+message UnlikeSqueakRequest {
+    /// Hash of the squeak.
+    string squeak_hash = 1;
+}
+
+message UnlikeSqueakReply {
+}
+
+message GetLikedSqueakDisplaysRequest {
+    /// Limit number of results
+    int32 limit = 1;
+
+    /// Last entry
+    SqueakDisplayEntry last_entry = 2;
+}
+
+message GetLikedSqueakDisplaysReply {
+    /// Multiple squeak display entries
+    repeated SqueakDisplayEntry squeak_display_entries = 1;
+}
+
+message ConnectPeerRequest {
+    /// Peer address
+    PeerAddress peer_address = 1;
+}
+
+message ConnectPeerReply {
+}
+
+message ConnectedPeer {
+    /// Peer address
+    PeerAddress peer_address = 1;
+
+    /// Connection time
+    int64 connect_time_s = 2;
+
+    /// Last message received time
+    int64 last_message_received_time_s = 3;
+
+    /// Number of messages received
+    int64 number_messages_received = 4;
+
+    /// Number of bytes received
+    int64 number_bytes_received = 5;
+
+    /// Number of messages sent
+    int64 number_messages_sent = 6;
+
+    /// Number of bytes sent
+    int64 number_bytes_sent = 7;
+
+    /// Is peer saved
+    bool is_peer_saved = 8;
+
+    /// The saved peer
+    SqueakPeer saved_peer = 9;
+}
+
+message GetConnectedPeersRequest {
+}
+
+message GetConnectedPeersReply {
+    repeated ConnectedPeer connected_peers = 1;
+}
+
+message GetConnectedPeerRequest {
+    /// Peer address
+    PeerAddress peer_address = 1;
+}
+
+message GetConnectedPeerReply {
+    ConnectedPeer connected_peer = 1;
+}
+
+message DisconnectPeerRequest {
+    /// Peer address
+    PeerAddress peer_address = 1;
+}
+
+message DisconnectPeerReply {
+}
+
+
+message SubscribeConnectedPeersRequest {
+}
+
+
+message SubscribeConnectedPeerRequest {
+    /// Peer address
+    PeerAddress peer_address = 1;
+}
+
+message PeerAddress {
+    /// The network to use for the connection (e.g. ipv4 or torv3)
+    string network = 1;
+
+    /// The host of the peer
+    string host = 2;
+
+    /// The port of the peer
+    int32 port = 3;
+}
+
+message SubscribeBuyOffersRequest {
+    /// Hash of the squeak.
+    string squeak_hash = 1;
+}
+
+message SubscribeSqueakDisplayRequest {
+    /// Hash of the squeak.
+    string squeak_hash = 1;
+}
+
+message SubscribeReplySqueakDisplaysRequest {
+    /// Hash of the squeak.
+    string squeak_hash = 1;
+}
+
+message SubscribePubKeySqueakDisplaysRequest {
+    /// The pubkey in hex
+    string pubkey = 1;
+
+    // /// The address
+    // string address = 1;
+}
+
+message SubscribeAncestorSqueakDisplaysRequest {
+    /// Hash of the squeak.
+    string squeak_hash = 1;
+}
+
+message SubscribeSqueakDisplaysRequest {
+}
+
+message SubscribeTimelineSqueakDisplaysRequest {
+}
+
+message GetExternalAddressRequest {
+}
+
+message GetExternalAddressReply {
+    /// Peer address
+    PeerAddress peer_address = 1;
+}
+
+message GetDefaultPeerPortRequest {
+}
+
+message GetDefaultPeerPortReply {
+    /// The port.
+    int32 port = 1;
+}
+
+message SetSellPriceRequest {
+    /// The price in msats
+    int64 price_msat = 1;
+}
+
+message SetSellPriceReply {
+}
+
+message ClearSellPriceRequest {
+}
+
+message ClearSellPriceReply {
+}
+
+message GetSellPriceRequest {
+}
+
+message GetSellPriceReply {
+    /// The price in msats
+    int64 price_msat = 1;
+}
+
+message TwitterAccount {
+    /// The twitter account id
+    int32 twitter_account_id = 1;
+
+    /// The twitter account handle.
+    string handle = 2;
+
+    /// The profile id
+    int32 profile_id = 3;
+
+    /// Is profile_id known
+    bool is_profile_known = 4;
+
+    /// The profile
+    SqueakProfile profile = 5;
+
+    /// Is twitter stream forwarding successfully.
+    bool is_forwarding = 6;
+}
+
+message AddTwitterAccountRequest {
+    /// The twitter account handle.
+    string handle = 1;
+
+    /// The profile id
+    int32 profile_id = 2;
+
+    /// The bearer token string.
+    string bearer_token = 3;
+}
+
+message AddTwitterAccountReply {
+    /// The twitter account id
+    int32 twitter_account_id = 1;
+}
+
+message GetTwitterAccountsRequest {
+}
+
+message GetTwitterAccountsReply {
+    /// The twitter accounts
+    repeated TwitterAccount twitter_accounts = 1;
+}
+
+message DeleteTwitterAccountRequest {
+    /// The twitter account id
+    int32 twitter_account_id = 1;
+}
+
+message DeleteTwitterAccountReply {
+}
