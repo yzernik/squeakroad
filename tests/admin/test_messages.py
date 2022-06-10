@@ -64,9 +64,7 @@ def test_message_to_squeak_entry(squeak_entry_locked, squeak_entry_msg_locked):
 
     # TODO: remove this line after implementing "message_to_squeak_profile"
     entry_with_null_profile = squeak_entry_locked\
-        ._replace(squeak_profile=None)\
-        ._replace(recipient_public_key=None)\
-        ._replace(recipient_squeak_profile=None)
+        ._replace(squeak_profile=None)
     assert entry == entry_with_null_profile
 
 
