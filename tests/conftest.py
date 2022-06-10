@@ -42,7 +42,6 @@ from squeaknode.core.sent_payment_summary import SentPaymentSummary
 from squeaknode.core.squeak_entry import SqueakEntry
 from squeaknode.core.squeak_peer import SqueakPeer
 from squeaknode.core.squeaks import get_hash
-from squeaknode.core.squeaks import make_resqueak_with_block
 from squeaknode.core.squeaks import make_squeak_with_block
 from squeaknode.core.user_config import UserConfig
 from tests.utils import gen_contact_profile
@@ -210,21 +209,6 @@ def reply_squeak_hash(reply_squeak):
 def private_squeak(private_squeak_and_secret_key):
     squeak, _ = private_squeak_and_secret_key
     yield squeak
-
-
-@pytest.fixture
-def resqueak(private_key, squeak_hash, block_info):
-    yield make_resqueak_with_block(
-        private_key,
-        squeak_hash,
-        block_info.block_height,
-        block_info.block_hash,
-    )
-
-
-@pytest.fixture
-def resqueak_hash(resqueak):
-    yield get_hash(resqueak)
 
 
 @pytest.fixture

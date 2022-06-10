@@ -117,27 +117,6 @@ class SqueakStore:
             )
         return inserted_squeak_hash
 
-    def make_resqueak(
-            self,
-            profile_id: int,
-            resqueaked_hash: bytes,
-            replyto_hash: Optional[bytes],
-    ) -> Optional[bytes]:
-        squeak_profile = self.get_squeak_profile(profile_id)
-        if squeak_profile is None:
-            raise Exception("Profile with id {} not found.".format(
-                profile_id,
-            ))
-        resqueak = self.squeak_core.make_resqueak(
-            squeak_profile,
-            resqueaked_hash,
-            replyto_hash,
-        )
-        inserted_resqueak_hash = self.save_squeak(resqueak)
-        if inserted_resqueak_hash is None:
-            raise Exception("Failed to save resqueak.")
-        return inserted_resqueak_hash
-
     def save_squeak(self, base_squeak: CBaseSqueak) -> Optional[bytes]:
         # Check if the squeak is valid context free.
         CheckSqueak(base_squeak)
