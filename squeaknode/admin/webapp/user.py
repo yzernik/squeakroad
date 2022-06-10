@@ -29,9 +29,13 @@ logger = logging.getLogger(__name__)
 
 
 class User(UserMixin):
-    def __init__(self, username, password):
+    def __init__(
+            self,
+            username,
+            password_hash,
+    ):
         self.username = username
-        self.password_hash = generate_password_hash(password)
+        self.password_hash = password_hash
 
     def is_authenticated(self):
         return True
@@ -48,6 +52,39 @@ class User(UserMixin):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+
+class UserLookup:
+    def __init__(
+            self,
+            admin_username,
+            admin_password,
+            handler,
+    ):
+        self.admin_username = admin_username
+        self.admin_password = admin_password
+        self.handler = handler
+
     def get_user_by_username(self, username):
-        if self.username == username:
-            return self
+        if self.admin_username == username:
+            return User(
+                self.admin_username,
+                generate_password_hash(self.admin_password),
+            )
+        db_user = self.handler.handle_lookup_user(username)
+        if db_user:
+            return User(
+                db_user.username,
+                db_user.password_hash,
+            )
+
+    def register_user(self, username, password):
+        if self.admin_username == username:
+            raise Exception("Username belongs to admin.")
+        try:
+            user_id = self.handler.handle_register_user(
+                username,
+                generate_password_hash(password),
+            )
+            return user_id
+        except Exception:
+            return None

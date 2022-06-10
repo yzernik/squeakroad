@@ -1335,3 +1335,20 @@ class SqueakAdminServerHandler(object):
             twitter_account_id,
         )
         return squeak_admin_pb2.DeleteTwitterAccountReply()
+
+    def handle_lookup_user(self, username):
+        logger.info(
+            "Handle lookup user with name: {}".format(username))
+        user = self.squeak_controller.get_user_by_username(username)
+        logger.info("User: {}".format(user))
+        return user
+
+    def handle_register_user(self, username, password_hash):
+        logger.info(
+            "Handle register user with name: {}, password hash: {}".format(
+                username,
+                password_hash,
+            ))
+        user_id = self.squeak_controller.create_user(username, password_hash)
+        logger.info("User id: {}".format(user_id))
+        return user_id

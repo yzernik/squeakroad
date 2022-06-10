@@ -40,6 +40,7 @@ from squeaknode.core.sent_payment import SentPayment
 from squeaknode.core.squeak_entry import SqueakEntry
 from squeaknode.core.squeak_peer import SqueakPeer
 from squeaknode.core.squeak_profile import SqueakProfile
+from squeaknode.core.squeak_user import SqueakUser
 from squeaknode.core.squeaks import get_hash
 from squeaknode.core.twitter_account_entry import TwitterAccountEntry
 from squeaknode.node.received_payments_subscription_client import ReceivedPaymentsSubscriptionClient
@@ -579,3 +580,9 @@ class SqueakController:
     def delete_twitter_account(self, twitter_account_id: int) -> None:
         self.squeak_store.delete_twitter_account(twitter_account_id)
         self.tweet_forwarder.restart()
+
+    def get_user_by_username(self, username: str) -> Optional[SqueakUser]:
+        return self.squeak_store.get_user_by_username(username)
+
+    def create_user(self, username: str, password_hash: str) -> int:
+        return self.squeak_store.create_user(username, password_hash)

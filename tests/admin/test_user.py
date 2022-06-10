@@ -19,9 +19,11 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import mock
 import pytest
 
-from squeaknode.admin.webapp.user import User
+from squeaknode.admin.squeak_admin_server_handler import SqueakAdminServerHandler
+from squeaknode.admin.webapp.user import UserLookup
 
 
 @pytest.fixture
@@ -35,8 +37,29 @@ def password():
 
 
 @pytest.fixture
-def user(username, password):
-    yield User(username, password)
+def handler():
+    yield SqueakAdminServerHandler(
+        lightning_client=None,
+        squeak_controller=None,
+    )
+
+
+@pytest.fixture
+def user_lookup(username, password, handler):
+    yield UserLookup(username, password, handler)
+
+
+@pytest.fixture
+def user(user_lookup, username):
+    yield user_lookup.get_user_by_username(username)
+
+
+def test_user_lookup(handler, user_lookup, username):
+    with mock.patch.object(handler, 'handle_lookup_user', autospec=True) as mock_lookup_user:
+        mock_lookup_user.return_value = None
+
+        assert user_lookup.get_user_by_username(username) is not None
+        assert user_lookup.get_user_by_username("wrong_username") is None
 
 
 def test_user(user, username, password):
@@ -47,5 +70,3 @@ def test_user(user, username, password):
     assert user.get_id() == username
     assert user.check_password(password)
     assert not user.check_password("wrong_password")
-    assert user.get_user_by_username(username) is user
-    assert user.get_user_by_username("wrong_username") is None

@@ -19,24 +19,13 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-from flask_wtf import FlaskForm
-from wtforms import BooleanField
-from wtforms import PasswordField
-from wtforms import StringField
-from wtforms import SubmitField
-from wtforms.validators import DataRequired
+from typing import NamedTuple
+from typing import Optional
 
 
-class LoginForm(FlaskForm):
-    username = StringField("Username", validators=[DataRequired()])
-    password = PasswordField("Password", validators=[DataRequired()])
-    remember_me = BooleanField("Remember Me")
-    submit = SubmitField("Sign In")
-
-
-class SignupForm(FlaskForm):
-    username = StringField("Username", validators=[DataRequired()])
-    password = PasswordField("Password", validators=[DataRequired()])
-    repeatpassword = PasswordField(
-        "Repeat Password", validators=[DataRequired()])
-    submit = SubmitField("Sign In")
+class SqueakUser(NamedTuple):
+    """Represents a user."""
+    username: str
+    password_hash: str
+    user_id: Optional[int] = None
+    user_image: Optional[bytes] = None

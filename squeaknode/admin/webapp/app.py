@@ -41,7 +41,8 @@ from werkzeug.serving import make_server
 from proto import lnd_pb2
 from proto import squeak_admin_pb2
 from squeaknode.admin.webapp.forms import LoginForm
-from squeaknode.admin.webapp.user import User
+from squeaknode.admin.webapp.forms import SignupForm
+from squeaknode.admin.webapp.user import UserLookup
 
 logger = logging.getLogger(__name__)
 
@@ -58,16 +59,22 @@ def create_app(handler, username, password):
         SECRET_KEY="dev",
     )
     login = LoginManager(app)
-    valid_user = User(
+    # valid_user = User(
+    #     handler,
+    #     username,
+    #     password,
+    # )
+    user_lookup = UserLookup(
         username,
         password,
+        handler,
     )
     logger.debug("Starting flask with app.root_path: {}".format(app.root_path))
     logger.debug("Files in root path: {}".format(os.listdir(app.root_path)))
 
     @login.user_loader
     def load_user(id):
-        return valid_user.get_user_by_username(id)
+        return user_lookup.get_user_by_username(id)
 
     @login.unauthorized_handler
     def unauthorized_callback():
@@ -96,13 +103,38 @@ def create_app(handler, username, password):
         default_username = request.args.get('user')
         form = LoginForm(username=default_username)
         if form.validate_on_submit():
-            user = valid_user.get_user_by_username(form.username.data)
+            user = user_lookup.get_user_by_username(form.username.data)
             if user is None or not user.check_password(form.password.data):
                 flash("Invalid username or password")
                 return redirect(url_for("login"))
             login_user(user, remember=form.remember_me.data)
             return redirect(url_for("index"))
         return render_template("login.html", title="Sign In", form=form)
+
+    @app.route("/signup", methods=["GET", "POST"])
+    def signup():
+        logger.info("Trying to sign up")
+        if current_user.is_authenticated:
+            return redirect(url_for("index"))
+        form = SignupForm()
+        if form.validate_on_submit():
+            if form.password.data != form.repeatpassword.data:
+                flash("Password does not match.")
+                return redirect(url_for("signup"))
+            user = user_lookup.get_user_by_username(form.username.data)
+            if user is not None:
+                flash("Username already exists.")
+                return redirect(url_for("signup"))
+            user_id = user_lookup.register_user(
+                form.username.data,
+                form.password.data,
+            )
+            if user_id is None:
+                flash("Signup failed.")
+                return redirect(url_for("signup"))
+            else:
+                return redirect(url_for("login"))
+        return render_template("signup.html", title="Sign Up", form=form)
 
     @app.route("/logout")
     def logout():

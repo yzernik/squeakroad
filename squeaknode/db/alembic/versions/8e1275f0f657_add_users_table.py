@@ -19,24 +19,40 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-from flask_wtf import FlaskForm
-from wtforms import BooleanField
-from wtforms import PasswordField
-from wtforms import StringField
-from wtforms import SubmitField
-from wtforms.validators import DataRequired
+"""Add users table
+
+Revision ID: 8e1275f0f657
+Revises: b3d0395263c4
+Create Date: 2022-06-09 21:07:46.344658
+
+"""
+import sqlalchemy as sa
+from alembic import op
+
+import squeaknode.db.models
 
 
-class LoginForm(FlaskForm):
-    username = StringField("Username", validators=[DataRequired()])
-    password = PasswordField("Password", validators=[DataRequired()])
-    remember_me = BooleanField("Remember Me")
-    submit = SubmitField("Sign In")
+# revision identifiers, used by Alembic.
+revision = '8e1275f0f657'
+down_revision = 'b3d0395263c4'
+branch_labels = None
+depends_on = None
 
 
-class SignupForm(FlaskForm):
-    username = StringField("Username", validators=[DataRequired()])
-    password = PasswordField("Password", validators=[DataRequired()])
-    repeatpassword = PasswordField(
-        "Repeat Password", validators=[DataRequired()])
-    submit = SubmitField("Sign In")
+def upgrade():
+    op.create_table('user',
+                    sa.Column('user_id', sa.Integer(), nullable=False),
+                    sa.Column(
+                        'created_time_ms', squeaknode.db.models.SLBigInteger(), nullable=False),
+                    sa.Column('username', sa.String(), nullable=False),
+                    sa.Column('password_hash', sa.String(), nullable=False),
+                    sa.Column('user_image', sa.LargeBinary(), nullable=True),
+                    sa.PrimaryKeyConstraint('user_id', name=op.f('pk_user')),
+                    sa.UniqueConstraint(
+                        'username', name=op.f('uq_user_username')),
+                    sqlite_autoincrement=True
+                    )
+
+
+def downgrade():
+    op.drop_table('user')

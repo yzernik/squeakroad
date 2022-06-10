@@ -50,6 +50,7 @@ from squeaknode.core.squeak_core import SqueakCore
 from squeaknode.core.squeak_entry import SqueakEntry
 from squeaknode.core.squeak_peer import SqueakPeer
 from squeaknode.core.squeak_profile import SqueakProfile
+from squeaknode.core.squeak_user import SqueakUser
 from squeaknode.core.twitter_account import TwitterAccount
 from squeaknode.core.twitter_account_entry import TwitterAccountEntry
 from squeaknode.core.update_subscriptions_event import UpdateSubscriptionsEvent
@@ -758,3 +759,13 @@ class SqueakStore:
 
     def get_latest_block(self) -> int:
         return self.squeak_core.get_best_block_height()
+
+    def get_user_by_username(self, username: str) -> Optional[SqueakUser]:
+        return self.squeak_db.get_user_by_username(username)
+
+    def create_user(self, username: str, password_hash: str) -> int:
+        squeak_user = SqueakUser(
+            username=username,
+            password_hash=password_hash,
+        )
+        return self.squeak_db.insert_user(squeak_user)
