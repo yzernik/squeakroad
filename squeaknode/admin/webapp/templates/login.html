@@ -29,7 +29,10 @@
           <span style="color: red;">[{{ error }}]</span>
           {% endfor %}
         </div>
-	{{ form.submit(class_="btn btn-primary") }}
+        <div class="form-group">
+	  {{ form.submit(class_="btn btn-primary") }}
+	  <a href="/signup">Sign Up</a>
+        </div>
         <hr />
       </form>
     </div>
