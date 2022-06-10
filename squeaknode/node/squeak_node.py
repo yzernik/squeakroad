@@ -24,7 +24,6 @@ import logging
 from squeak.params import SelectParams
 
 from squeaknode.admin.squeak_admin_server_handler import SqueakAdminServerHandler
-from squeaknode.admin.squeak_admin_server_servicer import SqueakAdminServerServicer
 from squeaknode.admin.webapp.app import SqueakAdminWebServer
 from squeaknode.bitcoin.bitcoin_core_client import BitcoinCoreClient
 from squeaknode.config.config import SqueaknodeConfig
@@ -60,7 +59,6 @@ class SqueakNode:
         self.create_payment_processor()
         self.create_squeak_controller()
         self.create_admin_handler()
-        self.create_admin_rpc_server()
         self.create_admin_web_server()
         self.create_received_payment_processor_worker()
         self.create_squeak_deletion_worker()
@@ -69,9 +67,6 @@ class SqueakNode:
     def start_running(self):
         self.squeak_db.init_with_retries()
         self.lightning_client.init()
-
-        if self.config.rpc.enabled:
-            self.admin_rpc_server.start()
         if self.config.webadmin.enabled:
             self.admin_web_server.start()
         self.received_payment_processor_worker.start_running()
@@ -80,7 +75,6 @@ class SqueakNode:
 
     def stop_running(self):
         self.admin_web_server.stop()
-        self.admin_rpc_server.stop()
         self.received_payment_processor_worker.stop_running()
 
     def set_network_params(self):
@@ -162,13 +156,6 @@ class SqueakNode:
         self.admin_handler = SqueakAdminServerHandler(
             self.lightning_client,
             self.squeak_controller,
-        )
-
-    def create_admin_rpc_server(self):
-        self.admin_rpc_server = SqueakAdminServerServicer(
-            self.config.rpc.host,
-            self.config.rpc.port,
-            self.admin_handler,
         )
 
     def create_admin_web_server(self):

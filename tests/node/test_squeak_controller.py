@@ -136,16 +136,3 @@ def test_get_network_regtest(regtest_squeak_controller):
 #     print(config.squeaknode_network)
 
 #     assert squeak_controller.get_network() == "regtest"
-
-
-def test_create_peer(squeak_store, squeak_controller, peer_address):
-    squeak_controller.create_peer(
-        "fake_peer_name",
-        peer_address,
-    )
-
-    squeak_store.create_peer.assert_called_with(
-        "fake_peer_name",
-        peer_address,
-        8555,
-    )
