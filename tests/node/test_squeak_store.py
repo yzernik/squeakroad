@@ -103,7 +103,6 @@ def test_save_squeak(squeak_store, squeak_db, squeak_core, block_header, squeak,
     with mock.patch.object(squeak_db, 'get_number_of_squeaks', autospec=True) as mock_get_number_of_squeaks, \
             mock.patch.object(squeak_db, 'number_of_squeaks_with_public_key_with_block_height', autospec=True) as mock_number_of_squeaks_with_public_key_with_block_height, \
             mock.patch.object(squeak_db, 'insert_squeak', autospec=True) as mock_insert_squeak, \
-            mock.patch.object(squeak_store.new_squeak_listener, 'handle_new_item', autospec=True) as mock_handle_new_squeak, \
             mock.patch.object(squeak_core, 'get_block_header', autospec=True) as mock_get_block_header:
         mock_get_number_of_squeaks.return_value = 0
         mock_number_of_squeaks_with_public_key_with_block_height.return_value = 0
@@ -112,14 +111,12 @@ def test_save_squeak(squeak_store, squeak_db, squeak_core, block_header, squeak,
         squeak_store.save_squeak(squeak)
 
         mock_insert_squeak.assert_called_once_with(squeak, block_header)
-        mock_handle_new_squeak.assert_called_once_with(squeak)
 
 
 def test_save_squeak_above_max(squeak_store, squeak_db, squeak_core, block_header, squeak, squeak_hash, max_squeaks):
     with mock.patch.object(squeak_db, 'get_number_of_squeaks', autospec=True) as mock_get_number_of_squeaks, \
             mock.patch.object(squeak_db, 'number_of_squeaks_with_public_key_with_block_height', autospec=True) as mock_number_of_squeaks_with_public_key_with_block_height, \
             mock.patch.object(squeak_db, 'insert_squeak', autospec=True) as mock_insert_squeak, \
-            mock.patch.object(squeak_store.new_squeak_listener, 'handle_new_item', autospec=True) as mock_handle_new_squeak, \
             mock.patch.object(squeak_core, 'get_block_header', autospec=True) as mock_get_block_header:
         mock_get_number_of_squeaks.return_value = max_squeaks + 1
         mock_number_of_squeaks_with_public_key_with_block_height.return_value = 0
@@ -130,14 +127,12 @@ def test_save_squeak_above_max(squeak_store, squeak_db, squeak_core, block_heade
             squeak_store.save_squeak(squeak)
 
         assert mock_insert_squeak.call_count == 0
-        assert mock_handle_new_squeak.call_count == 0
 
 
 def test_save_squeak_above_max_per_pubkey(squeak_store, squeak_db, squeak_core, block_header, squeak, squeak_hash, max_squeaks_per_public_key_per_block):
     with mock.patch.object(squeak_db, 'get_number_of_squeaks', autospec=True) as mock_get_number_of_squeaks, \
             mock.patch.object(squeak_db, 'number_of_squeaks_with_public_key_with_block_height', autospec=True) as mock_number_of_squeaks_with_public_key_with_block_height, \
             mock.patch.object(squeak_db, 'insert_squeak', autospec=True) as mock_insert_squeak, \
-            mock.patch.object(squeak_store.new_squeak_listener, 'handle_new_item', autospec=True) as mock_handle_new_squeak, \
             mock.patch.object(squeak_core, 'get_block_header', autospec=True) as mock_get_block_header:
         mock_get_number_of_squeaks.return_value = 0
         mock_number_of_squeaks_with_public_key_with_block_height.return_value = max_squeaks_per_public_key_per_block + 1
@@ -148,20 +143,17 @@ def test_save_squeak_above_max_per_pubkey(squeak_store, squeak_db, squeak_core, 
             squeak_store.save_squeak(squeak)
 
         assert mock_insert_squeak.call_count == 0
-        assert mock_handle_new_squeak.call_count == 0
 
 
 def test_save_secret_key(squeak_store, squeak_db, squeak_core, squeak, squeak_hash, secret_key):
     with mock.patch.object(squeak_db, 'get_squeak', autospec=True) as mock_get_squeak, \
             mock.patch.object(squeak_db, 'set_squeak_secret_key', autospec=True) as mock_set_squeak_secret_key, \
-            mock.patch.object(squeak_store, 'unlock_squeak', autospec=True) as mock_unlock_squeak, \
-            mock.patch.object(squeak_store.new_secret_key_listener, 'handle_new_item', autospec=True) as mock_handle_new_secret_key:
+            mock.patch.object(squeak_store, 'unlock_squeak', autospec=True) as mock_unlock_squeak:
         mock_get_squeak.return_value = squeak
         squeak_store.save_secret_key(squeak_hash, secret_key)
 
         mock_set_squeak_secret_key.assert_called_once_with(
             squeak_hash, secret_key)
-        mock_handle_new_secret_key.assert_called_once_with(squeak)
         mock_unlock_squeak.assert_called_once_with(squeak_hash)
 
 
