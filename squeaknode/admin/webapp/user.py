@@ -29,9 +29,13 @@ logger = logging.getLogger(__name__)
 
 
 class User(UserMixin):
-    def __init__(self, username, password):
+    def __init__(
+            self,
+            username,
+            password_hash,
+    ):
         self.username = username
-        self.password_hash = generate_password_hash(password)
+        self.password_hash = password_hash
 
     def is_authenticated(self):
         return True
@@ -48,6 +52,31 @@ class User(UserMixin):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+    # @classmethod
+    # def get_user_by_username(cls, username):
+    #     if self.admin_username == username:
+    #         return cls(
+    #             self.admin_username,
+    #             self.admin_password_hash,
+    #             self.admin_username,
+    #             self.admin_password,
+    #         )
+
+
+class UserLookup:
+    def __init__(
+            self,
+            admin_username,
+            admin_password,
+            handler,
+    ):
+        self.admin_username = admin_username
+        self.admin_password = admin_password
+        self.handler = handler
+
     def get_user_by_username(self, username):
-        if self.username == username:
-            return self
+        if self.admin_username == username:
+            return User(
+                self.admin_username,
+                generate_password_hash(self.admin_password),
+            )
