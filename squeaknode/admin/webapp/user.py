@@ -52,16 +52,6 @@ class User(UserMixin):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    # @classmethod
-    # def get_user_by_username(cls, username):
-    #     if self.admin_username == username:
-    #         return cls(
-    #             self.admin_username,
-    #             self.admin_password_hash,
-    #             self.admin_username,
-    #             self.admin_password,
-    #         )
-
 
 class UserLookup:
     def __init__(
