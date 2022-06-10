@@ -31,7 +31,6 @@ from squeak.core.keys import SqueakPublicKey
 from squeaknode.core.lightning_address import LightningAddressHostPort
 from squeaknode.core.offer import Offer
 from squeaknode.core.payment_summary import PaymentSummary
-from squeaknode.core.peer_address import Network
 from squeaknode.core.peer_address import PeerAddress
 from squeaknode.core.received_offer import ReceivedOffer
 from squeaknode.core.received_payment import ReceivedPayment
@@ -184,7 +183,7 @@ class SqueakController:
         return self.squeak_store.create_peer(
             peer_name,
             peer_address,
-            self.config.server.port or 0,
+            0,
         )
 
     def get_peer(self, peer_id: int) -> Optional[SqueakPeer]:
@@ -431,13 +430,6 @@ class SqueakController:
 
     def unlike_squeak(self, squeak_hash: bytes):
         return self.squeak_store.unlike_squeak(squeak_hash)
-
-    def get_external_address(self) -> PeerAddress:
-        return PeerAddress(
-            network=Network.IPV4,
-            host=self.config.server.external_address or '',
-            port=self.config.server.external_port or 0,
-        )
 
     def get_default_peer_port(self) -> int:
         return 0  # TODO: remove default port method.

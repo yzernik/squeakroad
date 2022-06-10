@@ -102,23 +102,6 @@ class TorConfig(Config):
     proxy_port = key(cast=int, required=False, default=0)
 
 
-@section('server')
-class ServerConfig(Config):
-    enabled = key(cast=bool, required=False, default=True)
-    host = key(cast=str, required=False, default=DEFAULT_SERVER_RPC_HOST)
-    port = key(cast=int, required=False, default=DEFAULT_SERVER_RPC_PORT)
-    external_address = key(cast=str, required=False, default="")
-    external_port = key(cast=int, required=False,
-                        default=DEFAULT_EXTERNAL_PORT)
-
-
-@section('rpc')
-class RpcConfig(Config):
-    enabled = key(cast=bool, required=False, default=False)
-    host = key(cast=str, required=False, default=DEFAULT_ADMIN_RPC_HOST)
-    port = key(cast=int, required=False, default=DEFAULT_ADMIN_RPC_PORT)
-
-
 @section('webadmin')
 class WebadminConfig(Config):
     enabled = key(cast=bool, required=False, default=False)
@@ -178,8 +161,6 @@ class SqueaknodeConfig(Config):
     bitcoin = group_key(BitcoinConfig)
     lightning = group_key(LightningConfig)
     tor = group_key(TorConfig)
-    server = group_key(ServerConfig)
-    rpc = group_key(RpcConfig)
     webadmin = group_key(WebadminConfig)
     node = group_key(NodeConfig)
     db = group_key(DbConfig)
