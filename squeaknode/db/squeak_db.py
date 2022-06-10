@@ -53,6 +53,7 @@ from squeaknode.core.sent_payment_summary import SentPaymentSummary
 from squeaknode.core.squeak_entry import SqueakEntry
 from squeaknode.core.squeak_peer import SqueakPeer
 from squeaknode.core.squeak_profile import SqueakProfile
+from squeaknode.core.squeak_user import SqueakUser
 from squeaknode.core.squeaks import get_hash
 from squeaknode.core.twitter_account import TwitterAccount
 from squeaknode.core.twitter_account_entry import TwitterAccountEntry
@@ -148,6 +149,10 @@ class SqueakDb:
     @property
     def sent_offers(self):
         return self.models.sent_offers
+
+    @property
+    def users(self):
+        return self.models.users
 
     @property
     def configs(self):
@@ -2298,6 +2303,15 @@ class SqueakDb:
         with self.get_connection() as connection:
             connection.execute(delete_twitter_account_stmt)
 
+    def get_users(self) -> List[SqueakUser]:
+        """ Get all users. """
+        s = select([self.users])
+        with self.get_connection() as connection:
+            result = connection.execute(s)
+            rows = result.fetchall()
+            profiles = [self._parse_squeak_user(row) for row in rows]
+            return profiles
+
     def _parse_squeak(self, row) -> CBaseSqueak:
         if row["resqueak_hash"]:
             return CResqueak.deserialize(row["squeak"])
@@ -2392,6 +2406,17 @@ class SqueakDb:
                 row[profiles_table.c.public_key]),
             following=row[profiles_table.c.following],
             profile_image=row[profiles_table.c.profile_image],
+        )
+
+    def _parse_squeak_user(self, row, users_table=None) -> SqueakUser:
+        users_table = users_table if (
+            users_table is not None) else self.users
+
+        return SqueakUser(
+            user_id=row[users_table.c.user_id],
+            username=row[users_table.c.username],
+            password_hash=row[users_table.c.password_hash],
+            user_image=row[users_table.c.user_image],
         )
 
     def _try_parse_squeak_profile(self, row, profiles_table=None) -> Optional[SqueakProfile]:

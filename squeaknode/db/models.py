@@ -207,3 +207,14 @@ class Models:
             Column("profile_id", Integer, nullable=False),
             Column("bearer_token", String, nullable=False),
         )
+
+        self.users = Table(
+            "user",
+            self.metadata,
+            Column("user_id", Integer, primary_key=True),
+            Column("created_time_ms", SLBigInteger, nullable=False),
+            Column("username", String, unique=True, nullable=False),
+            Column("password_hash", String, nullable=False),
+            Column("user_image", LargeBinary, nullable=True),
+            sqlite_autoincrement=True,
+        )
