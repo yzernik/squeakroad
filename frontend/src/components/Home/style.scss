@@ -1,0 +1,40 @@
+.Home-wrapper{
+    max-width: 600px;
+    border-right: 1px solid rgb(230, 236, 240);
+    width: 100%;
+    //but doesnt show when there are less elements
+    // height: 100vh;
+    display: flex;
+    flex-direction: column;
+    min-height: 2000px;
+}
+
+.Home-header-wrapper{
+    position: sticky;
+    border-bottom: 1px solid rgb(230, 236, 240);
+    border-left: 1px solid rgb(230, 236, 240);
+    background-color: rgb(255, 255, 255);
+    z-index: 3;
+    top: 0px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    height: 53px;
+    min-height: 53px;
+    padding-left: 15px;
+    padding-right: 15px;
+    max-width: 1000px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.Home-header{
+    font-weight: 800;
+    font-size: 19px;
+    color: rgb(20, 23, 26);
+    line-height: 1.3125;
+}
+
+.blue{
+    color: rgb(29, 161, 242);
+}

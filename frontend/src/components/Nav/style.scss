@@ -1,0 +1,240 @@
+.Nav-width{
+    width: 275px;
+    position: relative;
+}
+
+.Nav-component{
+    position: relative;
+    z-index: 200;
+}
+
+.Nav{
+    top: 0;
+    height: 100%;
+    position: fixed;
+    display: flex;
+    align-items: flex-end;
+    flex-direction: column;
+    border-right: 1px solid rgb(230, 236, 240);
+}
+
+.Nav-Content{
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    width: 275px;
+    padding-right: 20px;
+    padding-left: 20px;
+    // justify-content: space-between;
+    height: 100%;
+}
+.Nav-wrapper{
+    display: flex;
+    flex-direction: column;
+    margin-top: 5px;
+}
+.logo-wrapper{
+    min-width: 30px;
+    cursor: pointer;
+    margin-top: 11.5px;
+    display: flex;
+    margin-bottom: 15px;
+    // align-items: center;
+    // justify-content: center;
+}
+
+
+.Nav-link{
+    padding: 7px 0;
+    display: flex;
+    cursor: pointer;
+    &:hover{
+        .Nav-item-hover{
+            background-color: rgba(29, 29, 29, 0.1);
+            svg{fill: rgb(29, 29, 29)}
+        }
+    }
+}
+.Nav-item-hover{
+    svg{fill: rgb(16, 17, 17)}
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    justify-content: center;
+    max-width: 100%;
+    border-radius: 9999px;
+    transition-property: background-color, box-shadow;
+    transition-duration: 0.2s;
+}
+
+.Nav-item-hover svg{
+    width: 26.25px; height:26.25px;
+    min-width: 26.25px;
+}
+
+.active-Nav{
+    svg{
+        fill: rgb(29, 29, 29);
+    }
+    .Nav-item{
+        color: rgb(29, 29, 29);
+        font-weight: 700;
+    }
+}
+
+
+.Nav-item{
+    font-size: 21px;
+    font-weight: 500;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+.Nav-squeak{
+    width: 100%;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    display: flex;
+
+}
+
+.Nav-squeak-link{
+    width: 90%;
+    background-color: rgb(29, 161, 242);
+    box-shadow: rgba(0, 0, 0, 0.08) 0px 8px 28px;
+    outline-style: none;
+    transition-property: background-color, box-shadow;
+    transition-duration: 0.2s;
+    min-width: 78.89px;
+    min-height: 49px;
+    padding-left: 30px;
+    padding-right: 30px;
+    border: 1px solid rgba(0, 0, 0, 0);
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 9999px;
+}
+
+@media only screen and (max-width: 1286px) {
+    .Nav-squeak-link{ width: 100%; }
+    .Nav-squeak{justify-content: center;}
+}
+.Nav-squeak-btn{
+    color: #fff;
+    font-size: 15px;
+    font-weight: bold;
+    overflow-wrap: break-word;
+    text-align: center;
+    max-width: 100%;
+    span{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    content: 'Squeak';
+}
+.btn-show{
+    display: none;
+}
+@media only screen and (max-width: 1282px) {
+    .Nav-squeak-link{
+        max-width: 49px;
+        width: 49px;
+        padding: 0;
+        min-width: 49px;
+    }
+    .btn-hide{
+        display: none;
+    }
+    .btn-show{
+        display: block;
+    }
+  }
+.Nav-squeak-btn span svg{
+    width: 22.25px; height:22.25px;
+    min-width: 22.25px;
+    fill: #fff;
+}
+
+.more-menu-background{
+    position: fixed;
+    z-index: 20;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    cursor: auto;
+}
+
+.more-modal-wrapper{
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.more-menu-content{
+    min-height: 100px;
+    max-width: 40vw;
+    max-height: 50vh;
+    width: 190px;
+    min-width: 190px;
+    border-radius: 14px;
+    background-color: #fff;
+    position: absolute;
+    // top: 46.5%;
+    // left: 26%;
+    z-index: 1000;
+    // transform: translate(-50%, -50%);
+    overflow: hidden;
+    box-shadow: rgba(101, 119, 134, 0.2) 0px 0px 15px, rgba(101, 119, 134, 0.15) 0px 0px 3px 1px;
+    display: flex;
+    flex-direction: column;
+}
+
+@media only screen and (min-width: 451px){
+    .more-menu-content{
+
+        height: 104px;
+    }
+}
+
+.more-menu-item{
+    border-bottom: 1px solid rgb(245, 248, 250);
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: 0.2 ease-in-out;
+    cursor: pointer;
+    &:hover{
+        background-color: rgb(245, 248, 250);
+    }
+    span{
+        display: flex;
+        align-items: center;
+    }
+
+}
+
+.more-menu-item svg{
+    width: 16px;
+}
+
+.more-item{
+    display: none;
+}
+
+
+@media only screen and (max-width: 1282px) {
+    .Nav-item{
+        display: none;
+    }
+    .Nav-width{
+        width: 88px;
+    }
+    .Nav-Content{
+        width: 88px;
+    }
+  }

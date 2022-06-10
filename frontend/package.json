@@ -1,0 +1,53 @@
+{
+  "name": "twitter-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@reduxjs/toolkit": "^1.4.0",
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.5.0",
+    "@testing-library/user-event": "^7.2.1",
+    "axios": "^0.21.2",
+    "darkreader": "^4.9.10",
+    "google-protobuf": "^3.12.4",
+    "informed": "^4.6.1",
+    "jwt-decode": "^2.2.0",
+    "moment": "^2.29.2",
+    "react": "^16.13.1",
+    "react-contenteditable": "^3.3.4",
+    "react-copy-to-clipboard": "^5.1.0",
+    "react-dom": "^16.13.1",
+    "react-redux": "^7.2.1",
+    "react-responsive": "^8.1.0",
+    "react-router-dom": "^5.2.0",
+    "react-scripts": "^5.0.0",
+    "react-select": "^5.2.2",
+    "react-tooltip": "^4.2.21",
+    "sass": "^1.49.7",
+    "serve": "^13.0.2",
+    "socket.io-client": "^2.3.0"
+  },
+  "scripts": {
+    "dev": "react-scripts start",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject",
+    "heroku-postbuild": "npm run build"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="back">
+  <div class="div-center">
+    <div class="content">
+
+      <div class="d-flex justify-content-center mx-auto p-3">
+	<img src="assets/images/icon.png" class="rounded-circle border" alt="Cinque Terre" width="200" height="200">
+      </div>
+
+      <div class="d-flex justify-content-center">
+      <h3>Squeaknode Login</h3>
+      </div>
+      <hr />
+      <form action="" method="post" novalidate>
+	{{ form.hidden_tag() }}
+        <div class="form-group">
+          {{ form.username.label }}<br>
+          {{ form.username(size=32, class_="form-control", placeholder_="Username", autofocus_=True) }}<br>
+          {% for error in form.username.errors %}
+          <span style="color: red;">[{{ error }}]</span>
+          {% endfor %}
+        </div>
+        <div class="form-group">
+          {{ form.password.label }}<br>
+          {{ form.password(size=32, class_="form-control", placeholder_="Password") }}<br>
+          {% for error in form.password.errors %}
+          <span style="color: red;">[{{ error }}]</span>
+          {% endfor %}
+        </div>
+	{{ form.submit(class_="btn btn-primary") }}
+        <hr />
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.4.0
+    hooks:
+#    -   id: trailing-whitespace
+#        exclude: static/*
+#    -   id: end-of-file-fixer
+#        exclude: static/*
+    -   id: check-yaml
+    -   id: debug-statements
+#    -   id: name-tests-test
+    -   id: requirements-txt-fixer
+    -   id: check-byte-order-marker
+    -   id: check-merge-conflict
+-   repo: https://gitlab.com/pycqa/flake8
+    rev: 3.7.9
+    hooks:
+    - id: flake8
+-   repo: https://github.com/pre-commit/mirrors-autopep8
+    rev: v1.5.4
+    hooks:
+    -   id: autopep8
+-   repo: https://github.com/asottile/reorder_python_imports
+    rev: v2.3.6
+    hooks:
+    -   id: reorder-python-imports
+-   repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v0.790
+    hooks:
+    -   id: mypy
+        additional_dependencies: [tokenize-rt==3.2.0]
+-   repo: https://github.com/humitos/mirrors-autoflake
+    rev: v1.1
+    hooks:
+    - id: autoflake
+      args: ['--in-place', '--remove-all-unused-imports', '--remove-unused-variable']
+-   repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.1.10
+    hooks:
+    -   id: insert-license
+        files: \.py$
+        args:
+        - --license-filepath
+        - LICENSE

@@ -1,0 +1,4 @@
+**/*.min.js
+**/*.json
+build/
+node_modules/
