@@ -32,9 +32,9 @@ You can also run your own squeaknode on your host machine.
 	pip install .
 	```
 
-- Make sure that `~/.lnd` directory (created by docker container) has read permissions. You may need to change the permissions:
+- Copy the `~/.lnd` directory from the docker container to your host machine.
 	```
-	sudo chmod -R 755 ~/.lnd/
+	docker cp lnd_client:/root/.lnd/ ~/.lnd
 	```
 
 - Run squeaknode with authentication disabled:
