@@ -73,6 +73,18 @@ class UserLookup:
         db_user = self.handler.handle_lookup_user(username)
         if db_user:
             return User(
-                username,
-                generate_password_hash(db_user.password),
+                db_user.username,
+                db_user.password_hash,
             )
+
+    def register_user(self, username, password):
+        if self.admin_username == username:
+            raise Exception("Username belongs to admin.")
+        try:
+            user_id = self.handler.handle_register_user(
+                username,
+                generate_password_hash(password),
+            )
+            return user_id
+        except Exception:
+            return None

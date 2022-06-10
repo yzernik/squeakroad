@@ -25,7 +25,7 @@ from typing import Optional
 
 class SqueakUser(NamedTuple):
     """Represents a user."""
-    user_id: Optional[int]
     username: str
     password_hash: str
+    user_id: Optional[int] = None
     user_image: Optional[bytes] = None

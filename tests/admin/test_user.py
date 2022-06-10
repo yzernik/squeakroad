@@ -19,6 +19,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import mock
 import pytest
 
 from squeaknode.admin.squeak_admin_server_handler import SqueakAdminServerHandler
@@ -54,11 +55,11 @@ def user(user_lookup, username):
 
 
 def test_user_lookup(handler, user_lookup, username):
-    # with mock.patch.object(handler, '', autospec=True) as mock_make_request:
-    #     mock_make_request.return_value = mock_get_block_header_response.json()
+    with mock.patch.object(handler, 'handle_lookup_user', autospec=True) as mock_lookup_user:
+        mock_lookup_user.return_value = None
 
-    assert user_lookup.get_user_by_username(username) is not None
-    assert user_lookup.get_user_by_username("wrong_username") is None
+        assert user_lookup.get_user_by_username(username) is not None
+        assert user_lookup.get_user_by_username("wrong_username") is None
 
 
 def test_user(user, username, password):
