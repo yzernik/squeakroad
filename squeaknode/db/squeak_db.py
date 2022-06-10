@@ -1750,7 +1750,6 @@ class SqueakDb:
             row, profiles_table=self.author_profiles)
         return SqueakEntry(
             squeak_hash=(row["hash"]),
-            serialized_squeak=(row["squeak"]),
             public_key=SqueakPublicKey.from_bytes(public_key_bytes),
             block_height=row["block_height"],
             block_hash=(row["block_hash"]),

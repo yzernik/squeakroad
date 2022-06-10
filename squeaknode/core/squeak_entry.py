@@ -29,7 +29,6 @@ from squeaknode.core.squeak_profile import SqueakProfile
 
 class SqueakEntry(NamedTuple):
     squeak_hash: bytes
-    serialized_squeak: bytes
     public_key: SqueakPublicKey
     block_height: int
     block_hash: bytes

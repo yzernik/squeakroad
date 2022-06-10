@@ -49,7 +49,6 @@ DEFAULT_PROFILE_IMAGE = load_default_profile_image()
 def squeak_entry_to_message(squeak_entry: SqueakEntry) -> squeak_admin_pb2.SqueakDisplayEntry:
     return squeak_admin_pb2.SqueakDisplayEntry(
         squeak_hash=squeak_entry.squeak_hash.hex(),
-        serialized_squeak_hex=squeak_entry.serialized_squeak.hex(),
         is_unlocked=squeak_entry.is_unlocked,
         secret_key_hex=(squeak_entry.secret_key.hex()
                         if squeak_entry.secret_key else None),  # type: ignore
@@ -167,7 +166,6 @@ def message_to_peer_address(msg: squeak_admin_pb2.PeerAddress) -> PeerAddress:
 def message_to_squeak_entry(msg: squeak_admin_pb2.SqueakDisplayEntry) -> SqueakEntry:
     return SqueakEntry(
         squeak_hash=bytes.fromhex(msg.squeak_hash),
-        serialized_squeak=bytes.fromhex(msg.serialized_squeak_hex),
         public_key=SqueakPublicKey.from_bytes(
             bytes.fromhex(msg.author_pubkey),
         ),

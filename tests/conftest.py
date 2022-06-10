@@ -186,11 +186,6 @@ def squeak_hash_str(squeak_hash):
 
 
 @pytest.fixture
-def squeak_bytes(squeak):
-    yield squeak.serialize()
-
-
-@pytest.fixture
 def squeak_time(squeak):
     yield squeak.nTime
 
@@ -296,7 +291,6 @@ def recipient_signing_profile(recipient_signing_profile_name, recipient_private_
 @pytest.fixture
 def squeak_entry_locked(
         squeak,
-        squeak_bytes,
         squeak_hash,
         public_key,
         block_count,
@@ -308,7 +302,6 @@ def squeak_entry_locked(
 ):
     yield SqueakEntry(
         squeak_hash=squeak_hash,
-        serialized_squeak=squeak_bytes,
         public_key=public_key,
         block_height=block_count,
         block_hash=block_hash,
