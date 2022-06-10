@@ -50,7 +50,6 @@ from squeaknode.core.squeak_peer import SqueakPeer
 from squeaknode.core.squeak_profile import SqueakProfile
 from squeaknode.core.squeak_user import SqueakUser
 from squeaknode.db.squeak_db import SqueakDb
-from squeaknode.node.listener_subscription_client import EventListener
 
 
 logger = logging.getLogger(__name__)
@@ -75,11 +74,6 @@ class SqueakStore:
         self.squeak_retention_s = squeak_retention_s
         self.received_offer_retention_s = received_offer_retention_s
         self.sent_offer_retention_s = sent_offer_retention_s
-        self.new_squeak_listener = EventListener()
-        self.new_received_offer_listener = EventListener()
-        self.new_secret_key_listener = EventListener()
-        self.new_follow_listener = EventListener()
-        self.twitter_stream_change_listener = EventListener()
 
     def make_squeak(
             self,
@@ -143,7 +137,6 @@ class SqueakStore:
         logger.info("Saved squeak: {}".format(
             inserted_squeak_hash.hex(),
         ))
-        self.new_squeak_listener.handle_new_item(base_squeak)
         return inserted_squeak_hash
 
     def save_secret_key(self, squeak_hash: bytes, secret_key: bytes):
@@ -158,7 +151,6 @@ class SqueakStore:
         logger.info("Saved squeak secret key: {}".format(
             squeak_hash.hex(),
         ))
-        self.new_secret_key_listener.handle_new_item(squeak)
         # Unlock the squeak if it is not private.
         if not squeak.is_private_message:
             self.unlock_squeak(squeak_hash)
@@ -563,7 +555,6 @@ class SqueakStore:
         logger.info("Saved received offer: {}".format(received_offer))
         received_offer = received_offer._replace(
             received_offer_id=received_offer_id)
-        self.new_received_offer_listener.handle_new_item(received_offer)
         return received_offer_id
 
     def handle_offer(self, squeak: CSqueak, offer: Offer, peer_address: PeerAddress):
