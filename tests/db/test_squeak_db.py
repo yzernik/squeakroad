@@ -57,16 +57,6 @@ def inserted_squeak_hash(squeak_db, squeak, block_header):
 
 
 @pytest.fixture
-def inserted_reply_squeak_hash(squeak_db, reply_squeak, block_header):
-    yield squeak_db.insert_squeak(reply_squeak, block_header)
-
-
-@pytest.fixture
-def inserted_resqueak_hash(squeak_db, resqueak, block_header):
-    yield squeak_db.insert_resqueak(resqueak, block_header)
-
-
-@pytest.fixture
 def unlocked_squeak_hash(squeak_db, squeak, inserted_squeak_hash, secret_key, squeak_content):
     squeak_db.set_squeak_secret_key(
         inserted_squeak_hash, secret_key)
@@ -187,32 +177,6 @@ def unfollowed_squeak_hashes(
         unfollowed_contact_profile_id,
 ):
     yield inserted_squeak_hashes
-
-
-@pytest.fixture
-def liked_squeak_hashes(squeak_db, inserted_squeak_hashes):
-    for squeak_hash in inserted_squeak_hashes:
-        squeak_db.set_squeak_liked(squeak_hash)
-    yield inserted_squeak_hashes
-
-
-@pytest.fixture
-def unliked_squeak_hashes(squeak_db, liked_squeak_hashes):
-    for squeak_hash in liked_squeak_hashes:
-        squeak_db.set_squeak_unliked(squeak_hash)
-    yield liked_squeak_hashes
-
-
-@pytest.fixture
-def liked_squeak_hash(squeak_db, inserted_squeak_hash):
-    squeak_db.set_squeak_liked(inserted_squeak_hash)
-    yield inserted_squeak_hash
-
-
-@pytest.fixture
-def unliked_squeak_hash(squeak_db, liked_squeak_hash):
-    squeak_db.set_squeak_unliked(liked_squeak_hash)
-    yield liked_squeak_hash
 
 
 @pytest.fixture
@@ -493,12 +457,6 @@ def test_get_missing_squeak(squeak_db, squeak, squeak_hash):
     assert retrieved_squeak is None
 
 
-def test_get_resqueak(squeak_db, resqueak, inserted_resqueak_hash):
-    retrieved_resqueak = squeak_db.get_squeak(inserted_resqueak_hash)
-
-    assert retrieved_resqueak == resqueak
-
-
 def test_get_squeak_entry(
         squeak_db,
         squeak,
@@ -516,35 +474,6 @@ def test_get_squeak_entry(
     assert retrieved_squeak_entry.block_time == block_header.nTime
     assert retrieved_squeak_entry.squeak_profile._replace(
         profile_id=None) == signing_profile
-
-
-def test_get_private_squeak_entry(
-        squeak_db,
-        private_squeak,
-        recipient_public_key,
-        block_header,
-        public_key,
-        signing_profile,
-        recipient_contact_profile,
-        inserted_signing_profile_id,
-):
-    inserted_private_squeak_hash = squeak_db.insert_squeak(
-        private_squeak, block_header)
-    squeak_db.insert_profile(
-        recipient_contact_profile)
-
-    retrieved_squeak_entry = squeak_db.get_squeak_entry(
-        inserted_private_squeak_hash)
-
-    assert retrieved_squeak_entry.squeak_hash == inserted_private_squeak_hash
-    assert retrieved_squeak_entry.public_key == public_key
-    assert retrieved_squeak_entry.content is None
-    assert retrieved_squeak_entry.block_time == block_header.nTime
-    assert retrieved_squeak_entry.squeak_profile._replace(
-        profile_id=None) == signing_profile
-    assert retrieved_squeak_entry.recipient_public_key == recipient_public_key
-    assert retrieved_squeak_entry.recipient_squeak_profile._replace(
-        profile_id=None) == recipient_contact_profile
 
 
 def test_get_missing_squeak_entry(squeak_db, squeak, squeak_hash):
@@ -595,34 +524,6 @@ def test_get_secret_key_missing_squeak(squeak_db, squeak, squeak_hash):
     assert retrieved_secret_key is None
 
 
-def test_get_resqueak_entry(
-        squeak_db,
-        resqueak,
-        squeak,
-        block_header,
-        public_key,
-        signing_profile,
-        inserted_resqueak_hash,
-        inserted_squeak_hash,
-        inserted_signing_profile_id,
-):
-    retrieved_resqueak_entry = squeak_db.get_squeak_entry(
-        inserted_resqueak_hash)
-    retrieved_squeak_entry = squeak_db.get_squeak_entry(inserted_squeak_hash)
-
-    assert retrieved_resqueak_entry.squeak_hash == inserted_resqueak_hash
-    assert retrieved_resqueak_entry.public_key == public_key
-    assert retrieved_resqueak_entry.content is None
-    assert retrieved_resqueak_entry.block_time == block_header.nTime
-    assert retrieved_resqueak_entry.squeak_profile._replace(
-        profile_id=None) == signing_profile
-    assert retrieved_resqueak_entry.resqueaked_hash == inserted_squeak_hash
-    assert retrieved_resqueak_entry.resqueaked_squeak == retrieved_squeak_entry
-    assert retrieved_resqueak_entry.resqueaked_squeak.public_key == public_key
-    assert retrieved_resqueak_entry.num_resqueaks == 0
-    assert retrieved_resqueak_entry.resqueaked_squeak.num_resqueaks == 1
-
-
 def test_get_timeline_squeak_entries(squeak_db, followed_squeak_hashes):
     timeline_squeak_entries = squeak_db.get_timeline_squeak_entries(
         limit=2,
@@ -669,44 +570,6 @@ def test_deleted_profile(squeak_db, deleted_profile_id):
     profile = squeak_db.get_profile(deleted_profile_id)
 
     assert profile is None
-
-
-def test_get_liked_squeak_entries(
-        squeak_db,
-        liked_squeak_hashes,
-):
-    # Get the liked squeak entries.
-    liked_squeak_entries = squeak_db.get_liked_squeak_entries(
-        limit=200,
-        last_entry=None,
-    )
-
-    assert len(liked_squeak_entries) == 100
-
-
-def test_get_unliked_squeak_entries(
-        squeak_db,
-        unliked_squeak_hashes,
-):
-    # Get the liked squeak entries.
-    liked_squeak_entries = squeak_db.get_liked_squeak_entries(
-        limit=200,
-        last_entry=None,
-    )
-
-    assert len(liked_squeak_entries) == 0
-
-
-def test_set_squeak_liked(squeak_db, liked_squeak_hash):
-    retrieved_squeak_entry = squeak_db.get_squeak_entry(liked_squeak_hash)
-
-    assert retrieved_squeak_entry.liked_time_ms is not None
-
-
-def test_set_squeak_unliked(squeak_db, unliked_squeak_hash):
-    retrieved_squeak_entry = squeak_db.get_squeak_entry(unliked_squeak_hash)
-
-    assert retrieved_squeak_entry.liked_time_ms is None
 
 
 def test_get_peer(squeak_db, peer, inserted_peer_id):
@@ -792,213 +655,6 @@ def test_get_search_squeak_entries_other_text(
     assert len(squeak_entries) == 0
 
 
-def test_get_ancestor_squeak_entries(
-        squeak_db,
-        inserted_squeak_hash,
-        inserted_reply_squeak_hash,
-):
-    # Get the ancestor squeak entries.
-    squeak_entries = squeak_db.get_thread_ancestor_squeak_entries(
-        squeak_hash=inserted_reply_squeak_hash,
-    )
-
-    assert len(squeak_entries) == 2
-
-
-def test_get_ancestor_squeak_entries_no_ancestors(
-        squeak_db,
-        inserted_squeak_hash,
-):
-    # Get the ancestor squeak entries.
-    squeak_entries = squeak_db.get_thread_ancestor_squeak_entries(
-        squeak_hash=inserted_squeak_hash,
-    )
-
-    assert len(squeak_entries) == 1
-
-
-def test_get_ancestor_squeak_entries_no_ancestors_or_root(
-        squeak_db,
-):
-    # Get the ancestor squeak entries.
-    squeak_entries = squeak_db.get_thread_ancestor_squeak_entries(
-        squeak_hash=gen_random_hash(),
-    )
-
-    assert len(squeak_entries) == 0
-
-
-def test_get_reply_squeak_entries(
-        squeak_db,
-        inserted_squeak_hash,
-        inserted_reply_squeak_hash,
-):
-    # Get the reply squeak entries.
-    squeak_entries = squeak_db.get_thread_reply_squeak_entries(
-        squeak_hash=inserted_squeak_hash,
-        limit=200,
-        last_entry=None,
-    )
-
-    assert len(squeak_entries) == 1
-
-
-def test_get_reply_squeak_entries_no_replies(
-        squeak_db,
-        inserted_squeak_hash,
-):
-    # Get the reply squeak entries.
-    squeak_entries = squeak_db.get_thread_reply_squeak_entries(
-        squeak_hash=inserted_squeak_hash,
-        limit=200,
-        last_entry=None,
-    )
-
-    assert len(squeak_entries) == 0
-
-
-def test_lookup_squeaks_all(
-        squeak_db,
-        inserted_squeak_hashes,
-):
-    squeak_hashes = squeak_db.lookup_squeaks(
-        public_keys=None,
-        min_block=None,
-        max_block=None,
-        reply_to_hash=None,
-        include_locked=True,
-    )
-
-    assert len(squeak_hashes) == len(inserted_squeak_hashes)
-
-
-def test_lookup_squeaks_use_public_key(
-        squeak_db,
-        inserted_squeak_hashes,
-        public_key,
-):
-    other_public_key = gen_pubkey()
-    squeak_hashes = squeak_db.lookup_squeaks(
-        public_keys=[public_key, other_public_key],
-        min_block=None,
-        max_block=None,
-        reply_to_hash=None,
-        include_locked=True,
-    )
-
-    assert len(squeak_hashes) == len(inserted_squeak_hashes)
-
-
-def test_lookup_squeaks_use_pubkey_no_matches(
-        squeak_db,
-        inserted_squeak_hashes,
-        public_key,
-):
-    other_public_key = gen_pubkey()
-    squeak_hashes = squeak_db.lookup_squeaks(
-        public_keys=[other_public_key],
-        min_block=None,
-        max_block=None,
-        reply_to_hash=None,
-        include_locked=True,
-    )
-
-    assert len(squeak_hashes) == 0
-
-
-def test_lookup_squeaks_min_block(
-        squeak_db,
-        inserted_squeak_hashes,
-):
-    min_block = 35
-    squeak_hashes = squeak_db.lookup_squeaks(
-        public_keys=None,
-        min_block=min_block,
-        max_block=None,
-        reply_to_hash=None,
-        include_locked=True,
-    )
-
-    assert len(squeak_hashes) == len(inserted_squeak_hashes) - min_block
-
-
-def test_lookup_squeaks_max_block(
-        squeak_db,
-        inserted_squeak_hashes,
-):
-    max_block = 27
-    squeak_hashes = squeak_db.lookup_squeaks(
-        public_keys=None,
-        min_block=None,
-        max_block=max_block,
-        reply_to_hash=None,
-        include_locked=True,
-    )
-
-    assert len(squeak_hashes) == max_block + 1
-
-
-def test_lookup_squeaks_reply_to(
-        squeak_db,
-        inserted_squeak_hash,
-        inserted_reply_squeak_hash,
-):
-    squeak_hashes = squeak_db.lookup_squeaks(
-        public_keys=None,
-        min_block=None,
-        max_block=None,
-        reply_to_hash=inserted_squeak_hash,
-        include_locked=True,
-    )
-
-    assert len(squeak_hashes) == 1
-
-
-def test_lookup_squeaks_reply_to_none(
-        squeak_db,
-        inserted_squeak_hash,
-):
-    squeak_hashes = squeak_db.lookup_squeaks(
-        public_keys=None,
-        min_block=None,
-        max_block=None,
-        reply_to_hash=inserted_squeak_hash,
-        include_locked=True,
-    )
-
-    assert len(squeak_hashes) == 0
-
-
-def test_lookup_squeaks_unlocked_all(
-        squeak_db,
-        unlocked_squeak_hash,
-):
-    squeak_hashes = squeak_db.lookup_squeaks(
-        public_keys=None,
-        min_block=None,
-        max_block=None,
-        reply_to_hash=None,
-        include_locked=False,
-    )
-
-    assert len(squeak_hashes) == 1
-
-
-def test_lookup_squeaks_unlocked_all_none(
-        squeak_db,
-        inserted_squeak_hash,
-):
-    squeak_hashes = squeak_db.lookup_squeaks(
-        public_keys=None,
-        min_block=None,
-        max_block=None,
-        reply_to_hash=None,
-        include_locked=False,
-    )
-
-    assert len(squeak_hashes) == 0
-
-
 def test_get_number_of_squeaks(
         squeak_db,
         inserted_squeak_hashes,
@@ -1068,30 +724,6 @@ def test_get_old_squeaks_to_delete_none_signing_profile(
     """
     `get_old_squeaks_to_delete` Method should return 0 results because
     all squeaks are authored by the signing profile.
-
-    """
-    current_time_ms = int(time.time() * 1000)
-    time_elapsed_s = 56789
-    fake_current_time_ms = current_time_ms + 1000 * time_elapsed_s
-
-    with mock.patch.object(SqueakDb, 'timestamp_now_ms', new_callable=mock.PropertyMock) as mock_timestamp_ms:
-        mock_timestamp_ms.return_value = fake_current_time_ms
-
-        interval_s = time_elapsed_s - 10
-        hashes_to_delete = squeak_db.get_old_squeaks_to_delete(
-            interval_s=interval_s,
-        )
-
-        assert len(hashes_to_delete) == 0
-
-
-def test_get_old_squeaks_to_delete_none_liked(
-        squeak_db,
-        liked_squeak_hashes,
-):
-    """
-    `get_old_squeaks_to_delete` Method should return 0 results because
-    all squeaks are liked.
 
     """
     current_time_ms = int(time.time() * 1000)

@@ -79,7 +79,6 @@ def recipient_profile_msg(
 @pytest.fixture
 def squeak_entry_msg_locked(
         squeak,
-        squeak_bytes,
         squeak_hash,
         public_key,
         block_count,
@@ -93,7 +92,6 @@ def squeak_entry_msg_locked(
 ):
     yield squeak_admin_pb2.SqueakDisplayEntry(
         squeak_hash=squeak_hash.hex(),
-        serialized_squeak_hex=squeak_bytes.hex(),
         is_unlocked=False,
         secret_key_hex="",
         content_str=None,  # type: ignore

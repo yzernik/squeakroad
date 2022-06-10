@@ -29,21 +29,13 @@ from squeaknode.core.squeak_profile import SqueakProfile
 
 class SqueakEntry(NamedTuple):
     squeak_hash: bytes
-    serialized_squeak: bytes
     public_key: SqueakPublicKey
-    recipient_public_key: Optional[SqueakPublicKey]
     block_height: int
     block_hash: bytes
     block_time: int
     squeak_time: int
-    reply_to: Optional[bytes]
     is_unlocked: bool
     secret_key: Optional[bytes]
     squeak_profile: Optional[SqueakProfile]
-    recipient_squeak_profile: Optional[SqueakProfile]
-    num_replies: int
-    num_resqueaks: int
     liked_time_ms: Optional[int] = None
     content: Optional[str] = None
-    resqueaked_hash: Optional[bytes] = None
-    resqueaked_squeak: Optional['SqueakEntry'] = None  # type: ignore

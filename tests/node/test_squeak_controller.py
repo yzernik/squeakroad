@@ -22,7 +22,6 @@
 import mock
 import pytest
 
-from squeaknode.client.network_controller import NetworkController
 from squeaknode.config.config import SqueaknodeConfig
 from squeaknode.core.lightning_address import LightningAddressHostPort
 from squeaknode.core.peer_address import Network
@@ -31,7 +30,6 @@ from squeaknode.node.node_settings import NodeSettings
 from squeaknode.node.payment_processor import PaymentProcessor
 from squeaknode.node.squeak_controller import SqueakController
 from squeaknode.node.squeak_store import SqueakStore
-from squeaknode.twitter.twitter_forwarder import TwitterForwarder
 
 
 @pytest.fixture
@@ -94,29 +92,15 @@ def payment_processor():
 
 
 @pytest.fixture
-def twitter_forwarder():
-    return mock.Mock(spec=TwitterForwarder)
-
-
-@pytest.fixture
-def network_controller():
-    return mock.Mock(spec=NetworkController)
-
-
-@pytest.fixture
 def squeak_controller(
     squeak_store,
     payment_processor,
-    twitter_forwarder,
-    network_controller,
     node_settings,
     config,
 ):
     return SqueakController(
         squeak_store,
         payment_processor,
-        twitter_forwarder,
-        network_controller,
         node_settings,
         config,
     )
@@ -126,16 +110,12 @@ def squeak_controller(
 def regtest_squeak_controller(
     squeak_store,
     payment_processor,
-    twitter_forwarder,
-    network_controller,
     node_settings,
     regtest_config,
 ):
     return SqueakController(
         squeak_store,
         payment_processor,
-        twitter_forwarder,
-        network_controller,
         node_settings,
         regtest_config,
     )

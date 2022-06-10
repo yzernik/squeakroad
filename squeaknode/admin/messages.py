@@ -49,7 +49,6 @@ DEFAULT_PROFILE_IMAGE = load_default_profile_image()
 def squeak_entry_to_message(squeak_entry: SqueakEntry) -> squeak_admin_pb2.SqueakDisplayEntry:
     return squeak_admin_pb2.SqueakDisplayEntry(
         squeak_hash=squeak_entry.squeak_hash.hex(),
-        serialized_squeak_hex=squeak_entry.serialized_squeak.hex(),
         is_unlocked=squeak_entry.is_unlocked,
         secret_key_hex=(squeak_entry.secret_key.hex()
                         if squeak_entry.secret_key else None),  # type: ignore
@@ -58,27 +57,11 @@ def squeak_entry_to_message(squeak_entry: SqueakEntry) -> squeak_admin_pb2.Squea
         block_hash=squeak_entry.block_hash.hex(),
         block_time=squeak_entry.block_time,
         squeak_time=squeak_entry.squeak_time,
-        is_reply=(squeak_entry.reply_to is not None),
-        reply_to=(squeak_entry.reply_to.hex()
-                  if squeak_entry.reply_to else None),  # type: ignore
         author_pubkey=squeak_entry.public_key.to_bytes().hex(),
         is_author_known=(squeak_entry.squeak_profile is not None),
         author=(squeak_profile_to_message(squeak_entry.squeak_profile)
                 if squeak_entry.squeak_profile else None),
         liked_time_ms=squeak_entry.liked_time_ms,  # type: ignore
-        num_replies=squeak_entry.num_replies,
-        num_resqueaks=squeak_entry.num_resqueaks,
-        is_private=(squeak_entry.recipient_public_key is not None),
-        recipient_pubkey=(squeak_entry.recipient_public_key.to_bytes(
-        ).hex() if squeak_entry.recipient_public_key else None),
-        is_recipient_known=(squeak_entry.recipient_squeak_profile is not None),
-        recipient=(squeak_profile_to_message(squeak_entry.recipient_squeak_profile)
-                   if squeak_entry.recipient_squeak_profile else None),
-        is_resqueak=(squeak_entry.resqueaked_hash is not None),
-        resqueaked_hash=(squeak_entry.resqueaked_hash.hex()
-                         if squeak_entry.resqueaked_hash else None),  # type: ignore
-        resqueaked_squeak=(squeak_entry_to_message(squeak_entry.resqueaked_squeak)
-                           if squeak_entry.resqueaked_squeak else None),  # type: ignore
     )
 
 
@@ -183,24 +166,17 @@ def message_to_peer_address(msg: squeak_admin_pb2.PeerAddress) -> PeerAddress:
 def message_to_squeak_entry(msg: squeak_admin_pb2.SqueakDisplayEntry) -> SqueakEntry:
     return SqueakEntry(
         squeak_hash=bytes.fromhex(msg.squeak_hash),
-        serialized_squeak=bytes.fromhex(msg.serialized_squeak_hex),
         public_key=SqueakPublicKey.from_bytes(
             bytes.fromhex(msg.author_pubkey),
         ),
-        recipient_public_key=None,  # TODO: maybe implement this.
         block_height=msg.block_height,
         block_hash=bytes.fromhex(msg.block_hash),
         block_time=msg.block_time,
         squeak_time=msg.squeak_time,
-        reply_to=(bytes.fromhex(msg.reply_to) if msg.reply_to else None),
         is_unlocked=msg.is_unlocked,
         secret_key=(bytes.fromhex(
             msg.secret_key_hex) if msg.secret_key_hex else None),
         squeak_profile=None,  # TODO: message to squeak profile
-        recipient_squeak_profile=None,  # TODO: message to squeak profile
-        liked_time_ms=(msg.liked_time_ms if msg.liked_time_ms > 0 else None),
-        num_replies=0,
-        num_resqueaks=0,
         content=(msg.content_str if len(msg.content_str) > 0 else None),
     )
 
