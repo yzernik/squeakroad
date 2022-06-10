@@ -21,6 +21,7 @@
 # SOFTWARE.
 import pytest
 
+from squeaknode.admin.squeak_admin_server_handler import SqueakAdminServerHandler
 from squeaknode.admin.webapp.user import UserLookup
 
 
@@ -36,7 +37,10 @@ def password():
 
 @pytest.fixture
 def handler():
-    yield None
+    yield SqueakAdminServerHandler(
+        lightning_client=None,
+        squeak_controller=None,
+    )
 
 
 @pytest.fixture
@@ -49,7 +53,9 @@ def user(user_lookup, username):
     yield user_lookup.get_user_by_username(username)
 
 
-def test_user_lookup(user_lookup, username):
+def test_user_lookup(handler, user_lookup, username):
+    # with mock.patch.object(handler, '', autospec=True) as mock_make_request:
+    #     mock_make_request.return_value = mock_get_block_header_response.json()
 
     assert user_lookup.get_user_by_username(username) is not None
     assert user_lookup.get_user_by_username("wrong_username") is None

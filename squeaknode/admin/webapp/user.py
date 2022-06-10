@@ -80,3 +80,9 @@ class UserLookup:
                 self.admin_username,
                 generate_password_hash(self.admin_password),
             )
+        db_user = self.handler.handle_lookup_user(username)
+        if db_user:
+            return User(
+                username,
+                generate_password_hash(db_user.password),
+            )
