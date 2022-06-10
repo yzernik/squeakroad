@@ -21,14 +21,12 @@
 # SOFTWARE.
 import logging
 
-import squeak.params
 from squeak.params import SelectParams
 
 from squeaknode.admin.squeak_admin_server_handler import SqueakAdminServerHandler
 from squeaknode.admin.squeak_admin_server_servicer import SqueakAdminServerServicer
 from squeaknode.admin.webapp.app import SqueakAdminWebServer
 from squeaknode.bitcoin.bitcoin_core_client import BitcoinCoreClient
-from squeaknode.client.network_controller import NetworkController
 from squeaknode.config.config import SqueaknodeConfig
 from squeaknode.core.squeak_core import SqueakCore
 from squeaknode.db.db_engine import get_connection_string
@@ -38,16 +36,11 @@ from squeaknode.lightning.clightning_lightning_client import CLightningClient
 from squeaknode.lightning.lnd_lightning_client import LNDLightningClient
 from squeaknode.node.node_settings import NodeSettings
 from squeaknode.node.payment_processor import PaymentProcessor
-from squeaknode.node.process_forward_tweets_worker import ProcessForwardTweetsWorker
 from squeaknode.node.process_received_payments_worker import ProcessReceivedPaymentsWorker
 from squeaknode.node.squeak_controller import SqueakController
 from squeaknode.node.squeak_deletion_worker import SqueakDeletionWorker
-from squeaknode.node.squeak_download_worker import SqueakDownloadWorker
 from squeaknode.node.squeak_offer_expiry_worker import SqueakOfferExpiryWorker
 from squeaknode.node.squeak_store import SqueakStore
-from squeaknode.server.app import SqueakPeerWebServer
-from squeaknode.server.squeak_peer_server_handler import SqueakPeerServerHandler
-from squeaknode.twitter.twitter_forwarder import TwitterForwarder
 
 
 logger = logging.getLogger(__name__)
@@ -65,21 +58,13 @@ class SqueakNode:
         self.create_squeak_core()
         self.create_squeak_store()
         self.create_payment_processor()
-        self.create_twitter_forwarder()
-        self.create_network_controller()
         self.create_squeak_controller()
-
-        self.create_peer_handler()
-        self.create_peer_web_server()
-
         self.create_admin_handler()
         self.create_admin_rpc_server()
         self.create_admin_web_server()
         self.create_received_payment_processor_worker()
         self.create_squeak_deletion_worker()
-        self.create_squeak_download_worker()
         self.create_offer_expiry_worker()
-        self.create_forward_tweets_processor_worker()
 
     def start_running(self):
         self.squeak_db.init_with_retries()
@@ -89,19 +74,14 @@ class SqueakNode:
             self.admin_rpc_server.start()
         if self.config.webadmin.enabled:
             self.admin_web_server.start()
-        self.peer_web_server.start()
         self.received_payment_processor_worker.start_running()
         self.squeak_deletion_worker.start()
-        self.squeak_download_worker.start()
         self.offer_expiry_worker.start()
-        self.forward_tweets_processor_worker.start_running()
 
     def stop_running(self):
         self.admin_web_server.stop()
         self.admin_rpc_server.stop()
-        self.peer_web_server.stop()
         self.received_payment_processor_worker.stop_running()
-        self.forward_tweets_processor_worker.stop_running()
 
     def set_network_params(self):
         SelectParams(self.config.node.network)
@@ -170,25 +150,10 @@ class SqueakNode:
             self.config.node.subscribe_invoices_retry_s,
         )
 
-    def create_twitter_forwarder(self):
-        self.twitter_forwarder = TwitterForwarder(
-            self.squeak_store,
-            self.config.twitter.forward_tweets_retry_s,
-        )
-
-    def create_network_controller(self):
-        self.network_controller = NetworkController(
-            self.squeak_store,
-            self.config.tor.proxy_ip,
-            self.config.tor.proxy_port,
-        )
-
     def create_squeak_controller(self):
         self.squeak_controller = SqueakController(
             self.squeak_store,
             self.payment_processor,
-            self.twitter_forwarder,
-            self.network_controller,
             self.node_settings,
             self.config,
         )
@@ -197,13 +162,6 @@ class SqueakNode:
         self.admin_handler = SqueakAdminServerHandler(
             self.lightning_client,
             self.squeak_controller,
-        )
-
-    def create_peer_handler(self):
-        self.peer_handler = SqueakPeerServerHandler(
-            self.squeak_controller,
-            self.node_settings,
-            self.config,
         )
 
     def create_admin_rpc_server(self):
@@ -225,13 +183,6 @@ class SqueakNode:
             self.admin_handler,
         )
 
-    def create_peer_web_server(self):
-        self.peer_web_server = SqueakPeerWebServer(
-            self.config.server.host,
-            squeak.params.params.DEFAULT_PORT,
-            self.peer_handler,
-        )
-
     def create_received_payment_processor_worker(self):
         self.received_payment_processor_worker = ProcessReceivedPaymentsWorker(
             self.payment_processor,
@@ -243,21 +194,8 @@ class SqueakNode:
             self.config.node.squeak_deletion_interval_s,
         )
 
-    def create_squeak_download_worker(self):
-        self.squeak_download_worker = SqueakDownloadWorker(
-            self.squeak_store,
-            self.network_controller,
-            self.config.node.peer_download_interval_s,
-            self.config.node.interest_block_interval,
-        )
-
     def create_offer_expiry_worker(self):
         self.offer_expiry_worker = SqueakOfferExpiryWorker(
             self.squeak_store,
             self.config.node.offer_deletion_interval_s,
-        )
-
-    def create_forward_tweets_processor_worker(self):
-        self.forward_tweets_processor_worker = ProcessForwardTweetsWorker(
-            self.twitter_forwarder,
         )

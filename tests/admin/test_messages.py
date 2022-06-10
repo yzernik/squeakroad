@@ -26,7 +26,6 @@ from squeaknode.admin.messages import message_to_sent_payment
 from squeaknode.admin.messages import message_to_squeak_entry
 from squeaknode.admin.messages import optional_received_offer_to_message
 from squeaknode.admin.messages import optional_sent_payment_to_message
-from squeaknode.admin.messages import optional_squeak_entry_to_message
 from squeaknode.admin.messages import optional_squeak_hash_to_hex
 from squeaknode.admin.messages import optional_squeak_peer_to_message
 from squeaknode.admin.messages import optional_squeak_profile_to_message
@@ -36,7 +35,6 @@ from squeaknode.admin.messages import received_offer_to_message
 from squeaknode.admin.messages import received_payment_to_message
 from squeaknode.admin.messages import sent_offer_to_message
 from squeaknode.admin.messages import sent_payment_to_message
-from squeaknode.admin.messages import squeak_entry_to_message
 from squeaknode.admin.messages import squeak_peer_to_message
 from squeaknode.admin.messages import squeak_profile_to_message
 
@@ -53,10 +51,10 @@ def test_msg_to_peer_address(peer_address, peer_address_message):
     assert address == peer_address
 
 
-def test_squeak_entry_to_message(squeak_entry_locked, squeak_entry_msg_locked):
-    msg = squeak_entry_to_message(squeak_entry_locked)
+# def test_squeak_entry_to_message(squeak_entry_locked, squeak_entry_msg_locked):
+#     msg = squeak_entry_to_message(squeak_entry_locked)
 
-    assert msg == squeak_entry_msg_locked
+#     assert msg == squeak_entry_msg_locked
 
 
 def test_message_to_squeak_entry(squeak_entry_locked, squeak_entry_msg_locked):
@@ -163,16 +161,16 @@ def test_optional_squeak_hash_to_str(squeak_hash, squeak_hash_str):
     assert msg == squeak_hash_str
 
 
-def test_optional_squeak_entry_to_message_none():
-    msg = optional_squeak_entry_to_message(None)
+# def test_optional_squeak_entry_to_message_none():
+#     msg = optional_squeak_entry_to_message(None)
 
-    assert msg is None
+#     assert msg is None
 
 
-def test_optional_squeak_entry_to_message(squeak_entry_locked, squeak_entry_msg_locked):
-    msg = optional_squeak_entry_to_message(squeak_entry_locked)
+# def test_optional_squeak_entry_to_message(squeak_entry_locked, squeak_entry_msg_locked):
+#     msg = optional_squeak_entry_to_message(squeak_entry_locked)
 
-    assert msg == squeak_entry_msg_locked
+#     assert msg == squeak_entry_msg_locked
 
 
 def test_optional_peer_to_message_none():

@@ -28,7 +28,6 @@ from squeak.core import CSqueak
 from squeak.core.keys import SqueakPrivateKey
 from squeak.core.keys import SqueakPublicKey
 
-from squeaknode.core.download_result import DownloadResult
 from squeaknode.core.lightning_address import LightningAddressHostPort
 from squeaknode.core.offer import Offer
 from squeaknode.core.payment_summary import PaymentSummary
@@ -41,8 +40,6 @@ from squeaknode.core.squeak_entry import SqueakEntry
 from squeaknode.core.squeak_peer import SqueakPeer
 from squeaknode.core.squeak_profile import SqueakProfile
 from squeaknode.core.squeak_user import SqueakUser
-from squeaknode.core.squeaks import get_hash
-from squeaknode.core.twitter_account_entry import TwitterAccountEntry
 from squeaknode.node.received_payments_subscription_client import ReceivedPaymentsSubscriptionClient
 from squeaknode.node.squeak_store import SqueakStore
 
@@ -59,15 +56,11 @@ class SqueakController:
         self,
         squeak_store: SqueakStore,
         payment_processor,
-        tweet_forwarder,
-        network_controller,
         node_settings,
         config,
     ):
         self.squeak_store = squeak_store
         self.payment_processor = payment_processor
-        self.tweet_forwarder = tweet_forwarder
-        self.network_controller = network_controller
         self.node_settings = node_settings
         self.config = config
 
@@ -339,41 +332,12 @@ class SqueakController:
     def get_squeak_entry(self, squeak_hash: bytes) -> Optional[SqueakEntry]:
         return self.squeak_store.get_squeak_entry(squeak_hash)
 
-    def download_single_squeak(self, squeak_hash: bytes) -> DownloadResult:
-        self.network_controller.download_single_squeak(squeak_hash)
-        return DownloadResult(1, 1, 0, 9999)
-
-    def download_single_squeak_secret_key(self, squeak_hash: bytes) -> DownloadResult:
-        self.network_controller.download_single_squeak_secret_key(squeak_hash)
-        return DownloadResult(1, 1, 0, 9999)
-
     def get_timeline_squeak_entries(
             self,
             limit: int,
             last_entry: Optional[SqueakEntry],
     ) -> List[SqueakEntry]:
         return self.squeak_store.get_timeline_squeak_entries(limit, last_entry)
-
-    def get_liked_squeak_entries(
-            self,
-            limit: int,
-            last_entry: Optional[SqueakEntry],
-    ) -> List[SqueakEntry]:
-        return self.squeak_store.get_liked_squeak_entries(limit, last_entry)
-
-    def lookup_squeaks(
-            self,
-            public_keys: List[SqueakPublicKey],
-            min_block: Optional[int],
-            max_block: Optional[int],
-            reply_to_hash: Optional[bytes],
-    ) -> List[bytes]:
-        return self.squeak_store.lookup_squeaks(
-            public_keys,
-            min_block,
-            max_block,
-            reply_to_hash,
-        )
 
     def get_squeak_entries_for_public_key(
             self,
@@ -395,21 +359,6 @@ class SqueakController:
     ) -> List[SqueakEntry]:
         return self.squeak_store.get_squeak_entries_for_text_search(
             search_text,
-            limit,
-            last_entry,
-        )
-
-    def get_ancestor_squeak_entries(self, squeak_hash: bytes) -> List[SqueakEntry]:
-        return self.squeak_store.get_ancestor_squeak_entries(squeak_hash)
-
-    def get_reply_squeak_entries(
-            self,
-            squeak_hash: bytes,
-            limit: int,
-            last_entry: Optional[SqueakEntry],
-    ) -> List[SqueakEntry]:
-        return self.squeak_store.get_reply_squeak_entries(
-            squeak_hash,
             limit,
             last_entry,
         )
@@ -483,55 +432,6 @@ class SqueakController:
     def unlike_squeak(self, squeak_hash: bytes):
         return self.squeak_store.unlike_squeak(squeak_hash)
 
-    def subscribe_new_squeaks(self, stopped: threading.Event):
-        yield from self.squeak_store.subscribe_new_squeaks(stopped)
-
-    def subscribe_new_secret_keys(self, stopped: threading.Event):
-        yield from self.squeak_store.subscribe_new_secret_keys(stopped)
-
-    def subscribe_follows(self, stopped: threading.Event):
-        yield from self.squeak_store.subscribe_follows(stopped)
-
-    def subscribe_received_offers_for_squeak(self, squeak_hash: bytes, stopped: threading.Event):
-        yield from self.squeak_store.subscribe_received_offers_for_squeak(
-            squeak_hash,
-            stopped,
-        )
-
-    def subscribe_squeak_entry(self, squeak_hash: bytes, stopped: threading.Event):
-        for item in self.squeak_store.subscribe_new_squeaks(stopped):
-            if squeak_hash == get_hash(item):
-                yield self.get_squeak_entry(squeak_hash)
-
-    def subscribe_squeak_reply_entries(self, squeak_hash: bytes, stopped: threading.Event):
-        for item in self.squeak_store.subscribe_new_squeaks(stopped):
-            if squeak_hash == item.hashReplySqk:
-                reply_hash = get_hash(item)
-                yield self.get_squeak_entry(reply_hash)
-
-    def subscribe_squeak_public_key_entries(self, public_key: SqueakPublicKey, stopped: threading.Event):
-        for item in self.squeak_store.subscribe_new_squeaks(stopped):
-            if public_key == item.GetPubKey():
-                squeak_hash = get_hash(item)
-                yield self.get_squeak_entry(squeak_hash)
-
-    def subscribe_squeak_ancestor_entries(self, squeak_hash: bytes, stopped: threading.Event):
-        for item in self.squeak_store.subscribe_new_squeaks(stopped):
-            if squeak_hash == get_hash(item):
-                yield self.get_ancestor_squeak_entries(squeak_hash)
-
-    def subscribe_squeak_entries(self, stopped: threading.Event):
-        for item in self.squeak_store.subscribe_new_squeaks(stopped):
-            squeak_hash = get_hash(item)
-            yield self.get_squeak_entry(squeak_hash)
-
-    def subscribe_timeline_squeak_entries(self, stopped: threading.Event):
-        for item in self.squeak_store.subscribe_new_squeaks(stopped):
-            followed_public_keys = self.squeak_store.get_followed_public_keys()
-            if item.GetPubKey() in set(followed_public_keys):
-                squeak_hash = get_hash(item)
-                yield self.get_squeak_entry(squeak_hash)
-
     def get_external_address(self) -> PeerAddress:
         return PeerAddress(
             network=Network.IPV4,
@@ -556,30 +456,6 @@ class SqueakController:
 
     def get_default_sell_price_msat(self) -> int:
         return self.config.node.price_msat
-
-    def add_twitter_account(self, handle: str, profile_id: int, bearer_token: str) -> Optional[int]:
-        twitter_account_id = self.squeak_store.add_twitter_account(
-            handle,
-            profile_id,
-            bearer_token,
-        )
-        self.tweet_forwarder.restart()
-        return twitter_account_id
-
-    def get_twitter_accounts(self) -> List[TwitterAccountEntry]:
-        accounts = self.squeak_store.get_twitter_accounts()
-        return [
-            account._replace(
-                is_forwarding=self.tweet_forwarder.is_processing(
-                    account.handle,
-                ),
-            )
-            for account in accounts
-        ]
-
-    def delete_twitter_account(self, twitter_account_id: int) -> None:
-        self.squeak_store.delete_twitter_account(twitter_account_id)
-        self.tweet_forwarder.restart()
 
     def get_user_by_username(self, username: str) -> Optional[SqueakUser]:
         return self.squeak_store.get_user_by_username(username)
