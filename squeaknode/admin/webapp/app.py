@@ -345,12 +345,6 @@ def create_app(handler, username, password):
     def makesqueakrequest(msg):
         return handler.handle_make_squeak(msg)
 
-    @app.route("/makeresqueak", methods=["POST"])
-    @login_required
-    @protobuf_serialized(squeak_admin_pb2.MakeResqueakRequest())
-    def makeresqueak(msg):
-        return handler.handle_make_resqueak(msg)
-
     @app.route("/getsqueakdisplay", methods=["POST"])
     @login_required
     @protobuf_serialized(squeak_admin_pb2.GetSqueakDisplayRequest())

@@ -24,9 +24,7 @@ from typing import Optional
 from typing import Tuple
 
 from squeak.core import CheckSqueak
-from squeak.core import CResqueak
 from squeak.core import CSqueak
-from squeak.core import MakeResqueak
 from squeak.core import MakeSqueakFromStr
 from squeak.core.elliptic import payment_point_bytes_from_scalar_bytes
 from squeak.core.keys import SqueakPrivateKey
@@ -86,37 +84,6 @@ def make_squeak_with_block(
         timestamp,
         reply_to=replyto_hash,
         recipient=recipient_public_key,
-    )
-
-
-def make_resqueak_with_block(
-        private_key: SqueakPrivateKey,
-        resqueak_hash: bytes,
-        block_height: int,
-        block_hash: bytes,
-        replyto_hash: Optional[bytes] = None,
-) -> CResqueak:
-    """Create a new resqueak.
-
-    Args:
-        private_key: The private key to sign the squeak.
-        resqueak_hash: The hash of the squeak to resqueak.
-        block_height: The height of the latest block in the bitcoin blockchain.
-        block_hash: The hash of the latest block in the bitcoin blockchain.
-        replyto_hash: The hash of the squeak to which this one is replying.
-        recipient_public_key: The public key of the recipient of a private squeak.
-
-    Returns:
-        CResqueak: the resqueak that was created.
-    """
-    timestamp = int(time.time())
-    return MakeResqueak(
-        private_key,
-        resqueak_hash,
-        block_height,
-        block_hash,
-        timestamp,
-        reply_to=replyto_hash,
     )
 
 

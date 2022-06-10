@@ -140,9 +140,6 @@ class SqueakAdminServerServicer(squeak_admin_pb2_grpc.SqueakAdminServicer):
     def MakeSqueak(self, request, context):
         return self.handler.handle_make_squeak(request)
 
-    def MakeResqueak(self, request, context):
-        return self.handler.handle_make_resqueak(request)
-
     def GetSqueakDisplay(self, request, context):
         return self.handler.handle_get_squeak_display_entry(request)
 

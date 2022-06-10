@@ -77,18 +77,6 @@ class SqueakController:
             recipient_profile_id,
         )
 
-    def make_resqueak(
-            self,
-            profile_id: int,
-            resqueaked_hash: bytes,
-            replyto_hash: Optional[bytes],
-    ) -> Optional[bytes]:
-        return self.squeak_store.make_resqueak(
-            profile_id,
-            resqueaked_hash,
-            replyto_hash,
-        )
-
     def pay_offer(self, received_offer_id: int) -> int:
         return self.squeak_store.pay_offer(received_offer_id)
 

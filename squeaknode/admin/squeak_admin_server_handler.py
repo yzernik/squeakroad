@@ -309,30 +309,6 @@ class SqueakAdminServerHandler(object):
             squeak_hash=inserted_squeak_hash_str,
         )
 
-    def handle_make_resqueak(self, request):
-        profile_id = request.profile_id
-        resqueaked_hash_str = request.resqueaked_hash
-        resqueaked_hash = bytes.fromhex(resqueaked_hash_str)
-        replyto_hash_str = request.replyto
-        replyto_hash = bytes.fromhex(
-            replyto_hash_str) if replyto_hash_str else None
-        logger.info(
-            "Handle make resqueak with author profile id: {}".format(
-                profile_id,
-            )
-        )
-        inserted_resqueak_hash = self.squeak_controller.make_resqueak(
-            profile_id,
-            resqueaked_hash,
-            replyto_hash,
-        )
-        inserted_resqueak_hash_str = optional_squeak_hash_to_hex(
-            inserted_resqueak_hash,
-        )
-        return squeak_admin_pb2.MakeResqueakReply(
-            squeak_hash=inserted_resqueak_hash_str,
-        )
-
     def handle_get_squeak_display_entry(self, request):
         squeak_hash_str = request.squeak_hash
         squeak_hash = bytes.fromhex(squeak_hash_str)

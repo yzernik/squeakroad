@@ -348,21 +348,6 @@ def test_make_private_squeak(
     assert author_decrypted_content == squeak_content
 
 
-def test_make_resqueak(
-        squeak_core,
-        signing_profile,
-        squeak_hash,
-        block_header
-):
-    created_resqueak = squeak_core.make_resqueak(
-        signing_profile,
-        squeak_hash,
-    )
-
-    assert created_resqueak.hashResqueakSqk == squeak_hash
-    squeak_core.check_squeak(created_resqueak)
-
-
 def test_get_block_header(
         squeak_core,
         squeak,
