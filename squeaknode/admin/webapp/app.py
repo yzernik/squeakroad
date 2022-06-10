@@ -117,26 +117,18 @@ def create_app(handler, username, password):
         if current_user.is_authenticated:
             return redirect(url_for("index"))
         form = SignupForm()
-        logger.info("Trying to validate form")
         if form.validate_on_submit():
-            logger.info("form.password.data: {}".format(form.password.data))
-            logger.info("form.username.data: {}".format(form.username.data))
-            logger.info("Checking if password matches")
             if form.password.data != form.repeatpassword.data:
                 flash("Password does not match.")
                 return redirect(url_for("signup"))
-            logger.info("Checking if username already exists")
             user = user_lookup.get_user_by_username(form.username.data)
-            logger.info("user: {}".format(user))
             if user is not None:
-                logger.info("user doesn't exists.")
                 flash("Username already exists.")
                 return redirect(url_for("signup"))
             user_id = user_lookup.register_user(
                 form.username.data,
                 form.password.data,
             )
-            logger.info("Got user_id: {}".format(user_id))
             if user_id is None:
                 flash("Signup failed.")
                 return redirect(url_for("signup"))
