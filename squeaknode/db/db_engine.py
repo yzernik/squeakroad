@@ -24,7 +24,7 @@ from pathlib import Path
 from sqlalchemy import create_engine
 
 
-DB_FILE = "data-v4.db"
+DB_FILE = "squeakrode-data-v1.db"
 
 
 def get_engine(connection_string):
@@ -44,6 +44,6 @@ def get_connection_string(config, network):
     if config.db.connection_string:
         return config.db.connection_string
     return get_sqlite_connection_string(
-        config.node.sqk_dir_path,
+        config.node.sqrd_dir_path,
         network,
     )
