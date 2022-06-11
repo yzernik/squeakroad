@@ -59,8 +59,8 @@ DEFAULT_LND_RPC_PORT = 10009
 DEFAULT_CLIGHTNING_DIR = ".lightning"
 DEFAULT_CLIGHTNING_RPC_FILE = str(
     Path.home() / DEFAULT_CLIGHTNING_DIR / 'lightning-rpc')
-DEFAULT_SQK_DIR = ".sqk"
-DEFAULT_SQK_DIR_PATH = str(Path.home() / DEFAULT_SQK_DIR)
+DEFAULT_SQRD_DIR = ".sqrd"
+DEFAULT_SQRD_DIR_PATH = str(Path.home() / DEFAULT_SQRD_DIR)
 DEFAULT_LND_RPC_HOST = "localhost"
 DEFAULT_INTEREST_BLOCK_INTERVAL = 2016
 DEFAULT_SENT_OFFER_RETENTION_S = 86400
@@ -124,8 +124,8 @@ class NodeConfig(Config):
         cast=int, required=False, default=DEFAULT_MAX_SQUEAKS)
     max_squeaks_per_public_key_per_block = key(
         cast=int, required=False, default=DEFAULT_MAX_SQUEAKS_PER_PUBLIC_KEY_PER_BLOCK)
-    sqk_dir_path = key(
-        cast=str, required=False, default=DEFAULT_SQK_DIR_PATH)
+    sqrd_dir_path = key(
+        cast=str, required=False, default=DEFAULT_SQRD_DIR_PATH)
     log_level = key(
         cast=str, required=False, default=DEFAULT_LOG_LEVEL)
     sent_offer_retention_s = key(
