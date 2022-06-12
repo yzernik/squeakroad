@@ -192,7 +192,7 @@ import { ICON_REPLY, ICON_RETWEET,
                       </span>
                       <span className="card-header-dot">·</span>
                       <span className="card-header-date">
-                        {moment(props.squeak.getBlockTime() * 1000).fromNow(true)}
+                        {moment(0 * 1000).fromNow(true)}
                       </span>
                     </div>
                     <div className="card-header-more">

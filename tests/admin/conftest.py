@@ -81,9 +81,6 @@ def squeak_entry_msg_locked(
         squeak,
         squeak_hash,
         public_key,
-        block_count,
-        block_hash,
-        block_time,
         squeak_time,
         squeak_reply_to_hash,
         signing_profile_msg,
@@ -95,9 +92,6 @@ def squeak_entry_msg_locked(
         is_unlocked=False,
         secret_key_hex="",
         content_str=None,  # type: ignore
-        block_height=block_count,
-        block_hash=block_hash.hex(),
-        block_time=block_time,
         squeak_time=squeak_time,
         is_reply=False,
         reply_to=squeak_reply_to_hash,  # type: ignore

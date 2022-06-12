@@ -19,20 +19,35 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-from typing import NamedTuple
-from typing import Optional
+"""Remove block hash and block height
 
-from squeak.core.keys import SqueakPublicKey
+Revision ID: 305c2464f89f
+Revises: 8e1275f0f657
+Create Date: 2022-06-11 17:11:50.562106
 
-from squeaknode.core.squeak_profile import SqueakProfile
+"""
+import sqlalchemy as sa
+from alembic import op
 
 
-class SqueakEntry(NamedTuple):
-    squeak_hash: bytes
-    public_key: SqueakPublicKey
-    squeak_time: int
-    is_unlocked: bool
-    secret_key: Optional[bytes]
-    squeak_profile: Optional[SqueakProfile]
-    liked_time_ms: Optional[int] = None
-    content: Optional[str] = None
+# revision identifiers, used by Alembic.
+revision = '305c2464f89f'
+down_revision = '8e1275f0f657'
+branch_labels = None
+depends_on = None
+
+
+def upgrade():
+    with op.batch_alter_table('squeak', schema=None) as batch_op:
+        batch_op.drop_column('block_height')
+        batch_op.drop_column('block_time_s')
+        batch_op.drop_column('block_hash')
+
+
+def downgrade():
+    with op.batch_alter_table('squeak', schema=None) as batch_op:
+        batch_op.add_column(sa.Column('block_hash', sa.BLOB(), nullable=False))
+        batch_op.add_column(
+            sa.Column('block_time_s', sa.INTEGER(), nullable=False))
+        batch_op.add_column(
+            sa.Column('block_height', sa.INTEGER(), nullable=False))

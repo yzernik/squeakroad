@@ -471,7 +471,6 @@ def test_get_squeak_entry(
     assert retrieved_squeak_entry.squeak_hash == inserted_squeak_hash
     assert retrieved_squeak_entry.public_key == public_key
     assert retrieved_squeak_entry.content is None
-    assert retrieved_squeak_entry.block_time == block_header.nTime
     assert retrieved_squeak_entry.squeak_profile._replace(
         profile_id=None) == signing_profile
 
@@ -662,20 +661,6 @@ def test_get_number_of_squeaks(
     num_squeaks = squeak_db.get_number_of_squeaks()
 
     assert num_squeaks == len(inserted_squeak_hashes)
-
-
-def test_number_of_squeaks_with_public_key_with_block_height(
-        squeak_db,
-        public_key,
-        inserted_squeak_hashes,
-):
-    block_height = 43
-    num_squeaks = squeak_db.number_of_squeaks_with_public_key_with_block_height(
-        public_key=public_key,
-        block_height=block_height,
-    )
-
-    assert num_squeaks == 1
 
 
 def test_get_old_squeaks_to_delete(
