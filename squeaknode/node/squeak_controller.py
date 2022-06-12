@@ -73,8 +73,6 @@ class SqueakController:
         return self.squeak_store.make_squeak(
             profile_id,
             content_str,
-            replyto_hash,
-            recipient_profile_id,
         )
 
     def pay_offer(self, received_offer_id: int) -> int:

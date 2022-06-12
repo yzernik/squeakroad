@@ -79,26 +79,17 @@ class SqueakStore:
             self,
             profile_id: int,
             content_str: str,
-            replyto_hash: Optional[bytes],
-            recipient_profile_id: Optional[int],
     ) -> Optional[bytes]:
         squeak_profile = self.get_squeak_profile(profile_id)
         if squeak_profile is None:
             raise Exception("Profile with id {} not found.".format(
                 profile_id,
             ))
-        if recipient_profile_id:
-            recipient_profile = self.get_squeak_profile(
-                recipient_profile_id)
-            if recipient_profile is None:
-                raise Exception("Recipient profile with id {} not found.".format(
-                    recipient_profile_id,
-                ))
         squeak, secret_key = self.squeak_core.make_squeak(
             squeak_profile,
             content_str,
-            replyto_hash,
-            recipient_profile=recipient_profile if recipient_profile_id else None,
+            None,
+            None,
         )
         inserted_squeak_hash = self.save_squeak(squeak)
         if inserted_squeak_hash is None:
