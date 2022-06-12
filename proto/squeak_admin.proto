@@ -638,62 +638,53 @@ message SqueakDisplayEntry {
     /// Reply to hash
     string reply_to = 5;
 
-    /// Block height
-    int32 block_height = 6;
-
-    /// Block hash
-    string block_hash = 7;
-
-    /// Block time
-    int64 block_time = 8;
-
     /// Squeak time
-    int64 squeak_time = 9;
+    int64 squeak_time = 6;
 
     /// The author pubkey in hex
-    string author_pubkey = 10;
+    string author_pubkey = 7;
 
     /// Is author address known
-    bool is_author_known = 11;
+    bool is_author_known = 8;
 
     /// The author name
-    SqueakProfile author = 12;
+    SqueakProfile author = 9;
 
     /// Liked time
-    int64 liked_time_ms = 13;
+    int64 liked_time_ms = 10;
 
     /// The serialized squeak in hex.
-    string serialized_squeak_hex = 14;
+    string serialized_squeak_hex = 11;
 
     /// The secret key in hex.
-    string secret_key_hex = 15;
+    string secret_key_hex = 12;
 
     /// Is private
-    bool is_private = 16;
+    bool is_private = 13;
 
     /// The recipient pubkey in hex
-    string recipient_pubkey = 17;
+    string recipient_pubkey = 14;
 
     /// Is recipient address known
-    bool is_recipient_known = 18;
+    bool is_recipient_known = 15;
 
     /// The recipient name
-    SqueakProfile recipient = 19;
+    SqueakProfile recipient = 16;
 
     /// Number of replies
-    int32 num_replies = 20;
+    int32 num_replies = 17;
 
     /// Is resqueak
-    bool is_resqueak = 21;
+    bool is_resqueak = 18;
 
     /// Resqueaked hash
-    string resqueaked_hash = 22;
+    string resqueaked_hash = 19;
 
     /// Resqueaked squeak
-    SqueakDisplayEntry resqueaked_squeak = 23;
+    SqueakDisplayEntry resqueaked_squeak = 20;
 
     /// Number of resqueaks
-    int32 num_resqueaks = 24;
+    int32 num_resqueaks = 21;
 }
 
 message GetTimelineSqueakDisplaysRequest {

@@ -224,12 +224,9 @@ class SqueakDb:
             created_time_ms=self.timestamp_now_ms,
             hash=get_hash(squeak),
             squeak=squeak.serialize(),
-            block_hash=squeak.hashBlock,
-            block_height=squeak.nBlockHeight,
             time_s=squeak.nTime,
             author_public_key=squeak.GetPubKey().to_bytes(),
             secret_key=None,
-            block_time_s=block_header.nTime,
         )
         with self.get_connection() as connection:
             try:
@@ -300,17 +297,14 @@ class SqueakDb:
             last_entry: Optional[SqueakEntry],
     ) -> List[SqueakEntry]:
         """ Get all followed squeaks. """
-        last_block_height = last_entry.block_height if last_entry else MAX_INT
         last_squeak_time = last_entry.squeak_time if last_entry else MAX_INT
         last_squeak_hash = last_entry.squeak_hash if last_entry else MAX_HASH
         logger.info("""Timeline db query with
         limit: {}
-        block_height: {}
         squeak_time: {}
         squeak_hash: {}
         """.format(
             limit,
-            last_block_height,
             last_squeak_time,
             last_squeak_hash.hex(),
         ))
@@ -338,17 +332,14 @@ class SqueakDb:
             .where(self.profile_is_following(self.author_profiles))
             .where(
                 tuple_(
-                    self.squeaks.c.block_height,
                     self.squeaks.c.time_s,
                     self.squeaks.c.hash,
                 ) < tuple_(
-                    last_block_height,
                     last_squeak_time,
                     last_squeak_hash,
                 )
             )
             .order_by(
-                self.squeaks.c.block_height.desc(),
                 self.squeaks.c.time_s.desc(),
                 self.squeaks.c.hash.desc(),
             )
@@ -366,19 +357,16 @@ class SqueakDb:
             last_entry: Optional[SqueakEntry],
     ) -> List[SqueakEntry]:
         """ Get a squeak. """
-        last_block_height = last_entry.block_height if last_entry else MAX_INT
         last_squeak_time = last_entry.squeak_time if last_entry else MAX_INT
         last_squeak_hash = last_entry.squeak_hash if last_entry else MAX_HASH
         logger.info("""Address db query with
         public key: {}
         limit: {}
-        block_height: {}
         squeak_time: {}
         squeak_hash: {}
         """.format(
             public_key,
             limit,
-            last_block_height,
             last_squeak_time,
             last_squeak_hash.hex(),
         ))
@@ -406,17 +394,14 @@ class SqueakDb:
             .where(self.squeaks.c.author_public_key == public_key.to_bytes())
             .where(
                 tuple_(
-                    self.squeaks.c.block_height,
                     self.squeaks.c.time_s,
                     self.squeaks.c.hash,
                 ) < tuple_(
-                    last_block_height,
                     last_squeak_time,
                     last_squeak_hash,
                 )
             )
             .order_by(
-                self.squeaks.c.block_height.desc(),
                 self.squeaks.c.time_s.desc(),
                 self.squeaks.c.hash.desc(),
             )
@@ -434,19 +419,16 @@ class SqueakDb:
             last_entry: Optional[SqueakEntry],
     ) -> List[SqueakEntry]:
         """ Get a squeak. """
-        last_block_height = last_entry.block_height if last_entry else MAX_INT
         last_squeak_time = last_entry.squeak_time if last_entry else MAX_INT
         last_squeak_hash = last_entry.squeak_hash if last_entry else MAX_HASH
         logger.info("""Search db query with
         search_text: {}
         limit: {}
-        block_height: {}
         squeak_time: {}
         squeak_hash: {}
         """.format(
             search_text,
             limit,
-            last_block_height,
             last_squeak_time,
             last_squeak_hash.hex(),
         ))
@@ -474,17 +456,14 @@ class SqueakDb:
             .where(self.squeaks.c.content.ilike(f'%{search_text}%'))
             .where(
                 tuple_(
-                    self.squeaks.c.block_height,
                     self.squeaks.c.time_s,
                     self.squeaks.c.hash,
                 ) < tuple_(
-                    last_block_height,
                     last_squeak_time,
                     last_squeak_hash,
                 )
             )
             .order_by(
-                self.squeaks.c.block_height.desc(),
                 self.squeaks.c.time_s.desc(),
                 self.squeaks.c.hash.desc(),
             )
@@ -502,26 +481,6 @@ class SqueakDb:
                 func.count().label("num_squeaks"),
             ])
             .select_from(self.squeaks)
-        )
-        with self.get_connection() as connection:
-            result = connection.execute(s)
-            row = result.fetchone()
-            num_squeaks = row["num_squeaks"]
-            return num_squeaks
-
-    def number_of_squeaks_with_public_key_with_block_height(
-        self,
-        public_key: SqueakPublicKey,
-        block_height: int,
-    ) -> int:
-        """ Get number of squeaks with public key with block height. """
-        s = (
-            select([
-                func.count().label("num_squeaks"),
-            ])
-            .select_from(self.squeaks)
-            .where(self.squeaks.c.author_public_key == public_key.to_bytes())
-            .where(self.squeaks.c.block_height == block_height)
         )
         with self.get_connection() as connection:
             result = connection.execute(s)
@@ -1751,9 +1710,6 @@ class SqueakDb:
         return SqueakEntry(
             squeak_hash=(row["hash"]),
             public_key=SqueakPublicKey.from_bytes(public_key_bytes),
-            block_height=row["block_height"],
-            block_hash=(row["block_hash"]),
-            block_time=row["block_time_s"],
             squeak_time=row["time_s"],
             is_unlocked=is_locked,
             secret_key=(row["secret_key"]),

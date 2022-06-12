@@ -71,15 +71,12 @@ class Models:
             Column("created_time_ms", SLBigInteger, nullable=False),
             Column("squeak", LargeBinary, nullable=False),
             Column("reply_hash", LargeBinary(32), nullable=True),
-            Column("block_hash", LargeBinary(32), nullable=False),
-            Column("block_height", Integer, nullable=False),
             Column("time_s", Integer, nullable=False),
             Column("author_public_key", LargeBinary(
                 32), index=True, nullable=False),
             Column("recipient_public_key", LargeBinary(
                 32), index=True, nullable=True),
             Column("secret_key", LargeBinary(32), nullable=True),
-            Column("block_time_s", Integer, nullable=False),
             Column("liked_time_ms", SLBigInteger, default=None, nullable=True),
             Column("content", String(280), nullable=True),
             Column("resqueak_hash", LargeBinary(32), nullable=True),

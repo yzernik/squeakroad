@@ -110,13 +110,6 @@ class SqueakStore:
         # Check if limit exceeded.
         if self.squeak_db.get_number_of_squeaks() >= self.max_squeaks:
             raise Exception("Exceeded max number of squeaks.")
-        # TODO: Check if limit per public key per block is exceeded.
-        if self.squeak_db.number_of_squeaks_with_public_key_with_block_height(
-                base_squeak.GetPubKey(),
-                base_squeak.nBlockHeight,
-        ) >= self.max_squeaks_per_public_key_per_block:
-            raise Exception(
-                "Exceeded max number of squeaks per public key per block.")
         # Insert the squeak in db.
         if isinstance(base_squeak, CSqueak):
             inserted_squeak_hash = self.squeak_db.insert_squeak(

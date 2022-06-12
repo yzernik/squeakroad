@@ -144,7 +144,7 @@ const MakeSqueak = (props) => {
               </span>
               <span className="card-header-dot">·</span>
               <span className="card-header-date">
-                {moment(props.replyToSqueak.getBlockTime() * 1000).fromNow()}
+                {moment(0 * 1000).fromNow()}
               </span>
             </div>
           </div>

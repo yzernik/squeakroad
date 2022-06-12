@@ -53,9 +53,6 @@ def squeak_entry_to_message(squeak_entry: SqueakEntry) -> squeak_admin_pb2.Squea
         secret_key_hex=(squeak_entry.secret_key.hex()
                         if squeak_entry.secret_key else None),  # type: ignore
         content_str=squeak_entry.content,  # type: ignore
-        block_height=squeak_entry.block_height,
-        block_hash=squeak_entry.block_hash.hex(),
-        block_time=squeak_entry.block_time,
         squeak_time=squeak_entry.squeak_time,
         author_pubkey=squeak_entry.public_key.to_bytes().hex(),
         is_author_known=(squeak_entry.squeak_profile is not None),
@@ -169,9 +166,6 @@ def message_to_squeak_entry(msg: squeak_admin_pb2.SqueakDisplayEntry) -> SqueakE
         public_key=SqueakPublicKey.from_bytes(
             bytes.fromhex(msg.author_pubkey),
         ),
-        block_height=msg.block_height,
-        block_hash=bytes.fromhex(msg.block_hash),
-        block_time=msg.block_time,
         squeak_time=msg.squeak_time,
         is_unlocked=msg.is_unlocked,
         secret_key=(bytes.fromhex(
