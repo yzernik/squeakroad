@@ -4,7 +4,10 @@ extern crate rocket;
 #[cfg(test)]
 mod tests;
 
+mod db;
 mod sqlx;
+mod task;
+mod todo;
 
 #[launch]
 fn rocket() -> _ {
