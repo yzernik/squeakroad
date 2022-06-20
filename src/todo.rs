@@ -87,7 +87,7 @@ impl Context {
 #[get("/")]
 async fn index(flash: Option<FlashMessage<'_>>, db: Connection<Db>) -> Template {
     let flash = flash.map(FlashMessage::into_inner);
-    Template::render("index", Context::raw(db, flash).await)
+    Template::render("todoindex", Context::raw(db, flash).await)
 }
 
 pub fn todo_stage() -> AdHoc {
