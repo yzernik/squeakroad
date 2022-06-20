@@ -1,5 +1,35 @@
 {
   "db": "SQLite",
+  "012600e357c0823876f1b75ff5096df72dc188042f1edccf1d47ef4be0cddf80": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "description",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "completed",
+          "ordinal": 2,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "select * from tasks WHERE id = ?;"
+  },
   "085c6ba1af016053d4b7afe42dde69658ec771718ec64ea4e51de574df783ace": {
     "describe": {
       "columns": [],

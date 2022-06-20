@@ -6,7 +6,10 @@ use crate::db::Db;
 
 use rocket_db_pools::{sqlx, Connection};
 
+use crate::rocket::futures::TryFutureExt;
 use crate::rocket::futures::TryStreamExt;
+
+use sqlx::Acquire;
 
 #[derive(Serialize, Debug, Clone)]
 #[serde(crate = "rocket::serde")]
@@ -69,18 +72,26 @@ impl Task {
 
     /// Returns the number of affected rows: 1.
     pub async fn toggle_with_id(id: i32, db: &mut Connection<Db>) -> Result<usize, sqlx::Error> {
-        //let mut tx = conn.begin().await?;
+        let mut tx = db.begin().await?;
+
+        let get_task_completed = sqlx::query!("select * from tasks WHERE id = ?;", id)
+            .fetch_one(&mut tx)
+            .map_ok(|r| r.completed)
+            // .try_collect::<bool>()
+            .await?;
+
+        let new_completed = !get_task_completed;
 
         let update_result = sqlx::query!(
             "UPDATE tasks SET completed = ? WHERE id = ?",
             // !task.completed,
-            true,
+            new_completed,
             id,
         )
-        .execute(&mut **db)
+        .execute(&mut tx)
         .await?;
 
-        //tx.commit().await?;
+        tx.commit().await?;
 
         println!("{:?}", update_result);
 
