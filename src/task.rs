@@ -40,9 +40,6 @@ impl Task {
         println!("{:?}", tasks);
 
         Ok(tasks)
-
-        // conn.run(|c| all_tasks.order(tasks::id.desc()).load::<Task>(c))
-        //     .await
     }
 
     /// Returns the number of affected rows: 1.
@@ -58,16 +55,6 @@ impl Task {
         println!("{:?}", insert_result);
 
         Ok(insert_result.rows_affected() as _)
-
-        // conn.run(|c| {
-        //     let t = Task {
-        //         id: None,
-        //         description: todo.description,
-        //         completed: false,
-        //     };
-        //     diesel::insert_into(tasks::table).values(&t).execute(c)
-        // })
-        // .await
     }
 
     /// Returns the number of affected rows: 1.
@@ -96,14 +83,6 @@ impl Task {
         println!("{:?}", update_result);
 
         Ok(update_result.rows_affected() as _)
-
-        // conn.run(move |c| {
-        //     let task = all_tasks.find(id).get_result::<Task>(c)?;
-        //     let new_status = !task.completed;
-        //     let updated_task = diesel::update(all_tasks.find(id));
-        //     updated_task.set(task_completed.eq(new_status)).execute(c)
-        // })
-        // .await
     }
 
     /// Returns the number of affected rows: 1.
@@ -113,9 +92,6 @@ impl Task {
             .await?;
 
         Ok(delete_result.rows_affected() as _)
-
-        // conn.run(move |c| diesel::delete(all_tasks.find(id)).execute(c))
-        //     .await
     }
 
     // /// Returns the number of affected rows.
