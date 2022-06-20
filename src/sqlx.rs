@@ -1,4 +1,4 @@
-use rocket::{form::*, get, post, response::Redirect, routes, State};
+use rocket::{form::*, get, post, response::Redirect, routes};
 use rocket_auth::{Auth, Error, Login, Signup, User, Users};
 use rocket_dyn_templates::Template;
 use serde_json::json;
