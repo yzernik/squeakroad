@@ -1,7 +1,46 @@
 {
   "db": "SQLite",
+  "012600e357c0823876f1b75ff5096df72dc188042f1edccf1d47ef4be0cddf80": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "description",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "completed",
+          "ordinal": 2,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "select * from tasks WHERE id = ?;"
+  },
+  "085c6ba1af016053d4b7afe42dde69658ec771718ec64ea4e51de574df783ace": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "DELETE FROM tasks WHERE id = ?"
+  },
   "11e3096becb72f427c8d3911ef4327afd9516143806981e11f8e34d069c14472": {
-    "query": "SELECT id, title, text FROM posts WHERE id = ?",
     "describe": {
       "columns": [
         {
@@ -20,28 +59,38 @@
           "type_info": "Text"
         }
       ],
-      "parameters": {
-        "Right": 1
-      },
       "nullable": [
         false,
         false,
         false
-      ]
-    }
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT id, title, text FROM posts WHERE id = ?"
   },
-  "3c289da9873097a11191dbedc5c78d86afd6a6d36771bfeb12f331abca6279cf": {
-    "query": "INSERT INTO posts (title, text) VALUES (?, ?)",
+  "2b01efa0ff9c66f4dff1f25f49cee3a2e9b0e71579337e5b43a54bd3d1a46778": {
     "describe": {
       "columns": [],
+      "nullable": [],
       "parameters": {
         "Right": 2
-      },
-      "nullable": []
-    }
+      }
+    },
+    "query": "UPDATE tasks SET completed = ? WHERE id = ?"
+  },
+  "3c289da9873097a11191dbedc5c78d86afd6a6d36771bfeb12f331abca6279cf": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "INSERT INTO posts (title, text) VALUES (?, ?)"
   },
   "4415c35941e52a981b10707fe2e1ceb0bad0e473701e51ef21ecb2973c76b4df": {
-    "query": "SELECT id FROM posts",
     "describe": {
       "columns": [
         {
@@ -50,32 +99,73 @@
           "type_info": "Int64"
         }
       ],
-      "parameters": {
-        "Right": 0
-      },
       "nullable": [
         false
-      ]
-    }
-  },
-  "668690acaca0a0c0b4ac306b14d82aa1bee940f0776fae3f9962639b78328858": {
-    "query": "DELETE FROM posts",
-    "describe": {
-      "columns": [],
+      ],
       "parameters": {
         "Right": 0
-      },
-      "nullable": []
-    }
+      }
+    },
+    "query": "SELECT id FROM posts"
   },
-  "79301b44b77802e0096efd73b1e9adac27b27a3cf7bf853af3a9f130b1684d91": {
-    "query": "DELETE FROM posts WHERE id = ?",
+  "668690acaca0a0c0b4ac306b14d82aa1bee940f0776fae3f9962639b78328858": {
     "describe": {
       "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "DELETE FROM posts"
+  },
+  "72710fe9d76f5da1ef533d477ff7f5623d4f0587aed6a02f9ce055bd78adecb4": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "description",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "completed",
+          "ordinal": 2,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "select * from tasks;"
+  },
+  "79301b44b77802e0096efd73b1e9adac27b27a3cf7bf853af3a9f130b1684d91": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
       "parameters": {
         "Right": 1
-      },
-      "nullable": []
-    }
+      }
+    },
+    "query": "DELETE FROM posts WHERE id = ?"
+  },
+  "954130f098cdc624927f197331827b65731c522bb7d6ae7c58ce878e1ccb7adb": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "INSERT INTO tasks (description, completed) VALUES (?, ?)"
   }
 }

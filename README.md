@@ -6,3 +6,7 @@ headers installed:
   * **macOS:** `brew install sqlite`
   * **Debian**, **Ubuntu:** `apt-get install libsqlite3-dev`
   * **Arch:** `pacman -S sqlite`
+
+## Database Migrations
+
+Use [sqlx-cli](https://crates.io/crates/sqlx-cli/).

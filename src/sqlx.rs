@@ -17,9 +17,11 @@ use rocket_db_pools::{sqlx, Connection, Database};
 
 use futures::{future::TryFutureExt, stream::TryStreamExt};
 
-#[derive(Database)]
-#[database("sqlx")]
-struct Db(sqlx::SqlitePool);
+use crate::db::Db;
+
+// #[derive(Database)]
+// #[database("sqlx")]
+// struct Db(sqlx::SqlitePool);
 
 type MyResult<T, E = rocket::response::Debug<sqlx::Error>> = std::result::Result<T, E>;
 
@@ -219,5 +221,6 @@ pub fn stage() -> AdHoc {
             )
             .mount("/sqlx", routes![list, create, read, delete, destroy])
             .attach(Template::fairing())
+            .attach(crate::todo::todo_stage())
     })
 }
