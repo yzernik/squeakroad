@@ -1,4 +1,5 @@
 use crate::sqlx::Error::SqlxError;
+use rocket::Request;
 use rocket::{form::*, get, post, response::Redirect, routes};
 use rocket_auth::{Auth, Error, Login, Signup, User, Users};
 use rocket_dyn_templates::Template;
@@ -24,6 +25,11 @@ use crate::db::Db;
 // struct Db(sqlx::SqlitePool);
 
 type MyResult<T, E = rocket::response::Debug<sqlx::Error>> = std::result::Result<T, E>;
+
+#[catch(401)]
+fn not_authorized(req: &Request) -> Redirect {
+    Redirect::to(uri!(get_login))
+}
 
 #[get("/login")]
 fn get_login() -> Template {
@@ -206,6 +212,7 @@ pub fn stage() -> AdHoc {
                 "SQLx Create Admin User",
                 create_admin_user,
             ))
+            .register("/", catchers![not_authorized])
             .mount(
                 "/",
                 routes![

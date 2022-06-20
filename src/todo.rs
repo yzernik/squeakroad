@@ -71,14 +71,14 @@ async fn new(todo_form: Form<Todo>, db: Connection<Db>) -> Flash<Redirect> {
 }
 
 #[put("/<id>")]
-async fn toggle(id: i32, mut db: Connection<Db>, user: Option<User>) -> Result<Redirect, Template> {
+async fn toggle(id: i32, mut db: Connection<Db>, user: User) -> Result<Redirect, Template> {
     match Task::toggle_with_id(id, &mut db).await {
         Ok(_) => Ok(Redirect::to("/todo")),
         Err(e) => {
             error_!("DB toggle({}) error: {}", id, e);
             Err(Template::render(
                 "index",
-                Context::err(db, "Failed to toggle task.", user).await,
+                Context::err(db, "Failed to toggle task.", Some(user)).await,
             ))
         }
     }
