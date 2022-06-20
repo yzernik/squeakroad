@@ -84,9 +84,8 @@ class SqueakCore:
         """
         if signing_profile.private_key is None:
             raise Exception("Can't make squeak with a contact profile.")
-        block_info = self.bitcoin_client.get_best_block_info()
-        block_height = block_info.block_height
-        block_hash = block_info.block_hash
+        block_height = 0
+        block_hash = b'\xff' * 32
         squeak, secret_key = make_squeak_with_block(
             signing_profile.private_key,
             content_str,

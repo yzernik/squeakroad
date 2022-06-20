@@ -52,8 +52,8 @@ def squeak_db(db_engine):
 
 
 @pytest.fixture
-def inserted_squeak_hash(squeak_db, squeak, block_header):
-    yield squeak_db.insert_squeak(squeak, block_header)
+def inserted_squeak_hash(squeak_db, squeak):
+    yield squeak_db.insert_squeak(squeak)
 
 
 @pytest.fixture
@@ -147,7 +147,7 @@ def inserted_squeak_hashes(squeak_db, private_key):
     ret = []
     for i in range(100):
         squeak, header = gen_squeak_with_block_header(private_key, i)
-        squeak_hash = squeak_db.insert_squeak(squeak, header)
+        squeak_hash = squeak_db.insert_squeak(squeak)
         ret.append(squeak_hash)
     yield ret
 
@@ -446,7 +446,7 @@ def test_get_deleted_squeak(squeak_db, deleted_squeak_hash):
 
 
 def test_insert_duplicate_squeak(squeak_db, squeak, block_header, inserted_squeak_hash):
-    insert_result = squeak_db.insert_squeak(squeak, block_header)
+    insert_result = squeak_db.insert_squeak(squeak)
 
     assert insert_result is None
 

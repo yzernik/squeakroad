@@ -27,7 +27,6 @@ from typing import List
 from typing import Optional
 
 import sqlalchemy
-from bitcoin.core import CBlockHeader
 from sqlalchemy import func
 from sqlalchemy import not_
 from sqlalchemy import or_
@@ -214,7 +213,7 @@ class SqueakDb:
         )
         return self.timestamp_now_ms / 1000 >= expire_time
 
-    def insert_squeak(self, squeak: CSqueak, block_header: CBlockHeader) -> Optional[bytes]:
+    def insert_squeak(self, squeak: CSqueak) -> Optional[bytes]:
         """ Insert a new squeak.
 
         Return the hash (bytes) of the inserted squeak.

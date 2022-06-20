@@ -25,7 +25,6 @@ from typing import List
 from typing import Optional
 
 from squeak.core import CBaseSqueak
-from squeak.core import CheckSqueak
 from squeak.core import CheckSqueakSecretKey
 from squeak.core import CSqueak
 from squeak.core.keys import SqueakPrivateKey
@@ -95,26 +94,13 @@ class SqueakStore:
         if inserted_squeak_hash is None:
             raise Exception("Failed to save squeak.")
         self.save_secret_key(inserted_squeak_hash, secret_key)
-        if squeak.is_private_message:
-            self.unlock_squeak(
-                inserted_squeak_hash,
-                author_profile_id=profile_id,
-            )
         return inserted_squeak_hash
 
     def save_squeak(self, base_squeak: CBaseSqueak) -> Optional[bytes]:
-        # Check if the squeak is valid context free.
-        CheckSqueak(base_squeak)
-        # Get the block header.
-        block_header = self.squeak_core.get_block_header(base_squeak)
-        # Check if limit exceeded.
-        if self.squeak_db.get_number_of_squeaks() >= self.max_squeaks:
-            raise Exception("Exceeded max number of squeaks.")
         # Insert the squeak in db.
         if isinstance(base_squeak, CSqueak):
             inserted_squeak_hash = self.squeak_db.insert_squeak(
                 base_squeak,
-                block_header,
             )
         if inserted_squeak_hash is None:
             return None

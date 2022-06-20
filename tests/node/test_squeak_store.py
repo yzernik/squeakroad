@@ -111,20 +111,6 @@ def test_save_squeak(squeak_store, squeak_db, squeak_core, block_header, squeak,
         mock_insert_squeak.assert_called_once_with(squeak, block_header)
 
 
-def test_save_squeak_above_max(squeak_store, squeak_db, squeak_core, block_header, squeak, squeak_hash, max_squeaks):
-    with mock.patch.object(squeak_db, 'get_number_of_squeaks', autospec=True) as mock_get_number_of_squeaks, \
-            mock.patch.object(squeak_db, 'insert_squeak', autospec=True) as mock_insert_squeak, \
-            mock.patch.object(squeak_core, 'get_block_header', autospec=True) as mock_get_block_header:
-        mock_get_number_of_squeaks.return_value = max_squeaks + 1
-        mock_get_block_header.return_value = block_header
-        mock_insert_squeak.return_value = squeak_hash
-
-        with pytest.raises(Exception):
-            squeak_store.save_squeak(squeak)
-
-        assert mock_insert_squeak.call_count == 0
-
-
 def test_save_secret_key(squeak_store, squeak_db, squeak_core, squeak, squeak_hash, secret_key):
     with mock.patch.object(squeak_db, 'get_squeak', autospec=True) as mock_get_squeak, \
             mock.patch.object(squeak_db, 'set_squeak_secret_key', autospec=True) as mock_set_squeak_secret_key, \
