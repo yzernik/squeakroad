@@ -30,6 +30,16 @@
     },
     "query": "SELECT id, title, text FROM posts WHERE id = ?"
   },
+  "2b01efa0ff9c66f4dff1f25f49cee3a2e9b0e71579337e5b43a54bd3d1a46778": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "UPDATE tasks SET completed = ? WHERE id = ?"
+  },
   "3c289da9873097a11191dbedc5c78d86afd6a6d36771bfeb12f331abca6279cf": {
     "describe": {
       "columns": [],

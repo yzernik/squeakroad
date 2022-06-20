@@ -67,16 +67,33 @@ impl Task {
         // .await
     }
 
-    // /// Returns the number of affected rows: 1.
-    // pub async fn toggle_with_id(id: i32, conn: &DbConn) -> QueryResult<usize> {
-    //     conn.run(move |c| {
-    //         let task = all_tasks.find(id).get_result::<Task>(c)?;
-    //         let new_status = !task.completed;
-    //         let updated_task = diesel::update(all_tasks.find(id));
-    //         updated_task.set(task_completed.eq(new_status)).execute(c)
-    //     })
-    //     .await
-    // }
+    /// Returns the number of affected rows: 1.
+    pub async fn toggle_with_id(id: i32, db: &mut Connection<Db>) -> Result<usize, sqlx::Error> {
+        //let mut tx = conn.begin().await?;
+
+        let update_result = sqlx::query!(
+            "UPDATE tasks SET completed = ? WHERE id = ?",
+            // !task.completed,
+            true,
+            id,
+        )
+        .execute(&mut **db)
+        .await?;
+
+        //tx.commit().await?;
+
+        println!("{:?}", update_result);
+
+        Ok(update_result.rows_affected() as _)
+
+        // conn.run(move |c| {
+        //     let task = all_tasks.find(id).get_result::<Task>(c)?;
+        //     let new_status = !task.completed;
+        //     let updated_task = diesel::update(all_tasks.find(id));
+        //     updated_task.set(task_completed.eq(new_status)).execute(c)
+        // })
+        // .await
+    }
 
     // /// Returns the number of affected rows: 1.
     // pub async fn delete_with_id(id: i32, conn: &DbConn) -> QueryResult<usize> {

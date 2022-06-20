@@ -21,12 +21,12 @@ struct Context {
 }
 
 impl Context {
-    // pub async fn err<M: std::fmt::Display>(db: Connection<Db>, msg: M) -> Context {
-    //     Context {
-    //         flash: Some(("error".into(), msg.to_string())),
-    //         tasks: Task::all(db).await.unwrap_or_default(),
-    //     }
-    // }
+    pub async fn err<M: std::fmt::Display>(db: Connection<Db>, msg: M) -> Context {
+        Context {
+            flash: Some(("error".into(), msg.to_string())),
+            tasks: Task::all(db).await.unwrap_or_default(),
+        }
+    }
 
     pub async fn raw(db: Connection<Db>, flash: Option<(String, String)>) -> Context {
         match Task::all(db).await {
@@ -46,11 +46,11 @@ impl Context {
 async fn new(todo_form: Form<Todo>, db: Connection<Db>) -> Flash<Redirect> {
     let todo = todo_form.into_inner();
     if todo.description.is_empty() {
-        Flash::error(Redirect::to("/"), "Description cannot be empty.")
+        Flash::error(Redirect::to("/todo"), "Description cannot be empty.")
     } else if let Err(e) = Task::insert(todo, db).await {
         error_!("DB insertion error: {}", e);
         Flash::error(
-            Redirect::to("/"),
+            Redirect::to("/todo"),
             "Todo could not be inserted due an internal error.",
         )
     } else {
@@ -58,19 +58,19 @@ async fn new(todo_form: Form<Todo>, db: Connection<Db>) -> Flash<Redirect> {
     }
 }
 
-// #[put("/<id>")]
-// async fn toggle(id: i32, mut db: Connection<Db>) -> Result<Redirect, Template> {
-//     match Task::toggle_with_id(id, &db).await {
-//         Ok(_) => Ok(Redirect::to("/")),
-//         Err(e) => {
-//             error_!("DB toggle({}) error: {}", id, e);
-//             Err(Template::render(
-//                 "index",
-//                 Context::err(&db, "Failed to toggle task.").await,
-//             ))
-//         }
-//     }
-// }
+#[put("/<id>")]
+async fn toggle(id: i32, mut db: Connection<Db>) -> Result<Redirect, Template> {
+    match Task::toggle_with_id(id, &mut db).await {
+        Ok(_) => Ok(Redirect::to("/todo")),
+        Err(e) => {
+            error_!("DB toggle({}) error: {}", id, e);
+            Err(Template::render(
+                "index",
+                Context::err(db, "Failed to toggle task.").await,
+            ))
+        }
+    }
+}
 
 // #[delete("/<id>")]
 // async fn delete(id: i32, mut db: Connection<Db>) -> Result<Flash<Redirect>, Template> {
@@ -98,6 +98,6 @@ pub fn todo_stage() -> AdHoc {
             .mount("/", FileServer::from(relative!("static")))
             .mount("/todo", routes![index])
             //.mount("/todo", routes![new, toggle, delete])
-            .mount("/todo", routes![new])
+            .mount("/todo", routes![new, toggle])
     })
 }
