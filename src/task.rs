@@ -33,8 +33,8 @@ impl Task {
             .try_collect::<Vec<_>>()
             .await?;
 
-        println!("hello there!");
         println!("{}", tasks.len());
+        println!("{:?}", tasks);
 
         Ok(tasks)
 
@@ -44,7 +44,7 @@ impl Task {
 
     /// Returns the number of affected rows: 1.
     pub async fn insert(todo: Todo, mut db: Connection<Db>) -> Result<usize, sqlx::Error> {
-        sqlx::query!(
+        let insert_result = sqlx::query!(
             "INSERT INTO tasks (description, completed) VALUES (?, ?)",
             todo.description,
             false,
@@ -52,7 +52,9 @@ impl Task {
         .execute(&mut *db)
         .await?;
 
-        Ok(1)
+        println!("{:?}", insert_result);
+
+        Ok(insert_result.rows_affected() as _)
 
         // conn.run(|c| {
         //     let t = Task {
