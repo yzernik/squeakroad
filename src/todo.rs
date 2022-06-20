@@ -1,11 +1,13 @@
 use rocket::fairing::AdHoc;
+use rocket::form::Form;
 use rocket::fs::{relative, FileServer};
 use rocket::request::FlashMessage;
+use rocket::response::{Flash, Redirect};
 use rocket::serde::Serialize;
 
 use rocket_dyn_templates::Template;
 
-use crate::task::Task;
+use crate::task::{Task, Todo};
 
 use rocket_db_pools::Connection;
 
@@ -40,21 +42,21 @@ impl Context {
     }
 }
 
-// #[post("/", data = "<todo_form>")]
-// async fn new(todo_form: Form<Todo>, mut db: Connection<Db>) -> Flash<Redirect> {
-//     let todo = todo_form.into_inner();
-//     if todo.description.is_empty() {
-//         Flash::error(Redirect::to("/"), "Description cannot be empty.")
-//     } else if let Err(e) = Task::insert(todo, &db).await {
-//         error_!("DB insertion error: {}", e);
-//         Flash::error(
-//             Redirect::to("/"),
-//             "Todo could not be inserted due an internal error.",
-//         )
-//     } else {
-//         Flash::success(Redirect::to("/"), "Todo successfully added.")
-//     }
-// }
+#[post("/", data = "<todo_form>")]
+async fn new(todo_form: Form<Todo>, db: Connection<Db>) -> Flash<Redirect> {
+    let todo = todo_form.into_inner();
+    if todo.description.is_empty() {
+        Flash::error(Redirect::to("/"), "Description cannot be empty.")
+    } else if let Err(e) = Task::insert(todo, db).await {
+        error_!("DB insertion error: {}", e);
+        Flash::error(
+            Redirect::to("/"),
+            "Todo could not be inserted due an internal error.",
+        )
+    } else {
+        Flash::success(Redirect::to("/todo"), "Todo successfully added.")
+    }
+}
 
 // #[put("/<id>")]
 // async fn toggle(id: i32, mut db: Connection<Db>) -> Result<Redirect, Template> {
@@ -95,6 +97,7 @@ pub fn todo_stage() -> AdHoc {
         rocket
             .mount("/", FileServer::from(relative!("static")))
             .mount("/todo", routes![index])
-        //.mount("/todo", routes![new, toggle, delete])
+            //.mount("/todo", routes![new, toggle, delete])
+            .mount("/todo", routes![new])
     })
 }

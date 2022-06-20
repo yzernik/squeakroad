@@ -107,5 +107,15 @@
       }
     },
     "query": "DELETE FROM posts WHERE id = ?"
+  },
+  "954130f098cdc624927f197331827b65731c522bb7d6ae7c58ce878e1ccb7adb": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "INSERT INTO tasks (description, completed) VALUES (?, ?)"
   }
 }

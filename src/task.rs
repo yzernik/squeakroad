@@ -42,18 +42,28 @@ impl Task {
         //     .await
     }
 
-    // /// Returns the number of affected rows: 1.
-    // pub async fn insert(todo: Todo, conn: &DbConn) -> QueryResult<usize> {
-    //     conn.run(|c| {
-    //         let t = Task {
-    //             id: None,
-    //             description: todo.description,
-    //             completed: false,
-    //         };
-    //         diesel::insert_into(tasks::table).values(&t).execute(c)
-    //     })
-    //     .await
-    // }
+    /// Returns the number of affected rows: 1.
+    pub async fn insert(todo: Todo, mut db: Connection<Db>) -> Result<usize, sqlx::Error> {
+        sqlx::query!(
+            "INSERT INTO tasks (description, completed) VALUES (?, ?)",
+            todo.description,
+            false,
+        )
+        .execute(&mut *db)
+        .await?;
+
+        Ok(1)
+
+        // conn.run(|c| {
+        //     let t = Task {
+        //         id: None,
+        //         description: todo.description,
+        //         completed: false,
+        //     };
+        //     diesel::insert_into(tasks::table).values(&t).execute(c)
+        // })
+        // .await
+    }
 
     // /// Returns the number of affected rows: 1.
     // pub async fn toggle_with_id(id: i32, conn: &DbConn) -> QueryResult<usize> {
