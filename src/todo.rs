@@ -72,19 +72,19 @@ async fn toggle(id: i32, mut db: Connection<Db>) -> Result<Redirect, Template> {
     }
 }
 
-// #[delete("/<id>")]
-// async fn delete(id: i32, mut db: Connection<Db>) -> Result<Flash<Redirect>, Template> {
-//     match Task::delete_with_id(id, &db).await {
-//         Ok(_) => Ok(Flash::success(Redirect::to("/"), "Todo was deleted.")),
-//         Err(e) => {
-//             error_!("DB deletion({}) error: {}", id, e);
-//             Err(Template::render(
-//                 "index",
-//                 Context::err(&db, "Failed to delete task.").await,
-//             ))
-//         }
-//     }
-// }
+#[delete("/<id>")]
+async fn delete(id: i32, mut db: Connection<Db>) -> Result<Flash<Redirect>, Template> {
+    match Task::delete_with_id(id, &mut db).await {
+        Ok(_) => Ok(Flash::success(Redirect::to("/todo"), "Todo was deleted.")),
+        Err(e) => {
+            error_!("DB deletion({}) error: {}", id, e);
+            Err(Template::render(
+                "index",
+                Context::err(db, "Failed to delete task.").await,
+            ))
+        }
+    }
+}
 
 #[get("/")]
 async fn index(flash: Option<FlashMessage<'_>>, db: Connection<Db>) -> Template {
@@ -97,7 +97,6 @@ pub fn todo_stage() -> AdHoc {
         rocket
             .mount("/", FileServer::from(relative!("static")))
             .mount("/todo", routes![index])
-            //.mount("/todo", routes![new, toggle, delete])
-            .mount("/todo", routes![new, toggle])
+            .mount("/todo", routes![new, toggle, delete])
     })
 }

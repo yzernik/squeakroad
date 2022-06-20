@@ -1,5 +1,15 @@
 {
   "db": "SQLite",
+  "085c6ba1af016053d4b7afe42dde69658ec771718ec64ea4e51de574df783ace": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "DELETE FROM tasks WHERE id = ?"
+  },
   "11e3096becb72f427c8d3911ef4327afd9516143806981e11f8e34d069c14472": {
     "describe": {
       "columns": [
