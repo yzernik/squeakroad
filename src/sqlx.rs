@@ -1,3 +1,4 @@
+use crate::sqlx::Error::SqlxError;
 use rocket::{form::*, get, post, response::Redirect, routes};
 use rocket_auth::{Auth, Error, Login, Signup, User, Users};
 use rocket_dyn_templates::Template;
@@ -169,6 +170,30 @@ async fn create_users_table(rocket: Rocket<Build>) -> fairing::Result {
     }
 }
 
+async fn create_admin_user(rocket: Rocket<Build>) -> fairing::Result {
+    match Db::fetch(&rocket) {
+        Some(db) => {
+            let users: Users = db.0.clone().into();
+            // TODO: Delete all existing admins users here.
+            // TODO: User username instead of email.
+            match users.create_user("admin@gmail.com", "pass", true).await {
+                Ok(_) => Ok(rocket),
+                Err(e) => match e {
+                    SqlxError(error_msg) => {
+                        error!("Failed to create admin user: {}", error_msg);
+                        Ok(rocket)
+                    }
+                    _ => {
+                        error!("Failed to create admin user: {}", e);
+                        Err(rocket)
+                    }
+                },
+            }
+        }
+        None => Err(rocket),
+    }
+}
+
 pub fn stage() -> AdHoc {
     AdHoc::on_ignite("SQLx Stage", |rocket| async {
         rocket
@@ -177,6 +202,10 @@ pub fn stage() -> AdHoc {
             .attach(AdHoc::try_on_ignite(
                 "SQLx Create Users table",
                 create_users_table,
+            ))
+            .attach(AdHoc::try_on_ignite(
+                "SQLx Create Admin User",
+                create_admin_user,
             ))
             .mount(
                 "/",
