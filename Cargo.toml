@@ -6,6 +6,7 @@ publish = false
 
 [dependencies]
 rocket = { version = "0.5.0-rc.2", features = ["json"] }
+serde_json = "1.0.59"
 
 [dependencies.sqlx]
 version = "0.5.1"
@@ -19,3 +20,11 @@ features = ["sqlx_sqlite"]
 [dependencies.rocket_sync_db_pools]
 version = "0.1.0-rc.2"
 features = ["sqlite_pool"]
+
+[dependencies.rocket_auth]
+version = "0.4.0"
+features = ["sqlx-sqlite"]
+
+[dependencies.rocket_dyn_templates]
+version = "0.1.0-rc.1"
+features = ["tera"]

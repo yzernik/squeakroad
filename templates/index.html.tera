@@ -1,0 +1,13 @@
+{% extends "base" %}
+{% block body %}
+{% if user %}
+Hello there, your email is {{ user.email }}.
+<br><a href="/delete">Delete your account.</a>
+
+{% endif %}
+{% if not user %}
+Hello, anonymous user.
+{% endif %}
+<br>
+<a href="show_all_users">Show all users</a>
+{% endblock body %}
