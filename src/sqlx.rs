@@ -179,10 +179,7 @@ async fn create_admin_user(rocket: Rocket<Build>) -> fairing::Result {
             match users.create_user("admin@gmail.com", "pass", true).await {
                 Ok(_) => Ok(rocket),
                 Err(e) => match e {
-                    SqlxError(error_msg) => {
-                        error!("Failed to create admin user: {}", error_msg);
-                        Ok(rocket)
-                    }
+                    SqlxError(_) => Ok(rocket),
                     _ => {
                         error!("Failed to create admin user: {}", e);
                         Err(rocket)
