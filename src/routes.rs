@@ -1,5 +1,5 @@
-use crate::sqlx::Error::SqlxError;
-use rocket_auth::{Error, Users};
+use rocket_auth::Error::SqlxError;
+use rocket_auth::Users;
 use rocket_dyn_templates::Template;
 
 use std::*;
