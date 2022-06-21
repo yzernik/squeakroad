@@ -58,22 +58,22 @@ impl Context {
 async fn new(todo_form: Form<Todo>, db: Connection<Db>, _user: User) -> Flash<Redirect> {
     let todo = todo_form.into_inner();
     if todo.description.is_empty() {
-        Flash::error(Redirect::to("/todo"), "Description cannot be empty.")
+        Flash::error(Redirect::to("/"), "Description cannot be empty.")
     } else if let Err(e) = Task::insert(todo, db).await {
         error_!("DB insertion error: {}", e);
         Flash::error(
-            Redirect::to("/todo"),
+            Redirect::to("/"),
             "Todo could not be inserted due an internal error.",
         )
     } else {
-        Flash::success(Redirect::to("/todo"), "Todo successfully added.")
+        Flash::success(Redirect::to("/"), "Todo successfully added.")
     }
 }
 
 #[put("/<id>")]
 async fn toggle(id: i32, mut db: Connection<Db>, user: User) -> Result<Redirect, Template> {
     match Task::toggle_with_id(id, &mut db).await {
-        Ok(_) => Ok(Redirect::to("/todo")),
+        Ok(_) => Ok(Redirect::to("/")),
         Err(e) => {
             error_!("DB toggle({}) error: {}", id, e);
             Err(Template::render(
@@ -87,7 +87,7 @@ async fn toggle(id: i32, mut db: Connection<Db>, user: User) -> Result<Redirect,
 #[delete("/<id>")]
 async fn delete(id: i32, mut db: Connection<Db>, user: User) -> Result<Flash<Redirect>, Template> {
     match Task::delete_with_id(id, &mut db).await {
-        Ok(_) => Ok(Flash::success(Redirect::to("/todo"), "Todo was deleted.")),
+        Ok(_) => Ok(Flash::success(Redirect::to("/"), "Todo was deleted.")),
         Err(e) => {
             error_!("DB deletion({}) error: {}", id, e);
             Err(Template::render(
@@ -112,7 +112,7 @@ pub fn todo_stage() -> AdHoc {
     AdHoc::on_ignite("Todo Stage", |rocket| async {
         rocket
             .mount("/", FileServer::from(relative!("static")))
-            .mount("/todo", routes![index])
+            .mount("/", routes![index])
             .mount("/todo", routes![new, toggle, delete])
     })
 }
