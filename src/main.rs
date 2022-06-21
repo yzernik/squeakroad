@@ -6,6 +6,7 @@ mod tests;
 
 mod auth;
 mod db;
+mod models;
 mod posts;
 mod routes;
 mod task;
