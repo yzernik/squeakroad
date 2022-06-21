@@ -73,7 +73,6 @@ pub fn auth_stage() -> AdHoc {
         rocket.register("/", catchers![not_authorized]).mount(
             "/",
             routes![
-                // index,
                 get_login,
                 post_signup,
                 get_signup,
