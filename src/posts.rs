@@ -81,6 +81,6 @@ async fn destroy(mut db: Connection<Db>) -> MyResult<()> {
 
 pub fn posts_stage() -> AdHoc {
     AdHoc::on_ignite("Posts Stage", |rocket| async {
-        rocket.mount("/sqlx", routes![list, create, read, delete, destroy])
+        rocket.mount("/posts", routes![list, create, read, delete, destroy])
     })
 }

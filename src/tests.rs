@@ -69,6 +69,6 @@ fn test(base: &str, stage: AdHoc) {
 }
 
 #[test]
-fn test_sqlx() {
-    test("/sqlx", crate::sqlx::stage())
+fn test_routes() {
+    test("/posts", crate::routes::stage())
 }
