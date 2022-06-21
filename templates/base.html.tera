@@ -26,6 +26,7 @@
                 <a class="navbar-brand" href="/login">Login</a>
                 <a class="navbar-brand" href="/signup">Sign up</a>
                 {% else %}
+                Welcome, <a class="navbar-brand" href="/">{{ user.email }}</a>
                 <a class="navbar-brand" href="/logout">Log out</a>
                 {% endif %}
             </div>
