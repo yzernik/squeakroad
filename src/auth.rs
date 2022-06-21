@@ -74,7 +74,7 @@ async fn show_all_users(mut db: Connection<Db>, user: Option<User>) -> Result<Te
 }
 
 pub fn auth_stage() -> AdHoc {
-    AdHoc::on_ignite("Todo Stage", |rocket| async {
+    AdHoc::on_ignite("Auth Stage", |rocket| async {
         rocket.register("/", catchers![not_authorized]).mount(
             "/",
             routes![
