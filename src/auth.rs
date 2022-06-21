@@ -46,11 +46,6 @@ async fn post_signup(auth: Auth<'_>, form: Form<Signup>) -> Result<Redirect, Err
     Ok(Redirect::to("/"))
 }
 
-// #[get("/")]
-// async fn index(user: Option<User>) -> Template {
-//     Template::render("index", json!({ "user": user }))
-// }
-
 #[get("/logout")]
 fn logout(auth: Auth<'_>) -> Result<Template, Error> {
     auth.logout()?;
