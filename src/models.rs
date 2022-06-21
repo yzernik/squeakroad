@@ -1,5 +1,3 @@
-use rocket::serde::Serialize;
-
 use std::result::Result;
 
 use crate::db::Db;
@@ -10,6 +8,19 @@ use crate::rocket::futures::TryFutureExt;
 use crate::rocket::futures::TryStreamExt;
 
 use sqlx::Acquire;
+
+use std::*;
+
+use rocket::serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(crate = "rocket::serde")]
+pub struct Post {
+    #[serde(skip_deserializing, skip_serializing_if = "Option::is_none")]
+    pub id: Option<i64>,
+    pub title: String,
+    pub text: String,
+}
 
 #[derive(Serialize, Debug, Clone)]
 #[serde(crate = "rocket::serde")]

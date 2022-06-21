@@ -8,7 +8,7 @@ use rocket_auth::User;
 
 use rocket_dyn_templates::Template;
 
-use crate::task::{Task, Todo};
+use crate::models::{Task, Todo};
 
 use rocket_db_pools::Connection;
 

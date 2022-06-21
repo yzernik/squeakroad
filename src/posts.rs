@@ -5,7 +5,7 @@ use std::*;
 use rocket::fairing::AdHoc;
 use rocket::futures;
 use rocket::response::status::Created;
-use rocket::serde::{json::Json, Deserialize, Serialize};
+use rocket::serde::json::Json;
 
 use rocket_db_pools::{sqlx, Connection};
 
@@ -13,15 +13,7 @@ use futures::{future::TryFutureExt, stream::TryStreamExt};
 
 use crate::auth::MyResult;
 use crate::db::Db;
-
-#[derive(Debug, Clone, Deserialize, Serialize)]
-#[serde(crate = "rocket::serde")]
-struct Post {
-    #[serde(skip_deserializing, skip_serializing_if = "Option::is_none")]
-    id: Option<i64>,
-    title: String,
-    text: String,
-}
+use crate::models::Post;
 
 #[post("/", data = "<post>")]
 async fn create(mut db: Connection<Db>, post: Json<Post>) -> MyResult<Created<Json<Post>>> {
