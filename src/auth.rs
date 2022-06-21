@@ -46,10 +46,10 @@ async fn post_signup(auth: Auth<'_>, form: Form<Signup>) -> Result<Redirect, Err
     Ok(Redirect::to("/"))
 }
 
-#[get("/")]
-async fn index(user: Option<User>) -> Template {
-    Template::render("index", json!({ "user": user }))
-}
+// #[get("/")]
+// async fn index(user: Option<User>) -> Template {
+//     Template::render("index", json!({ "user": user }))
+// }
 
 #[get("/logout")]
 fn logout(auth: Auth<'_>) -> Result<Template, Error> {
@@ -78,7 +78,7 @@ pub fn auth_stage() -> AdHoc {
         rocket.register("/", catchers![not_authorized]).mount(
             "/",
             routes![
-                index,
+                // index,
                 get_login,
                 post_signup,
                 get_signup,
