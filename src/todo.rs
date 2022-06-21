@@ -4,7 +4,7 @@ use rocket::fs::{relative, FileServer};
 use rocket::request::FlashMessage;
 use rocket::response::{Flash, Redirect};
 use rocket::serde::Serialize;
-use rocket_auth::{Auth, Error, Login, Signup, User, Users};
+use rocket_auth::User;
 
 use rocket_dyn_templates::Template;
 
@@ -55,7 +55,7 @@ impl Context {
 }
 
 #[post("/", data = "<todo_form>")]
-async fn new(todo_form: Form<Todo>, db: Connection<Db>) -> Flash<Redirect> {
+async fn new(todo_form: Form<Todo>, db: Connection<Db>, _user: User) -> Flash<Redirect> {
     let todo = todo_form.into_inner();
     if todo.description.is_empty() {
         Flash::error(Redirect::to("/todo"), "Description cannot be empty.")
@@ -85,18 +85,14 @@ async fn toggle(id: i32, mut db: Connection<Db>, user: User) -> Result<Redirect,
 }
 
 #[delete("/<id>")]
-async fn delete(
-    id: i32,
-    mut db: Connection<Db>,
-    user: Option<User>,
-) -> Result<Flash<Redirect>, Template> {
+async fn delete(id: i32, mut db: Connection<Db>, user: User) -> Result<Flash<Redirect>, Template> {
     match Task::delete_with_id(id, &mut db).await {
         Ok(_) => Ok(Flash::success(Redirect::to("/todo"), "Todo was deleted.")),
         Err(e) => {
             error_!("DB deletion({}) error: {}", id, e);
             Err(Template::render(
                 "index",
-                Context::err(db, "Failed to delete task.", user).await,
+                Context::err(db, "Failed to delete task.", Some(user)).await,
             ))
         }
     }

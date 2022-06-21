@@ -1,5 +1,4 @@
 use crate::sqlx::Error::SqlxError;
-use rocket::Request;
 use rocket::{form::*, get, post, response::Redirect, routes};
 use rocket_auth::{Auth, Error, Login, Signup, User, Users};
 use rocket_dyn_templates::Template;
@@ -27,7 +26,7 @@ use crate::db::Db;
 type MyResult<T, E = rocket::response::Debug<sqlx::Error>> = std::result::Result<T, E>;
 
 #[catch(401)]
-fn not_authorized(req: &Request) -> Redirect {
+fn not_authorized() -> Redirect {
     Redirect::to(uri!(get_login))
 }
 
