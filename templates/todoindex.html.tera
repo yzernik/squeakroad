@@ -1,19 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>Rocket Todo Example</title>
-  <meta name="description" content="A todo application written in Rocket.">
-  <meta name="author" content="Sergio Benitez">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+{% extends "base" %}
+{% block body %}
+{% if user %}
+Hello there, your email is {{ user.email }}.
+<br><a href="/delete">Delete your account.</a>
 
-  <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
-  <link rel="stylesheet" href="/css/normalize.css">
-  <link rel="stylesheet" href="/css/skeleton.css">
-  <link rel="stylesheet" href="/css/style.css">
-  <link rel="icon" type="image/png" href="/images/favicon.png">
-</head>
-<body>
+{% endif %}
+{% if not user %}
+Hello, anonymous user.
+{% endif %}
+<br>
+<a href="show_all_users">Show all users</a>
+
+<br>
+
   <div class="container">
     <p><!--Nothing to see here --></p>
 
@@ -65,5 +64,6 @@
       </div>
     </div>
   </div>
-</body>
-</html>
+
+
+{% endblock body %}

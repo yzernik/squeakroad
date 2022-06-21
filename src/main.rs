@@ -4,7 +4,9 @@ extern crate rocket;
 #[cfg(test)]
 mod tests;
 
+mod auth;
 mod db;
+mod posts;
 mod sqlx;
 mod task;
 mod todo;
