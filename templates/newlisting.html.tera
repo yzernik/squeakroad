@@ -18,7 +18,7 @@ Hello, anonymous user.
 
     <div class="row">
       <h4>Create New Listing</h4>
-      <form action="/listing" method="post">
+      <form action="/new_listing" method="post">
         <div class="ten columns">
           <input type="text" placeholder="enter a listing title..."
             name="title" id="title" value="" autofocus
