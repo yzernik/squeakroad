@@ -22,12 +22,16 @@
         <div class="container-fluid">
             <a class="navbar-brand" href="/">Rocket Auth Example</a>
             <div>
+                {% if user %}
+                Welcome, <a class="navbar-brand" href="/">{{ user.email }}</a>
+                {% endif %}
+                {% if admin_user %}
+                <a class="navbar-brand" href="/admin">Admin</a>
+                {% endif %}
                 {% if not user %}
                 <a class="navbar-brand" href="/login">Login</a>
                 <a class="navbar-brand" href="/signup">Sign up</a>
                 {% else %}
-                Welcome, <a class="navbar-brand" href="/">{{ user.email }}</a>
-                <a class="navbar-brand" href="/admin">Admin</a>
                 <a class="navbar-brand" href="/logout">Log out</a>
                 {% endif %}
             </div>
