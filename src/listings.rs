@@ -75,7 +75,7 @@ async fn new(
         price_msat: listing_info.price_msat,
         completed: false,
         approved: false,
-        created_time: now,
+        created_time_s: now,
     };
 
     if listing.description.is_empty() {

@@ -109,7 +109,7 @@
           "type_info": "Bool"
         },
         {
-          "name": "created_time",
+          "name": "created_time_s",
           "ordinal": 7,
           "type_info": "Int64"
         }
@@ -129,16 +129,6 @@
       }
     },
     "query": "select * from listings;"
-  },
-  "2121aa0c39f4425165b7a631c0cdc4154ab62042691babb1d29c5cc35decfc0d": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 7
-      }
-    },
-    "query": "INSERT INTO listings (user_id, title, description, price_msat, completed, approved, created_time) VALUES (?, ?, ?, ?, ?, ?, ?)"
   },
   "2b01efa0ff9c66f4dff1f25f49cee3a2e9b0e71579337e5b43a54bd3d1a46778": {
     "describe": {
@@ -237,5 +227,15 @@
       }
     },
     "query": "INSERT INTO tasks (description, completed) VALUES (?, ?)"
+  },
+  "f74246baa3014973cbfd6a5b8a508b94310ef0c3067dd8f490121fdd036ee7b9": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 7
+      }
+    },
+    "query": "INSERT INTO listings (user_id, title, description, price_msat, completed, approved, created_time_s) VALUES (?, ?, ?, ?, ?, ?, ?)"
   }
 }
