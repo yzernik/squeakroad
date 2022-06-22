@@ -74,6 +74,7 @@ pub fn stage() -> AdHoc {
             .mount("/", FileServer::from(relative!("static")))
             .attach(crate::posts::posts_stage())
             .attach(crate::auth::auth_stage())
+            .attach(crate::admin::admin_stage())
             // .attach(crate::todo::todo_stage())
             .attach(crate::listings::listings_stage())
             .attach(crate::listing::listing_stage())
