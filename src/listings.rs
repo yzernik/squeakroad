@@ -58,13 +58,13 @@ impl Context {
 async fn new(
     listing_form: Form<InitialListingInfo>,
     db: Connection<Db>,
-    _user: User,
+    user: User,
 ) -> Flash<Redirect> {
     let listing_info = listing_form.into_inner();
 
     let listing = Listing {
         id: None,
-        user_id: 1,
+        user_id: user.id(),
         title: listing_info.title,
         description: listing_info.description,
         price_msat: listing_info.price_msat,

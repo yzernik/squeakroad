@@ -61,7 +61,7 @@ Hello, anonymous user.
             <li>
               <form class="link" action="/listing/{{listing.id}}" method="post">
                 <input type="hidden" name="_method" value="put" />
-                <button class="link" type="submit">{{ listing.title }} ({{ listing.description }}) ({{ listing.price_msat }})</button>
+                <button class="link" type="submit">{{ listing.title }} ({{ listing.description }}) ({{ listing.price_msat }}) ({{ listing.user_id }})</button>
               </form>
             </li>
           {% endif %}
