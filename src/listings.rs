@@ -9,6 +9,7 @@ use rocket::serde::Serialize;
 use rocket_auth::User;
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -61,6 +62,10 @@ async fn new(
     user: User,
 ) -> Flash<Redirect> {
     let listing_info = listing_form.into_inner();
+    let now = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs() as u64;
 
     let listing = Listing {
         id: None,
@@ -70,7 +75,7 @@ async fn new(
         price_msat: listing_info.price_msat,
         completed: false,
         approved: false,
-        created_time: 999,
+        created_time: now,
     };
 
     if listing.description.is_empty() {

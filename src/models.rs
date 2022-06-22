@@ -159,7 +159,7 @@ impl Listing {
     /// Returns the number of affected rows: 1.
     pub async fn insert(listing: Listing, mut db: Connection<Db>) -> Result<usize, sqlx::Error> {
         let price_msat: i64 = listing.price_msat as _;
-        let created_time_s: i64 = listing.price_msat as _;
+        let created_time_s: i64 = listing.created_time as _;
 
         let insert_result = sqlx::query!(
             "INSERT INTO listings (user_id, title, description, price_msat, completed, approved, created_time) VALUES (?, ?, ?, ?, ?, ?, ?)",
