@@ -1,15 +1,11 @@
 use crate::db::Db;
-use crate::models::{InitialListingInfo, Listing};
+use crate::models::Listing;
 use rocket::fairing::AdHoc;
-use rocket::form::Form;
-use rocket::fs::{relative, FileServer};
 use rocket::request::FlashMessage;
-use rocket::response::{Flash, Redirect};
 use rocket::serde::Serialize;
 use rocket_auth::User;
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -20,17 +16,17 @@ struct Context {
 }
 
 impl Context {
-    pub async fn err<M: std::fmt::Display>(
-        db: Connection<Db>,
-        msg: M,
-        user: Option<User>,
-    ) -> Context {
-        Context {
-            flash: Some(("error".into(), msg.to_string())),
-            listings: Listing::all(db).await.unwrap_or_default(),
-            user: user,
-        }
-    }
+    // pub async fn err<M: std::fmt::Display>(
+    //     db: Connection<Db>,
+    //     msg: M,
+    //     user: Option<User>,
+    // ) -> Context {
+    //     Context {
+    //         flash: Some(("error".into(), msg.to_string())),
+    //         listings: Listing::all(db).await.unwrap_or_default(),
+    //         user: user,
+    //     }
+    // }
 
     pub async fn raw(
         db: Connection<Db>,

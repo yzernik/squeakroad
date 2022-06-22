@@ -11,7 +11,6 @@ mod models;
 mod new_listing;
 mod posts;
 mod routes;
-mod todo;
 
 #[launch]
 fn rocket() -> _ {
