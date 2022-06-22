@@ -71,7 +71,7 @@ impl Context {
 //         price_msat: listing_info.price_msat,
 //         completed: false,
 //         approved: false,
-//         created_time_s: now,
+//         created_time_ms: now,
 //     };
 
 //     if listing.description.is_empty() {

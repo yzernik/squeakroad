@@ -1,45 +1,5 @@
 {
   "db": "SQLite",
-  "012600e357c0823876f1b75ff5096df72dc188042f1edccf1d47ef4be0cddf80": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int64"
-        },
-        {
-          "name": "description",
-          "ordinal": 1,
-          "type_info": "Text"
-        },
-        {
-          "name": "completed",
-          "ordinal": 2,
-          "type_info": "Bool"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "select * from tasks WHERE id = ?;"
-  },
-  "085c6ba1af016053d4b7afe42dde69658ec771718ec64ea4e51de574df783ace": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "DELETE FROM tasks WHERE id = ?"
-  },
   "11e3096becb72f427c8d3911ef4327afd9516143806981e11f8e34d069c14472": {
     "describe": {
       "columns": [
@@ -109,7 +69,7 @@
           "type_info": "Bool"
         },
         {
-          "name": "created_time_s",
+          "name": "created_time_ms",
           "ordinal": 7,
           "type_info": "Int64"
         }
@@ -130,15 +90,15 @@
     },
     "query": "select * from listings;"
   },
-  "2b01efa0ff9c66f4dff1f25f49cee3a2e9b0e71579337e5b43a54bd3d1a46778": {
+  "288eb5793fff74e2d6b669b96ba963d21ef6765f0dc24870caa1a85be6fb4b5e": {
     "describe": {
       "columns": [],
       "nullable": [],
       "parameters": {
-        "Right": 2
+        "Right": 7
       }
     },
-    "query": "UPDATE tasks SET completed = ? WHERE id = ?"
+    "query": "INSERT INTO listings (user_id, title, description, price_msat, completed, approved, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?)"
   },
   "3c289da9873097a11191dbedc5c78d86afd6a6d36771bfeb12f331abca6279cf": {
     "describe": {
@@ -178,36 +138,6 @@
     },
     "query": "DELETE FROM posts"
   },
-  "72710fe9d76f5da1ef533d477ff7f5623d4f0587aed6a02f9ce055bd78adecb4": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int64"
-        },
-        {
-          "name": "description",
-          "ordinal": 1,
-          "type_info": "Text"
-        },
-        {
-          "name": "completed",
-          "ordinal": 2,
-          "type_info": "Bool"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Right": 0
-      }
-    },
-    "query": "select * from tasks;"
-  },
   "79301b44b77802e0096efd73b1e9adac27b27a3cf7bf853af3a9f130b1684d91": {
     "describe": {
       "columns": [],
@@ -217,25 +147,5 @@
       }
     },
     "query": "DELETE FROM posts WHERE id = ?"
-  },
-  "954130f098cdc624927f197331827b65731c522bb7d6ae7c58ce878e1ccb7adb": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 2
-      }
-    },
-    "query": "INSERT INTO tasks (description, completed) VALUES (?, ?)"
-  },
-  "f74246baa3014973cbfd6a5b8a508b94310ef0c3067dd8f490121fdd036ee7b9": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 7
-      }
-    },
-    "query": "INSERT INTO listings (user_id, title, description, price_msat, completed, approved, created_time_s) VALUES (?, ?, ?, ?, ?, ?, ?)"
   }
 }

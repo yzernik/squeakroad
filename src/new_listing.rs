@@ -40,7 +40,7 @@ async fn new(
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
-        .as_secs() as u64;
+        .as_millis() as u64;
 
     let listing = Listing {
         id: None,
@@ -50,7 +50,7 @@ async fn new(
         price_msat: listing_info.price_msat,
         completed: false,
         approved: false,
-        created_time_s: now,
+        created_time_ms: now,
     };
 
     if listing.description.is_empty() {

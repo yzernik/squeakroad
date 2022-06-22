@@ -36,7 +36,7 @@ pub struct Listing {
     pub price_msat: u64,
     pub completed: bool,
     pub approved: bool,
-    pub created_time_s: u64,
+    pub created_time_ms: u64,
 }
 
 #[derive(Debug, FromForm)]
@@ -51,7 +51,7 @@ pub struct InitialListingInfo {
 //     pub title: String,
 //     pub description: String,
 //     pub price_msat: u64,
-//     pub created_time_s: u64,
+//     pub created_time_ms: u64,
 // }
 
 // impl Task {
@@ -143,7 +143,7 @@ impl Listing {
                 price_msat: r.price_msat as _,
                 completed: r.completed,
                 approved: r.approved,
-                created_time_s: r.created_time_s as _,
+                created_time_ms: r.created_time_ms as _,
             })
             .try_collect::<Vec<_>>()
             .await?;
@@ -157,17 +157,17 @@ impl Listing {
     /// Returns the number of affected rows: 1.
     pub async fn insert(listing: Listing, mut db: Connection<Db>) -> Result<usize, sqlx::Error> {
         let price_msat: i64 = listing.price_msat as _;
-        let created_time_s: i64 = listing.created_time_s as _;
+        let created_time_ms: i64 = listing.created_time_ms as _;
 
         let insert_result = sqlx::query!(
-            "INSERT INTO listings (user_id, title, description, price_msat, completed, approved, created_time_s) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO listings (user_id, title, description, price_msat, completed, approved, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?)",
             listing.user_id,
             listing.title,
             listing.description,
             price_msat,
             listing.completed,
             listing.approved,
-            created_time_s,
+            created_time_ms,
         )
         .execute(&mut *db)
         .await?;
