@@ -6,6 +6,7 @@ mod tests;
 
 mod auth;
 mod db;
+mod listing;
 mod listings;
 mod models;
 mod new_listing;

@@ -24,7 +24,7 @@ Hello, anonymous user.
             <li>
               <span class="completed">{{ listing.description }}</span>
               <form class="inline" action="/listing/{{listing.id}}" method="post">
-                <input type="hidden" name="_method" value="put" />
+                <input type="hidden" name="_method" value="get" />
                 <button class="small" type="submit">undo</button>
               </form>
               <form class="inline" action="/listing/{{listing.id}}" method="post">
@@ -35,7 +35,7 @@ Hello, anonymous user.
           {% else %}
             <li>
               <form class="link" action="/listing/{{listing.id}}" method="post">
-                <input type="hidden" name="_method" value="put" />
+                <input type="hidden" name="_method" value="get" />
                 <button class="link" type="submit">{{ listing.title }} ({{ listing.description }}) ({{ listing.price_msat }}) ({{ listing.user_id }})</button>
               </form>
             </li>

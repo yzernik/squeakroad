@@ -1,4 +1,5 @@
 use crate::db::Db;
+use crate::rocket::futures::TryFutureExt;
 use crate::rocket::futures::TryStreamExt;
 use rocket::serde::{Deserialize, Serialize};
 use rocket_db_pools::{sqlx, Connection};
@@ -175,5 +176,25 @@ impl Listing {
         println!("{:?}", insert_result);
 
         Ok(insert_result.rows_affected() as _)
+    }
+
+    pub async fn single(mut db: Connection<Db>, id: i32) -> Result<Option<Listing>, sqlx::Error> {
+        let listing = sqlx::query!("select * from listings WHERE id = ?;", id)
+            .fetch_one(&mut *db)
+            .map_ok(|r| Listing {
+                id: Some(r.id.try_into().unwrap()),
+                user_id: r.user_id as _,
+                title: r.title,
+                description: r.description,
+                price_msat: r.price_msat as _,
+                completed: r.completed,
+                approved: r.approved,
+                created_time_ms: r.created_time_ms as _,
+            })
+            .await?;
+
+        println!("{:?}", listing);
+
+        Ok(Some(listing))
     }
 }
