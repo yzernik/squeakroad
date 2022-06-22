@@ -1,17 +1,12 @@
+use crate::db::Db;
+use rocket::fairing::AdHoc;
 use rocket::{form::*, get, post, response::Redirect, routes};
 use rocket_auth::{Auth, Error, Login, Signup, User};
+use rocket_db_pools::{sqlx, Connection};
 use rocket_dyn_templates::Template;
 use serde_json::json;
-use sqlx::*;
-
+use sqlx::query_as;
 use std::result::Result;
-use std::*;
-
-use rocket::fairing::AdHoc;
-
-use rocket_db_pools::{sqlx, Connection};
-
-use crate::db::Db;
 
 pub type MyResult<T, E = rocket::response::Debug<sqlx::Error>> = std::result::Result<T, E>;
 
@@ -42,7 +37,6 @@ async fn get_signup() -> Template {
 async fn post_signup(auth: Auth<'_>, form: Form<Signup>) -> Result<Redirect, Error> {
     auth.signup(&form).await?;
     auth.login(&form.into()).await?;
-
     Ok(Redirect::to("/"))
 }
 

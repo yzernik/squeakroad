@@ -1,3 +1,5 @@
+use crate::db::Db;
+use crate::models::{Task, Todo};
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
 use rocket::fs::{relative, FileServer};
@@ -5,14 +7,8 @@ use rocket::request::FlashMessage;
 use rocket::response::{Flash, Redirect};
 use rocket::serde::Serialize;
 use rocket_auth::User;
-
-use rocket_dyn_templates::Template;
-
-use crate::models::{Task, Todo};
-
 use rocket_db_pools::Connection;
-
-use crate::db::Db;
+use rocket_dyn_templates::Template;
 
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]

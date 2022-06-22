@@ -1,19 +1,13 @@
-use rocket::{get, post, routes};
-
-use std::*;
-
+use crate::auth::MyResult;
+use crate::db::Db;
+use crate::models::Post;
+use futures::{future::TryFutureExt, stream::TryStreamExt};
 use rocket::fairing::AdHoc;
 use rocket::futures;
 use rocket::response::status::Created;
 use rocket::serde::json::Json;
-
+use rocket::{get, post, routes};
 use rocket_db_pools::{sqlx, Connection};
-
-use futures::{future::TryFutureExt, stream::TryStreamExt};
-
-use crate::auth::MyResult;
-use crate::db::Db;
-use crate::models::Post;
 
 #[post("/", data = "<post>")]
 async fn create(mut db: Connection<Db>, post: Json<Post>) -> MyResult<Created<Json<Post>>> {
