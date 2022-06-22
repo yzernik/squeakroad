@@ -1,0 +1,47 @@
+{% extends "base" %}
+{% block body %}
+{% if user %}
+Hello there, your email is {{ user.email }}.
+<br><a href="/delete">Delete your account.</a>
+
+{% endif %}
+{% if not user %}
+Hello, anonymous user.
+{% endif %}
+<br>
+<a href="show_all_users">Show all users</a>
+
+<br>
+
+  <div class="container">
+    <p><!--Nothing to see here --></p>
+
+    <div class="row">
+      <h4>Create New Listing</h4>
+      <form action="/new_listing" method="post">
+        <div class="ten columns">
+          <input type="text" placeholder="enter a listing title..."
+            name="title" id="title" value="" autofocus
+            class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" />
+          <input type="text" placeholder="enter a listing description..."
+            name="description" id="description" value="" autofocus
+            class="u-full-width" />
+          <input type="number" placeholder="enter a listing price..."
+            name="price_msat" id="price_msat" value="" autofocus
+            class="u-full-width" />
+          {% if flash %}
+            <small class="field-{{flash.0}}-msg">
+               {{ flash.1 }}
+            </small>
+          {% endif %}
+        </div>
+        <div class="two columns">
+          <input type="submit" value="add listing">
+        </div>
+      </form>
+    </div>
+
+  </div>
+
+
+{% endblock body %}
