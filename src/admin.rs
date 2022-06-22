@@ -12,6 +12,7 @@ use rocket_dyn_templates::Template;
 struct Context {
     flash: Option<(String, String)>,
     user: Option<User>,
+    admin_user: Option<AdminUser>,
 }
 
 impl Context {
@@ -31,8 +32,13 @@ impl Context {
         _db: Connection<Db>,
         flash: Option<(String, String)>,
         user: Option<User>,
+        admin_user: Option<AdminUser>,
     ) -> Context {
-        Context { flash, user }
+        Context {
+            flash,
+            user,
+            admin_user,
+        }
     }
 }
 
@@ -105,10 +111,13 @@ async fn index(
     flash: Option<FlashMessage<'_>>,
     db: Connection<Db>,
     user: User,
-    _admin_user: AdminUser,
+    admin_user: AdminUser,
 ) -> Template {
     let flash = flash.map(FlashMessage::into_inner);
-    Template::render("admin", Context::raw(db, flash, Some(user)).await)
+    Template::render(
+        "admin",
+        Context::raw(db, flash, Some(user), Some(admin_user)).await,
+    )
 }
 
 pub fn admin_stage() -> AdHoc {

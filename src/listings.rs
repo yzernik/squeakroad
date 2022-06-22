@@ -3,7 +3,7 @@ use crate::models::Listing;
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::serde::Serialize;
-use rocket_auth::User;
+use rocket_auth::{AdminUser, User};
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
 
@@ -13,6 +13,7 @@ struct Context {
     flash: Option<(String, String)>,
     listings: Vec<Listing>,
     user: Option<User>,
+    admin_user: Option<AdminUser>,
 }
 
 impl Context {
@@ -32,12 +33,14 @@ impl Context {
         db: Connection<Db>,
         flash: Option<(String, String)>,
         user: Option<User>,
+        admin_user: Option<AdminUser>,
     ) -> Context {
         match Listing::all(db).await {
             Ok(listings) => Context {
                 flash,
                 listings,
                 user,
+                admin_user,
             },
             Err(e) => {
                 error_!("DB Listing::all() error: {}", e);
@@ -45,6 +48,7 @@ impl Context {
                     flash: Some(("error".into(), "Fail to access database.".into())),
                     listings: vec![],
                     user: user,
+                    admin_user: admin_user,
                 }
             }
         }
@@ -120,9 +124,13 @@ async fn index(
     flash: Option<FlashMessage<'_>>,
     db: Connection<Db>,
     user: Option<User>,
+    admin_user: Option<AdminUser>,
 ) -> Template {
     let flash = flash.map(FlashMessage::into_inner);
-    Template::render("listingsindex", Context::raw(db, flash, user).await)
+    Template::render(
+        "listingsindex",
+        Context::raw(db, flash, user, admin_user).await,
+    )
 }
 
 pub fn listings_stage() -> AdHoc {
