@@ -1,11 +1,18 @@
 use crate::db::Db;
+use crate::models::FileUploadForm;
 use crate::models::Listing;
 use rocket::fairing::AdHoc;
+use rocket::form::Form;
+use rocket::fs::TempFile;
 use rocket::request::FlashMessage;
-use rocket::serde::Serialize;
+use rocket::response::{Flash, Redirect};
+use rocket::serde::json::{json, Value};
+use rocket::serde::{json, Deserialize, Serialize};
 use rocket_auth::{AdminUser, User};
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
+use std::fs;
+use uuid::Uuid;
 
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -17,12 +24,20 @@ struct Context {
 }
 
 impl Context {
-    // pub async fn err<M: std::fmt::Display>(msg: M, user: Option<User>) -> Context {
-    //     Context {
-    //         flash: Some(("error".into(), msg.to_string())),
-    //         user: user,
-    //     }
-    // }
+    pub async fn err<M: std::fmt::Display>(
+        db: Connection<Db>,
+        listing_id: i32,
+        msg: M,
+        user: User,
+        admin_user: Option<AdminUser>,
+    ) -> Context {
+        Context {
+            flash: Some(("error".into(), msg.to_string())),
+            listing: None,
+            user: user,
+            admin_user,
+        }
+    }
 
     pub async fn raw(
         db: Connection<Db>,
@@ -74,41 +89,57 @@ impl Context {
     }
 }
 
-// #[post("/add_photo", data = "<listing_form>")]
-// async fn new(
-//     listing_form: Form<InitialListingInfo>,
-//     db: Connection<Db>,
-//     user: User,
-// ) -> Flash<Redirect> {
-//     let listing_info = listing_form.into_inner();
-//     let now = SystemTime::now()
-//         .duration_since(UNIX_EPOCH)
-//         .unwrap()
-//         .as_millis() as u64;
+#[post("/<id>/add_photo", data = "<upload_image_form>")]
+async fn new(
+    id: i32,
+    upload_image_form: Form<FileUploadForm<'_>>,
+    db: Connection<Db>,
+    user: User,
+    admin_user: Option<AdminUser>,
+) -> Result<Flash<Redirect>, Template> {
+    println!("listing_id: {:?}", id);
 
-//     let listing = Listing {
-//         id: None,
-//         user_id: user.id(),
-//         title: listing_info.title,
-//         description: listing_info.description,
-//         price_msat: listing_info.price_msat,
-//         completed: false,
-//         approved: false,
-//         created_time_ms: now,
-//     };
+    let image_info = upload_image_form.into_inner();
+    let file = image_info.file;
 
-//     if listing.description.is_empty() {
-//         Flash::error(Redirect::to("/"), "Description cannot be empty.")
-//     } else if let Err(e) = Listing::insert(listing, db).await {
-//         error_!("DB insertion error: {}", e);
-//         Flash::error(
-//             Redirect::to("/"),
-//             "Listing could not be inserted due an internal error.",
-//         )
-//     } else {
-//         Flash::success(Redirect::to("/"), "Listing successfully added.")
-//     }
-// }
+    if let Some(image_bytes) = get_file_bytes(file) {
+        println!("got bytes: {:?}", image_bytes);
+        Ok(Flash::error(
+            Redirect::to("/"),
+            "Listing could not be inserted due an internal error.",
+        ))
+    } else {
+        error_!("DB deletion({}) error: {}", id, "Some error string");
+        Err(Template::render(
+            "index",
+            Context::err(db, id, "Failed to delete task.", user, admin_user).await,
+        ))
+    }
+}
+
+fn get_file_bytes(tmp_file: TempFile) -> Option<Vec<u8>> {
+    println!("path: {:?}", tmp_file.path());
+    println!("content_type: {:?}", tmp_file.content_type());
+
+    // match tmp_file {
+    //     TempFile::File { len, .. } => {
+    //         println!("matched a file.")
+    //     }
+    //     TempFile::Buffered { content } => {
+    //         println!("matched a buffered");
+    //         println!("content.len: {:?}", content.len() as u64);
+    //         println!("content: {:?}", content)
+    //     }
+    // }
+
+    if let Some(path) = tmp_file.path() {
+        println!("found path.");
+        let content = fs::read(&path);
+        content.ok()
+    } else {
+        None
+    }
+}
 
 // #[put("/<id>")]
 // async fn toggle(id: i32, mut db: Connection<Db>, user: User) -> Result<Redirect, Template> {
@@ -157,6 +188,6 @@ pub fn add_listing_photos_stage() -> AdHoc {
     AdHoc::on_ignite("Add Listing Photos Stage", |rocket| async {
         rocket
             // .mount("/add_listing_photos", routes![index, new])
-            .mount("/add_listing_photos", routes![index])
+            .mount("/add_listing_photos", routes![index, new])
     })
 }

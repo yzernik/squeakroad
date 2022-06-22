@@ -1,7 +1,10 @@
 use crate::db::Db;
 use crate::rocket::futures::TryFutureExt;
 use crate::rocket::futures::TryStreamExt;
-use rocket::serde::{Deserialize, Serialize};
+use rocket::form::Form;
+use rocket::fs::TempFile;
+use rocket::serde::json::{json, Value};
+use rocket::serde::{json, Deserialize, Serialize};
 use rocket_db_pools::{sqlx, Connection};
 use std::result::Result;
 
@@ -45,6 +48,11 @@ pub struct InitialListingInfo {
     pub title: String,
     pub description: String,
     pub price_msat: u64,
+}
+
+#[derive(FromForm)]
+pub struct FileUploadForm<'f> {
+    pub file: TempFile<'f>,
 }
 
 // #[derive(Debug, FromForm)]
