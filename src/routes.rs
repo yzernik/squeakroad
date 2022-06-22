@@ -1,15 +1,10 @@
-use rocket_auth::Error::SqlxError;
-use rocket_auth::Users;
-use rocket_dyn_templates::Template;
-
-use std::*;
-
+use crate::db::Db;
 use rocket::fairing::{self, AdHoc};
 use rocket::{Build, Rocket};
-
+use rocket_auth::Error::SqlxError;
+use rocket_auth::Users;
 use rocket_db_pools::{sqlx, Database};
-
-use crate::db::Db;
+use rocket_dyn_templates::Template;
 
 async fn run_migrations(rocket: Rocket<Build>) -> fairing::Result {
     match Db::fetch(&rocket) {

@@ -1,3 +1,4 @@
+use crate::db::Db;
 use rocket::fairing::AdHoc;
 use rocket::{form::*, get, post, response::Redirect, routes};
 use rocket_auth::{Auth, Error, Login, Signup, User};
@@ -6,8 +7,6 @@ use rocket_dyn_templates::Template;
 use serde_json::json;
 use sqlx::query_as;
 use std::result::Result;
-
-use crate::db::Db;
 
 pub type MyResult<T, E = rocket::response::Debug<sqlx::Error>> = std::result::Result<T, E>;
 
