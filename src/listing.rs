@@ -3,6 +3,7 @@ use crate::models::Listing;
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::serde::Serialize;
+use rocket_auth::AdminUser;
 use rocket_auth::User;
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
@@ -13,6 +14,7 @@ struct Context {
     flash: Option<(String, String)>,
     listing: Option<Listing>,
     user: Option<User>,
+    admin_user: Option<AdminUser>,
 }
 
 impl Context {
@@ -33,12 +35,14 @@ impl Context {
         listing_id: i32,
         flash: Option<(String, String)>,
         user: Option<User>,
+        admin_user: Option<AdminUser>,
     ) -> Context {
         match Listing::single(db, listing_id).await {
             Ok(listing) => Context {
                 flash,
                 listing,
                 user,
+                admin_user,
             },
             Err(e) => {
                 error_!("DB Listing::all() error: {}", e);
@@ -46,6 +50,7 @@ impl Context {
                     flash: Some(("error".into(), "Fail to access database.".into())),
                     listing: None,
                     user: user,
+                    admin_user: admin_user,
                 }
             }
         }
@@ -122,11 +127,15 @@ async fn index(
     id: i32,
     db: Connection<Db>,
     user: Option<User>,
+    admin_user: Option<AdminUser>,
 ) -> Template {
     println!("looking for listing...");
 
     let flash = flash.map(FlashMessage::into_inner);
-    Template::render("listing", Context::raw(db, id, flash, user).await)
+    Template::render(
+        "listing",
+        Context::raw(db, id, flash, user, admin_user).await,
+    )
 }
 
 pub fn listing_stage() -> AdHoc {

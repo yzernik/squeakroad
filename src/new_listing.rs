@@ -5,7 +5,7 @@ use rocket::form::Form;
 use rocket::request::FlashMessage;
 use rocket::response::{Flash, Redirect};
 use rocket::serde::Serialize;
-use rocket_auth::User;
+use rocket_auth::{AdminUser, User};
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -15,6 +15,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 struct Context {
     flash: Option<(String, String)>,
     user: Option<User>,
+    admin_user: Option<AdminUser>,
 }
 
 impl Context {
@@ -25,8 +26,16 @@ impl Context {
     //     }
     // }
 
-    pub async fn raw(flash: Option<(String, String)>, user: Option<User>) -> Context {
-        Context { flash, user }
+    pub async fn raw(
+        flash: Option<(String, String)>,
+        user: Option<User>,
+        admin_user: Option<AdminUser>,
+    ) -> Context {
+        Context {
+            flash,
+            user,
+            admin_user,
+        }
     }
 }
 
@@ -99,9 +108,10 @@ async fn index(
     flash: Option<FlashMessage<'_>>,
     _db: Connection<Db>,
     user: Option<User>,
+    admin_user: Option<AdminUser>,
 ) -> Template {
     let flash = flash.map(FlashMessage::into_inner);
-    Template::render("newlisting", Context::raw(flash, user).await)
+    Template::render("newlisting", Context::raw(flash, user, admin_user).await)
 }
 
 pub fn new_listing_stage() -> AdHoc {
