@@ -11,7 +11,7 @@ use rocket_dyn_templates::Template;
 #[serde(crate = "rocket::serde")]
 struct Context {
     flash: Option<(String, String)>,
-    listings: Vec<Listing>,
+    listing: Option<Listing>,
     user: Option<User>,
 }
 
@@ -30,20 +30,21 @@ impl Context {
 
     pub async fn raw(
         db: Connection<Db>,
+        listing_id: i32,
         flash: Option<(String, String)>,
         user: Option<User>,
     ) -> Context {
-        match Listing::all(db).await {
-            Ok(listings) => Context {
+        match Listing::single(db, listing_id).await {
+            Ok(listing) => Context {
                 flash,
-                listings,
+                listing,
                 user,
             },
             Err(e) => {
                 error_!("DB Listing::all() error: {}", e);
                 Context {
                     flash: Some(("error".into(), "Fail to access database.".into())),
-                    listings: vec![],
+                    listing: None,
                     user: user,
                 }
             }
@@ -115,19 +116,21 @@ impl Context {
 //     }
 // }
 
-#[get("/")]
+#[get("/<id>")]
 async fn index(
     flash: Option<FlashMessage<'_>>,
+    id: i32,
     db: Connection<Db>,
     user: Option<User>,
 ) -> Template {
+    println!("looking for listing...");
+
     let flash = flash.map(FlashMessage::into_inner);
-    Template::render("listingsindex", Context::raw(db, flash, user).await)
+    Template::render("listing", Context::raw(db, id, flash, user).await)
 }
 
-pub fn listings_stage() -> AdHoc {
-    AdHoc::on_ignite("Listings Stage", |rocket| async {
-        rocket.mount("/", routes![index])
-        // .mount("/listing", routes![new])
+pub fn listing_stage() -> AdHoc {
+    AdHoc::on_ignite("Listing Stage", |rocket| async {
+        rocket.mount("/listing", routes![index])
     })
 }

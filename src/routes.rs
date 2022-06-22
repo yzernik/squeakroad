@@ -75,7 +75,8 @@ pub fn stage() -> AdHoc {
             .attach(crate::posts::posts_stage())
             .attach(crate::auth::auth_stage())
             // .attach(crate::todo::todo_stage())
-            .attach(crate::listings::listing_stage())
+            .attach(crate::listings::listings_stage())
+            .attach(crate::listing::listing_stage())
             .attach(crate::new_listing::new_listing_stage())
     })
 }
