@@ -67,7 +67,7 @@ async fn new(
         user_id: 1,
         title: listing_info.title,
         description: listing_info.description,
-        price_msat: 888,
+        price_msat: listing_info.price_msat,
         completed: false,
         approved: false,
         created_time: 999,
