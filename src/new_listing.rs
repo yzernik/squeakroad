@@ -15,43 +15,19 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 #[serde(crate = "rocket::serde")]
 struct Context {
     flash: Option<(String, String)>,
-    listings: Vec<Listing>,
     user: Option<User>,
 }
 
 impl Context {
-    pub async fn err<M: std::fmt::Display>(
-        db: Connection<Db>,
-        msg: M,
-        user: Option<User>,
-    ) -> Context {
+    pub async fn err<M: std::fmt::Display>(msg: M, user: Option<User>) -> Context {
         Context {
             flash: Some(("error".into(), msg.to_string())),
-            listings: Listing::all(db).await.unwrap_or_default(),
             user: user,
         }
     }
 
-    pub async fn raw(
-        db: Connection<Db>,
-        flash: Option<(String, String)>,
-        user: Option<User>,
-    ) -> Context {
-        match Listing::all(db).await {
-            Ok(listings) => Context {
-                flash,
-                listings,
-                user,
-            },
-            Err(e) => {
-                error_!("DB Listing::all() error: {}", e);
-                Context {
-                    flash: Some(("error".into(), "Fail to access database.".into())),
-                    listings: vec![],
-                    user: user,
-                }
-            }
-        }
+    pub async fn raw(flash: Option<(String, String)>, user: Option<User>) -> Context {
+        Context { flash, user }
     }
 }
 
@@ -126,13 +102,11 @@ async fn index(
     user: Option<User>,
 ) -> Template {
     let flash = flash.map(FlashMessage::into_inner);
-    Template::render("listingsindex", Context::raw(db, flash, user).await)
+    Template::render("newlisting", Context::raw(flash, user).await)
 }
 
-pub fn listing_stage() -> AdHoc {
-    AdHoc::on_ignite("Listing Stage", |rocket| async {
-        rocket
-            .mount("/", routes![index])
-            .mount("/listing", routes![new])
+pub fn new_listing_stage() -> AdHoc {
+    AdHoc::on_ignite("New Listing Stage", |rocket| async {
+        rocket.mount("/new_listing", routes![index, new])
     })
 }

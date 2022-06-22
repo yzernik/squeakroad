@@ -8,6 +8,7 @@ mod auth;
 mod db;
 mod listings;
 mod models;
+mod new_listing;
 mod posts;
 mod routes;
 mod todo;

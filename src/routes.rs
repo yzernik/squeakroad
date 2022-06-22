@@ -1,5 +1,6 @@
 use crate::db::Db;
 use rocket::fairing::{self, AdHoc};
+use rocket::fs::{relative, FileServer};
 use rocket::{Build, Rocket};
 use rocket_auth::Error::SqlxError;
 use rocket_auth::Users;
@@ -70,9 +71,11 @@ pub fn stage() -> AdHoc {
                 create_admin_user,
             ))
             .attach(Template::fairing())
+            .mount("/", FileServer::from(relative!("static")))
             .attach(crate::posts::posts_stage())
             .attach(crate::auth::auth_stage())
             // .attach(crate::todo::todo_stage())
             .attach(crate::listings::listing_stage())
+            .attach(crate::new_listing::new_listing_stage())
     })
 }
