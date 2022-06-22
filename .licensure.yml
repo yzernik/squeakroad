@@ -1,0 +1,25 @@
+licenses:
+  - files: "(.*.rs)$"
+    ident: MIT
+    authors:
+      - name: Jonathan Zernik
+        email: yzernik@gmail.com
+    auto_template: true
+
+comments:
+  - columns: 80
+    extensions:
+      - rs
+    commenter:
+      type: line
+      comment_char: "//"
+      trailing_lines: 0
+
+excludes:
+  - \.gitignore
+  - .*lock
+  - \.git/.*
+  - \.licensure\.yml
+  - README.*
+  - LICENSE.*
+  - .*\.(md|rst|txt)
