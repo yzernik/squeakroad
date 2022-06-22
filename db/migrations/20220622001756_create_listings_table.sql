@@ -6,5 +6,5 @@ CREATE TABLE listings (
     price_msat UNSIGNED BIG INT NOT NULL,
     completed BOOLEAN NOT NULL,
     approved BOOLEAN NOT NULL,
-    created_time_s UNSIGNED BIG INT NOT NULL
+    created_time_ms UNSIGNED BIG INT NOT NULL
 );
