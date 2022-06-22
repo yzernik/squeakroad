@@ -1,17 +1,10 @@
-use std::result::Result;
-
 use crate::db::Db;
-
-use rocket_db_pools::{sqlx, Connection};
-
 use crate::rocket::futures::TryFutureExt;
 use crate::rocket::futures::TryStreamExt;
-
-use sqlx::Acquire;
-
-use std::*;
-
 use rocket::serde::{Deserialize, Serialize};
+use rocket_db_pools::{sqlx, Connection};
+use sqlx::Acquire;
+use std::result::Result;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -34,6 +27,34 @@ pub struct Task {
 pub struct Todo {
     pub description: String,
 }
+
+#[derive(Serialize, Debug, Clone)]
+#[serde(crate = "rocket::serde")]
+pub struct Listing {
+    pub id: Option<i32>,
+    pub user_id: i32,
+    pub title: String,
+    pub description: String,
+    pub price_msat: u64,
+    pub completed: bool,
+    pub approved: bool,
+    pub created_time_s: u64,
+}
+
+#[derive(Debug, FromForm)]
+pub struct InitialListingInfo {
+    pub title: String,
+    pub description: String,
+    pub price_msat: u64,
+}
+
+// #[derive(Debug, FromForm)]
+// pub struct InitialListingInfo {
+//     pub title: String,
+//     pub description: String,
+//     pub price_msat: u64,
+//     pub created_time_s: u64,
+// }
 
 impl Task {
     pub async fn all(mut db: Connection<Db>) -> Result<Vec<Task>, sqlx::Error> {
@@ -110,4 +131,51 @@ impl Task {
     // pub async fn delete_all(conn: &DbConn) -> QueryResult<usize> {
     //     conn.run(|c| diesel::delete(all_tasks).execute(c)).await
     // }
+}
+
+impl Listing {
+    pub async fn all(mut db: Connection<Db>) -> Result<Vec<Listing>, sqlx::Error> {
+        let listings = sqlx::query!("select * from listings;")
+            .fetch(&mut *db)
+            .map_ok(|r| Listing {
+                id: Some(r.id.try_into().unwrap()),
+                user_id: r.user_id as _,
+                title: r.title,
+                description: r.description,
+                price_msat: r.price_msat as _,
+                completed: r.completed,
+                approved: r.approved,
+                created_time_s: r.created_time_s as _,
+            })
+            .try_collect::<Vec<_>>()
+            .await?;
+
+        println!("{}", listings.len());
+        println!("{:?}", listings);
+
+        Ok(listings)
+    }
+
+    /// Returns the number of affected rows: 1.
+    pub async fn insert(listing: Listing, mut db: Connection<Db>) -> Result<usize, sqlx::Error> {
+        let price_msat: i64 = listing.price_msat as _;
+        let created_time_s: i64 = listing.created_time_s as _;
+
+        let insert_result = sqlx::query!(
+            "INSERT INTO listings (user_id, title, description, price_msat, completed, approved, created_time_s) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            listing.user_id,
+            listing.title,
+            listing.description,
+            price_msat,
+            listing.completed,
+            listing.approved,
+            created_time_s,
+        )
+        .execute(&mut *db)
+        .await?;
+
+        println!("{:?}", insert_result);
+
+        Ok(insert_result.rows_affected() as _)
+    }
 }
