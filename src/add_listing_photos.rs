@@ -1,6 +1,6 @@
 use crate::db::Db;
 use crate::models::FileUploadForm;
-use crate::models::Listing;
+use crate::models::{Listing, ListingImage};
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
 use rocket::fs::TempFile;
@@ -97,6 +97,9 @@ async fn new(
     user: User,
     admin_user: Option<AdminUser>,
 ) -> Result<Flash<Redirect>, Template> {
+    // TODO: Change return type to Flash<Redirect>.
+    // Same as "new" method in listings.rs
+
     println!("listing_id: {:?}", id);
 
     let image_info = upload_image_form.into_inner();
@@ -104,10 +107,30 @@ async fn new(
 
     if let Some(image_bytes) = get_file_bytes(file) {
         println!("got bytes: {:?}", image_bytes);
-        Ok(Flash::error(
-            Redirect::to("/"),
-            "Listing could not be inserted due an internal error.",
-        ))
+
+        let listing_image = ListingImage {
+            id: None,
+            listing_id: id,
+            image_data: image_bytes,
+        };
+
+        if let Err(e) = ListingImage::insert(listing_image, db).await {
+            error_!("DB insertion error: {}", e);
+            Ok(Flash::error(
+                Redirect::to(uri!("/add_listing_photos", index(id))),
+                "Listing image could not be inserted due an internal error.",
+            ))
+        } else {
+            Ok(Flash::success(
+                Redirect::to(uri!("/add_listing_photos", index(id))),
+                "Listing image successfully added.",
+            ))
+        }
+
+        // Ok(Flash::error(
+        //     Redirect::to("/"),
+        //     "Listing could not be inserted due an internal error.",
+        // ))
     } else {
         error_!("DB deletion({}) error: {}", id, "Some error string");
         Err(Template::render(

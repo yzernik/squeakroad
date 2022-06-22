@@ -55,6 +55,14 @@ pub struct FileUploadForm<'f> {
     pub file: TempFile<'f>,
 }
 
+#[derive(Serialize, Debug, Clone)]
+#[serde(crate = "rocket::serde")]
+pub struct ListingImage {
+    pub id: Option<i32>,
+    pub listing_id: i32,
+    pub image_data: Vec<u8>,
+}
+
 // #[derive(Debug, FromForm)]
 // pub struct InitialListingInfo {
 //     pub title: String,
@@ -204,5 +212,25 @@ impl Listing {
         println!("{:?}", listing);
 
         Ok(Some(listing))
+    }
+}
+
+impl ListingImage {
+    /// Returns the number of affected rows: 1.
+    pub async fn insert(
+        listingimage: ListingImage,
+        mut db: Connection<Db>,
+    ) -> Result<usize, sqlx::Error> {
+        let insert_result = sqlx::query!(
+            "INSERT INTO listingimages (listing_id, image_data) VALUES (?, ?)",
+            listingimage.listing_id,
+            listingimage.image_data,
+        )
+        .execute(&mut *db)
+        .await?;
+
+        println!("{:?}", insert_result);
+
+        Ok(insert_result.rows_affected() as _)
     }
 }

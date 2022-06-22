@@ -1,5 +1,15 @@
 {
   "db": "SQLite",
+  "0293dccfc5bab1e42b48d897fd8c4b3a879cde4ffc57bad924cfbcfa9dc981e5": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "INSERT INTO listingimages (listing_id, image_data) VALUES (?, ?)"
+  },
   "11e3096becb72f427c8d3911ef4327afd9516143806981e11f8e34d069c14472": {
     "describe": {
       "columns": [
