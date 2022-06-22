@@ -1,0 +1,16 @@
+{% extends "base" %}
+{% block body %}
+
+  <div class="container">
+    <p><!--Nothing to see here --></p>
+
+    {% if listing %}
+    <h3>{{ listing.title }}</h3>
+    <p>{{ listing.description }}</p>
+    <p>Price {{ listing.price_msat }} msats</p>
+    {% endif %}
+
+  </div>
+
+
+{% endblock body %}
