@@ -303,10 +303,7 @@ impl ListingImage {
         Ok(listing_images)
     }
 
-    pub async fn single(
-        db: &mut Connection<Db>,
-        id: i32,
-    ) -> Result<Option<ListingImage>, sqlx::Error> {
+    pub async fn single(db: &mut Connection<Db>, id: i32) -> Result<ListingImage, sqlx::Error> {
         let listing_image = sqlx::query!("select * from listingimages WHERE id = ?;", id)
             .fetch_one(&mut **db)
             .map_ok(|r| ListingImage {
@@ -316,7 +313,7 @@ impl ListingImage {
             })
             .await?;
 
-        Ok(Some(listing_image))
+        Ok(listing_image)
     }
 
     /// Returns the number of affected rows: 1.

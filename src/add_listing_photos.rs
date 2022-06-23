@@ -210,8 +210,7 @@ async fn delete_image(
         .map_err(|_| "failed to get listing")?;
     let listing_image = ListingImage::single(&mut *db, listing_id)
         .await
-        .map_err(|_| "failed to get listing")?
-        .unwrap();
+        .map_err(|_| "failed to get listing")?;
 
     if listing_image.listing_id != listing.id.unwrap() {
         Err("Invalid listing id given.".to_string())
