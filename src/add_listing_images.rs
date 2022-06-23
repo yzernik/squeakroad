@@ -136,6 +136,7 @@ async fn upload_image(
             id: None,
             listing_id: id,
             image_data: image_bytes,
+            is_primary: false,
         };
 
         ListingImage::insert(listing_image, db)
@@ -231,6 +232,63 @@ async fn delete_image(
     }
 }
 
+#[put("/<id>/set_primary/<image_id>")]
+async fn set_primary(
+    id: i32,
+    image_id: i32,
+    mut db: Connection<Db>,
+    user: User,
+    admin_user: Option<AdminUser>,
+) -> Result<Flash<Redirect>, Template> {
+    match mark_as_primary(id, image_id, &mut db, user.clone(), admin_user.clone()).await {
+        Ok(_) => Ok(Flash::success(
+            Redirect::to(uri!("/add_listing_images", index(id))),
+            "Image was marked as primary.",
+        )),
+        Err(e) => {
+            error_!("DB update({}) error: {}", id, e);
+            Err(Template::render(
+                "addlistingimages",
+                Context::err(db, id, "Failed to mark image as primary.", user, admin_user).await,
+            ))
+        }
+    }
+}
+
+async fn mark_as_primary(
+    listing_id: i32,
+    image_id: i32,
+    db: &mut Connection<Db>,
+    user: User,
+    _admin_user: Option<AdminUser>,
+) -> Result<(), String> {
+    let listing = Listing::single(&mut *db, listing_id)
+        .await
+        .map_err(|_| "failed to get listing")?;
+    let listing_image = ListingImage::single(&mut *db, image_id)
+        .await
+        .map_err(|_| "failed to get listing")?;
+
+    if listing_image.listing_id != listing.id.unwrap() {
+        Err("Invalid listing id given.".to_string())
+    } else if listing.completed {
+        Err("Listing is already completed.".to_string())
+    } else if listing.user_id != user.id() {
+        Err("Listing belongs to a different user.".to_string())
+    } else {
+        match ListingImage::mark_image_as_primary(&mut *db, listing_id, image_id).await {
+            Ok(num_marked) => {
+                if num_marked > 0 {
+                    Ok(())
+                } else {
+                    Err("No images marked as primary.".to_string())
+                }
+            }
+            Err(_) => Err("failed to mark image as primary.".to_string()),
+        }
+    }
+}
+
 #[get("/<id>")]
 async fn index(
     flash: Option<FlashMessage<'_>>,
@@ -250,6 +308,9 @@ pub fn add_listing_images_stage() -> AdHoc {
     AdHoc::on_ignite("Add Listing Images Stage", |rocket| async {
         rocket
             // .mount("/add_listing_images", routes![index, new])
-            .mount("/add_listing_images", routes![index, new, delete])
+            .mount(
+                "/add_listing_images",
+                routes![index, new, delete, set_primary],
+            )
     })
 }

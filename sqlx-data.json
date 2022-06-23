@@ -10,36 +10,6 @@
     },
     "query": "INSERT INTO listingimages (listing_id, image_data) VALUES (?, ?)"
   },
-  "073855d461b688d3d6cea273f5de1c2c7f8371311767a8af800531e33c16a0a9": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int64"
-        },
-        {
-          "name": "listing_id",
-          "ordinal": 1,
-          "type_info": "Int64"
-        },
-        {
-          "name": "image_data",
-          "ordinal": 2,
-          "type_info": "Blob"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "select * from listingimages WHERE listing_id = ?;"
-  },
   "11e3096becb72f427c8d3911ef4327afd9516143806981e11f8e34d069c14472": {
     "describe": {
       "columns": [
@@ -176,7 +146,55 @@
     },
     "query": "INSERT INTO listings (user_id, title, description, price_msat, completed, approved, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?)"
   },
-  "2e6f8f30d63eab4706eed8ef7e4044bd3a72d8c5a7ee823021df4e89dec6fc1b": {
+  "3c289da9873097a11191dbedc5c78d86afd6a6d36771bfeb12f331abca6279cf": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "INSERT INTO posts (title, text) VALUES (?, ?)"
+  },
+  "4415c35941e52a981b10707fe2e1ceb0bad0e473701e51ef21ecb2973c76b4df": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "SELECT id FROM posts"
+  },
+  "4dc4bc38717e0a8adea675ae4a5819d68754b17a473b56a7f51d7aea36274e0b": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "DELETE FROM listingimages WHERE id = ?"
+  },
+  "501eb603b5ab9e467ecb0b5211b67740d1455a34904bbe5ba45bdb0975f18b50": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "UPDATE listingimages SET is_primary = false WHERE listing_id = ?"
+  },
+  "5290a3d90768ee7c0d4fb9e22c9850441ad8bab376c593907605b63ce2ce6c0e": {
     "describe": {
       "columns": [
         {
@@ -233,6 +251,11 @@
           "name": "image_data",
           "ordinal": 10,
           "type_info": "Blob"
+        },
+        {
+          "name": "is_primary",
+          "ordinal": 11,
+          "type_info": "Bool"
         }
       ],
       "nullable": [
@@ -246,51 +269,14 @@
         false,
         null,
         false,
+        false,
         false
       ],
       "parameters": {
         "Right": 0
       }
     },
-    "query": "select listings.id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.completed, listings.approved, listings.created_time_ms, min(listingimages.id) as image_id, listingimages.listing_id, listingimages.image_data from listings LEFT JOIN listingimages ON listings.id = listingimages.listing_id GROUP BY listings.id;"
-  },
-  "3c289da9873097a11191dbedc5c78d86afd6a6d36771bfeb12f331abca6279cf": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 2
-      }
-    },
-    "query": "INSERT INTO posts (title, text) VALUES (?, ?)"
-  },
-  "4415c35941e52a981b10707fe2e1ceb0bad0e473701e51ef21ecb2973c76b4df": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int64"
-        }
-      ],
-      "nullable": [
-        false
-      ],
-      "parameters": {
-        "Right": 0
-      }
-    },
-    "query": "SELECT id FROM posts"
-  },
-  "4dc4bc38717e0a8adea675ae4a5819d68754b17a473b56a7f51d7aea36274e0b": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "DELETE FROM listingimages WHERE id = ?"
+    "query": "select listings.id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.completed, listings.approved, listings.created_time_ms, min(listingimages.id) as image_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary from listings LEFT JOIN listingimages ON listings.id = listingimages.listing_id GROUP BY listings.id;"
   },
   "58168913d2c9c8321cd4bd0c87f71faa2811d0b5d46634ad4bf5020b397902a2": {
     "describe": {
@@ -309,9 +295,15 @@
           "name": "image_data",
           "ordinal": 2,
           "type_info": "Blob"
+        },
+        {
+          "name": "is_primary",
+          "ordinal": 3,
+          "type_info": "Bool"
         }
       ],
       "nullable": [
+        false,
         false,
         false,
         false
@@ -437,5 +429,51 @@
       }
     },
     "query": "select * from listings WHERE id = ?;"
+  },
+  "e94cd0fbe6f4a8d90120733fb88081da00668901ed37ba6ca200f82dc2331aaa": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "listing_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        },
+        {
+          "name": "image_data",
+          "ordinal": 2,
+          "type_info": "Blob"
+        },
+        {
+          "name": "is_primary",
+          "ordinal": 3,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "select * from listingimages WHERE listing_id = ? ORDER BY listingimages.is_primary DESC;"
+  },
+  "ffd68aafc82a887ff89e8f00d4afbc4d2924541878e1b413c10cf5842ce905f1": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "UPDATE listingimages SET is_primary = true WHERE listing_id = ? AND id = ?"
   }
 }

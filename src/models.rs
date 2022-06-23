@@ -6,6 +6,7 @@ use rocket::serde::{Deserialize, Serialize};
 use rocket_db_pools::{sqlx, Connection};
 use std::result::Result;
 extern crate base64;
+use sqlx::Acquire;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -60,6 +61,7 @@ pub struct ListingImage {
     pub id: Option<i32>,
     pub listing_id: i32,
     pub image_data: Vec<u8>,
+    pub is_primary: bool,
 }
 
 #[derive(Serialize, Debug, Clone)]
@@ -92,6 +94,7 @@ pub struct ListingImageDisplay {
     pub id: Option<i32>,
     pub listing_id: i32,
     pub image_data_base64: String,
+    pub is_primary: bool,
 }
 
 #[derive(Serialize, Debug, Clone)]
@@ -277,7 +280,7 @@ impl ListingImage {
         listing_id: i32,
     ) -> Result<Vec<ListingImage>, sqlx::Error> {
         let listing_images = sqlx::query!(
-            "select * from listingimages WHERE listing_id = ?;",
+            "select * from listingimages WHERE listing_id = ? ORDER BY listingimages.is_primary DESC;",
             listing_id
         )
         .fetch(&mut **db)
@@ -285,6 +288,7 @@ impl ListingImage {
             id: Some(r.id.try_into().unwrap()),
             listing_id: r.listing_id as _,
             image_data: r.image_data,
+            is_primary: r.is_primary,
         })
         .try_collect::<Vec<_>>()
         .await?;
@@ -301,10 +305,40 @@ impl ListingImage {
                 id: Some(r.id.try_into().unwrap()),
                 listing_id: r.listing_id as _,
                 image_data: r.image_data,
+                is_primary: r.is_primary,
             })
             .await?;
 
         Ok(listing_image)
+    }
+
+    pub async fn mark_image_as_primary(
+        db: &mut Connection<Db>,
+        listing_id: i32,
+        image_id: i32,
+    ) -> Result<usize, sqlx::Error> {
+        let mut tx = db.begin().await?;
+
+        // Set all images for listing_id to not primary.
+        sqlx::query!(
+            "UPDATE listingimages SET is_primary = false WHERE listing_id = ?",
+            listing_id
+        )
+        .execute(&mut tx)
+        .await?;
+
+        // Set image for listing_id and image_id to primary.
+        let update_result = sqlx::query!(
+            "UPDATE listingimages SET is_primary = true WHERE listing_id = ? AND id = ?",
+            listing_id,
+            image_id,
+        )
+        .execute(&mut tx)
+        .await?;
+
+        tx.commit().await?;
+
+        Ok(update_result.rows_affected() as _)
     }
 
     /// Returns the number of affected rows: 1.
@@ -356,6 +390,7 @@ impl ListingDisplay {
                 id: img.id,
                 listing_id: img.listing_id,
                 image_data_base64: base64::encode(&img.image_data),
+                is_primary: img.is_primary,
             })
             .collect::<Vec<_>>();
         let rocket_auth_user = RocketAuthUser::single(&mut *db, listing.user_id).await?;
@@ -374,7 +409,7 @@ impl ListingCard {
     pub async fn all(db: &mut Connection<Db>) -> Result<Vec<ListingCard>, sqlx::Error> {
         // Example query for this kind of join/group by: https://stackoverflow.com/a/63037790/1639564
         let listing_cards =
-            sqlx::query!("select listings.id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.completed, listings.approved, listings.created_time_ms, min(listingimages.id) as image_id, listingimages.listing_id, listingimages.image_data from listings LEFT JOIN listingimages ON listings.id = listingimages.listing_id GROUP BY listings.id;")
+            sqlx::query!("select listings.id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.completed, listings.approved, listings.created_time_ms, min(listingimages.id) as image_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary from listings LEFT JOIN listingimages ON listings.id = listingimages.listing_id GROUP BY listings.id;")
                 .fetch(&mut **db)
             .map_ok(|r| {
                 let l = Listing {
@@ -391,6 +426,7 @@ impl ListingCard {
                     id: Some(r.image_id.unwrap().try_into().unwrap()),
                     listing_id: r.listing_id as _,
                     image_data: r.image_data,
+                    is_primary: r.is_primary,
                 });
                 ListingCard {
                     listing: l,
@@ -415,6 +451,7 @@ impl ListingCardDisplay {
                     id: image.id,
                     listing_id: image.listing_id,
                     image_data_base64: base64::encode(&image.image_data),
+                    is_primary: image.is_primary,
                 }),
             })
             .collect::<Vec<_>>();
