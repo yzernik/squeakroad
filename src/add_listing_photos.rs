@@ -116,9 +116,9 @@ fn get_file_bytes(tmp_file: TempFile) -> Result<Vec<u8>, String> {
     Ok(bytes)
 }
 
-async fn upload_image<'a>(
+async fn upload_image(
     id: i32,
-    tmp_file: TempFile<'a>,
+    tmp_file: TempFile<'_>,
     db: Connection<Db>,
     _user: User,
     _admin_user: Option<AdminUser>,
