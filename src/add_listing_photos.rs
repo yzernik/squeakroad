@@ -40,13 +40,13 @@ impl Context {
     }
 
     pub async fn raw(
-        db: Connection<Db>,
+        mut db: Connection<Db>,
         listing_id: i32,
         flash: Option<(String, String)>,
         user: User,
         admin_user: Option<AdminUser>,
     ) -> Context {
-        match Listing::single(db, listing_id).await {
+        match Listing::single(&mut db, listing_id).await {
             Ok(Some(lstng)) => {
                 let listing = Some(lstng.clone());
 

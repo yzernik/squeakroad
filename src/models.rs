@@ -63,6 +63,13 @@ pub struct ListingImage {
     pub image_data: Vec<u8>,
 }
 
+#[derive(Serialize, Debug, Clone)]
+#[serde(crate = "rocket::serde")]
+pub struct ListingDisplay {
+    pub listing: Listing,
+    pub images: Vec<ListingImage>,
+}
+
 // #[derive(Debug, FromForm)]
 // pub struct InitialListingInfo {
 //     pub title: String,
@@ -194,9 +201,9 @@ impl Listing {
         Ok(insert_result.rows_affected() as _)
     }
 
-    pub async fn single(mut db: Connection<Db>, id: i32) -> Result<Option<Listing>, sqlx::Error> {
+    pub async fn single(db: &mut Connection<Db>, id: i32) -> Result<Option<Listing>, sqlx::Error> {
         let listing = sqlx::query!("select * from listings WHERE id = ?;", id)
-            .fetch_one(&mut *db)
+            .fetch_one(&mut **db)
             .map_ok(|r| Listing {
                 id: Some(r.id.try_into().unwrap()),
                 user_id: r.user_id as _,
@@ -212,6 +219,25 @@ impl Listing {
         println!("{:?}", listing);
 
         Ok(Some(listing))
+    }
+
+    pub async fn single_display(
+        db: &mut Connection<Db>,
+        id: i32,
+    ) -> Result<Option<ListingDisplay>, sqlx::Error> {
+        let listing = Listing::single(&mut *db, id).await?;
+        let images = ListingImage::all_for_listing(&mut *db, id).await?;
+
+        let listing_display = listing.map(|l| ListingDisplay {
+            listing: l,
+            images: images,
+        });
+
+        // let listing_display = ListingDisplay(listing: listing, images: images);
+
+        println!("{:?}", listing_display);
+
+        Ok(listing_display)
     }
 }
 
@@ -232,5 +258,28 @@ impl ListingImage {
         println!("{:?}", insert_result);
 
         Ok(insert_result.rows_affected() as _)
+    }
+
+    pub async fn all_for_listing(
+        db: &mut Connection<Db>,
+        listing_id: i32,
+    ) -> Result<Vec<ListingImage>, sqlx::Error> {
+        let listing_images = sqlx::query!(
+            "select * from listingimages WHERE listing_id = ?;",
+            listing_id
+        )
+        .fetch(&mut **db)
+        .map_ok(|r| ListingImage {
+            id: Some(r.id.try_into().unwrap()),
+            listing_id: r.listing_id as _,
+            image_data: r.image_data,
+        })
+        .try_collect::<Vec<_>>()
+        .await?;
+
+        println!("{}", listing_images.len());
+        println!("{:?}", listing_images);
+
+        Ok(listing_images)
     }
 }
