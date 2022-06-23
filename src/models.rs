@@ -209,8 +209,8 @@ impl Listing {
         Ok(listings)
     }
 
-    /// Returns the number of affected rows: 1.
-    pub async fn insert(listing: Listing, db: &mut Connection<Db>) -> Result<usize, sqlx::Error> {
+    /// Returns the id of the inserted row.
+    pub async fn insert(listing: Listing, db: &mut Connection<Db>) -> Result<i32, sqlx::Error> {
         let price_msat: i64 = listing.price_msat as _;
         let created_time_ms: i64 = listing.created_time_ms as _;
 
@@ -229,7 +229,7 @@ impl Listing {
 
         println!("{:?}", insert_result);
 
-        Ok(insert_result.rows_affected() as _)
+        Ok(insert_result.last_insert_rowid() as _)
     }
 
     pub async fn single(db: &mut Connection<Db>, id: i32) -> Result<Listing, sqlx::Error> {

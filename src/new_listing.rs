@@ -64,16 +64,55 @@ async fn new(
 
     if listing.description.is_empty() {
         Flash::error(Redirect::to("/"), "Description cannot be empty.")
-    } else if let Err(e) = Listing::insert(listing, &mut db).await {
-        error_!("DB insertion error: {}", e);
-        Flash::error(
-            Redirect::to("/"),
-            "Listing could not be inserted due an internal error.",
-        )
     } else {
-        Flash::success(Redirect::to("/"), "Listing successfully added.")
+        match Listing::insert(listing, &mut db).await {
+            Ok(listing_id) => Flash::success(
+                Redirect::to(format!("/{}/{}", "add_listing_photos", listing_id)),
+                "Listing successfully added.",
+            ),
+            Err(e) => {
+                error_!("DB insertion error: {}", e);
+                Flash::error(
+                    Redirect::to("/"),
+                    "Listing could not be inserted due an internal error.",
+                )
+            }
+        }
     }
 }
+
+// async fn create_listing(
+//     listing_info: InitialListingInfo,
+//     db: &mut Connection<Db>,
+//     user: User,
+//     _admin_user: Option<AdminUser>,
+// ) -> Result<(), String> {
+//     if listing.user_id != user.id() {
+//         Err("Listing belongs to a different user.".to_string())
+//     } else if listing.completed {
+//         Err("Listing is already completed.".to_string())
+//     } else if listing_images.len() >= 5 {
+//         Err("Maximum number of images already exist.".to_string())
+//     } else if tmp_file.len() == 0 {
+//         Err("File is empty.".to_string())
+//     } else if tmp_file.len() >= 1000000 {
+//         Err("File is bigger than maximum allowed size.".to_string())
+//     } else {
+//         let image_bytes = get_file_bytes(tmp_file).map_err(|_| "failed to get bytes.")?;
+
+//         let listing_image = ListingImage {
+//             id: None,
+//             listing_id: id,
+//             image_data: image_bytes,
+//         };
+
+//         ListingImage::insert(listing_image, db)
+//             .await
+//             .map_err(|_| "failed to save image in db.")?;
+
+//         Ok(())
+//     }
+// }
 
 // #[put("/<id>")]
 // async fn toggle(id: i32, mut db: Connection<Db>, user: User) -> Result<Redirect, Template> {
