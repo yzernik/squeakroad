@@ -103,7 +103,8 @@ async fn new(
     let image_info = upload_image_form.into_inner();
     let file = image_info.file;
 
-    if let Some(image_bytes) = get_file_bytes(file) {
+    if let Ok(image_bytes) = get_file_bytes(file) {
+        //if let Some(image_bytes) = get_file_bytes(file) {
         println!("got bytes: {:?}", image_bytes);
 
         let listing_image = ListingImage {
@@ -124,21 +125,27 @@ async fn new(
                 "Listing image successfully added.",
             ))
         }
-
-        // Ok(Flash::error(
-        //     Redirect::to("/"),
-        //     "Listing could not be inserted due an internal error.",
-        // ))
     } else {
-        error_!("DB deletion({}) error: {}", id, "Some error string");
         Err(Template::render(
             "index",
-            Context::err(db, id, "Failed to delete task.", user, admin_user).await,
+            Context::err(
+                db,
+                id,
+                "Failed to get uploaded image bytes.",
+                user,
+                admin_user,
+            )
+            .await,
         ))
     }
+
+    // Ok(Flash::error(
+    //     Redirect::to("/"),
+    //     "Listing could not be inserted due an internal error.",
+    // ))
 }
 
-fn get_file_bytes(tmp_file: TempFile) -> Option<Vec<u8>> {
+fn get_file_bytes(tmp_file: TempFile) -> Result<Vec<u8>, String> {
     println!("path: {:?}", tmp_file.path());
     println!("content_type: {:?}", tmp_file.content_type());
 
@@ -153,13 +160,17 @@ fn get_file_bytes(tmp_file: TempFile) -> Option<Vec<u8>> {
     //     }
     // }
 
-    if let Some(path) = tmp_file.path() {
-        println!("found path.");
-        let content = fs::read(&path);
-        content.ok()
-    } else {
-        None
-    }
+    let path = tmp_file.path().ok_or("Path not found.")?;
+    let bytes = fs::read(&path).map_err(|_| "Unable to read bytes")?;
+    Ok(bytes)
+
+    // if let Some(path) = tmp_file.path() {
+    //     println!("found path.");
+    //     let content = fs::read(&path);
+    //     content.ok()
+    // } else {
+    //     None
+    // }
 }
 
 // #[put("/<id>")]
