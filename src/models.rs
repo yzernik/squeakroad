@@ -329,10 +329,13 @@ impl ListingImage {
 impl RocketAuthUser {
     /// Returns the number of affected rows: 1.
 
-    pub async fn all(db: &mut Connection<Db>) -> Result<Vec<i32>, sqlx::Error> {
+    pub async fn all(db: &mut Connection<Db>) -> Result<Vec<RocketAuthUser>, sqlx::Error> {
         let rocket_auth_users = sqlx::query!("select * from users;")
             .fetch(&mut **db)
-            .map_ok(|r| r.id as i32)
+            .map_ok(|r| RocketAuthUser {
+                id: Some(r.id as i32),
+                username: r.email.unwrap(),
+            })
             .try_collect::<Vec<_>>()
             .await?;
 
@@ -340,4 +343,14 @@ impl RocketAuthUser {
 
         Ok(rocket_auth_users)
     }
+
+    // pub async fn single(id: i32, db: &mut Connection<Db>) -> Result<Option<i32>, sqlx::Error> {
+    //     let rocket_auth_user = sqlx::query!("select * from users WHERE id = ?;", id)
+    //         .fetch_one(&mut **db)
+    //         .map_ok(|r| r.id as i32)
+    //         .try_collect::<Option<_>>()
+    //         .await?;
+
+    //     Ok(rocket_auth_user)
+    // }
 }
