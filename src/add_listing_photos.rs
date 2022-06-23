@@ -210,7 +210,7 @@ async fn delete_image(
     let listing = Listing::single(&mut *db, listing_id)
         .await
         .map_err(|_| "failed to get listing")?;
-    let listing_image = ListingImage::single(&mut *db, listing_id)
+    let listing_image = ListingImage::single(&mut *db, image_id)
         .await
         .map_err(|_| "failed to get listing")?;
 
