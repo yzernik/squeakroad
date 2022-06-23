@@ -128,6 +128,8 @@ async fn upload_image(
         Err("Listing is already completed.".to_string())
     } else if listing_images.len() >= 5 {
         Err("Maximum number of images already exist.".to_string())
+    } else if tmp_file.len() == 0 {
+        Err("File is empty.".to_string())
     } else if tmp_file.len() >= 1000000 {
         Err("File is bigger than maximum allowed size.".to_string())
     } else {
