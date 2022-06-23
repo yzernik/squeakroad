@@ -22,7 +22,11 @@ Hello, anonymous user.
         {% for card in listing_cards %}
 
 	  <a href="/listing/{{card.listing.id}}">
+            {% if card.image %}
 	    <img src="data:image/jpeg;base64,{{ card.image.image_data_base64 }}" style="width:256px;height:256px;" />
+            {% else %}
+	    <p>Image not found</p>
+            {% endif %}
 	  </a>
 
           {% if card.listing.completed %}

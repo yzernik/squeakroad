@@ -19,12 +19,17 @@ struct Context {
 }
 
 impl Context {
-    // pub async fn err<M: std::fmt::Display>(msg: M, user: Option<User>) -> Context {
-    //     Context {
-    //         flash: Some(("error".into(), msg.to_string())),
-    //         user: user,
-    //     }
-    // }
+    pub async fn err<M: std::fmt::Display>(
+        msg: M,
+        user: Option<User>,
+        admin_user: Option<AdminUser>,
+    ) -> Context {
+        Context {
+            flash: Some(("error".into(), msg.to_string())),
+            user,
+            admin_user,
+        }
+    }
 
     pub async fn raw(
         flash: Option<(String, String)>,
@@ -44,8 +49,30 @@ async fn new(
     listing_form: Form<InitialListingInfo>,
     mut db: Connection<Db>,
     user: User,
-) -> Flash<Redirect> {
+    admin_user: Option<AdminUser>,
+) -> Result<Flash<Redirect>, Template> {
     let listing_info = listing_form.into_inner();
+
+    match create_listing(listing_info, &mut db, user.clone()).await {
+        Ok(listing_id) => Ok(Flash::success(
+            Redirect::to(format!("/{}/{}", "add_listing_photos", listing_id)),
+            "Listing successfully added.",
+        )),
+        Err(e) => {
+            error_!("DB insertion error: {}", e);
+            Err(Template::render(
+                "newlisting",
+                Context::err(e, Some(user), admin_user).await,
+            ))
+        }
+    }
+}
+
+async fn create_listing(
+    listing_info: InitialListingInfo,
+    db: &mut Connection<Db>,
+    user: User,
+) -> Result<i32, String> {
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
@@ -63,15 +90,17 @@ async fn new(
     };
 
     if listing.description.is_empty() {
-        Flash::error(Redirect::to("/"), "Description cannot be empty.")
-    } else if let Err(e) = Listing::insert(listing, &mut db).await {
-        error_!("DB insertion error: {}", e);
-        Flash::error(
-            Redirect::to("/"),
-            "Listing could not be inserted due an internal error.",
-        )
+        Err("Description cannot be empty.".to_string())
+    } else if user.is_admin {
+        Err("Admin user cannot create a listing.".to_string())
     } else {
-        Flash::success(Redirect::to("/"), "Listing successfully added.")
+        match Listing::insert(listing, db).await {
+            Ok(listing_id) => Ok(listing_id),
+            Err(e) => {
+                error_!("DB insertion error: {}", e);
+                Err("Listing could not be inserted due an internal error.".to_string())
+            }
+        }
     }
 }
 
