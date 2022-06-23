@@ -417,15 +417,6 @@ l
 impl ListingCardDisplay {
     pub async fn all(db: &mut Connection<Db>) -> Result<Vec<ListingCardDisplay>, sqlx::Error> {
         let listing_cards = ListingCard::all(db).await?;
-
-        // TODO: use a join here instead of multiple queries.
-        // let listings = Listing::all(&mut *db).await?;
-        // let display_image = ListingImageDisplay {
-        //     id: image.id,
-        //     listing_id: image.listing_id,
-        //     image_data_base64: base64::encode(&image.image_data),
-        // };
-
         let listing_card_displays = listing_cards
             .iter()
             .map(|card| ListingCardDisplay {
