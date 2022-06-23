@@ -95,10 +95,7 @@ async fn new(
             Redirect::to(uri!("/add_listing_photos", index(id))),
             "Listing image successfully added.",
         ),
-        Err(_) => Flash::error(
-            Redirect::to(uri!("/add_listing_photos", index(id))),
-            "Listing could not be inserted due an internal error.",
-        ),
+        Err(e) => Flash::error(Redirect::to(uri!("/add_listing_photos", index(id))), e),
     }
 }
 
