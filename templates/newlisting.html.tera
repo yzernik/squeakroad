@@ -24,10 +24,10 @@ Hello, anonymous user.
             name="title" id="title" value="" autofocus
             class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" />
           <input type="text" placeholder="enter a listing description..."
-            name="description" id="description" value="" autofocus
+            name="description" id="description" value=""
             class="u-full-width" />
           <input type="number" placeholder="enter a listing price..."
-            name="price_msat" id="price_msat" value="" autofocus
+            name="price_msat" id="price_msat" value=""
             class="u-full-width" />
           {% if flash %}
             <small class="field-{{flash.0}}-msg">
