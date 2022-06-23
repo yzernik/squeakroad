@@ -67,6 +67,7 @@ pub struct ListingImage {
 pub struct ListingDisplay {
     pub listing: Listing,
     pub images: Vec<ListingImageDisplay>,
+    pub user: RocketAuthUser,
 }
 
 #[derive(Serialize, Debug, Clone)]
@@ -249,10 +250,13 @@ impl Listing {
                 image_data_base64: base64::encode(&img.image_data),
             })
             .collect::<Vec<_>>();
+        let rocket_auth_user =
+            RocketAuthUser::single(&mut *db, listing.as_ref().unwrap().user_id).await?;
 
         let listing_display = listing.map(|l| ListingDisplay {
             listing: l,
             images: image_displays,
+            user: rocket_auth_user,
         });
 
         Ok(listing_display)
@@ -344,7 +348,7 @@ impl RocketAuthUser {
         Ok(rocket_auth_users)
     }
 
-    pub async fn single(id: i32, db: &mut Connection<Db>) -> Result<RocketAuthUser, sqlx::Error> {
+    pub async fn single(db: &mut Connection<Db>, id: i32) -> Result<RocketAuthUser, sqlx::Error> {
         let rocket_auth_user = sqlx::query!("select * from users WHERE id = ?;", id)
             .fetch_one(&mut **db)
             .map_ok(|r| RocketAuthUser {
