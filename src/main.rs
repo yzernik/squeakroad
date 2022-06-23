@@ -4,6 +4,7 @@ extern crate rocket;
 #[cfg(test)]
 mod tests;
 
+mod add_listing_photos;
 mod admin;
 mod auth;
 mod db;

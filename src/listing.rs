@@ -1,5 +1,5 @@
 use crate::db::Db;
-use crate::models::Listing;
+use crate::models::{Listing, ListingDisplay};
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::serde::Serialize;
@@ -12,7 +12,7 @@ use rocket_dyn_templates::Template;
 #[serde(crate = "rocket::serde")]
 struct Context {
     flash: Option<(String, String)>,
-    listing: Option<Listing>,
+    listing_display: Option<ListingDisplay>,
     user: Option<User>,
     admin_user: Option<AdminUser>,
 }
@@ -31,16 +31,16 @@ impl Context {
     // }
 
     pub async fn raw(
-        db: Connection<Db>,
+        mut db: Connection<Db>,
         listing_id: i32,
         flash: Option<(String, String)>,
         user: Option<User>,
         admin_user: Option<AdminUser>,
     ) -> Context {
-        match Listing::single(db, listing_id).await {
-            Ok(listing) => Context {
+        match Listing::single_display(&mut db, listing_id).await {
+            Ok(listing_display) => Context {
                 flash,
-                listing,
+                listing_display,
                 user,
                 admin_user,
             },
@@ -48,7 +48,7 @@ impl Context {
                 error_!("DB Listing::all() error: {}", e);
                 Context {
                     flash: Some(("error".into(), "Fail to access database.".into())),
-                    listing: None,
+                    listing_display: None,
                     user: user,
                     admin_user: admin_user,
                 }

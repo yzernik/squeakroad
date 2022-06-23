@@ -1,0 +1,39 @@
+{% extends "base" %}
+{% block body %}
+
+  <div class="container">
+    <p><!--Nothing to see here --></p>
+
+    {% if listing %}
+    <h3>{{ listing.title }}</h3>
+    <p>{{ listing.description }}</p>
+    <p>Price {{ listing.price_msat }} msats</p>
+    {% endif %}
+
+    <br>
+
+
+    <div class="row">
+      <h4>Create New Listing</h4>
+      <form action="/add_listing_photos/{{ listing.id }}/add_photo" method="post" enctype="multipart/form-data">
+        <div class="ten columns">
+          <input type="file" placeholder="upload a file..."
+            name="file" id="file" value="" autofocus
+            class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" />
+          {% if flash %}
+            <small class="field-{{flash.0}}-msg">
+               {{ flash.1 }}
+            </small>
+          {% endif %}
+        </div>
+        <div class="two columns">
+          <input type="submit" value="add image">
+        </div>
+      </form>
+    </div>
+
+
+  </div>
+
+
+{% endblock body %}
