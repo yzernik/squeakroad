@@ -186,7 +186,7 @@ impl Listing {
     }
 
     /// Returns the number of affected rows: 1.
-    pub async fn insert(listing: Listing, mut db: Connection<Db>) -> Result<usize, sqlx::Error> {
+    pub async fn insert(listing: Listing, db: &mut Connection<Db>) -> Result<usize, sqlx::Error> {
         let price_msat: i64 = listing.price_msat as _;
         let created_time_ms: i64 = listing.created_time_ms as _;
 
@@ -200,7 +200,7 @@ impl Listing {
             listing.approved,
             created_time_ms,
         )
-        .execute(&mut *db)
+        .execute(&mut **db)
         .await?;
 
         println!("{:?}", insert_result);
@@ -256,14 +256,14 @@ impl ListingImage {
     /// Returns the number of affected rows: 1.
     pub async fn insert(
         listingimage: ListingImage,
-        mut db: Connection<Db>,
+        db: &mut Connection<Db>,
     ) -> Result<usize, sqlx::Error> {
         let insert_result = sqlx::query!(
             "INSERT INTO listingimages (listing_id, image_data) VALUES (?, ?)",
             listingimage.listing_id,
             listingimage.image_data,
         )
-        .execute(&mut *db)
+        .execute(&mut **db)
         .await?;
 
         println!("{:?}", insert_result);

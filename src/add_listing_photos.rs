@@ -90,7 +90,7 @@ impl Context {
 async fn new(
     id: i32,
     upload_image_form: Form<FileUploadForm<'_>>,
-    db: Connection<Db>,
+    mut db: Connection<Db>,
     user: User,
     admin_user: Option<AdminUser>,
 ) -> Flash<Redirect> {
@@ -99,7 +99,7 @@ async fn new(
     let image_info = upload_image_form.into_inner();
     let file = image_info.file;
 
-    match upload_image(id, file, db, user, admin_user).await {
+    match upload_image(id, file, &mut db, user, admin_user).await {
         Ok(_) => Flash::success(
             Redirect::to(uri!("/add_listing_photos", index(id))),
             "Listing image successfully added.",
@@ -120,23 +120,32 @@ fn get_file_bytes(tmp_file: TempFile) -> Result<Vec<u8>, String> {
 async fn upload_image(
     id: i32,
     tmp_file: TempFile<'_>,
-    db: Connection<Db>,
-    _user: User,
+    db: &mut Connection<Db>,
+    user: User,
     _admin_user: Option<AdminUser>,
 ) -> Result<(), String> {
-    let image_bytes = get_file_bytes(tmp_file).map_err(|_| "failed to get bytes.")?;
-
-    let listing_image = ListingImage {
-        id: None,
-        listing_id: id,
-        image_data: image_bytes,
-    };
-
-    ListingImage::insert(listing_image, db)
+    let listing = Listing::single(db, id)
         .await
-        .map_err(|_| "failed to save image in db.")?;
+        .map_err(|_| "failed to get listing")?
+        .unwrap();
 
-    Ok(())
+    if listing.user_id != user.id() {
+        Err("Listing belongs to a different user.".to_string())
+    } else {
+        let image_bytes = get_file_bytes(tmp_file).map_err(|_| "failed to get bytes.")?;
+
+        let listing_image = ListingImage {
+            id: None,
+            listing_id: id,
+            image_data: image_bytes,
+        };
+
+        ListingImage::insert(listing_image, db)
+            .await
+            .map_err(|_| "failed to save image in db.")?;
+
+        Ok(())
+    }
 }
 
 // #[put("/<id>")]
