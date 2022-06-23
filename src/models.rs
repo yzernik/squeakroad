@@ -77,6 +77,13 @@ pub struct ListingImageDisplay {
     pub image_data_base64: String,
 }
 
+#[derive(Serialize, Debug, Clone)]
+#[serde(crate = "rocket::serde")]
+pub struct RocketAuthUser {
+    pub id: Option<i32>,
+    pub username: String,
+}
+
 // #[derive(Debug, FromForm)]
 // pub struct InitialListingInfo {
 //     pub title: String,
@@ -316,5 +323,21 @@ impl ListingImage {
             .await?;
 
         Ok(delete_result.rows_affected() as _)
+    }
+}
+
+impl RocketAuthUser {
+    /// Returns the number of affected rows: 1.
+
+    pub async fn all(db: &mut Connection<Db>) -> Result<Vec<i32>, sqlx::Error> {
+        let rocket_auth_users = sqlx::query!("select * from users;")
+            .fetch(&mut **db)
+            .map_ok(|r| r.id as i32)
+            .try_collect::<Vec<_>>()
+            .await?;
+
+        println!("{}", rocket_auth_users.len());
+
+        Ok(rocket_auth_users)
     }
 }
