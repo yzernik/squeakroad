@@ -94,96 +94,28 @@ async fn new(
     db: Connection<Db>,
     user: User,
     admin_user: Option<AdminUser>,
-) -> Result<Flash<Redirect>, Template> {
-    // TODO: Change return type to Flash<Redirect>.
-    // Same as "new" method in listings.rs
-
+) -> Flash<Redirect> {
     println!("listing_id: {:?}", id);
 
     let image_info = upload_image_form.into_inner();
     let file = image_info.file;
 
-    if let Err(e) = upload_image(id, file, db, user, admin_user).await {
-        error_!("DB insertion error: {}", e);
-        Ok(Flash::error(
-            Redirect::to(uri!("/add_listing_photos", index(id))),
-            "Listing image could not be inserted due an internal error.",
-        ))
-    } else {
-        Ok(Flash::success(
+    match upload_image(id, file, db, user, admin_user).await {
+        Ok(_) => Flash::success(
             Redirect::to(uri!("/add_listing_photos", index(id))),
             "Listing image successfully added.",
-        ))
+        ),
+        Err(e) => Flash::error(
+            Redirect::to("/"),
+            "Listing could not be inserted due an internal error.",
+        ),
     }
-
-    // if let Ok(image_bytes) = get_file_bytes(file) {
-    //     //if let Some(image_bytes) = get_file_bytes(file) {
-    //     println!("got bytes: {:?}", image_bytes);
-
-    //     let listing_image = ListingImage {
-    //         id: None,
-    //         listing_id: id,
-    //         image_data: image_bytes,
-    //     };
-
-    //     if let Err(e) = ListingImage::insert(listing_image, db).await {
-    //         error_!("DB insertion error: {}", e);
-    //         Ok(Flash::error(
-    //             Redirect::to(uri!("/add_listing_photos", index(id))),
-    //             "Listing image could not be inserted due an internal error.",
-    //         ))
-    //     } else {
-    //         Ok(Flash::success(
-    //             Redirect::to(uri!("/add_listing_photos", index(id))),
-    //             "Listing image successfully added.",
-    //         ))
-    //     }
-    // } else {
-    //     Err(Template::render(
-    //         "index",
-    //         Context::err(
-    //             db,
-    //             id,
-    //             "Failed to get uploaded image bytes.",
-    //             user,
-    //             admin_user,
-    //         )
-    //         .await,
-    //     ))
-    // }
-
-    // Ok(Flash::error(
-    //     Redirect::to("/"),
-    //     "Listing could not be inserted due an internal error.",
-    // ))
 }
 
 fn get_file_bytes(tmp_file: TempFile) -> Result<Vec<u8>, String> {
-    println!("path: {:?}", tmp_file.path());
-    println!("content_type: {:?}", tmp_file.content_type());
-
-    // match tmp_file {
-    //     TempFile::File { len, .. } => {
-    //         println!("matched a file.")
-    //     }
-    //     TempFile::Buffered { content } => {
-    //         println!("matched a buffered");
-    //         println!("content.len: {:?}", content.len() as u64);
-    //         println!("content: {:?}", content)
-    //     }
-    // }
-
     let path = tmp_file.path().ok_or("Path not found.")?;
     let bytes = fs::read(&path).map_err(|_| "Unable to read bytes")?;
     Ok(bytes)
-
-    // if let Some(path) = tmp_file.path() {
-    //     println!("found path.");
-    //     let content = fs::read(&path);
-    //     content.ok()
-    // } else {
-    //     None
-    // }
 }
 
 async fn upload_image<'a>(
