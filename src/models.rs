@@ -60,6 +60,7 @@ pub struct ListingImage {
     pub id: Option<i32>,
     pub listing_id: i32,
     pub image_data: Vec<u8>,
+    pub is_primary: bool,
 }
 
 #[derive(Serialize, Debug, Clone)]
@@ -285,6 +286,7 @@ impl ListingImage {
             id: Some(r.id.try_into().unwrap()),
             listing_id: r.listing_id as _,
             image_data: r.image_data,
+            is_primary: false,
         })
         .try_collect::<Vec<_>>()
         .await?;
@@ -301,6 +303,7 @@ impl ListingImage {
                 id: Some(r.id.try_into().unwrap()),
                 listing_id: r.listing_id as _,
                 image_data: r.image_data,
+                is_primary: false,
             })
             .await?;
 
@@ -391,6 +394,7 @@ impl ListingCard {
                     id: Some(r.image_id.unwrap().try_into().unwrap()),
                     listing_id: r.listing_id as _,
                     image_data: r.image_data,
+                    is_primary: false,
                 });
                 ListingCard {
                     listing: l,

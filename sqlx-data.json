@@ -27,9 +27,15 @@
           "name": "image_data",
           "ordinal": 2,
           "type_info": "Blob"
+        },
+        {
+          "name": "is_primary",
+          "ordinal": 3,
+          "type_info": "Bool"
         }
       ],
       "nullable": [
+        false,
         false,
         false,
         false
@@ -309,9 +315,15 @@
           "name": "image_data",
           "ordinal": 2,
           "type_info": "Blob"
+        },
+        {
+          "name": "is_primary",
+          "ordinal": 3,
+          "type_info": "Bool"
         }
       ],
       "nullable": [
+        false,
         false,
         false,
         false

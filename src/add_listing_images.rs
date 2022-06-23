@@ -136,6 +136,7 @@ async fn upload_image(
             id: None,
             listing_id: id,
             image_data: image_bytes,
+            is_primary: false,
         };
 
         ListingImage::insert(listing_image, db)
