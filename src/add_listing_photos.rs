@@ -46,7 +46,7 @@ impl Context {
         admin_user: Option<AdminUser>,
     ) -> Context {
         match Listing::single_display(&mut db, listing_id).await {
-            Ok(Some(listing_display)) => {
+            Ok(listing_display) => {
                 if listing_display.listing.user_id == user.id() {
                     Context {
                         flash,
@@ -62,15 +62,6 @@ impl Context {
                         user: user,
                         admin_user: admin_user,
                     }
-                }
-            }
-            Ok(None) => {
-                error_!("Listing not found.");
-                Context {
-                    flash: Some(("error".into(), "Listing not found.".into())),
-                    listing_display: None,
-                    user: user,
-                    admin_user: admin_user,
                 }
             }
             Err(e) => {
@@ -126,8 +117,7 @@ async fn upload_image(
 ) -> Result<(), String> {
     let listing = Listing::single(db, id)
         .await
-        .map_err(|_| "failed to get listing")?
-        .unwrap();
+        .map_err(|_| "failed to get listing")?;
     let listing_images = ListingImage::all_for_listing(db, id)
         .await
         .map_err(|_| "failed to get listing")?;
@@ -217,12 +207,10 @@ async fn delete_image(
 ) -> Result<(), String> {
     let listing = Listing::single(&mut *db, listing_id)
         .await
-        .map_err(|_| "failed to get listing")?
-        .unwrap();
+        .map_err(|_| "failed to get listing")?;
     let listing_image = ListingImage::single(&mut *db, listing_id)
         .await
-        .map_err(|_| "failed to get listing")?
-        .unwrap();
+        .map_err(|_| "failed to get listing")?;
 
     if listing_image.listing_id != listing.id.unwrap() {
         Err("Invalid listing id given.".to_string())

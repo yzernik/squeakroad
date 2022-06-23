@@ -40,7 +40,7 @@ impl Context {
         match Listing::single_display(&mut db, listing_id).await {
             Ok(listing_display) => Context {
                 flash,
-                listing_display,
+                listing_display: Some(listing_display),
                 user,
                 admin_user,
             },

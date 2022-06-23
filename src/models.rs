@@ -216,7 +216,7 @@ impl Listing {
         Ok(insert_result.rows_affected() as _)
     }
 
-    pub async fn single(db: &mut Connection<Db>, id: i32) -> Result<Option<Listing>, sqlx::Error> {
+    pub async fn single(db: &mut Connection<Db>, id: i32) -> Result<Listing, sqlx::Error> {
         let listing = sqlx::query!("select * from listings WHERE id = ?;", id)
             .fetch_one(&mut **db)
             .map_ok(|r| Listing {
@@ -233,13 +233,13 @@ impl Listing {
 
         println!("{:?}", listing);
 
-        Ok(Some(listing))
+        Ok(listing)
     }
 
     pub async fn single_display(
         db: &mut Connection<Db>,
         id: i32,
-    ) -> Result<Option<ListingDisplay>, sqlx::Error> {
+    ) -> Result<ListingDisplay, sqlx::Error> {
         let listing = Listing::single(&mut *db, id).await?;
         let images = ListingImage::all_for_listing(&mut *db, id).await?;
         let image_displays = images
@@ -250,14 +250,13 @@ impl Listing {
                 image_data_base64: base64::encode(&img.image_data),
             })
             .collect::<Vec<_>>();
-        let rocket_auth_user =
-            RocketAuthUser::single(&mut *db, listing.as_ref().unwrap().user_id).await?;
+        let rocket_auth_user = RocketAuthUser::single(&mut *db, listing.user_id).await?;
 
-        let listing_display = listing.map(|l| ListingDisplay {
-            listing: l,
+        let listing_display = ListingDisplay {
+            listing: listing,
             images: image_displays,
             user: rocket_auth_user,
-        });
+        };
 
         Ok(listing_display)
     }
@@ -304,10 +303,7 @@ impl ListingImage {
         Ok(listing_images)
     }
 
-    pub async fn single(
-        db: &mut Connection<Db>,
-        id: i32,
-    ) -> Result<Option<ListingImage>, sqlx::Error> {
+    pub async fn single(db: &mut Connection<Db>, id: i32) -> Result<ListingImage, sqlx::Error> {
         let listing_image = sqlx::query!("select * from listingimages WHERE id = ?;", id)
             .fetch_one(&mut **db)
             .map_ok(|r| ListingImage {
@@ -317,7 +313,7 @@ impl ListingImage {
             })
             .await?;
 
-        Ok(Some(listing_image))
+        Ok(listing_image)
     }
 
     /// Returns the number of affected rows: 1.
