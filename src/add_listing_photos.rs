@@ -161,7 +161,7 @@ async fn delete(
     user: User,
     admin_user: Option<AdminUser>,
 ) -> Result<Flash<Redirect>, Template> {
-    match ListingImage::delete_with_id(image_id, &mut db).await {
+    match delete_image(id, image_id, &mut db, user.clone(), admin_user.clone()).await {
         Ok(_) => Ok(Flash::success(
             Redirect::to(uri!("/add_listing_photos", index(id))),
             "Listing image was deleted.",
@@ -172,6 +172,56 @@ async fn delete(
                 "addlistingphotos",
                 Context::err(db, id, "Failed to delete listing image.", user, admin_user).await,
             ))
+        }
+    }
+
+    // match ListingImage::delete_with_id(image_id, &mut db).await {
+    //     Ok(_) => Ok(Flash::success(
+    //         Redirect::to(uri!("/add_listing_photos", index(id))),
+    //         "Listing image was deleted.",
+    //     )),
+    //     Err(e) => {
+    //         error_!("DB deletion({}) error: {}", id, e);
+    //         Err(Template::render(
+    //             "addlistingphotos",
+    //             Context::err(db, id, "Failed to delete listing image.", user, admin_user).await,
+    //         ))
+    //     }
+    // }
+}
+
+async fn delete_image(
+    listing_id: i32,
+    image_id: i32,
+    db: &mut Connection<Db>,
+    user: User,
+    _admin_user: Option<AdminUser>,
+) -> Result<(), String> {
+    let listing = Listing::single(&mut *db, listing_id)
+        .await
+        .map_err(|_| "failed to get listing")?
+        .unwrap();
+    let listing_image = ListingImage::single(&mut *db, listing_id)
+        .await
+        .map_err(|_| "failed to get listing")?
+        .unwrap();
+
+    if listing_image.listing_id != listing.id.unwrap() {
+        Err("Invalid listing id given.".to_string())
+    } else if listing.completed {
+        Err("Listing is already completed.".to_string())
+    } else if listing.user_id != user.id() {
+        Err("Listing belongs to a different user.".to_string())
+    } else {
+        match ListingImage::delete_with_id(image_id, &mut *db).await {
+            Ok(num_deleted) => {
+                if num_deleted > 0 {
+                    Ok(())
+                } else {
+                    Err("No images deleted.".to_string())
+                }
+            }
+            Err(_) => Err("failed to delete image.".to_string()),
         }
     }
 }
