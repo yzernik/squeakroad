@@ -42,7 +42,7 @@ impl Context {
 #[post("/", data = "<listing_form>")]
 async fn new(
     listing_form: Form<InitialListingInfo>,
-    db: Connection<Db>,
+    mut db: Connection<Db>,
     user: User,
 ) -> Flash<Redirect> {
     let listing_info = listing_form.into_inner();
@@ -64,7 +64,7 @@ async fn new(
 
     if listing.description.is_empty() {
         Flash::error(Redirect::to("/"), "Description cannot be empty.")
-    } else if let Err(e) = Listing::insert(listing, db).await {
+    } else if let Err(e) = Listing::insert(listing, &mut db).await {
         error_!("DB insertion error: {}", e);
         Flash::error(
             Redirect::to("/"),

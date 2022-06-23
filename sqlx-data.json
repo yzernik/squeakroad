@@ -168,6 +168,46 @@
     },
     "query": "SELECT id FROM posts"
   },
+  "4dc4bc38717e0a8adea675ae4a5819d68754b17a473b56a7f51d7aea36274e0b": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "DELETE FROM listingimages WHERE id = ?"
+  },
+  "58168913d2c9c8321cd4bd0c87f71faa2811d0b5d46634ad4bf5020b397902a2": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "listing_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        },
+        {
+          "name": "image_data",
+          "ordinal": 2,
+          "type_info": "Blob"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "select * from listingimages WHERE id = ?;"
+  },
   "668690acaca0a0c0b4ac306b14d82aa1bee940f0776fae3f9962639b78328858": {
     "describe": {
       "columns": [],

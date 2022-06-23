@@ -186,7 +186,7 @@ impl Listing {
     }
 
     /// Returns the number of affected rows: 1.
-    pub async fn insert(listing: Listing, mut db: Connection<Db>) -> Result<usize, sqlx::Error> {
+    pub async fn insert(listing: Listing, db: &mut Connection<Db>) -> Result<usize, sqlx::Error> {
         let price_msat: i64 = listing.price_msat as _;
         let created_time_ms: i64 = listing.created_time_ms as _;
 
@@ -200,7 +200,7 @@ impl Listing {
             listing.approved,
             created_time_ms,
         )
-        .execute(&mut *db)
+        .execute(&mut **db)
         .await?;
 
         println!("{:?}", insert_result);
@@ -256,14 +256,14 @@ impl ListingImage {
     /// Returns the number of affected rows: 1.
     pub async fn insert(
         listingimage: ListingImage,
-        mut db: Connection<Db>,
+        db: &mut Connection<Db>,
     ) -> Result<usize, sqlx::Error> {
         let insert_result = sqlx::query!(
             "INSERT INTO listingimages (listing_id, image_data) VALUES (?, ?)",
             listingimage.listing_id,
             listingimage.image_data,
         )
-        .execute(&mut *db)
+        .execute(&mut **db)
         .await?;
 
         println!("{:?}", insert_result);
@@ -291,5 +291,30 @@ impl ListingImage {
         println!("{}", listing_images.len());
 
         Ok(listing_images)
+    }
+
+    pub async fn single(
+        db: &mut Connection<Db>,
+        id: i32,
+    ) -> Result<Option<ListingImage>, sqlx::Error> {
+        let listing_image = sqlx::query!("select * from listingimages WHERE id = ?;", id)
+            .fetch_one(&mut **db)
+            .map_ok(|r| ListingImage {
+                id: Some(r.id.try_into().unwrap()),
+                listing_id: r.listing_id as _,
+                image_data: r.image_data,
+            })
+            .await?;
+
+        Ok(Some(listing_image))
+    }
+
+    /// Returns the number of affected rows: 1.
+    pub async fn delete_with_id(id: i32, db: &mut Connection<Db>) -> Result<usize, sqlx::Error> {
+        let delete_result = sqlx::query!("DELETE FROM listingimages WHERE id = ?", id)
+            .execute(&mut **db)
+            .await?;
+
+        Ok(delete_result.rows_affected() as _)
     }
 }

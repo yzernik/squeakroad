@@ -22,20 +22,21 @@ struct Context {
 }
 
 impl Context {
-    // pub async fn err<M: std::fmt::Display>(
-    //     db: Connection<Db>,
-    //     listing_id: i32,
-    //     msg: M,
-    //     user: User,
-    //     admin_user: Option<AdminUser>,
-    // ) -> Context {
-    //     Context {
-    //         flash: Some(("error".into(), msg.to_string())),
-    //         listing_display: None,
-    //         user: user,
-    //         admin_user,
-    //     }
-    // }
+    pub async fn err<M: std::fmt::Display>(
+        _db: Connection<Db>,
+        _listing_id: i32,
+        msg: M,
+        user: User,
+        admin_user: Option<AdminUser>,
+    ) -> Context {
+        // TODO: get the listing display and put in context.
+        Context {
+            flash: Some(("error".into(), msg.to_string())),
+            listing_display: None,
+            user: user,
+            admin_user,
+        }
+    }
 
     pub async fn raw(
         mut db: Connection<Db>,
@@ -89,7 +90,7 @@ impl Context {
 async fn new(
     id: i32,
     upload_image_form: Form<FileUploadForm<'_>>,
-    db: Connection<Db>,
+    mut db: Connection<Db>,
     user: User,
     admin_user: Option<AdminUser>,
 ) -> Flash<Redirect> {
@@ -98,13 +99,13 @@ async fn new(
     let image_info = upload_image_form.into_inner();
     let file = image_info.file;
 
-    match upload_image(id, file, db, user, admin_user).await {
+    match upload_image(id, file, &mut db, user, admin_user).await {
         Ok(_) => Flash::success(
             Redirect::to(uri!("/add_listing_photos", index(id))),
             "Listing image successfully added.",
         ),
         Err(_) => Flash::error(
-            Redirect::to("/"),
+            Redirect::to(uri!("/add_listing_photos", index(id))),
             "Listing could not be inserted due an internal error.",
         ),
     }
@@ -119,23 +120,39 @@ fn get_file_bytes(tmp_file: TempFile) -> Result<Vec<u8>, String> {
 async fn upload_image(
     id: i32,
     tmp_file: TempFile<'_>,
-    db: Connection<Db>,
-    _user: User,
+    db: &mut Connection<Db>,
+    user: User,
     _admin_user: Option<AdminUser>,
 ) -> Result<(), String> {
-    let image_bytes = get_file_bytes(tmp_file).map_err(|_| "failed to get bytes.")?;
-
-    let listing_image = ListingImage {
-        id: None,
-        listing_id: id,
-        image_data: image_bytes,
-    };
-
-    ListingImage::insert(listing_image, db)
+    let listing = Listing::single(db, id)
         .await
-        .map_err(|_| "failed to save image in db.")?;
+        .map_err(|_| "failed to get listing")?
+        .unwrap();
+    let listing_images = ListingImage::all_for_listing(db, id)
+        .await
+        .map_err(|_| "failed to get listing")?;
 
-    Ok(())
+    if listing.user_id != user.id() {
+        Err("Listing belongs to a different user.".to_string())
+    } else if listing.completed {
+        Err("Listing is already completed.".to_string())
+    } else if listing_images.len() >= 5 {
+        Err("Maximum number of images already exist.".to_string())
+    } else {
+        let image_bytes = get_file_bytes(tmp_file).map_err(|_| "failed to get bytes.")?;
+
+        let listing_image = ListingImage {
+            id: None,
+            listing_id: id,
+            image_data: image_bytes,
+        };
+
+        ListingImage::insert(listing_image, db)
+            .await
+            .map_err(|_| "failed to save image in db.")?;
+
+        Ok(())
+    }
 }
 
 // #[put("/<id>")]
@@ -152,19 +169,78 @@ async fn upload_image(
 //     }
 // }
 
-// #[delete("/<id>")]
-// async fn delete(id: i32, mut db: Connection<Db>, user: User) -> Result<Flash<Redirect>, Template> {
-//     match Task::delete_with_id(id, &mut db).await {
-//         Ok(_) => Ok(Flash::success(Redirect::to("/"), "Listing was deleted.")),
-//         Err(e) => {
-//             error_!("DB deletion({}) error: {}", id, e);
-//             Err(Template::render(
-//                 "index",
-//                 Context::err(db, "Failed to delete task.", Some(user)).await,
-//             ))
-//         }
-//     }
-// }
+#[delete("/<id>/add_photo/<image_id>")]
+async fn delete(
+    id: i32,
+    image_id: i32,
+    mut db: Connection<Db>,
+    user: User,
+    admin_user: Option<AdminUser>,
+) -> Result<Flash<Redirect>, Template> {
+    match delete_image(id, image_id, &mut db, user.clone(), admin_user.clone()).await {
+        Ok(_) => Ok(Flash::success(
+            Redirect::to(uri!("/add_listing_photos", index(id))),
+            "Listing image was deleted.",
+        )),
+        Err(e) => {
+            error_!("DB deletion({}) error: {}", id, e);
+            Err(Template::render(
+                "addlistingphotos",
+                Context::err(db, id, "Failed to delete listing image.", user, admin_user).await,
+            ))
+        }
+    }
+
+    // match ListingImage::delete_with_id(image_id, &mut db).await {
+    //     Ok(_) => Ok(Flash::success(
+    //         Redirect::to(uri!("/add_listing_photos", index(id))),
+    //         "Listing image was deleted.",
+    //     )),
+    //     Err(e) => {
+    //         error_!("DB deletion({}) error: {}", id, e);
+    //         Err(Template::render(
+    //             "addlistingphotos",
+    //             Context::err(db, id, "Failed to delete listing image.", user, admin_user).await,
+    //         ))
+    //     }
+    // }
+}
+
+async fn delete_image(
+    listing_id: i32,
+    image_id: i32,
+    db: &mut Connection<Db>,
+    user: User,
+    _admin_user: Option<AdminUser>,
+) -> Result<(), String> {
+    let listing = Listing::single(&mut *db, listing_id)
+        .await
+        .map_err(|_| "failed to get listing")?
+        .unwrap();
+    let listing_image = ListingImage::single(&mut *db, listing_id)
+        .await
+        .map_err(|_| "failed to get listing")?
+        .unwrap();
+
+    if listing_image.listing_id != listing.id.unwrap() {
+        Err("Invalid listing id given.".to_string())
+    } else if listing.completed {
+        Err("Listing is already completed.".to_string())
+    } else if listing.user_id != user.id() {
+        Err("Listing belongs to a different user.".to_string())
+    } else {
+        match ListingImage::delete_with_id(image_id, &mut *db).await {
+            Ok(num_deleted) => {
+                if num_deleted > 0 {
+                    Ok(())
+                } else {
+                    Err("No images deleted.".to_string())
+                }
+            }
+            Err(_) => Err("failed to delete image.".to_string()),
+        }
+    }
+}
 
 #[get("/<id>")]
 async fn index(
@@ -185,6 +261,6 @@ pub fn add_listing_photos_stage() -> AdHoc {
     AdHoc::on_ignite("Add Listing Photos Stage", |rocket| async {
         rocket
             // .mount("/add_listing_photos", routes![index, new])
-            .mount("/add_listing_photos", routes![index, new])
+            .mount("/add_listing_photos", routes![index, new, delete])
     })
 }
