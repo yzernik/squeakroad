@@ -103,41 +103,54 @@ async fn new(
     let image_info = upload_image_form.into_inner();
     let file = image_info.file;
 
-    if let Ok(image_bytes) = get_file_bytes(file) {
-        //if let Some(image_bytes) = get_file_bytes(file) {
-        println!("got bytes: {:?}", image_bytes);
-
-        let listing_image = ListingImage {
-            id: None,
-            listing_id: id,
-            image_data: image_bytes,
-        };
-
-        if let Err(e) = ListingImage::insert(listing_image, db).await {
-            error_!("DB insertion error: {}", e);
-            Ok(Flash::error(
-                Redirect::to(uri!("/add_listing_photos", index(id))),
-                "Listing image could not be inserted due an internal error.",
-            ))
-        } else {
-            Ok(Flash::success(
-                Redirect::to(uri!("/add_listing_photos", index(id))),
-                "Listing image successfully added.",
-            ))
-        }
+    if let Err(e) = upload_image(id, file, db, user, admin_user).await {
+        error_!("DB insertion error: {}", e);
+        Ok(Flash::error(
+            Redirect::to(uri!("/add_listing_photos", index(id))),
+            "Listing image could not be inserted due an internal error.",
+        ))
     } else {
-        Err(Template::render(
-            "index",
-            Context::err(
-                db,
-                id,
-                "Failed to get uploaded image bytes.",
-                user,
-                admin_user,
-            )
-            .await,
+        Ok(Flash::success(
+            Redirect::to(uri!("/add_listing_photos", index(id))),
+            "Listing image successfully added.",
         ))
     }
+
+    // if let Ok(image_bytes) = get_file_bytes(file) {
+    //     //if let Some(image_bytes) = get_file_bytes(file) {
+    //     println!("got bytes: {:?}", image_bytes);
+
+    //     let listing_image = ListingImage {
+    //         id: None,
+    //         listing_id: id,
+    //         image_data: image_bytes,
+    //     };
+
+    //     if let Err(e) = ListingImage::insert(listing_image, db).await {
+    //         error_!("DB insertion error: {}", e);
+    //         Ok(Flash::error(
+    //             Redirect::to(uri!("/add_listing_photos", index(id))),
+    //             "Listing image could not be inserted due an internal error.",
+    //         ))
+    //     } else {
+    //         Ok(Flash::success(
+    //             Redirect::to(uri!("/add_listing_photos", index(id))),
+    //             "Listing image successfully added.",
+    //         ))
+    //     }
+    // } else {
+    //     Err(Template::render(
+    //         "index",
+    //         Context::err(
+    //             db,
+    //             id,
+    //             "Failed to get uploaded image bytes.",
+    //             user,
+    //             admin_user,
+    //         )
+    //         .await,
+    //     ))
+    // }
 
     // Ok(Flash::error(
     //     Redirect::to("/"),
@@ -171,6 +184,28 @@ fn get_file_bytes(tmp_file: TempFile) -> Result<Vec<u8>, String> {
     // } else {
     //     None
     // }
+}
+
+async fn upload_image<'a>(
+    id: i32,
+    tmp_file: TempFile<'a>,
+    db: Connection<Db>,
+    user: User,
+    admin_user: Option<AdminUser>,
+) -> Result<(), String> {
+    let image_bytes = get_file_bytes(tmp_file).map_err(|_| "failed to get bytes.")?;
+
+    let listing_image = ListingImage {
+        id: None,
+        listing_id: id,
+        image_data: image_bytes,
+    };
+
+    let insert_result = ListingImage::insert(listing_image, db)
+        .await
+        .map_err(|_| "failed to save image in db.")?;
+
+    Ok(())
 }
 
 // #[put("/<id>")]
