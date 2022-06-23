@@ -93,6 +93,7 @@ pub struct ListingImageDisplay {
     pub id: Option<i32>,
     pub listing_id: i32,
     pub image_data_base64: String,
+    pub is_primary: bool,
 }
 
 #[derive(Serialize, Debug, Clone)]
@@ -286,7 +287,7 @@ impl ListingImage {
             id: Some(r.id.try_into().unwrap()),
             listing_id: r.listing_id as _,
             image_data: r.image_data,
-            is_primary: false,
+            is_primary: r.is_primary,
         })
         .try_collect::<Vec<_>>()
         .await?;
@@ -303,7 +304,7 @@ impl ListingImage {
                 id: Some(r.id.try_into().unwrap()),
                 listing_id: r.listing_id as _,
                 image_data: r.image_data,
-                is_primary: false,
+                is_primary: r.is_primary,
             })
             .await?;
 
@@ -359,6 +360,7 @@ impl ListingDisplay {
                 id: img.id,
                 listing_id: img.listing_id,
                 image_data_base64: base64::encode(&img.image_data),
+                is_primary: img.is_primary,
             })
             .collect::<Vec<_>>();
         let rocket_auth_user = RocketAuthUser::single(&mut *db, listing.user_id).await?;
@@ -377,7 +379,7 @@ impl ListingCard {
     pub async fn all(db: &mut Connection<Db>) -> Result<Vec<ListingCard>, sqlx::Error> {
         // Example query for this kind of join/group by: https://stackoverflow.com/a/63037790/1639564
         let listing_cards =
-            sqlx::query!("select listings.id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.completed, listings.approved, listings.created_time_ms, min(listingimages.id) as image_id, listingimages.listing_id, listingimages.image_data from listings LEFT JOIN listingimages ON listings.id = listingimages.listing_id GROUP BY listings.id;")
+            sqlx::query!("select listings.id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.completed, listings.approved, listings.created_time_ms, min(listingimages.id) as image_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary from listings LEFT JOIN listingimages ON listings.id = listingimages.listing_id GROUP BY listings.id;")
                 .fetch(&mut **db)
             .map_ok(|r| {
                 let l = Listing {
@@ -394,7 +396,7 @@ impl ListingCard {
                     id: Some(r.image_id.unwrap().try_into().unwrap()),
                     listing_id: r.listing_id as _,
                     image_data: r.image_data,
-                    is_primary: false,
+                    is_primary: r.is_primary,
                 });
                 ListingCard {
                     listing: l,
@@ -419,6 +421,7 @@ impl ListingCardDisplay {
                     id: image.id,
                     listing_id: image.listing_id,
                     image_data_base64: base64::encode(&image.image_data),
+                    is_primary: image.is_primary,
                 }),
             })
             .collect::<Vec<_>>();
