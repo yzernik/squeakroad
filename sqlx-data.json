@@ -130,6 +130,42 @@
     },
     "query": "select * from listings;"
   },
+  "23ecd8647f0955bb55aeb84b7b2d293d6cdf73f4bc436ec491522eb635aaaca5": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "email",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "password",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "is_admin",
+          "ordinal": 3,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        false,
+        true,
+        false,
+        true
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "select * from users WHERE id = ?;"
+  },
   "288eb5793fff74e2d6b669b96ba963d21ef6765f0dc24870caa1a85be6fb4b5e": {
     "describe": {
       "columns": [],
@@ -217,6 +253,42 @@
       }
     },
     "query": "DELETE FROM posts"
+  },
+  "770ec17e2277e313a56c78ecab71d0ee460922cac72efddf9869ca4194276572": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "email",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "password",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "is_admin",
+          "ordinal": 3,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        false,
+        true,
+        false,
+        true
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "select * from users;"
   },
   "79301b44b77802e0096efd73b1e9adac27b27a3cf7bf853af3a9f130b1684d91": {
     "describe": {

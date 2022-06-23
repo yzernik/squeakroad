@@ -67,6 +67,7 @@ pub struct ListingImage {
 pub struct ListingDisplay {
     pub listing: Listing,
     pub images: Vec<ListingImageDisplay>,
+    pub user: RocketAuthUser,
 }
 
 #[derive(Serialize, Debug, Clone)]
@@ -75,6 +76,13 @@ pub struct ListingImageDisplay {
     pub id: Option<i32>,
     pub listing_id: i32,
     pub image_data_base64: String,
+}
+
+#[derive(Serialize, Debug, Clone)]
+#[serde(crate = "rocket::serde")]
+pub struct RocketAuthUser {
+    pub id: Option<i32>,
+    pub username: String,
 }
 
 // #[derive(Debug, FromForm)]
@@ -242,10 +250,13 @@ impl Listing {
                 image_data_base64: base64::encode(&img.image_data),
             })
             .collect::<Vec<_>>();
+        let rocket_auth_user =
+            RocketAuthUser::single(&mut *db, listing.as_ref().unwrap().user_id).await?;
 
         let listing_display = listing.map(|l| ListingDisplay {
             listing: l,
             images: image_displays,
+            user: rocket_auth_user,
         });
 
         Ok(listing_display)
@@ -316,5 +327,36 @@ impl ListingImage {
             .await?;
 
         Ok(delete_result.rows_affected() as _)
+    }
+}
+
+impl RocketAuthUser {
+    /// Returns the number of affected rows: 1.
+
+    pub async fn all(db: &mut Connection<Db>) -> Result<Vec<RocketAuthUser>, sqlx::Error> {
+        let rocket_auth_users = sqlx::query!("select * from users;")
+            .fetch(&mut **db)
+            .map_ok(|r| RocketAuthUser {
+                id: Some(r.id as i32),
+                username: r.email.unwrap(),
+            })
+            .try_collect::<Vec<_>>()
+            .await?;
+
+        println!("{}", rocket_auth_users.len());
+
+        Ok(rocket_auth_users)
+    }
+
+    pub async fn single(db: &mut Connection<Db>, id: i32) -> Result<RocketAuthUser, sqlx::Error> {
+        let rocket_auth_user = sqlx::query!("select * from users WHERE id = ?;", id)
+            .fetch_one(&mut **db)
+            .map_ok(|r| RocketAuthUser {
+                id: Some(r.id as i32),
+                username: r.email.unwrap(),
+            })
+            .await?;
+
+        Ok(rocket_auth_user)
     }
 }
