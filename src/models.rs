@@ -250,10 +250,6 @@ impl Listing {
             images: image_displays,
         });
 
-        // let listing_display = ListingDisplay(listing: listing, images: images);
-
-        println!("{:?}", listing_display);
-
         Ok(listing_display)
     }
 }
@@ -295,7 +291,6 @@ impl ListingImage {
         .await?;
 
         println!("{}", listing_images.len());
-        println!("{:?}", listing_images);
 
         Ok(listing_images)
     }
