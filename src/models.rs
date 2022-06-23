@@ -279,7 +279,7 @@ impl ListingImage {
         listing_id: i32,
     ) -> Result<Vec<ListingImage>, sqlx::Error> {
         let listing_images = sqlx::query!(
-            "select * from listingimages WHERE listing_id = ?;",
+            "select * from listingimages WHERE listing_id = ? ORDER BY listingimages.is_primary DESC;",
             listing_id
         )
         .fetch(&mut **db)
