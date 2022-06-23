@@ -52,21 +52,6 @@ async fn new(
     admin_user: Option<AdminUser>,
 ) -> Result<Flash<Redirect>, Template> {
     let listing_info = listing_form.into_inner();
-    // let now = SystemTime::now()
-    //     .duration_since(UNIX_EPOCH)
-    //     .unwrap()
-    //     .as_millis() as u64;
-
-    // let listing = Listing {
-    //     id: None,
-    //     user_id: user.id(),
-    //     title: listing_info.title,
-    //     description: listing_info.description,
-    //     price_msat: listing_info.price_msat,
-    //     completed: false,
-    //     approved: false,
-    //     created_time_ms: now,
-    // };
 
     match create_listing(listing_info, &mut db, user.clone()).await {
         Ok(listing_id) => Ok(Flash::success(
@@ -81,24 +66,6 @@ async fn new(
             ))
         }
     }
-
-    // if listing.description.is_empty() {
-    //     Flash::error(Redirect::to("/"), "Description cannot be empty.")
-    // } else {
-    //     match Listing::insert(listing, &mut db).await {
-    //         Ok(listing_id) => Flash::success(
-    //             Redirect::to(format!("/{}/{}", "add_listing_photos", listing_id)),
-    //             "Listing successfully added.",
-    //         ),
-    //         Err(e) => {
-    //             error_!("DB insertion error: {}", e);
-    //             Flash::error(
-    //                 Redirect::to("/"),
-    //                 "Listing could not be inserted due an internal error.",
-    //             )
-    //         }
-    //     }
-    // }
 }
 
 async fn create_listing(
@@ -134,9 +101,6 @@ async fn create_listing(
                 Err("Listing could not be inserted due an internal error.".to_string())
             }
         }
-
-        // let listing_id = Listing::insert(listing, &mut db).await?;
-        // Ok(listing_id)
     }
 }
 
