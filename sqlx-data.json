@@ -184,6 +184,16 @@
     },
     "query": "DELETE FROM listingimages WHERE id = ?"
   },
+  "501eb603b5ab9e467ecb0b5211b67740d1455a34904bbe5ba45bdb0975f18b50": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "UPDATE listingimages SET is_primary = false WHERE listing_id = ?"
+  },
   "5290a3d90768ee7c0d4fb9e22c9850441ad8bab376c593907605b63ce2ce6c0e": {
     "describe": {
       "columns": [
@@ -455,5 +465,15 @@
       }
     },
     "query": "select * from listingimages WHERE listing_id = ? ORDER BY listingimages.is_primary DESC;"
+  },
+  "ffd68aafc82a887ff89e8f00d4afbc4d2924541878e1b413c10cf5842ce905f1": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "UPDATE listingimages SET is_primary = true WHERE listing_id = ? AND id = ?"
   }
 }
