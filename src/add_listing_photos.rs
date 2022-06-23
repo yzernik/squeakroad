@@ -6,13 +6,11 @@ use rocket::form::Form;
 use rocket::fs::TempFile;
 use rocket::request::FlashMessage;
 use rocket::response::{Flash, Redirect};
-use rocket::serde::json::{json, Value};
-use rocket::serde::{json, Deserialize, Serialize};
+use rocket::serde::Serialize;
 use rocket_auth::{AdminUser, User};
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
 use std::fs;
-use uuid::Uuid;
 
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -24,20 +22,20 @@ struct Context {
 }
 
 impl Context {
-    pub async fn err<M: std::fmt::Display>(
-        db: Connection<Db>,
-        listing_id: i32,
-        msg: M,
-        user: User,
-        admin_user: Option<AdminUser>,
-    ) -> Context {
-        Context {
-            flash: Some(("error".into(), msg.to_string())),
-            listing_display: None,
-            user: user,
-            admin_user,
-        }
-    }
+    // pub async fn err<M: std::fmt::Display>(
+    //     db: Connection<Db>,
+    //     listing_id: i32,
+    //     msg: M,
+    //     user: User,
+    //     admin_user: Option<AdminUser>,
+    // ) -> Context {
+    //     Context {
+    //         flash: Some(("error".into(), msg.to_string())),
+    //         listing_display: None,
+    //         user: user,
+    //         admin_user,
+    //     }
+    // }
 
     pub async fn raw(
         mut db: Connection<Db>,
@@ -105,7 +103,7 @@ async fn new(
             Redirect::to(uri!("/add_listing_photos", index(id))),
             "Listing image successfully added.",
         ),
-        Err(e) => Flash::error(
+        Err(_) => Flash::error(
             Redirect::to("/"),
             "Listing could not be inserted due an internal error.",
         ),
@@ -122,8 +120,8 @@ async fn upload_image<'a>(
     id: i32,
     tmp_file: TempFile<'a>,
     db: Connection<Db>,
-    user: User,
-    admin_user: Option<AdminUser>,
+    _user: User,
+    _admin_user: Option<AdminUser>,
 ) -> Result<(), String> {
     let image_bytes = get_file_bytes(tmp_file).map_err(|_| "failed to get bytes.")?;
 
@@ -133,7 +131,7 @@ async fn upload_image<'a>(
         image_data: image_bytes,
     };
 
-    let insert_result = ListingImage::insert(listing_image, db)
+    ListingImage::insert(listing_image, db)
         .await
         .map_err(|_| "failed to save image in db.")?;
 
