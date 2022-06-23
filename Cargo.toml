@@ -8,6 +8,7 @@ publish = false
 rocket = { version = "0.5.0-rc.2", features = ["json", "uuid"] }
 serde_json = "1.0.59"
 uuid = { version = "0.8", features = ["serde", "v4"] }
+base64 = "0.13.0"
 
 [dependencies.sqlx]
 version = "0.5.1"

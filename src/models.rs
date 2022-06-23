@@ -7,6 +7,7 @@ use rocket::serde::json::{json, Value};
 use rocket::serde::{json, Deserialize, Serialize};
 use rocket_db_pools::{sqlx, Connection};
 use std::result::Result;
+extern crate base64;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -67,7 +68,15 @@ pub struct ListingImage {
 #[serde(crate = "rocket::serde")]
 pub struct ListingDisplay {
     pub listing: Listing,
-    pub images: Vec<ListingImage>,
+    pub images: Vec<ListingImageDisplay>,
+}
+
+#[derive(Serialize, Debug, Clone)]
+#[serde(crate = "rocket::serde")]
+pub struct ListingImageDisplay {
+    pub id: Option<i32>,
+    pub listing_id: i32,
+    pub image_data_base64: String,
 }
 
 // #[derive(Debug, FromForm)]
@@ -227,10 +236,18 @@ impl Listing {
     ) -> Result<Option<ListingDisplay>, sqlx::Error> {
         let listing = Listing::single(&mut *db, id).await?;
         let images = ListingImage::all_for_listing(&mut *db, id).await?;
+        let image_displays = images
+            .iter()
+            .map(|img| ListingImageDisplay {
+                id: img.id,
+                listing_id: img.listing_id,
+                image_data_base64: base64::encode(&img.image_data),
+            })
+            .collect::<Vec<_>>();
 
         let listing_display = listing.map(|l| ListingDisplay {
             listing: l,
-            images: images,
+            images: image_displays,
         });
 
         // let listing_display = ListingDisplay(listing: listing, images: images);
