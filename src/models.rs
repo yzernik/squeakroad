@@ -292,4 +292,13 @@ impl ListingImage {
 
         Ok(listing_images)
     }
+
+    /// Returns the number of affected rows: 1.
+    pub async fn delete_with_id(id: i32, db: &mut Connection<Db>) -> Result<usize, sqlx::Error> {
+        let delete_result = sqlx::query!("DELETE FROM listingimages WHERE id = ?", id)
+            .execute(&mut **db)
+            .await?;
+
+        Ok(delete_result.rows_affected() as _)
+    }
 }

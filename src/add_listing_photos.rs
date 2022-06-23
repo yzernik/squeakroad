@@ -22,20 +22,21 @@ struct Context {
 }
 
 impl Context {
-    // pub async fn err<M: std::fmt::Display>(
-    //     db: Connection<Db>,
-    //     listing_id: i32,
-    //     msg: M,
-    //     user: User,
-    //     admin_user: Option<AdminUser>,
-    // ) -> Context {
-    //     Context {
-    //         flash: Some(("error".into(), msg.to_string())),
-    //         listing_display: None,
-    //         user: user,
-    //         admin_user,
-    //     }
-    // }
+    pub async fn err<M: std::fmt::Display>(
+        _db: Connection<Db>,
+        _listing_id: i32,
+        msg: M,
+        user: User,
+        admin_user: Option<AdminUser>,
+    ) -> Context {
+        // TODO: get the listing display and put in context.
+        Context {
+            flash: Some(("error".into(), msg.to_string())),
+            listing_display: None,
+            user: user,
+            admin_user,
+        }
+    }
 
     pub async fn raw(
         mut db: Connection<Db>,
@@ -152,19 +153,28 @@ async fn upload_image(
 //     }
 // }
 
-// #[delete("/<id>")]
-// async fn delete(id: i32, mut db: Connection<Db>, user: User) -> Result<Flash<Redirect>, Template> {
-//     match Task::delete_with_id(id, &mut db).await {
-//         Ok(_) => Ok(Flash::success(Redirect::to("/"), "Listing was deleted.")),
-//         Err(e) => {
-//             error_!("DB deletion({}) error: {}", id, e);
-//             Err(Template::render(
-//                 "index",
-//                 Context::err(db, "Failed to delete task.", Some(user)).await,
-//             ))
-//         }
-//     }
-// }
+#[delete("/<id>/add_photo/<image_id>")]
+async fn delete(
+    id: i32,
+    image_id: i32,
+    mut db: Connection<Db>,
+    user: User,
+    admin_user: Option<AdminUser>,
+) -> Result<Flash<Redirect>, Template> {
+    match ListingImage::delete_with_id(image_id, &mut db).await {
+        Ok(_) => Ok(Flash::success(
+            Redirect::to(uri!("/add_listing_photos", index(id))),
+            "Listing image was deleted.",
+        )),
+        Err(e) => {
+            error_!("DB deletion({}) error: {}", id, e);
+            Err(Template::render(
+                "addlistingphotos",
+                Context::err(db, id, "Failed to delete listing image.", user, admin_user).await,
+            ))
+        }
+    }
+}
 
 #[get("/<id>")]
 async fn index(
@@ -185,6 +195,6 @@ pub fn add_listing_photos_stage() -> AdHoc {
     AdHoc::on_ignite("Add Listing Photos Stage", |rocket| async {
         rocket
             // .mount("/add_listing_photos", routes![index, new])
-            .mount("/add_listing_photos", routes![index, new])
+            .mount("/add_listing_photos", routes![index, new, delete])
     })
 }
