@@ -19,12 +19,17 @@ struct Context {
 }
 
 impl Context {
-    // pub async fn err<M: std::fmt::Display>(msg: M, user: Option<User>) -> Context {
-    //     Context {
-    //         flash: Some(("error".into(), msg.to_string())),
-    //         user: user,
-    //     }
-    // }
+    pub async fn err<M: std::fmt::Display>(
+        msg: M,
+        user: Option<User>,
+        admin_user: Option<AdminUser>,
+    ) -> Context {
+        Context {
+            flash: Some(("error".into(), msg.to_string())),
+            user,
+            admin_user,
+        }
+    }
 
     pub async fn raw(
         flash: Option<(String, String)>,
@@ -44,8 +49,63 @@ async fn new(
     listing_form: Form<InitialListingInfo>,
     mut db: Connection<Db>,
     user: User,
-) -> Flash<Redirect> {
+    admin_user: Option<AdminUser>,
+) -> Result<Flash<Redirect>, Template> {
     let listing_info = listing_form.into_inner();
+    // let now = SystemTime::now()
+    //     .duration_since(UNIX_EPOCH)
+    //     .unwrap()
+    //     .as_millis() as u64;
+
+    // let listing = Listing {
+    //     id: None,
+    //     user_id: user.id(),
+    //     title: listing_info.title,
+    //     description: listing_info.description,
+    //     price_msat: listing_info.price_msat,
+    //     completed: false,
+    //     approved: false,
+    //     created_time_ms: now,
+    // };
+
+    match create_listing(listing_info, &mut db, user.clone()).await {
+        Ok(listing_id) => Ok(Flash::success(
+            Redirect::to(format!("/{}/{}", "add_listing_photos", listing_id)),
+            "Listing successfully added.",
+        )),
+        Err(e) => {
+            error_!("DB insertion error: {}", e);
+            Err(Template::render(
+                "newlisting",
+                Context::err(e, Some(user), admin_user).await,
+            ))
+        }
+    }
+
+    // if listing.description.is_empty() {
+    //     Flash::error(Redirect::to("/"), "Description cannot be empty.")
+    // } else {
+    //     match Listing::insert(listing, &mut db).await {
+    //         Ok(listing_id) => Flash::success(
+    //             Redirect::to(format!("/{}/{}", "add_listing_photos", listing_id)),
+    //             "Listing successfully added.",
+    //         ),
+    //         Err(e) => {
+    //             error_!("DB insertion error: {}", e);
+    //             Flash::error(
+    //                 Redirect::to("/"),
+    //                 "Listing could not be inserted due an internal error.",
+    //             )
+    //         }
+    //     }
+    // }
+}
+
+async fn create_listing(
+    listing_info: InitialListingInfo,
+    db: &mut Connection<Db>,
+    user: User,
+) -> Result<i32, String> {
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
@@ -63,56 +123,22 @@ async fn new(
     };
 
     if listing.description.is_empty() {
-        Flash::error(Redirect::to("/"), "Description cannot be empty.")
+        Err("Description cannot be empty.".to_string())
+    } else if user.is_admin {
+        Err("Admin user cannot create a listing.".to_string())
     } else {
-        match Listing::insert(listing, &mut db).await {
-            Ok(listing_id) => Flash::success(
-                Redirect::to(format!("/{}/{}", "add_listing_photos", listing_id)),
-                "Listing successfully added.",
-            ),
+        match Listing::insert(listing, db).await {
+            Ok(listing_id) => Ok(listing_id),
             Err(e) => {
                 error_!("DB insertion error: {}", e);
-                Flash::error(
-                    Redirect::to("/"),
-                    "Listing could not be inserted due an internal error.",
-                )
+                Err("Listing could not be inserted due an internal error.".to_string())
             }
         }
+
+        // let listing_id = Listing::insert(listing, &mut db).await?;
+        // Ok(listing_id)
     }
 }
-
-// async fn create_listing(
-//     listing_info: InitialListingInfo,
-//     db: &mut Connection<Db>,
-//     user: User,
-//     _admin_user: Option<AdminUser>,
-// ) -> Result<(), String> {
-//     if listing.user_id != user.id() {
-//         Err("Listing belongs to a different user.".to_string())
-//     } else if listing.completed {
-//         Err("Listing is already completed.".to_string())
-//     } else if listing_images.len() >= 5 {
-//         Err("Maximum number of images already exist.".to_string())
-//     } else if tmp_file.len() == 0 {
-//         Err("File is empty.".to_string())
-//     } else if tmp_file.len() >= 1000000 {
-//         Err("File is bigger than maximum allowed size.".to_string())
-//     } else {
-//         let image_bytes = get_file_bytes(tmp_file).map_err(|_| "failed to get bytes.")?;
-
-//         let listing_image = ListingImage {
-//             id: None,
-//             listing_id: id,
-//             image_data: image_bytes,
-//         };
-
-//         ListingImage::insert(listing_image, db)
-//             .await
-//             .map_err(|_| "failed to save image in db.")?;
-
-//         Ok(())
-//     }
-// }
 
 // #[put("/<id>")]
 // async fn toggle(id: i32, mut db: Connection<Db>, user: User) -> Result<Redirect, Template> {
