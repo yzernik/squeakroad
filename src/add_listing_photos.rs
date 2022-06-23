@@ -1,43 +1,41 @@
 use crate::db::Db;
 use crate::models::FileUploadForm;
-use crate::models::{Listing, ListingImage};
+use crate::models::{Listing, ListingDisplay, ListingImage};
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
 use rocket::fs::TempFile;
 use rocket::request::FlashMessage;
 use rocket::response::{Flash, Redirect};
-use rocket::serde::json::{json, Value};
-use rocket::serde::{json, Deserialize, Serialize};
+use rocket::serde::Serialize;
 use rocket_auth::{AdminUser, User};
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
 use std::fs;
-use uuid::Uuid;
 
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
 struct Context {
     flash: Option<(String, String)>,
-    listing: Option<Listing>,
+    listing_display: Option<ListingDisplay>,
     user: User,
     admin_user: Option<AdminUser>,
 }
 
 impl Context {
-    pub async fn err<M: std::fmt::Display>(
-        db: Connection<Db>,
-        listing_id: i32,
-        msg: M,
-        user: User,
-        admin_user: Option<AdminUser>,
-    ) -> Context {
-        Context {
-            flash: Some(("error".into(), msg.to_string())),
-            listing: None,
-            user: user,
-            admin_user,
-        }
-    }
+    // pub async fn err<M: std::fmt::Display>(
+    //     db: Connection<Db>,
+    //     listing_id: i32,
+    //     msg: M,
+    //     user: User,
+    //     admin_user: Option<AdminUser>,
+    // ) -> Context {
+    //     Context {
+    //         flash: Some(("error".into(), msg.to_string())),
+    //         listing_display: None,
+    //         user: user,
+    //         admin_user,
+    //     }
+    // }
 
     pub async fn raw(
         mut db: Connection<Db>,
@@ -46,14 +44,12 @@ impl Context {
         user: User,
         admin_user: Option<AdminUser>,
     ) -> Context {
-        match Listing::single(&mut db, listing_id).await {
-            Ok(Some(lstng)) => {
-                let listing = Some(lstng.clone());
-
-                if lstng.user_id == user.id() {
+        match Listing::single_display(&mut db, listing_id).await {
+            Ok(Some(listing_display)) => {
+                if listing_display.listing.user_id == user.id() {
                     Context {
                         flash,
-                        listing,
+                        listing_display: Some(listing_display),
                         user,
                         admin_user,
                     }
@@ -61,7 +57,7 @@ impl Context {
                     error_!("Listing belongs to other user.");
                     Context {
                         flash: Some(("error".into(), "Listing belongs to other user.".into())),
-                        listing: None,
+                        listing_display: None,
                         user: user,
                         admin_user: admin_user,
                     }
@@ -71,7 +67,7 @@ impl Context {
                 error_!("Listing not found.");
                 Context {
                     flash: Some(("error".into(), "Listing not found.".into())),
-                    listing: None,
+                    listing_display: None,
                     user: user,
                     admin_user: admin_user,
                 }
@@ -80,7 +76,7 @@ impl Context {
                 error_!("DB Listing::single() error: {}", e);
                 Context {
                     flash: Some(("error".into(), "Fail to access database.".into())),
-                    listing: None,
+                    listing_display: None,
                     user: user,
                     admin_user: admin_user,
                 }
@@ -96,72 +92,50 @@ async fn new(
     db: Connection<Db>,
     user: User,
     admin_user: Option<AdminUser>,
-) -> Result<Flash<Redirect>, Template> {
-    // TODO: Change return type to Flash<Redirect>.
-    // Same as "new" method in listings.rs
-
+) -> Flash<Redirect> {
     println!("listing_id: {:?}", id);
 
     let image_info = upload_image_form.into_inner();
     let file = image_info.file;
 
-    if let Some(image_bytes) = get_file_bytes(file) {
-        println!("got bytes: {:?}", image_bytes);
-
-        let listing_image = ListingImage {
-            id: None,
-            listing_id: id,
-            image_data: image_bytes,
-        };
-
-        if let Err(e) = ListingImage::insert(listing_image, db).await {
-            error_!("DB insertion error: {}", e);
-            Ok(Flash::error(
-                Redirect::to(uri!("/add_listing_photos", index(id))),
-                "Listing image could not be inserted due an internal error.",
-            ))
-        } else {
-            Ok(Flash::success(
-                Redirect::to(uri!("/add_listing_photos", index(id))),
-                "Listing image successfully added.",
-            ))
-        }
-
-        // Ok(Flash::error(
-        //     Redirect::to("/"),
-        //     "Listing could not be inserted due an internal error.",
-        // ))
-    } else {
-        error_!("DB deletion({}) error: {}", id, "Some error string");
-        Err(Template::render(
-            "index",
-            Context::err(db, id, "Failed to delete task.", user, admin_user).await,
-        ))
+    match upload_image(id, file, db, user, admin_user).await {
+        Ok(_) => Flash::success(
+            Redirect::to(uri!("/add_listing_photos", index(id))),
+            "Listing image successfully added.",
+        ),
+        Err(_) => Flash::error(
+            Redirect::to("/"),
+            "Listing could not be inserted due an internal error.",
+        ),
     }
 }
 
-fn get_file_bytes(tmp_file: TempFile) -> Option<Vec<u8>> {
-    println!("path: {:?}", tmp_file.path());
-    println!("content_type: {:?}", tmp_file.content_type());
+fn get_file_bytes(tmp_file: TempFile) -> Result<Vec<u8>, String> {
+    let path = tmp_file.path().ok_or("Path not found.")?;
+    let bytes = fs::read(&path).map_err(|_| "Unable to read bytes")?;
+    Ok(bytes)
+}
 
-    // match tmp_file {
-    //     TempFile::File { len, .. } => {
-    //         println!("matched a file.")
-    //     }
-    //     TempFile::Buffered { content } => {
-    //         println!("matched a buffered");
-    //         println!("content.len: {:?}", content.len() as u64);
-    //         println!("content: {:?}", content)
-    //     }
-    // }
+async fn upload_image(
+    id: i32,
+    tmp_file: TempFile<'_>,
+    db: Connection<Db>,
+    _user: User,
+    _admin_user: Option<AdminUser>,
+) -> Result<(), String> {
+    let image_bytes = get_file_bytes(tmp_file).map_err(|_| "failed to get bytes.")?;
 
-    if let Some(path) = tmp_file.path() {
-        println!("found path.");
-        let content = fs::read(&path);
-        content.ok()
-    } else {
-        None
-    }
+    let listing_image = ListingImage {
+        id: None,
+        listing_id: id,
+        image_data: image_bytes,
+    };
+
+    ListingImage::insert(listing_image, db)
+        .await
+        .map_err(|_| "failed to save image in db.")?;
+
+    Ok(())
 }
 
 // #[put("/<id>")]

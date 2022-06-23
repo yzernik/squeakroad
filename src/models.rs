@@ -1,10 +1,8 @@
 use crate::db::Db;
 use crate::rocket::futures::TryFutureExt;
 use crate::rocket::futures::TryStreamExt;
-use rocket::form::Form;
 use rocket::fs::TempFile;
-use rocket::serde::json::{json, Value};
-use rocket::serde::{json, Deserialize, Serialize};
+use rocket::serde::{Deserialize, Serialize};
 use rocket_db_pools::{sqlx, Connection};
 use std::result::Result;
 extern crate base64;
@@ -250,10 +248,6 @@ impl Listing {
             images: image_displays,
         });
 
-        // let listing_display = ListingDisplay(listing: listing, images: images);
-
-        println!("{:?}", listing_display);
-
         Ok(listing_display)
     }
 }
@@ -295,7 +289,6 @@ impl ListingImage {
         .await?;
 
         println!("{}", listing_images.len());
-        println!("{:?}", listing_images);
 
         Ok(listing_images)
     }
