@@ -344,13 +344,15 @@ impl RocketAuthUser {
         Ok(rocket_auth_users)
     }
 
-    // pub async fn single(id: i32, db: &mut Connection<Db>) -> Result<Option<i32>, sqlx::Error> {
-    //     let rocket_auth_user = sqlx::query!("select * from users WHERE id = ?;", id)
-    //         .fetch_one(&mut **db)
-    //         .map_ok(|r| r.id as i32)
-    //         .try_collect::<Option<_>>()
-    //         .await?;
+    pub async fn single(id: i32, db: &mut Connection<Db>) -> Result<RocketAuthUser, sqlx::Error> {
+        let rocket_auth_user = sqlx::query!("select * from users WHERE id = ?;", id)
+            .fetch_one(&mut **db)
+            .map_ok(|r| RocketAuthUser {
+                id: Some(r.id as i32),
+                username: r.email.unwrap(),
+            })
+            .await?;
 
-    //     Ok(rocket_auth_user)
-    // }
+        Ok(rocket_auth_user)
+    }
 }
