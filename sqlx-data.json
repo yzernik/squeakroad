@@ -359,5 +359,83 @@
       }
     },
     "query": "select * from listings WHERE id = ?;"
+  },
+  "c9873cac4785fca460188f3413498b49e7539c87eaf59de4ef4debeec113c5d6": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        },
+        {
+          "name": "title",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "description",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "price_msat",
+          "ordinal": 4,
+          "type_info": "Int64"
+        },
+        {
+          "name": "completed",
+          "ordinal": 5,
+          "type_info": "Bool"
+        },
+        {
+          "name": "approved",
+          "ordinal": 6,
+          "type_info": "Bool"
+        },
+        {
+          "name": "created_time_ms",
+          "ordinal": 7,
+          "type_info": "Int64"
+        },
+        {
+          "name": "image_id",
+          "ordinal": 8,
+          "type_info": "Int64"
+        },
+        {
+          "name": "listing_id",
+          "ordinal": 9,
+          "type_info": "Int64"
+        },
+        {
+          "name": "image_data",
+          "ordinal": 10,
+          "type_info": "Blob"
+        }
+      ],
+      "nullable": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "select listings.id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.completed, listings.approved, listings.created_time_ms, listingimages.id as image_id, listingimages.listing_id, listingimages.image_data from listings LEFT JOIN listingimages ON listings.id = listingimages.listing_id GROUP BY listings.id;"
   }
 }
