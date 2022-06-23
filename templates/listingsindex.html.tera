@@ -19,24 +19,29 @@ Hello, anonymous user.
     <div class="row">
       <div class="twelve columns">
         <ul>
-        {% for listing in listings %}
-          {% if listing.completed %}
+        {% for card in listing_cards %}
+
+	  <a href="/listing/{{card.listing.id}}">
+	    <img src="data:image/jpeg;base64,{{ card.image.image_data_base64 }}" style="width:256px;height:256px;" />
+	  </a>
+
+          {% if card.listing.completed %}
             <li>
-              <span class="completed">{{ listing.description }}</span>
-              <form class="inline" action="/listing/{{listing.id}}" method="post">
+              <span class="completed">{{ card.listing.description }}</span>
+              <form class="inline" action="/listing/{{card.listing.id}}" method="post">
                 <input type="hidden" name="_method" value="get" />
                 <button class="small" type="submit">undo</button>
               </form>
-              <form class="inline" action="/listing/{{listing.id}}" method="post">
+              <form class="inline" action="/listing/{{card.listing.id}}" method="post">
                 <input type="hidden" name="_method" value="delete" />
                 <button class="primary small" type="submit">delete</button>
               </form>
             </li>
           {% else %}
             <li>
-              <form class="link" action="/listing/{{listing.id}}" method="post">
+              <form class="link" action="/listing/{{card.listing.id}}" method="post">
                 <input type="hidden" name="_method" value="get" />
-                <button class="link" type="submit">{{ listing.title }} ({{ listing.description }}) ({{ listing.price_msat }}) ({{ listing.user_id }})</button>
+                <button class="link" type="submit">{{ card.listing.title }} ({{ card.listing.description }}) ({{ card.listing.price_msat }}) ({{ card.listing.user_id }})</button>
               </form>
             </li>
           {% endif %}
