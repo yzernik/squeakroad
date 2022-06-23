@@ -372,12 +372,12 @@ impl ListingDisplay {
 
 impl ListingCard {
     pub async fn all(db: &mut Connection<Db>) -> Result<Vec<ListingCard>, sqlx::Error> {
-        let listing_infos =
-            sqlx::query!("select listings.id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.completed, listings.approved, listings.created_time_ms, listingimages.listing_id from listings LEFT JOIN listingimages ON listings.id = listingimages.listing_id;")
+        let listing_cards =
+            sqlx::query!("select listings.id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.completed, listings.approved, listings.created_time_ms, listingimages.id as image_id, listingimages.listing_id, listingimages.image_data from listings LEFT JOIN listingimages ON listings.id = listingimages.listing_id GROUP BY listings.id;")
                 .fetch(&mut **db)
             .map_ok(|r| {
                 let l = Listing {
-                    id: Some(r.id.try_into().unwrap()),
+                    id: Some(r.id.unwrap().try_into().unwrap()),
                     user_id: r.user_id as _,
                     title: r.title,
                     description: r.description,
@@ -386,29 +386,18 @@ impl ListingCard {
                     approved: r.approved,
                     created_time_ms: r.created_time_ms as _,
                 };
-l
+                let i = r.image_id.map(|_| ListingImage {
+                    id: Some(r.image_id.unwrap().try_into().unwrap()),
+                    listing_id: r.listing_id as _,
+                    image_data: r.image_data,
+                });
+                ListingCard {
+                    listing: l,
+                    image: i,
+                }
             })
                 .try_collect::<Vec<_>>()
                 .await?;
-
-        // TODO: use a join here instead of multiple queries.
-        let listings = Listing::all(&mut *db).await?;
-        let first_listing = listings.first().unwrap();
-        let images = ListingImage::all_for_listing(&mut *db, first_listing.id.unwrap()).await?;
-        let image = images.first().unwrap();
-        // let display_image = ListingImageDisplay {
-        //     id: image.id,
-        //     listing_id: image.listing_id,
-        //     image_data_base64: base64::encode(&image.image_data),
-        // };
-
-        let listing_cards = listings
-            .iter()
-            .map(|listing| ListingCard {
-                listing: listing.clone(),
-                image: Some(image.clone()),
-            })
-            .collect::<Vec<_>>();
 
         Ok(listing_cards)
     }
