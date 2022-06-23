@@ -171,9 +171,9 @@ pub struct RocketAuthUser {
 // }
 
 impl Listing {
-    pub async fn all(mut db: Connection<Db>) -> Result<Vec<Listing>, sqlx::Error> {
+    pub async fn all(db: &mut Connection<Db>) -> Result<Vec<Listing>, sqlx::Error> {
         let listings = sqlx::query!("select * from listings;")
-            .fetch(&mut *db)
+            .fetch(&mut **db)
             .map_ok(|r| Listing {
                 id: Some(r.id.try_into().unwrap()),
                 user_id: r.user_id as _,

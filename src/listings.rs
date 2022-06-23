@@ -30,12 +30,12 @@ impl Context {
     // }
 
     pub async fn raw(
-        db: Connection<Db>,
+        mut db: Connection<Db>,
         flash: Option<(String, String)>,
         user: Option<User>,
         admin_user: Option<AdminUser>,
     ) -> Context {
-        match Listing::all(db).await {
+        match Listing::all(&mut db).await {
             Ok(listings) => Context {
                 flash,
                 listings,
