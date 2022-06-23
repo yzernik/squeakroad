@@ -327,8 +327,6 @@ impl ListingImage {
 }
 
 impl RocketAuthUser {
-    /// Returns the number of affected rows: 1.
-
     pub async fn all(db: &mut Connection<Db>) -> Result<Vec<RocketAuthUser>, sqlx::Error> {
         let rocket_auth_users = sqlx::query!("select * from users;")
             .fetch(&mut **db)
