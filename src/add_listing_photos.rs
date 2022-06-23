@@ -45,7 +45,7 @@ impl Context {
         user: User,
         admin_user: Option<AdminUser>,
     ) -> Context {
-        match Listing::single_display(&mut db, listing_id).await {
+        match ListingDisplay::single(&mut db, listing_id).await {
             Ok(listing_display) => {
                 if listing_display.listing.user_id == user.id() {
                     Context {

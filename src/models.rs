@@ -243,56 +243,6 @@ impl Listing {
 
         Ok(listing)
     }
-
-    pub async fn single_display(
-        db: &mut Connection<Db>,
-        id: i32,
-    ) -> Result<ListingDisplay, sqlx::Error> {
-        let listing = Listing::single(&mut *db, id).await?;
-        let images = ListingImage::all_for_listing(&mut *db, id).await?;
-        let image_displays = images
-            .iter()
-            .map(|img| ListingImageDisplay {
-                id: img.id,
-                listing_id: img.listing_id,
-                image_data_base64: base64::encode(&img.image_data),
-            })
-            .collect::<Vec<_>>();
-        let rocket_auth_user = RocketAuthUser::single(&mut *db, listing.user_id).await?;
-
-        let listing_display = ListingDisplay {
-            listing: listing,
-            images: image_displays,
-            user: rocket_auth_user,
-        };
-
-        Ok(listing_display)
-    }
-
-    pub async fn all_card_displays(
-        db: &mut Connection<Db>,
-    ) -> Result<Vec<ListingCardDisplay>, sqlx::Error> {
-        // TODO: use a join here instead of multiple queries.
-        let listings = Listing::all(&mut *db).await?;
-        let first_listing = listings.first().unwrap();
-        let images = ListingImage::all_for_listing(&mut *db, first_listing.id.unwrap()).await?;
-        let image = images.first().unwrap();
-        let display_image = ListingImageDisplay {
-            id: image.id,
-            listing_id: image.listing_id,
-            image_data_base64: base64::encode(&image.image_data),
-        };
-
-        let listing_card_displays = listings
-            .iter()
-            .map(|listing| ListingCardDisplay {
-                listing: listing.clone(),
-                image: Some(display_image.clone()),
-            })
-            .collect::<Vec<_>>();
-
-        Ok(listing_card_displays)
-    }
 }
 
 impl ListingImage {
@@ -385,5 +335,54 @@ impl RocketAuthUser {
             .await?;
 
         Ok(rocket_auth_user)
+    }
+}
+
+impl ListingDisplay {
+    pub async fn single(db: &mut Connection<Db>, id: i32) -> Result<ListingDisplay, sqlx::Error> {
+        let listing = Listing::single(&mut *db, id).await?;
+        let images = ListingImage::all_for_listing(&mut *db, id).await?;
+        let image_displays = images
+            .iter()
+            .map(|img| ListingImageDisplay {
+                id: img.id,
+                listing_id: img.listing_id,
+                image_data_base64: base64::encode(&img.image_data),
+            })
+            .collect::<Vec<_>>();
+        let rocket_auth_user = RocketAuthUser::single(&mut *db, listing.user_id).await?;
+
+        let listing_display = ListingDisplay {
+            listing: listing,
+            images: image_displays,
+            user: rocket_auth_user,
+        };
+
+        Ok(listing_display)
+    }
+}
+
+impl ListingCardDisplay {
+    pub async fn all(db: &mut Connection<Db>) -> Result<Vec<ListingCardDisplay>, sqlx::Error> {
+        // TODO: use a join here instead of multiple queries.
+        let listings = Listing::all(&mut *db).await?;
+        let first_listing = listings.first().unwrap();
+        let images = ListingImage::all_for_listing(&mut *db, first_listing.id.unwrap()).await?;
+        let image = images.first().unwrap();
+        let display_image = ListingImageDisplay {
+            id: image.id,
+            listing_id: image.listing_id,
+            image_data_base64: base64::encode(&image.image_data),
+        };
+
+        let listing_card_displays = listings
+            .iter()
+            .map(|listing| ListingCardDisplay {
+                listing: listing.clone(),
+                image: Some(display_image.clone()),
+            })
+            .collect::<Vec<_>>();
+
+        Ok(listing_card_displays)
     }
 }

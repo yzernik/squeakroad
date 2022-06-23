@@ -1,5 +1,5 @@
 use crate::db::Db;
-use crate::models::{Listing, ListingCardDisplay};
+use crate::models::ListingCardDisplay;
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::serde::Serialize;
@@ -35,7 +35,7 @@ impl Context {
         user: Option<User>,
         admin_user: Option<AdminUser>,
     ) -> Context {
-        match Listing::all_card_displays(&mut db).await {
+        match ListingCardDisplay::all(&mut db).await {
             Ok(listing_cards) => Context {
                 flash,
                 listing_cards: listing_cards,
