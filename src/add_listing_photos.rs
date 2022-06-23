@@ -105,7 +105,7 @@ async fn new(
             "Listing image successfully added.",
         ),
         Err(_) => Flash::error(
-            Redirect::to("/"),
+            Redirect::to(uri!("/add_listing_photos", index(id))),
             "Listing could not be inserted due an internal error.",
         ),
     }
@@ -128,11 +128,16 @@ async fn upload_image(
         .await
         .map_err(|_| "failed to get listing")?
         .unwrap();
+    let listing_images = ListingImage::all_for_listing(db, id)
+        .await
+        .map_err(|_| "failed to get listing")?;
 
     if listing.user_id != user.id() {
         Err("Listing belongs to a different user.".to_string())
     } else if listing.completed {
         Err("Listing is already completed.".to_string())
+    } else if listing_images.len() >= 5 {
+        Err("Maximum number of images already exist.".to_string())
     } else {
         let image_bytes = get_file_bytes(tmp_file).map_err(|_| "failed to get bytes.")?;
 
