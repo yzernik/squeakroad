@@ -55,7 +55,7 @@ async fn new(
 
     match create_listing(listing_info, &mut db, user.clone()).await {
         Ok(listing_id) => Ok(Flash::success(
-            Redirect::to(format!("/{}/{}", "add_listing_photos", listing_id)),
+            Redirect::to(format!("/{}/{}", "add_listing_images", listing_id)),
             "Listing successfully added.",
         )),
         Err(e) => {
