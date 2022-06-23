@@ -1,6 +1,6 @@
 use crate::db::Db;
 use crate::models::FileUploadForm;
-use crate::models::{Listing, ListingImage};
+use crate::models::{Listing, ListingDisplay, ListingImage};
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
 use rocket::fs::TempFile;
@@ -18,7 +18,7 @@ use uuid::Uuid;
 #[serde(crate = "rocket::serde")]
 struct Context {
     flash: Option<(String, String)>,
-    listing: Option<Listing>,
+    listing_display: Option<ListingDisplay>,
     user: User,
     admin_user: Option<AdminUser>,
 }
@@ -33,7 +33,7 @@ impl Context {
     ) -> Context {
         Context {
             flash: Some(("error".into(), msg.to_string())),
-            listing: None,
+            listing_display: None,
             user: user,
             admin_user,
         }
@@ -46,14 +46,12 @@ impl Context {
         user: User,
         admin_user: Option<AdminUser>,
     ) -> Context {
-        match Listing::single(&mut db, listing_id).await {
-            Ok(Some(lstng)) => {
-                let listing = Some(lstng.clone());
-
-                if lstng.user_id == user.id() {
+        match Listing::single_display(&mut db, listing_id).await {
+            Ok(Some(listing_display)) => {
+                if listing_display.listing.user_id == user.id() {
                     Context {
                         flash,
-                        listing,
+                        listing_display: Some(listing_display),
                         user,
                         admin_user,
                     }
@@ -61,7 +59,7 @@ impl Context {
                     error_!("Listing belongs to other user.");
                     Context {
                         flash: Some(("error".into(), "Listing belongs to other user.".into())),
-                        listing: None,
+                        listing_display: None,
                         user: user,
                         admin_user: admin_user,
                     }
@@ -71,7 +69,7 @@ impl Context {
                 error_!("Listing not found.");
                 Context {
                     flash: Some(("error".into(), "Listing not found.".into())),
-                    listing: None,
+                    listing_display: None,
                     user: user,
                     admin_user: admin_user,
                 }
@@ -80,7 +78,7 @@ impl Context {
                 error_!("DB Listing::single() error: {}", e);
                 Context {
                     flash: Some(("error".into(), "Fail to access database.".into())),
-                    listing: None,
+                    listing_display: None,
                     user: user,
                     admin_user: admin_user,
                 }

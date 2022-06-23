@@ -4,18 +4,17 @@
   <div class="container">
     <p><!--Nothing to see here --></p>
 
-    {% if listing %}
-    <h3>{{ listing.title }}</h3>
-    <p>{{ listing.description }}</p>
-    <p>Price {{ listing.price_msat }} msats</p>
-    {% endif %}
+    {% if listing_display %}
+    <h3>{{ listing_display.listing.title }}</h3>
+    <p>{{ listing_display.listing.description }}</p>
+    <p>Price {{ listing_display.listing.price_msat }} msats</p>
 
     <br>
 
 
     <div class="row">
-      <h4>Create New Listing</h4>
-      <form action="/add_listing_photos/{{ listing.id }}/add_photo" method="post" enctype="multipart/form-data">
+      <h4>Add Listing Images</h4>
+      <form action="/add_listing_photos/{{ listing_display.listing.id }}/add_photo" method="post" enctype="multipart/form-data">
         <div class="ten columns">
           <input type="file" placeholder="upload a file..."
             name="file" id="file" value="" autofocus
@@ -32,6 +31,15 @@
       </form>
     </div>
 
+    {% for image in listing_display.images %}
+    <li>
+      <p>{{ image.id }}</p>
+      <p>{{ image.listing_id }}</p>
+      <img src="data:image/jpeg;base64,{{ image.image_data_base64 }}" style="width:512px;height:512px;" />
+    </li>
+    {% endfor %}
+
+    {% endif %}
 
   </div>
 
