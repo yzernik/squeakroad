@@ -131,6 +131,8 @@ async fn upload_image(
 
     if listing.user_id != user.id() {
         Err("Listing belongs to a different user.".to_string())
+    } else if listing.completed {
+        Err("Listing is already completed.".to_string())
     } else {
         let image_bytes = get_file_bytes(tmp_file).map_err(|_| "failed to get bytes.")?;
 
