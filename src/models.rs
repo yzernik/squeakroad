@@ -409,7 +409,18 @@ impl ListingCard {
     pub async fn all(db: &mut Connection<Db>) -> Result<Vec<ListingCard>, sqlx::Error> {
         // Example query for this kind of join/group by: https://stackoverflow.com/a/63037790/1639564
         let listing_cards =
-            sqlx::query!("select listings.id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.completed, listings.approved, listings.created_time_ms, min(listingimages.id) as image_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary from listings LEFT JOIN listingimages ON listings.id = listingimages.listing_id GROUP BY listings.id;")
+            sqlx::query!("
+select
+ listings.id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.completed, listings.approved, listings.created_time_ms, min(listingimages.id) as image_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary
+from
+ listings
+LEFT JOIN
+ listingimages
+ON
+ listings.id = listingimages.listing_id
+GROUP BY
+ listings.id
+;")
                 .fetch(&mut **db)
             .map_ok(|r| {
                 let l = Listing {
