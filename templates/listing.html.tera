@@ -10,9 +10,7 @@
 	<div class="container">
 	  {% if listing_display %}
 	  {% for image in listing_display.images %}
-	  <li>
-	    <img src="data:image/jpeg;base64,{{ image.image_data_base64 }}" style="width:512px;height:512px;" class="u-max-full-width" />
-	  </li>
+	  <img src="data:image/jpeg;base64,{{ image.image_data_base64 }}" style="width:512px;height:512px;" class="u-max-full-width" />
 	  {% endfor %}
 	  {% endif %}
 	</div>
