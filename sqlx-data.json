@@ -346,43 +346,7 @@
     },
     "query": "select * from listings WHERE id = ?;"
   },
-  "e94cd0fbe6f4a8d90120733fb88081da00668901ed37ba6ca200f82dc2331aaa": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int64"
-        },
-        {
-          "name": "listing_id",
-          "ordinal": 1,
-          "type_info": "Int64"
-        },
-        {
-          "name": "image_data",
-          "ordinal": 2,
-          "type_info": "Blob"
-        },
-        {
-          "name": "is_primary",
-          "ordinal": 3,
-          "type_info": "Bool"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "select * from listingimages WHERE listing_id = ? ORDER BY listingimages.is_primary DESC;"
-  },
-  "ead9fa9e0b8353e3b7304e8a225776ee9dc1aebc091947d719129a12a996e81f": {
+  "a1c3f3696236a1f1b772076b019fd441b2dfd1b3dc7aff593c412782214f9234": {
     "describe": {
       "columns": [
         {
@@ -464,7 +428,43 @@
         "Right": 0
       }
     },
-    "query": "\nselect\n listings.id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.submitted, listings.approved, listings.created_time_ms, min(listingimages.id) as image_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary\nfrom\n listings\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nWHERE\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nGROUP BY\n listings.id\n;"
+    "query": "\nselect\n listings.id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.submitted, listings.approved, listings.created_time_ms, min(listingimages.id) as image_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary\nfrom\n listings\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nGROUP BY\n listings.id\n;"
+  },
+  "e94cd0fbe6f4a8d90120733fb88081da00668901ed37ba6ca200f82dc2331aaa": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "listing_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        },
+        {
+          "name": "image_data",
+          "ordinal": 2,
+          "type_info": "Blob"
+        },
+        {
+          "name": "is_primary",
+          "ordinal": 3,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "select * from listingimages WHERE listing_id = ? ORDER BY listingimages.is_primary DESC;"
   },
   "ffd68aafc82a887ff89e8f00d4afbc4d2924541878e1b413c10cf5842ce905f1": {
     "describe": {
