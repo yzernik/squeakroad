@@ -428,6 +428,16 @@
     },
     "query": "select * from listings WHERE id = ?;"
   },
+  "9ccb60d49748b6522971373703bd16d6e45cf646173db0235c96505b2496812b": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 4
+      }
+    },
+    "query": "INSERT INTO shippingoptions (listing_id, title, description, price_msat) VALUES (?, ?, ?, ?)"
+  },
   "a4b22e5af9a93d416c0db710559a0bda5dd09b4bba8871c3263b617d5b72b16d": {
     "describe": {
       "columns": [
@@ -547,16 +557,6 @@
       }
     },
     "query": "select * from listingimages WHERE listing_id = ? ORDER BY listingimages.is_primary DESC;"
-  },
-  "edae5d651064049591acb0e252374a94f33786a1fd790a01b90b726b7a516a40": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 3
-      }
-    },
-    "query": "INSERT INTO shippingoptions (listing_id, description, price_msat) VALUES (?, ?, ?)"
   },
   "f3c7d0e13ccbd741995710b1f499ac389e10eedaa31fdcba90c411a9f2472323": {
     "describe": {

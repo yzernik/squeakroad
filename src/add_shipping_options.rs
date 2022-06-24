@@ -45,6 +45,7 @@ impl Context {
         match ListingDisplay::single(&mut db, listing_id).await {
             Ok(listing_display) => {
                 if listing_display.listing.user_id == user.id() {
+                    println!("{:?}", listing_display.shipping_options);
                     Context {
                         flash,
                         listing_display: Some(listing_display),
@@ -85,10 +86,21 @@ async fn new(
     println!("listing_id: {:?}", id);
 
     let shipping_option_info = shipping_option_form.into_inner();
+    let title = shipping_option_info.title;
     let description = shipping_option_info.description;
     let price_msat = shipping_option_info.price_sat * 1000;
 
-    match add_shipping_option(id, description, price_msat, &mut db, user, admin_user).await {
+    match add_shipping_option(
+        id,
+        title,
+        description,
+        price_msat,
+        &mut db,
+        user,
+        admin_user,
+    )
+    .await
+    {
         Ok(_) => Flash::success(
             Redirect::to(uri!("/add_shipping_options", index(id))),
             "Shipping option successfully added.",
@@ -104,6 +116,7 @@ async fn new(
 
 async fn add_shipping_option(
     id: i32,
+    title: String,
     description: String,
     price_msat: u64,
     db: &mut Connection<Db>,
@@ -128,6 +141,7 @@ async fn add_shipping_option(
         let shipping_option = ShippingOption {
             id: None,
             listing_id: id,
+            title: title,
             description: description,
             price_msat: price_msat,
         };

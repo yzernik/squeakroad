@@ -103,12 +103,14 @@ pub struct ListingImageDisplay {
 pub struct ShippingOption {
     pub id: Option<i32>,
     pub listing_id: i32,
+    pub title: String,
     pub description: String,
     pub price_msat: u64,
 }
 
 #[derive(Debug, FromForm)]
 pub struct ShippingOptionInfo {
+    pub title: String,
     pub description: String,
     pub price_sat: u64,
 }
@@ -517,8 +519,9 @@ impl ShippingOption {
         let price_msat: i64 = shipping_option.price_msat as _;
 
         let insert_result = sqlx::query!(
-            "INSERT INTO shippingoptions (listing_id, description, price_msat) VALUES (?, ?, ?)",
+            "INSERT INTO shippingoptions (listing_id, title, description, price_msat) VALUES (?, ?, ?, ?)",
             shipping_option.listing_id,
+            shipping_option.title,
             shipping_option.description,
             price_msat,
         )
@@ -542,6 +545,7 @@ impl ShippingOption {
         .map_ok(|r| ShippingOption {
             id: Some(r.id.try_into().unwrap()),
             listing_id: r.listing_id as _,
+            title: r.title,
             description: r.description,
             price_msat: r.price_msat as _,
         })
@@ -559,6 +563,7 @@ impl ShippingOption {
             .map_ok(|r| ShippingOption {
                 id: Some(r.id.try_into().unwrap()),
                 listing_id: r.listing_id as _,
+                title: r.title,
                 description: r.description,
                 price_msat: r.price_msat as _,
             })

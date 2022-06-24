@@ -14,6 +14,9 @@
 
       <form action="/add_shipping_options/{{ listing_display.listing.id }}/add_shipping_option" method="post">
         <div class="ten columns">
+          <input type="text" placeholder="enter a shipping option title..."
+		 name="title" id="title" value="" autofocus
+		 class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" />
           <input type="text" placeholder="enter a shipping option description..."
 		 name="description" id="description" value=""
 		 class="u-full-width" />
@@ -35,6 +38,7 @@
 
     {% for shipping_option in listing_display.shipping_options %}
     <li>
+      <p>{{ shipping_option.title }}</p>
       <p>{{ shipping_option.description }}</p>
       <p>Price: {{ shipping_option.price_msat/1000 }} sats</p>
       <form class="inline" action="/add_shipping_options/{{listing_display.listing.id}}/add_shipping_option/{{shipping_option.id}}" method="post">
