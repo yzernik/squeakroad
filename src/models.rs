@@ -69,6 +69,7 @@ pub struct ListingImage {
 pub struct ListingDisplay {
     pub listing: Listing,
     pub images: Vec<ListingImageDisplay>,
+    pub shipping_options: Vec<ShippingOption>,
     pub user: RocketAuthUser,
 }
 
@@ -425,11 +426,13 @@ impl ListingDisplay {
                 is_primary: img.is_primary,
             })
             .collect::<Vec<_>>();
+        let shipping_options = ShippingOption::all_for_listing(&mut *db, id).await?;
         let rocket_auth_user = RocketAuthUser::single(&mut *db, listing.user_id).await?;
 
         let listing_display = ListingDisplay {
             listing: listing,
             images: image_displays,
+            shipping_options: shipping_options,
             user: rocket_auth_user,
         };
 
