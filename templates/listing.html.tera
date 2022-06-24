@@ -50,7 +50,8 @@
 	  </form>
 
 	  {% if selected_shipping_option %}
-	  <p><b>{{ selected_shipping_option.title }}</b>: {{ selected_shipping_option.price_msat/1000 }} sats: {{ selected_shipping_option.description }}</p>
+	  <p><b>Shipping Option</b>: {{ selected_shipping_option.title }} ({{ selected_shipping_option.price_msat/1000 }} sats)</p>
+	  <p>{{ selected_shipping_option.description }}</p>
 	  {% endif %}
 
 	  <p><b>Description</b>: {{ listing_display.listing.description }} ...
