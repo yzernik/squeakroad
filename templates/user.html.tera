@@ -1,0 +1,12 @@
+{% extends "base" %}
+{% block body %}
+
+{% if visited_user %}
+{{ visited_user.username }}
+{% else %}
+User not found.
+{% endif %}
+
+<br>
+
+{% endblock body %}

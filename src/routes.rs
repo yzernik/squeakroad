@@ -80,5 +80,6 @@ pub fn stage() -> AdHoc {
             .attach(crate::listing::listing_stage())
             .attach(crate::new_listing::new_listing_stage())
             .attach(crate::add_listing_images::add_listing_images_stage())
+            .attach(crate::user::user_stage())
     })
 }

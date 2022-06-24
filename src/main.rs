@@ -14,6 +14,7 @@ mod models;
 mod new_listing;
 mod posts;
 mod routes;
+mod user;
 
 #[launch]
 fn rocket() -> _ {
