@@ -23,6 +23,8 @@
 	  <p>Price: {{ listing_display.listing.price_msat / 1000 }} sats</p>
 	  <p>User: <a href="/user/{{listing_display.user.username}}">{{ listing_display.user.username }}</a></p>
 
+	  <p>Using option: {{ selected_shipping_option.title }}</p>
+
 	  <form action="" method="get">
 	    <label for="shipping_options">Choose a shipping option:</label>
 	    <select id="shipping_option_id" name="shipping_option_id">
