@@ -32,9 +32,15 @@
           "name": "price_msat",
           "ordinal": 3,
           "type_info": "Int64"
+        },
+        {
+          "name": "title",
+          "ordinal": 4,
+          "type_info": "Text"
         }
       ],
       "nullable": [
+        false,
         false,
         false,
         false,
@@ -68,9 +74,15 @@
           "name": "price_msat",
           "ordinal": 3,
           "type_info": "Int64"
+        },
+        {
+          "name": "title",
+          "ordinal": 4,
+          "type_info": "Text"
         }
       ],
       "nullable": [
+        false,
         false,
         false,
         false,

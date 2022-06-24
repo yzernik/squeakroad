@@ -23,9 +23,10 @@
 	  <p>Price: {{ listing_display.listing.price_msat / 1000 }} sats</p>
 	  <p>User: <a href="/user/{{listing_display.user.username}}">{{ listing_display.user.username }}</a></p>
 
-	  <form action="/action_page.php">
+	  <form action="" method="get">
 	    <label for="cars">Choose a shipping option:</label>
 	    <select id="cars" name="cars">
+	      <option disabled selected value> -- select an option -- </option>
 	      {% for shipping_option in listing_display.shipping_options %}
 	      <option value="{{ shipping_option.id }}">{{ shipping_option.description }} ({{ shipping_option.price_msat/1000 }} sats)</option>
 	      {% endfor %}
