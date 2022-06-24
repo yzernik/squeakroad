@@ -174,7 +174,73 @@
     },
     "query": "SELECT id FROM posts"
   },
-  "4517b5bf8f216ad623221af833ade7be226edc59285bca33a99be6e1f4fd0650": {
+  "4dc4bc38717e0a8adea675ae4a5819d68754b17a473b56a7f51d7aea36274e0b": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "DELETE FROM listingimages WHERE id = ?"
+  },
+  "501eb603b5ab9e467ecb0b5211b67740d1455a34904bbe5ba45bdb0975f18b50": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "UPDATE listingimages SET is_primary = false WHERE listing_id = ?"
+  },
+  "58168913d2c9c8321cd4bd0c87f71faa2811d0b5d46634ad4bf5020b397902a2": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "listing_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        },
+        {
+          "name": "image_data",
+          "ordinal": 2,
+          "type_info": "Blob"
+        },
+        {
+          "name": "is_primary",
+          "ordinal": 3,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "select * from listingimages WHERE id = ?;"
+  },
+  "668690acaca0a0c0b4ac306b14d82aa1bee940f0776fae3f9962639b78328858": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "DELETE FROM posts"
+  },
+  "72c406e882319b31fb8fd8c970dbcab7399bafe989c9759f310abdad839245c2": {
     "describe": {
       "columns": [
         {
@@ -256,73 +322,7 @@
         "Right": 0
       }
     },
-    "query": "\nselect\n listings.id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.completed, listings.approved, listings.created_time_ms, min(listingimages.id) as image_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary\nfrom\n listings\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nGROUP BY\n listings.id\n;"
-  },
-  "4dc4bc38717e0a8adea675ae4a5819d68754b17a473b56a7f51d7aea36274e0b": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "DELETE FROM listingimages WHERE id = ?"
-  },
-  "501eb603b5ab9e467ecb0b5211b67740d1455a34904bbe5ba45bdb0975f18b50": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "UPDATE listingimages SET is_primary = false WHERE listing_id = ?"
-  },
-  "58168913d2c9c8321cd4bd0c87f71faa2811d0b5d46634ad4bf5020b397902a2": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int64"
-        },
-        {
-          "name": "listing_id",
-          "ordinal": 1,
-          "type_info": "Int64"
-        },
-        {
-          "name": "image_data",
-          "ordinal": 2,
-          "type_info": "Blob"
-        },
-        {
-          "name": "is_primary",
-          "ordinal": 3,
-          "type_info": "Bool"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "select * from listingimages WHERE id = ?;"
-  },
-  "668690acaca0a0c0b4ac306b14d82aa1bee940f0776fae3f9962639b78328858": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 0
-      }
-    },
-    "query": "DELETE FROM posts"
+    "query": "\nselect\n listings.id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.completed, listings.approved, listings.created_time_ms, min(listingimages.id) as image_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary\nfrom\n listings\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nWHERE\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nGROUP BY\n listings.id\n;"
   },
   "770ec17e2277e313a56c78ecab71d0ee460922cac72efddf9869ca4194276572": {
     "describe": {

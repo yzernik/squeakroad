@@ -418,6 +418,8 @@ LEFT JOIN
  listingimages
 ON
  listings.id = listingimages.listing_id
+WHERE
+ listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)
 GROUP BY
  listings.id
 ;")
