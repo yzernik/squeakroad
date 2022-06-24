@@ -1,9 +1,7 @@
 use crate::db::Db;
-use crate::models::FileUploadForm;
-use crate::models::{Listing, ListingDisplay, ListingImage, ShippingOption};
+use crate::models::{Listing, ListingDisplay, ListingImage, ShippingOption, ShippingOptionInfo};
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
-use rocket::fs::TempFile;
 use rocket::request::FlashMessage;
 use rocket::response::{Flash, Redirect};
 use rocket::serde::Serialize;
@@ -77,37 +75,38 @@ impl Context {
     }
 }
 
-#[post("/<id>/add_image", data = "<upload_image_form>")]
+#[post("/<id>/add_shipping_option", data = "<shipping_option_form>")]
 async fn new(
     id: i32,
-    upload_image_form: Form<FileUploadForm<'_>>,
+    shipping_option_form: Form<ShippingOptionInfo>,
     mut db: Connection<Db>,
     user: User,
     admin_user: Option<AdminUser>,
 ) -> Flash<Redirect> {
     println!("listing_id: {:?}", id);
 
-    let image_info = upload_image_form.into_inner();
-    let file = image_info.file;
+    let shipping_option_info = shipping_option_form.into_inner();
+    let description = shipping_option_info.description;
+    let price_msat = shipping_option_info.price_sat * 1000;
 
-    match upload_image(id, file, &mut db, user, admin_user).await {
+    match add_shipping_option(id, description, price_msat, &mut db, user, admin_user).await {
         Ok(_) => Flash::success(
-            Redirect::to(uri!("/add_listing_images", index(id))),
-            "Listing image successfully added.",
+            Redirect::to(uri!("/add_shipping_options", index(id))),
+            "Shipping option successfully added.",
         ),
-        Err(e) => Flash::error(Redirect::to(uri!("/add_listing_images", index(id))), e),
+        Err(e) => Flash::error(Redirect::to(uri!("/add_shipping_options", index(id))), e),
     }
+
+    // Flash::error(
+    //     Redirect::to(uri!("/add_shipping_options", index(id))),
+    //     "not implemented".to_string(),
+    // )
 }
 
-fn get_file_bytes(tmp_file: TempFile) -> Result<Vec<u8>, String> {
-    let path = tmp_file.path().ok_or("Path not found.")?;
-    let bytes = fs::read(&path).map_err(|_| "Unable to read bytes")?;
-    Ok(bytes)
-}
-
-async fn upload_image(
+async fn add_shipping_option(
     id: i32,
-    tmp_file: TempFile<'_>,
+    description: String,
+    price_msat: u64,
     db: &mut Connection<Db>,
     user: User,
     _admin_user: Option<AdminUser>,
@@ -123,39 +122,42 @@ async fn upload_image(
         Err("Listing belongs to a different user.".to_string())
     } else if listing.submitted {
         Err("Listing is already submitted.".to_string())
-    } else if listing_images.len() >= 5 {
-        Err("Maximum number of images already exist.".to_string())
-    } else if tmp_file.len() == 0 {
-        Err("File is empty.".to_string())
-    } else if tmp_file.len() >= 1000000 {
-        Err("File is bigger than maximum allowed size.".to_string())
+        // TODO: validate shipping option here.
     } else {
-        let image_bytes = get_file_bytes(tmp_file).map_err(|_| "failed to get bytes.")?;
+        // TODO: insert shipping option here.
 
-        let listing_image = ListingImage {
-            id: None,
-            listing_id: id,
-            image_data: image_bytes,
-            is_primary: false,
-        };
+        // let listing_image = ListingImage {
+        //     id: None,
+        //     listing_id: id,
+        //     image_data: image_bytes,
+        //     is_primary: false,
+        // };
 
-        ListingImage::insert(listing_image, db)
-            .await
-            .map_err(|_| "failed to save image in db.")?;
+        // ListingImage::insert(listing_image, db)
+        //     .await
+        //     .map_err(|_| "failed to save image in db.")?;
 
         Ok(())
     }
 }
 
-#[delete("/<id>/add_image/<image_id>")]
+#[delete("/<id>/add_shipping_option/<shipping_option_id>")]
 async fn delete(
     id: i32,
-    image_id: i32,
+    shipping_option_id: i32,
     mut db: Connection<Db>,
     user: User,
     admin_user: Option<AdminUser>,
 ) -> Result<Flash<Redirect>, Template> {
-    match delete_image(id, image_id, &mut db, user.clone(), admin_user.clone()).await {
+    match delete_image(
+        id,
+        shipping_option_id,
+        &mut db,
+        user.clone(),
+        admin_user.clone(),
+    )
+    .await
+    {
         Ok(_) => Ok(Flash::success(
             Redirect::to(uri!("/add_listing_images", index(id))),
             "Listing image was deleted.",
@@ -172,7 +174,7 @@ async fn delete(
 
 async fn delete_image(
     listing_id: i32,
-    image_id: i32,
+    shipping_option_id: i32,
     db: &mut Connection<Db>,
     user: User,
     _admin_user: Option<AdminUser>,
@@ -180,7 +182,7 @@ async fn delete_image(
     let listing = Listing::single(&mut *db, listing_id)
         .await
         .map_err(|_| "failed to get listing")?;
-    let listing_image = ListingImage::single(&mut *db, image_id)
+    let listing_image = ListingImage::single(&mut *db, shipping_option_id)
         .await
         .map_err(|_| "failed to get listing")?;
 
@@ -191,7 +193,7 @@ async fn delete_image(
     } else if listing.user_id != user.id() {
         Err("Listing belongs to a different user.".to_string())
     } else {
-        match ListingImage::delete_with_id(image_id, &mut *db).await {
+        match ListingImage::delete_with_id(shipping_option_id, &mut *db).await {
             Ok(num_deleted) => {
                 if num_deleted > 0 {
                     Ok(())

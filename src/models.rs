@@ -106,6 +106,13 @@ pub struct ShippingOption {
     pub price_msat: u64,
 }
 
+#[derive(Debug, FromForm)]
+pub struct ShippingOptionInfo {
+    pub title: String,
+    pub description: String,
+    pub price_sat: u64,
+}
+
 #[derive(Serialize, Debug, Clone)]
 #[serde(crate = "rocket::serde")]
 pub struct RocketAuthUser {
