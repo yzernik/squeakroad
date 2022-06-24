@@ -1,0 +1,50 @@
+{% extends "base" %}
+{% block body %}
+
+  <div class="container">
+    <p><!--Nothing to see here --></p>
+
+    {% if listing_display %}
+    <h3>{{ listing_display.listing.title }}</h3>
+
+    <br>
+
+    <div class="row">
+      <h4>Add Shipping Options</h4>
+      <form action="/add_listing_images/{{ listing_display.listing.id }}/add_image" method="post" enctype="multipart/form-data">
+        <div class="ten columns">
+          <input type="file" placeholder="upload a file..."
+            name="file" id="file" value="" autofocus
+            class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" />
+          {% if flash %}
+            <small class="field-{{flash.0}}-msg">
+               {{ flash.1 }}
+            </small>
+          {% endif %}
+        </div>
+        <div class="two columns">
+          <input type="submit" value="add image">
+        </div>
+      </form>
+    </div>
+
+    {% for image in listing_display.images %}
+    <li>
+      <img src="data:image/jpeg;base64,{{ image.image_data_base64 }}" style="width:512px;height:512px;" />
+      <form class="inline" action="/add_listing_images/{{listing_display.listing.id}}/set_primary/{{image.id}}" method="post">
+        <input type="hidden" name="_method" value="put" />
+        <button class="link" type="submit">set primary</button>
+      </form>
+      <form class="inline" action="/add_listing_images/{{listing_display.listing.id}}/add_image/{{image.id}}" method="post">
+        <input type="hidden" name="_method" value="delete" />
+        <button class="primary small" type="submit">delete</button>
+      </form>
+    </li>
+    {% endfor %}
+
+    {% endif %}
+
+  </div>
+
+
+{% endblock body %}
