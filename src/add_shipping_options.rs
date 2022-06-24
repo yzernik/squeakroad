@@ -1,5 +1,5 @@
 use crate::db::Db;
-use crate::models::{Listing, ListingDisplay, ListingImage, ShippingOption, ShippingOptionInfo};
+use crate::models::{Listing, ListingDisplay, ShippingOption, ShippingOptionInfo};
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
 use rocket::request::FlashMessage;
@@ -8,7 +8,6 @@ use rocket::serde::Serialize;
 use rocket_auth::{AdminUser, User};
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
-use std::fs;
 
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -122,6 +121,8 @@ async fn add_shipping_option(
         Err("Listing belongs to a different user.".to_string())
     } else if listing.submitted {
         Err("Listing is already submitted.".to_string())
+    } else if shipping_options.len() >= 5 {
+        Err("Maximum number of shipping options already exist.".to_string())
         // TODO: validate shipping option here.
     } else {
         let shipping_option = ShippingOption {
@@ -139,70 +140,77 @@ async fn add_shipping_option(
     }
 }
 
-// #[delete("/<id>/add_shipping_option/<shipping_option_id>")]
-// async fn delete(
-//     id: i32,
-//     shipping_option_id: i32,
-//     mut db: Connection<Db>,
-//     user: User,
-//     admin_user: Option<AdminUser>,
-// ) -> Result<Flash<Redirect>, Template> {
-//     match delete_image(
-//         id,
-//         shipping_option_id,
-//         &mut db,
-//         user.clone(),
-//         admin_user.clone(),
-//     )
-//     .await
-//     {
-//         Ok(_) => Ok(Flash::success(
-//             Redirect::to(uri!("/add_listing_images", index(id))),
-//             "Listing image was deleted.",
-//         )),
-//         Err(e) => {
-//             error_!("DB deletion({}) error: {}", id, e);
-//             Err(Template::render(
-//                 "addlistingimages",
-//                 Context::err(db, id, "Failed to delete listing image.", user, admin_user).await,
-//             ))
-//         }
-//     }
-// }
+#[delete("/<id>/add_shipping_option/<shipping_option_id>")]
+async fn delete(
+    id: i32,
+    shipping_option_id: i32,
+    mut db: Connection<Db>,
+    user: User,
+    admin_user: Option<AdminUser>,
+) -> Result<Flash<Redirect>, Template> {
+    match delete_shipping_option(
+        id,
+        shipping_option_id,
+        &mut db,
+        user.clone(),
+        admin_user.clone(),
+    )
+    .await
+    {
+        Ok(_) => Ok(Flash::success(
+            Redirect::to(uri!("/add_shipping_options", index(id))),
+            "Shipping option was deleted.",
+        )),
+        Err(e) => {
+            error_!("DB deletion({}) error: {}", id, e);
+            Err(Template::render(
+                "addshippingoptions",
+                Context::err(
+                    db,
+                    id,
+                    "Failed to delete shipping option.",
+                    user,
+                    admin_user,
+                )
+                .await,
+            ))
+        }
+    }
+}
 
-// async fn delete_image(
-//     listing_id: i32,
-//     shipping_option_id: i32,
-//     db: &mut Connection<Db>,
-//     user: User,
-//     _admin_user: Option<AdminUser>,
-// ) -> Result<(), String> {
-//     let listing = Listing::single(&mut *db, listing_id)
-//         .await
-//         .map_err(|_| "failed to get listing")?;
-//     let listing_image = ListingImage::single(&mut *db, shipping_option_id)
-//         .await
-//         .map_err(|_| "failed to get listing")?;
+async fn delete_shipping_option(
+    listing_id: i32,
+    shipping_option_id: i32,
+    db: &mut Connection<Db>,
+    user: User,
+    _admin_user: Option<AdminUser>,
+) -> Result<(), String> {
+    let listing = Listing::single(&mut *db, listing_id)
+        .await
+        .map_err(|_| "failed to get listing")?;
+    let shipping_option = ShippingOption::single(&mut *db, shipping_option_id)
+        .await
+        .map_err(|_| "failed to get shipping option")?;
 
-//     if listing_image.listing_id != listing.id.unwrap() {
-//         Err("Invalid listing id given.".to_string())
-//     } else if listing.submitted {
-//         Err("Listing is already submitted.".to_string())
-//     } else if listing.user_id != user.id() {
-//         Err("Listing belongs to a different user.".to_string())
-//     } else {
-//         match ListingImage::delete_with_id(shipping_option_id, &mut *db).await {
-//             Ok(num_deleted) => {
-//                 if num_deleted > 0 {
-//                     Ok(())
-//                 } else {
-//                     Err("No images deleted.".to_string())
-//                 }
-//             }
-//             Err(_) => Err("failed to delete image.".to_string()),
-//         }
-//     }
-// }
+    if shipping_option.listing_id != listing.id.unwrap() {
+        Err("Invalid listing id given.".to_string())
+    } else if listing.submitted {
+        Err("Listing is already submitted.".to_string())
+    } else if listing.user_id != user.id() {
+        Err("Listing belongs to a different user.".to_string())
+    } else {
+        match ShippingOption::delete_with_id(shipping_option_id, &mut *db).await {
+            Ok(num_deleted) => {
+                if num_deleted > 0 {
+                    Ok(())
+                } else {
+                    Err("No shipping options deleted.".to_string())
+                }
+            }
+            Err(_) => Err("failed to delete shipping option.".to_string()),
+        }
+    }
+}
 
 #[get("/<id>")]
 async fn index(
@@ -223,6 +231,6 @@ pub fn add_shipping_options_stage() -> AdHoc {
     AdHoc::on_ignite("Add Shipping Options Stage", |rocket| async {
         rocket
             // .mount("/add_listing_images", routes![index, new])
-            .mount("/add_shipping_options", routes![index, new])
+            .mount("/add_shipping_options", routes![index, new, delete])
     })
 }
