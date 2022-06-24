@@ -4,6 +4,21 @@
   <div class="full-width-container">
     <p><!--Nothing to see here --></p>
 
+    {% if listing_display %}
+    {% if not listing_display.listing.submitted %}
+    <p>Not submitted</p>
+    <form class="inline" action="submit_listing" method="post">
+      <input type="hidden" name="_method" value="put" />
+      <button class="small" type="submit">Submit Listing</button>
+    </form>
+    {% elif not listing_display.listing.approved %}
+    <p>Not approved</p>
+    {% else %}
+    <p>Approved</p>
+    {% endif %}
+    {% endif %}
+
+
     <!-- there are a few shorthand columns widths as well -->
     <div class="row">
       <div class="one-half column">
