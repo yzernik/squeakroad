@@ -85,15 +85,17 @@ impl Context {
 //     }
 // }
 
-#[get("/<id>")]
+#[get("/<id>?<shipping_option_id>")]
 async fn index(
     flash: Option<FlashMessage<'_>>,
     id: i32,
+    shipping_option_id: Option<i32>,
     db: Connection<Db>,
     user: Option<User>,
     admin_user: Option<AdminUser>,
 ) -> Template {
     println!("looking for listing...");
+    println!("Shipping option id: {:?}", shipping_option_id);
 
     let flash = flash.map(FlashMessage::into_inner);
     Template::render(
