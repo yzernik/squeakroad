@@ -408,6 +408,7 @@ impl ListingDisplay {
 impl ListingCard {
     pub async fn all(db: &mut Connection<Db>) -> Result<Vec<ListingCard>, sqlx::Error> {
         // Example query for this kind of join/group by: https://stackoverflow.com/a/63037790/1639564
+        // Other example query: https://stackoverflow.com/a/13698334/1639564
         let listing_cards =
             sqlx::query!("
 select
