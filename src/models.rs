@@ -428,7 +428,7 @@ impl ListingCard {
         let listing_cards =
             sqlx::query!("
 select
- listings.id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.submitted, listings.approved, listings.created_time_ms, min(listingimages.id) as image_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary
+ listings.id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.submitted, listings.approved, listings.created_time_ms, listingimages.id as image_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary
 from
  listings
 LEFT JOIN
