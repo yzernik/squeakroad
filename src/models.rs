@@ -22,7 +22,7 @@ pub struct Post {
 // pub struct Task {
 //     pub id: Option<i32>,
 //     pub description: String,
-//     pub completed: bool,
+//     pub submitted: bool,
 // }
 
 // #[derive(Debug, FromForm)]
@@ -38,7 +38,7 @@ pub struct Listing {
     pub title: String,
     pub description: String,
     pub price_msat: u64,
-    pub completed: bool,
+    pub submitted: bool,
     pub approved: bool,
     pub created_time_ms: u64,
 }
@@ -119,7 +119,7 @@ pub struct RocketAuthUser {
 //             .map_ok(|r| Task {
 //                 id: Some(r.id.try_into().unwrap()),
 //                 description: r.description,
-//                 completed: r.completed,
+//                 submitted: r.submitted,
 //             })
 //             .try_collect::<Vec<_>>()
 //             .await?;
@@ -133,7 +133,7 @@ pub struct RocketAuthUser {
 //     /// Returns the number of affected rows: 1.
 //     pub async fn insert(todo: Todo, mut db: Connection<Db>) -> Result<usize, sqlx::Error> {
 //         let insert_result = sqlx::query!(
-//             "INSERT INTO tasks (description, completed) VALUES (?, ?)",
+//             "INSERT INTO tasks (description, submitted) VALUES (?, ?)",
 //             todo.description,
 //             false,
 //         )
@@ -149,18 +149,18 @@ pub struct RocketAuthUser {
 //     pub async fn toggle_with_id(id: i32, db: &mut Connection<Db>) -> Result<usize, sqlx::Error> {
 //         let mut tx = db.begin().await?;
 
-//         let get_task_completed = sqlx::query!("select * from tasks WHERE id = ?;", id)
+//         let get_task_submitted = sqlx::query!("select * from tasks WHERE id = ?;", id)
 //             .fetch_one(&mut tx)
-//             .map_ok(|r| r.completed)
+//             .map_ok(|r| r.submitted)
 //             // .try_collect::<bool>()
 //             .await?;
 
-//         let new_completed = !get_task_completed;
+//         let new_submitted = !get_task_submitted;
 
 //         let update_result = sqlx::query!(
-//             "UPDATE tasks SET completed = ? WHERE id = ?",
-//             // !task.completed,
-//             new_completed,
+//             "UPDATE tasks SET submitted = ? WHERE id = ?",
+//             // !task.submitted,
+//             new_submitted,
 //             id,
 //         )
 //         .execute(&mut tx)
@@ -199,7 +199,7 @@ impl Listing {
                 title: r.title,
                 description: r.description,
                 price_msat: r.price_msat as _,
-                completed: r.completed,
+                submitted: r.submitted,
                 approved: r.approved,
                 created_time_ms: r.created_time_ms as _,
             })
@@ -218,12 +218,12 @@ impl Listing {
         let created_time_ms: i64 = listing.created_time_ms as _;
 
         let insert_result = sqlx::query!(
-            "INSERT INTO listings (user_id, title, description, price_msat, completed, approved, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO listings (user_id, title, description, price_msat, submitted, approved, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?)",
             listing.user_id,
             listing.title,
             listing.description,
             price_msat,
-            listing.completed,
+            listing.submitted,
             listing.approved,
             created_time_ms,
         )
@@ -244,7 +244,7 @@ impl Listing {
                 title: r.title,
                 description: r.description,
                 price_msat: r.price_msat as _,
-                completed: r.completed,
+                submitted: r.submitted,
                 approved: r.approved,
                 created_time_ms: r.created_time_ms as _,
             })
@@ -411,7 +411,7 @@ impl ListingCard {
         let listing_cards =
             sqlx::query!("
 select
- listings.id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.completed, listings.approved, listings.created_time_ms, min(listingimages.id) as image_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary
+ listings.id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.submitted, listings.approved, listings.created_time_ms, min(listingimages.id) as image_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary
 from
  listings
 LEFT JOIN
@@ -431,7 +431,7 @@ GROUP BY
                     title: r.title,
                     description: r.description,
                     price_msat: r.price_msat as _,
-                    completed: r.completed,
+                    submitted: r.submitted,
                     approved: r.approved,
                     created_time_ms: r.created_time_ms as _,
                 };

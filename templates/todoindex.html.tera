@@ -39,7 +39,7 @@ Hello, anonymous user.
       <div class="twelve columns">
         <ul>
         {% for task in tasks %}
-          {% if task.completed %}
+          {% if task.submitted %}
             <li>
               <span class="completed">{{ task.description }}</span>
               <form class="inline" action="/todo/{{task.id}}" method="post">

@@ -84,7 +84,7 @@ async fn create_listing(
         title: listing_info.title,
         description: listing_info.description,
         price_msat: listing_info.price_msat,
-        completed: false,
+        submitted: false,
         approved: false,
         created_time_ms: now,
     };

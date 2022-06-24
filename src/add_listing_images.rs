@@ -121,8 +121,8 @@ async fn upload_image(
 
     if listing.user_id != user.id() {
         Err("Listing belongs to a different user.".to_string())
-    } else if listing.completed {
-        Err("Listing is already completed.".to_string())
+    } else if listing.submitted {
+        Err("Listing is already submitted.".to_string())
     } else if listing_images.len() >= 5 {
         Err("Maximum number of images already exist.".to_string())
     } else if tmp_file.len() == 0 {
@@ -214,8 +214,8 @@ async fn delete_image(
 
     if listing_image.listing_id != listing.id.unwrap() {
         Err("Invalid listing id given.".to_string())
-    } else if listing.completed {
-        Err("Listing is already completed.".to_string())
+    } else if listing.submitted {
+        Err("Listing is already submitted.".to_string())
     } else if listing.user_id != user.id() {
         Err("Listing belongs to a different user.".to_string())
     } else {
@@ -271,8 +271,8 @@ async fn mark_as_primary(
 
     if listing_image.listing_id != listing.id.unwrap() {
         Err("Invalid listing id given.".to_string())
-    } else if listing.completed {
-        Err("Listing is already completed.".to_string())
+    } else if listing.submitted {
+        Err("Listing is already submitted.".to_string())
     } else if listing.user_id != user.id() {
         Err("Listing belongs to a different user.".to_string())
     } else {
