@@ -10,9 +10,7 @@
 	<div class="container">
 	  {% if listing_display %}
 	  {% for image in listing_display.images %}
-	  <li>
-	    <img src="data:image/jpeg;base64,{{ image.image_data_base64 }}" style="width:512px;height:512px;" class="u-max-full-width" />
-	  </li>
+	  <img src="data:image/jpeg;base64,{{ image.image_data_base64 }}" style="width:512px;height:512px;" class="u-max-full-width" />
 	  {% endfor %}
 	  {% endif %}
 	</div>
@@ -22,10 +20,9 @@
 	<div class="container">
 	  {% if listing_display %}
 	  <h3>{{ listing_display.listing.title }}</h3>
-	  <p>{{ listing_display.listing.description }}</p>
 	  <p>Price: {{ listing_display.listing.price_msat / 1000 }} sats</p>
 	  <p>User: <a href="/user/{{listing_display.user.username}}">{{ listing_display.user.username }}</a></p>
-	  <p>
+	  <p>{{ listing_display.listing.description }} ...
 
 	    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Tincidunt vitae semper quis lectus nulla at volutpat diam. Eget arcu dictum varius duis at. Sem et tortor consequat id. Amet risus nullam eget felis eget nunc lobortis. Porta lorem mollis aliquam ut porttitor leo a diam. Magna etiam tempor orci eu lobortis elementum nibh tellus molestie. Rhoncus urna neque viverra justo. Posuere ac ut consequat semper viverra nam libero justo laoreet. Id leo in vitae turpis massa sed elementum. Consequat semper viverra nam libero justo laoreet sit amet cursus. Maecenas volutpat blandit aliquam etiam erat velit scelerisque. Enim eu turpis egestas pretium.
 
