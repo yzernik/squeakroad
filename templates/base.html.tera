@@ -53,7 +53,7 @@
           <a class="navbar-brand" href="/">Rocket Auth Example</a>
           <div>
             {% if user %}
-            Welcome, <a class="navbar-brand" href="/">{{ user.email }}</a>
+            Welcome, <a class="navbar-brand" href="/user/{{ user.email }}">{{ user.email }}</a>
             {% endif %}
             {% if admin_user %}
             <a class="navbar-brand" href="/admin">Admin</a>
