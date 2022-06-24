@@ -83,7 +83,7 @@ async fn create_listing(
         user_id: user.id(),
         title: listing_info.title,
         description: listing_info.description,
-        price_msat: listing_info.price_msat,
+        price_msat: listing_info.price_sat * 1000,
         submitted: false,
         approved: false,
         created_time_ms: now,
