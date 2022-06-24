@@ -13,35 +13,80 @@
     <link rel="stylesheet" href="/css/style.css">
     <link rel="icon" type="image/png" href="/images/favicon.png">
 
+    <style>
+      html, body {
+	  height: 100%;
+      }
+
+      .table-container {
+	  display: table;
+	  height: 100%;
+	  width: 100%;
+      }
+
+      .table-block {
+	  display: table-row;
+	  height: 1px;
+      }
+
+      .footer-push {
+	  height: auto;
+      }
+
+      #footer {
+	  /* Placeholder footer styles */
+	  text-align: center;
+      }
+
+    </style>
+
     <title>Rocket Auth Example</title>
 </head>
 
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+  <div class="table-container">
+    <div class="table-block footer-push">
+
+      <nav class="navbar navbar-expand-lg navbar-dark bg-success">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/">Rocket Auth Example</a>
-            <div>
-                {% if user %}
-                Welcome, <a class="navbar-brand" href="/">{{ user.email }}</a>
-                {% endif %}
-                {% if admin_user %}
-                <a class="navbar-brand" href="/admin">Admin</a>
-                {% endif %}
-                {% if not user %}
-                <a class="navbar-brand" href="/login">Login</a>
-                <a class="navbar-brand" href="/signup">Sign up</a>
-                {% else %}
-                <a class="navbar-brand" href="/logout">Log out</a>
-                {% endif %}
-            </div>
-        </div>
-    </nav>
-    <div style="text-align: center;">
+          <a class="navbar-brand" href="/">Rocket Auth Example</a>
+          <div>
+            {% if user %}
+            Welcome, <a class="navbar-brand" href="/">{{ user.email }}</a>
+            {% endif %}
+            {% if admin_user %}
+            <a class="navbar-brand" href="/admin">Admin</a>
+            {% endif %}
+            {% if not user %}
+            <a class="navbar-brand" href="/login">Login</a>
+            <a class="navbar-brand" href="/signup">Sign up</a>
+            {% else %}
+            <a class="navbar-brand" href="/logout">Log out</a>
+            {% endif %}
+          </div>
+      </nav>
+
+      <div style="text-align: center;">
         <br>
         {% block body %}
         {% endblock body %}
-    </div>
+      </div>
+
+    </div> <!-- end primary div.table-block -->
+
+
+    <div class="table-block">
+      <!-- Page Footer Layout
+           –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+      <div class="container">
+        <footer id="footer" class="twelve columns">
+          Powered by <a href="https://github.com/yzernik/squeakroad" rel="noreferrer noopener" target="_blank">Squeakroad</a> Have questions? Join us on <a href="https://t.me/squeakroad" rel="noreferrer noopener" target="_blank">Telegram</a>
+        </footer>
+      </div> <!-- end footer div.container -->
+    </div>  <!-- end footer div.table-block -->
+  </div>
+
 </body>
 
 </html>
