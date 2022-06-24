@@ -334,7 +334,7 @@
     },
     "query": "select * from listings WHERE id = ?;"
   },
-  "a1c3f3696236a1f1b772076b019fd441b2dfd1b3dc7aff593c412782214f9234": {
+  "a4b22e5af9a93d416c0db710559a0bda5dd09b4bba8871c3263b617d5b72b16d": {
     "describe": {
       "columns": [
         {
@@ -380,7 +380,7 @@
         {
           "name": "image_id",
           "ordinal": 8,
-          "type_info": "Int"
+          "type_info": "Int64"
         },
         {
           "name": "listing_id",
@@ -407,7 +407,7 @@
         false,
         false,
         false,
-        null,
+        true,
         false,
         false,
         false
@@ -416,7 +416,7 @@
         "Right": 0
       }
     },
-    "query": "\nselect\n listings.id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.submitted, listings.approved, listings.created_time_ms, min(listingimages.id) as image_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary\nfrom\n listings\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nGROUP BY\n listings.id\n;"
+    "query": "\nselect\n listings.id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.submitted, listings.approved, listings.created_time_ms, listingimages.id as image_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary\nfrom\n listings\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nGROUP BY\n listings.id\n;"
   },
   "e94cd0fbe6f4a8d90120733fb88081da00668901ed37ba6ca200f82dc2331aaa": {
     "describe": {
