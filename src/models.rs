@@ -69,6 +69,7 @@ pub struct ListingImage {
 pub struct ListingDisplay {
     pub listing: Listing,
     pub images: Vec<ListingImageDisplay>,
+    pub shipping_options: Vec<ShippingOption>,
     pub user: RocketAuthUser,
 }
 
@@ -95,6 +96,23 @@ pub struct ListingImageDisplay {
     pub listing_id: i32,
     pub image_data_base64: String,
     pub is_primary: bool,
+}
+
+#[derive(Serialize, Debug, Clone)]
+#[serde(crate = "rocket::serde")]
+pub struct ShippingOption {
+    pub id: Option<i32>,
+    pub listing_id: i32,
+    pub title: String,
+    pub description: String,
+    pub price_msat: u64,
+}
+
+#[derive(Debug, FromForm)]
+pub struct ShippingOptionInfo {
+    pub title: String,
+    pub description: String,
+    pub price_sat: u64,
 }
 
 #[derive(Serialize, Debug, Clone)]
@@ -409,11 +427,13 @@ impl ListingDisplay {
                 is_primary: img.is_primary,
             })
             .collect::<Vec<_>>();
+        let shipping_options = ShippingOption::all_for_listing(&mut *db, id).await?;
         let rocket_auth_user = RocketAuthUser::single(&mut *db, listing.user_id).await?;
 
         let listing_display = ListingDisplay {
             listing: listing,
             images: image_displays,
+            shipping_options: shipping_options,
             user: rocket_auth_user,
         };
 
@@ -487,5 +507,77 @@ impl ListingCardDisplay {
             .collect::<Vec<_>>();
 
         Ok(listing_card_displays)
+    }
+}
+
+impl ShippingOption {
+    /// Returns the number of affected rows: 1.
+    pub async fn insert(
+        shipping_option: ShippingOption,
+        db: &mut Connection<Db>,
+    ) -> Result<usize, sqlx::Error> {
+        let price_msat: i64 = shipping_option.price_msat as _;
+
+        let insert_result = sqlx::query!(
+            "INSERT INTO shippingoptions (listing_id, title, description, price_msat) VALUES (?, ?, ?, ?)",
+            shipping_option.listing_id,
+            shipping_option.title,
+            shipping_option.description,
+            price_msat,
+        )
+        .execute(&mut **db)
+        .await?;
+
+        println!("{:?}", insert_result);
+
+        Ok(insert_result.rows_affected() as _)
+    }
+
+    pub async fn all_for_listing(
+        db: &mut Connection<Db>,
+        listing_id: i32,
+    ) -> Result<Vec<ShippingOption>, sqlx::Error> {
+        let shipping_options = sqlx::query!(
+            "select * from shippingoptions WHERE listing_id = ? ORDER BY shippingoptions.price_msat ASC;",
+            listing_id
+        )
+        .fetch(&mut **db)
+        .map_ok(|r| ShippingOption {
+            id: Some(r.id.try_into().unwrap()),
+            listing_id: r.listing_id as _,
+            title: r.title,
+            description: r.description,
+            price_msat: r.price_msat as _,
+        })
+        .try_collect::<Vec<_>>()
+        .await?;
+
+        println!("{}", shipping_options.len());
+
+        Ok(shipping_options)
+    }
+
+    pub async fn single(db: &mut Connection<Db>, id: i32) -> Result<ShippingOption, sqlx::Error> {
+        let shipping_option = sqlx::query!("select * from shippingoptions WHERE id = ?;", id)
+            .fetch_one(&mut **db)
+            .map_ok(|r| ShippingOption {
+                id: Some(r.id.try_into().unwrap()),
+                listing_id: r.listing_id as _,
+                title: r.title,
+                description: r.description,
+                price_msat: r.price_msat as _,
+            })
+            .await?;
+
+        Ok(shipping_option)
+    }
+
+    /// Returns the number of affected rows: 1.
+    pub async fn delete_with_id(id: i32, db: &mut Connection<Db>) -> Result<usize, sqlx::Error> {
+        let delete_result = sqlx::query!("DELETE FROM shippingoptions WHERE id = ?", id)
+            .execute(&mut **db)
+            .await?;
+
+        Ok(delete_result.rows_affected() as _)
     }
 }

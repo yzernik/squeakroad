@@ -1,0 +1,56 @@
+{% extends "base" %}
+{% block body %}
+
+  <div class="container">
+    <p><!--Nothing to see here --></p>
+
+    {% if listing_display %}
+    <h3>{{ listing_display.listing.title }}</h3>
+
+    <br>
+
+    <div class="row">
+      <h4>Add Shipping Options</h4>
+
+      <form action="/add_shipping_options/{{ listing_display.listing.id }}/add_shipping_option" method="post">
+        <div class="ten columns">
+          <input type="text" placeholder="enter a shipping option title..."
+		 name="title" id="title" value="" autofocus
+		 class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" />
+          <input type="text" placeholder="enter a shipping option description..."
+		 name="description" id="description" value=""
+		 class="u-full-width" />
+          <input type="number" placeholder="enter a shipping option price in sats..."
+		 name="price_sat" id="price_sat" value=""
+		 class="u-full-width" />
+          {% if flash %}
+          <small class="field-{{flash.0}}-msg">
+            {{ flash.1 }}
+          </small>
+          {% endif %}
+        </div>
+        <div class="two columns">
+          <input type="submit" value="add shipping option">
+        </div>
+      </form>
+    </div>
+
+
+    {% for shipping_option in listing_display.shipping_options %}
+    <li>
+      <p>{{ shipping_option.title }}</p>
+      <p>Price: {{ shipping_option.price_msat/1000 }} sats</p>
+      <p>{{ shipping_option.description }}</p>
+      <form class="inline" action="/add_shipping_options/{{listing_display.listing.id}}/add_shipping_option/{{shipping_option.id}}" method="post">
+        <input type="hidden" name="_method" value="delete" />
+        <button class="primary small" type="submit">delete</button>
+      </form>
+    </li>
+    {% endfor %}
+
+    {% endif %}
+
+  </div>
+
+
+{% endblock body %}

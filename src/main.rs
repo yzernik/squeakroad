@@ -5,6 +5,7 @@ extern crate rocket;
 mod tests;
 
 mod add_listing_images;
+mod add_shipping_options;
 mod admin;
 mod auth;
 mod db;

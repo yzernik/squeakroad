@@ -20,9 +20,25 @@
 	<div class="container">
 	  {% if listing_display %}
 	  <h3>{{ listing_display.listing.title }}</h3>
-	  <p>Price: {{ listing_display.listing.price_msat / 1000 }} sats</p>
-	  <p>User: <a href="/user/{{listing_display.user.username}}">{{ listing_display.user.username }}</a></p>
-	  <p>{{ listing_display.listing.description }} ...
+	  <p><b>Price</b>: {{ listing_display.listing.price_msat / 1000 }} sats</p>
+	  <p><b>User</b>: <a href="/user/{{listing_display.user.username}}">{{ listing_display.user.username }}</a></p>
+
+	  <form action="" method="get">
+	    <label for="shipping_options">Choose a shipping option:</label>
+	    <select id="shipping_option_id" name="shipping_option_id">
+	      <option disabled selected value> -- select an option -- </option>
+	      {% for shipping_option in listing_display.shipping_options %}
+	      <option value="{{ shipping_option.id }}" {% if selected_shipping_option and shipping_option.id == selected_shipping_option.id %}selected{% endif %}>{{ shipping_option.title }} ({{ shipping_option.price_msat/1000 }} sats)</option>
+	      {% endfor %}
+	    </select>
+	    <input type="submit" value="Update Shipping Option">
+	  </form>
+
+	  {% if selected_shipping_option %}
+	  <p><b>{{ selected_shipping_option.title }}</b>: {{ selected_shipping_option.price_msat/1000 }} sats: {{ selected_shipping_option.description }}</p>
+	  {% endif %}
+
+	  <p><b>Description</b>: {{ listing_display.listing.description }} ...
 
 	    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Tincidunt vitae semper quis lectus nulla at volutpat diam. Eget arcu dictum varius duis at. Sem et tortor consequat id. Amet risus nullam eget felis eget nunc lobortis. Porta lorem mollis aliquam ut porttitor leo a diam. Magna etiam tempor orci eu lobortis elementum nibh tellus molestie. Rhoncus urna neque viverra justo. Posuere ac ut consequat semper viverra nam libero justo laoreet. Id leo in vitae turpis massa sed elementum. Consequat semper viverra nam libero justo laoreet sit amet cursus. Maecenas volutpat blandit aliquam etiam erat velit scelerisque. Enim eu turpis egestas pretium.
 

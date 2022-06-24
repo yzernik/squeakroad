@@ -10,6 +10,90 @@
     },
     "query": "INSERT INTO listingimages (listing_id, image_data) VALUES (?, ?)"
   },
+  "0389d1e24d67dbdc1c8b79f34a68bea56bf1a30a86f939ee07ca0ffddf63e72e": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "listing_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        },
+        {
+          "name": "description",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "price_msat",
+          "ordinal": 3,
+          "type_info": "Int64"
+        },
+        {
+          "name": "title",
+          "ordinal": 4,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "select * from shippingoptions WHERE listing_id = ? ORDER BY shippingoptions.price_msat ASC;"
+  },
+  "05b9aa0aa21a3c1cbfefb2196ae0b85403a5db4384480e3d1bcb88e93604981b": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "listing_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        },
+        {
+          "name": "description",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "price_msat",
+          "ordinal": 3,
+          "type_info": "Int64"
+        },
+        {
+          "name": "title",
+          "ordinal": 4,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "select * from shippingoptions WHERE id = ?;"
+  },
   "11e3096becb72f427c8d3911ef4327afd9516143806981e11f8e34d069c14472": {
     "describe": {
       "columns": [
@@ -99,6 +183,16 @@
       }
     },
     "query": "select * from listings;"
+  },
+  "2017f55f8161b8474fba2c43690677b3f9d3a7009f71b5b577aa757831ff8051": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "DELETE FROM shippingoptions WHERE id = ?"
   },
   "31f673c5a03bbdf70029ca0d1bdb651856253660e79f47826e183f3cda318299": {
     "describe": {
@@ -333,6 +427,16 @@
       }
     },
     "query": "select * from listings WHERE id = ?;"
+  },
+  "9ccb60d49748b6522971373703bd16d6e45cf646173db0235c96505b2496812b": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 4
+      }
+    },
+    "query": "INSERT INTO shippingoptions (listing_id, title, description, price_msat) VALUES (?, ?, ?, ?)"
   },
   "a4b22e5af9a93d416c0db710559a0bda5dd09b4bba8871c3263b617d5b72b16d": {
     "describe": {

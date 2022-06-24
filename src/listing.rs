@@ -1,5 +1,5 @@
 use crate::db::Db;
-use crate::models::ListingDisplay;
+use crate::models::{ListingDisplay, ShippingOption};
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::serde::Serialize;
@@ -13,6 +13,7 @@ use rocket_dyn_templates::Template;
 struct Context {
     flash: Option<(String, String)>,
     listing_display: Option<ListingDisplay>,
+    selected_shipping_option: Option<ShippingOption>,
     user: Option<User>,
     admin_user: Option<AdminUser>,
 }
@@ -33,14 +34,25 @@ impl Context {
     pub async fn raw(
         mut db: Connection<Db>,
         listing_id: i32,
+        shipping_option_id: Option<i32>,
         flash: Option<(String, String)>,
         user: Option<User>,
         admin_user: Option<AdminUser>,
     ) -> Context {
-        match ListingDisplay::single(&mut db, listing_id).await {
+        let listing_display = ListingDisplay::single(&mut db, listing_id).await;
+        let maybe_shipping_option = match shipping_option_id {
+            Some(sid) => {
+                let shipping_option = ShippingOption::single(&mut db, sid).await;
+                shipping_option.ok()
+            }
+            None => None,
+        };
+
+        match listing_display {
             Ok(listing_display) => Context {
                 flash,
                 listing_display: Some(listing_display),
+                selected_shipping_option: maybe_shipping_option,
                 user,
                 admin_user,
             },
@@ -49,6 +61,7 @@ impl Context {
                 Context {
                     flash: Some(("error".into(), "Fail to access database.".into())),
                     listing_display: None,
+                    selected_shipping_option: None,
                     user: user,
                     admin_user: admin_user,
                 }
@@ -85,20 +98,22 @@ impl Context {
 //     }
 // }
 
-#[get("/<id>")]
+#[get("/<id>?<shipping_option_id>")]
 async fn index(
     flash: Option<FlashMessage<'_>>,
     id: i32,
+    shipping_option_id: Option<i32>,
     db: Connection<Db>,
     user: Option<User>,
     admin_user: Option<AdminUser>,
 ) -> Template {
     println!("looking for listing...");
+    println!("Shipping option id: {:?}", shipping_option_id);
 
     let flash = flash.map(FlashMessage::into_inner);
     Template::render(
         "listing",
-        Context::raw(db, id, flash, user, admin_user).await,
+        Context::raw(db, id, shipping_option_id, flash, user, admin_user).await,
     )
 }
 
