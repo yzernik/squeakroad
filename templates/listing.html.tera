@@ -4,6 +4,21 @@
   <div class="full-width-container">
     <p><!--Nothing to see here --></p>
 
+    {% if listing_display %}
+    {% if not listing_display.listing.submitted %}
+    <p>Not submitted</p>
+    <form class="inline" action="submit_listing" method="post">
+      <input type="hidden" name="_method" value="put" />
+      <button class="small" type="submit">Submit Listing</button>
+    </form>
+    {% elif not listing_display.listing.approved %}
+    <p>Not approved</p>
+    {% else %}
+    <p>Approved</p>
+    {% endif %}
+    {% endif %}
+
+
     <!-- there are a few shorthand columns widths as well -->
     <div class="row">
       <div class="one-half column">
@@ -35,7 +50,8 @@
 	  </form>
 
 	  {% if selected_shipping_option %}
-	  <p><b>{{ selected_shipping_option.title }}</b>: {{ selected_shipping_option.price_msat/1000 }} sats: {{ selected_shipping_option.description }}</p>
+	  <p><b>Shipping Option</b>: {{ selected_shipping_option.title }} ({{ selected_shipping_option.price_msat/1000 }} sats)</p>
+	  <p>{{ selected_shipping_option.description }}</p>
 	  {% endif %}
 
 	  <p><b>Description</b>: {{ listing_display.listing.description }} ...
