@@ -11,6 +11,7 @@
 
     <div class="row">
       <h4>Add Shipping Options</h4>
+      <p><a href="/listing/{{ listing_display.listing.id }}">Back to listing</a></p>
 
       <form action="/add_shipping_options/{{ listing_display.listing.id }}/add_shipping_option" method="post">
         <div class="ten columns">

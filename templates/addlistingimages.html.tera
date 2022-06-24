@@ -11,6 +11,8 @@
 
     <div class="row">
       <h4>Add Listing Images</h4>
+      <p><a href="/listing/{{ listing_display.listing.id }}">Back to listing</a></p>
+
       <form action="/add_listing_images/{{ listing_display.listing.id }}/add_image" method="post" enctype="multipart/form-data">
         <div class="ten columns">
           <input type="file" placeholder="upload a file..."
