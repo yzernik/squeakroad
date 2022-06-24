@@ -6,11 +6,8 @@
 
     {% if listing_display %}
     <h3>{{ listing_display.listing.title }}</h3>
-    <p>{{ listing_display.listing.description }}</p>
-    <p>Price {{ listing_display.listing.price_msat }} msats</p>
 
     <br>
-
 
     <div class="row">
       <h4>Add Listing Images</h4>
@@ -33,8 +30,6 @@
 
     {% for image in listing_display.images %}
     <li>
-      <p>{{ image.id }}</p>
-      <p>{{ image.listing_id }}</p>
       <img src="data:image/jpeg;base64,{{ image.image_data_base64 }}" style="width:512px;height:512px;" />
       <form class="inline" action="/add_listing_images/{{listing_display.listing.id}}/set_primary/{{image.id}}" method="post">
         <input type="hidden" name="_method" value="put" />
