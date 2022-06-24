@@ -136,11 +136,14 @@ async fn create_listing(
 async fn index(
     flash: Option<FlashMessage<'_>>,
     _db: Connection<Db>,
-    user: Option<User>,
+    user: User,
     admin_user: Option<AdminUser>,
 ) -> Template {
     let flash = flash.map(FlashMessage::into_inner);
-    Template::render("newlisting", Context::raw(flash, user, admin_user).await)
+    Template::render(
+        "newlisting",
+        Context::raw(flash, Some(user), admin_user).await,
+    )
 }
 
 pub fn new_listing_stage() -> AdHoc {
