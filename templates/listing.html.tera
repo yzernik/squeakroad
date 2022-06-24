@@ -7,7 +7,7 @@
     {% if listing_display %}
     <h3>{{ listing_display.listing.title }}</h3>
     <p>{{ listing_display.listing.description }}</p>
-    <p>Price: {{ listing_display.listing.price_msat }} msats</p>
+    <p>Price: {{ listing_display.listing.price_msat / 1000 }} sats</p>
     <p>User: {{ listing_display.user.username }}</p>
 
     {% for image in listing_display.images %}

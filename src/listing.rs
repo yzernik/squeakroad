@@ -57,42 +57,6 @@ impl Context {
     }
 }
 
-// #[post("/", data = "<listing_form>")]
-// async fn new(
-//     listing_form: Form<InitialListingInfo>,
-//     db: Connection<Db>,
-//     user: User,
-// ) -> Flash<Redirect> {
-//     let listing_info = listing_form.into_inner();
-//     let now = SystemTime::now()
-//         .duration_since(UNIX_EPOCH)
-//         .unwrap()
-//         .as_secs() as u64;
-
-//     let listing = Listing {
-//         id: None,
-//         user_id: user.id(),
-//         title: listing_info.title,
-//         description: listing_info.description,
-//         price_msat: listing_info.price_msat,
-//         submitted: false,
-//         approved: false,
-//         created_time_ms: now,
-//     };
-
-//     if listing.description.is_empty() {
-//         Flash::error(Redirect::to("/"), "Description cannot be empty.")
-//     } else if let Err(e) = Listing::insert(listing, db).await {
-//         error_!("DB insertion error: {}", e);
-//         Flash::error(
-//             Redirect::to("/"),
-//             "Listing could not be inserted due an internal error.",
-//         )
-//     } else {
-//         Flash::success(Redirect::to("/"), "Listing successfully added.")
-//     }
-// }
-
 // #[put("/<id>")]
 // async fn toggle(id: i32, mut db: Connection<Db>, user: User) -> Result<Redirect, Template> {
 //     match Task::toggle_with_id(id, &mut db).await {
