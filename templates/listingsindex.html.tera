@@ -29,7 +29,7 @@ Hello, anonymous user.
             {% endif %}
 	  </a>
 
-          {% if card.listing.completed %}
+          {% if card.listing.submitted %}
             <li>
               <span class="completed">{{ card.listing.description }}</span>
               <form class="inline" action="/listing/{{card.listing.id}}" method="post">
