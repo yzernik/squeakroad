@@ -1,20 +1,24 @@
 {% extends "base" %}
 {% block body %}
 
+{% if listing_display %}
+
   <div class="full-width-container">
     <p><!--Nothing to see here --></p>
 
-    {% if listing_display %}
+    {% if user and listing_display.listing.user_id == user.id %}
     {% if not listing_display.listing.submitted %}
-    <p>Not submitted</p>
+    <h5>Not submitted</h5>
+    <p><a href="/add_listing_images/{{ listing_display.listing.id }}">Add images</a></p>
+    <p><a href="/add_shipping_options/{{ listing_display.listing.id }}">Add shipping options</a></p>
     <form class="inline" action="submit_listing" method="post">
       <input type="hidden" name="_method" value="put" />
       <button class="small" type="submit">Submit Listing</button>
     </form>
     {% elif not listing_display.listing.approved %}
-    <p>Not approved</p>
+    <h5>Not approved</h5>
     {% else %}
-    <p>Approved</p>
+    <h5>Approved</h5>
     {% endif %}
     {% endif %}
 
@@ -23,17 +27,14 @@
     <div class="row">
       <div class="one-half column">
 	<div class="container">
-	  {% if listing_display %}
 	  {% for image in listing_display.images %}
 	  <img src="data:image/jpeg;base64,{{ image.image_data_base64 }}" style="width:512px;height:512px;" class="u-max-full-width" />
 	  {% endfor %}
-	  {% endif %}
 	</div>
 
       </div>
       <div class="one-half column">
 	<div class="container">
-	  {% if listing_display %}
 	  <h3>{{ listing_display.listing.title }}</h3>
 	  <p><b>Price</b>: {{ listing_display.listing.price_msat / 1000 }} sats</p>
 	  <p><b>User</b>: <a href="/user/{{listing_display.user.username}}">{{ listing_display.user.username }}</a></p>
@@ -67,12 +68,12 @@ Feugiat pretium nibh ipsum consequat nisl vel pretium lectus quam. Auctor urna n
 Accumsan lacus vel facilisis volutpat est velit. Diam maecenas ultricies mi eget mauris pharetra et ultrices neque. Velit egestas dui id ornare arcu odio. Nunc aliquet bibendum enim facilisis gravida. Erat pellentesque adipiscing commodo elit at imperdiet. Quis risus sed vulputate odio ut. Fames ac turpis egestas sed tempus. In ante metus dictum at tempor commodo ullamcorper. Eget dolor morbi non arcu risus quis. Amet consectetur adipiscing elit pellentesque habitant. Malesuada bibendum arcu vitae elementum curabitur vitae. Amet mattis vulputate enim nulla aliquet. Ultrices sagittis orci a scelerisque purus. Proin nibh nisl condimentum id venenatis a. In fermentum et sollicitudin ac orci phasellus egestas tellus rutrum.
 
 	  </p>
-	  {% endif %}
 	</div>
       </div>
     </div>
 
   </div>
 
+{% endif %}
 
 {% endblock body %}
