@@ -100,42 +100,6 @@
     },
     "query": "select * from listings;"
   },
-  "23ecd8647f0955bb55aeb84b7b2d293d6cdf73f4bc436ec491522eb635aaaca5": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int64"
-        },
-        {
-          "name": "email",
-          "ordinal": 1,
-          "type_info": "Text"
-        },
-        {
-          "name": "password",
-          "ordinal": 2,
-          "type_info": "Text"
-        },
-        {
-          "name": "is_admin",
-          "ordinal": 3,
-          "type_info": "Bool"
-        }
-      ],
-      "nullable": [
-        false,
-        true,
-        false,
-        true
-      ],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "select * from users WHERE id = ?;"
-  },
   "31f673c5a03bbdf70029ca0d1bdb651856253660e79f47826e183f3cda318299": {
     "describe": {
       "columns": [],
@@ -285,6 +249,30 @@
       }
     },
     "query": "DELETE FROM posts WHERE id = ?"
+  },
+  "95888610b35c9edb6b0105379cafc78f3752215f85adcbe4f18611545e5eb282": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "email",
+          "ordinal": 1,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        true
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "select id, email from users WHERE id = ?;"
   },
   "9b322f99493b941e1a95d5f82dce82d5e9d3e0bd683408cd9e81e1d52e5a72b5": {
     "describe": {
@@ -465,6 +453,30 @@
       }
     },
     "query": "select * from listingimages WHERE listing_id = ? ORDER BY listingimages.is_primary DESC;"
+  },
+  "f3c7d0e13ccbd741995710b1f499ac389e10eedaa31fdcba90c411a9f2472323": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "email",
+          "ordinal": 1,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        true,
+        true
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "select id, email from users WHERE email = ?;"
   },
   "ffd68aafc82a887ff89e8f00d4afbc4d2924541878e1b413c10cf5842ce905f1": {
     "describe": {
