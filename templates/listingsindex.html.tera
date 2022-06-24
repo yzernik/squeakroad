@@ -21,34 +21,23 @@ Hello, anonymous user.
         <ul>
         {% for card in listing_cards %}
 
+        <li>
 	  <a href="/listing/{{card.listing.id}}">
+	    <p>
             {% if card.image %}
 	    <img src="data:image/jpeg;base64,{{ card.image.image_data_base64 }}" style="width:256px;height:256px;" />
             {% else %}
-	    <p>Image not found</p>
+	    Image not found
             {% endif %}
+	    </p>
 	  </a>
 
-          {% if card.listing.submitted %}
-            <li>
-              <span class="completed">{{ card.listing.description }}</span>
-              <form class="inline" action="/listing/{{card.listing.id}}" method="post">
-                <input type="hidden" name="_method" value="get" />
-                <button class="small" type="submit">undo</button>
-              </form>
-              <form class="inline" action="/listing/{{card.listing.id}}" method="post">
-                <input type="hidden" name="_method" value="delete" />
-                <button class="primary small" type="submit">delete</button>
-              </form>
-            </li>
-          {% else %}
-            <li>
-              <form class="link" action="/listing/{{card.listing.id}}" method="post">
-                <input type="hidden" name="_method" value="get" />
-                <button class="link" type="submit">{{ card.listing.title }} ({{ card.listing.description }}) ({{ card.listing.price_msat }}) ({{ card.listing.user_id }})</button>
-              </form>
-            </li>
-          {% endif %}
+          <form class="link" action="/listing/{{card.listing.id}}" method="post">
+            <input type="hidden" name="_method" value="get" />
+            <button class="link" type="submit">{{ card.listing.title }} ({{ card.listing.description }}) ({{ card.listing.price_msat }}) ({{ card.listing.user_id }})</button>
+          </form>
+        </li>
+
         {% endfor %}
         </ul>
       </div>
