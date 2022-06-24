@@ -109,7 +109,6 @@ pub struct ShippingOption {
 
 #[derive(Debug, FromForm)]
 pub struct ShippingOptionInfo {
-    pub title: String,
     pub description: String,
     pub price_sat: u64,
 }
