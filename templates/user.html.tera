@@ -8,6 +8,6 @@ User not found.
 {% endif %}
 
 <br>
-<a href="show_all_users">Show all users</a>
+<a href="/show_all_users">Show all users</a>
 
 {% endblock body %}
