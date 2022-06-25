@@ -9,8 +9,8 @@
     {% if user and listing_display.listing.user_id == user.id %}
     {% if not listing_display.listing.submitted %}
     <h5>Not submitted</h5>
-    <p><a href="/add_listing_images/{{ listing_display.listing.id }}">Add images</a></p>
-    <p><a href="/add_shipping_options/{{ listing_display.listing.id }}">Add shipping options</a></p>
+    <p><a href="/add_listing_images/{{ listing_display.listing.public_id }}">Add images</a></p>
+    <p><a href="/add_shipping_options/{{ listing_display.listing.public_id }}">Add shipping options</a></p>
     <form class="inline" action="submit_listing" method="post">
       <input type="hidden" name="_method" value="put" />
       <button class="small" type="submit">Submit Listing</button>
@@ -44,7 +44,7 @@
 	    <select id="shipping_option_id" name="shipping_option_id">
 	      <option disabled selected value> -- select an option -- </option>
 	      {% for shipping_option in listing_display.shipping_options %}
-	      <option value="{{ shipping_option.id }}" {% if selected_shipping_option and shipping_option.id == selected_shipping_option.id %}selected{% endif %}>{{ shipping_option.title }} ({{ shipping_option.price_msat/1000 }} sats)</option>
+	      <option value="{{ shipping_option.public_id }}" {% if selected_shipping_option and shipping_option.id == selected_shipping_option.id %}selected{% endif %}>{{ shipping_option.title }} ({{ shipping_option.price_msat/1000 }} sats)</option>
 	      {% endfor %}
 	    </select>
 	    <input type="submit" value="Update Shipping Option">

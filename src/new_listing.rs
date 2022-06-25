@@ -4,6 +4,7 @@ use rocket::fairing::AdHoc;
 use rocket::form::Form;
 use rocket::request::FlashMessage;
 use rocket::response::{Flash, Redirect};
+use rocket::serde::uuid::Uuid;
 use rocket::serde::Serialize;
 use rocket_auth::{AdminUser, User};
 use rocket_db_pools::Connection;
@@ -72,7 +73,7 @@ async fn create_listing(
     listing_info: InitialListingInfo,
     db: &mut Connection<Db>,
     user: User,
-) -> Result<i32, String> {
+) -> Result<String, String> {
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
@@ -80,6 +81,7 @@ async fn create_listing(
 
     let listing = Listing {
         id: None,
+        public_id: Uuid::new_v4().to_string(),
         user_id: user.id(),
         title: listing_info.title,
         description: listing_info.description,
@@ -95,7 +97,13 @@ async fn create_listing(
         Err("Admin user cannot create a listing.".to_string())
     } else {
         match Listing::insert(listing, db).await {
-            Ok(listing_id) => Ok(listing_id),
+            Ok(listing_id) => match Listing::single(db, listing_id).await {
+                Ok(new_listing) => Ok(new_listing.public_id.clone()),
+                Err(e) => {
+                    error_!("DB insertion error: {}", e);
+                    Err("New listing could not be found after inserting.".to_string())
+                }
+            },
             Err(e) => {
                 error_!("DB insertion error: {}", e);
                 Err("Listing could not be inserted due an internal error.".to_string())

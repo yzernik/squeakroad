@@ -11,9 +11,9 @@
 
     <div class="row">
       <h4>Add Shipping Options</h4>
-      <p><a href="/listing/{{ listing_display.listing.id }}">Back to listing</a></p>
+      <p><a href="/listing/{{ listing_display.listing.public_id }}">Back to listing</a></p>
 
-      <form action="/add_shipping_options/{{ listing_display.listing.id }}/add_shipping_option" method="post">
+      <form action="/add_shipping_options/{{ listing_display.listing.public_id }}/add_shipping_option" method="post">
         <div class="ten columns">
           <input type="text" placeholder="enter a shipping option title..."
 		 name="title" id="title" value="" autofocus
@@ -42,7 +42,7 @@
       <p>{{ shipping_option.title }}</p>
       <p>Price: {{ shipping_option.price_msat/1000 }} sats</p>
       <p>{{ shipping_option.description }}</p>
-      <form class="inline" action="/add_shipping_options/{{listing_display.listing.id}}/add_shipping_option/{{shipping_option.id}}" method="post">
+      <form class="inline" action="/add_shipping_options/{{listing_display.listing.public_id}}/add_shipping_option/{{shipping_option.public_id}}" method="post">
         <input type="hidden" name="_method" value="delete" />
         <button class="primary small" type="submit">delete</button>
       </form>

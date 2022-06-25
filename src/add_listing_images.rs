@@ -6,6 +6,7 @@ use rocket::form::Form;
 use rocket::fs::TempFile;
 use rocket::request::FlashMessage;
 use rocket::response::{Flash, Redirect};
+use rocket::serde::uuid::Uuid;
 use rocket::serde::Serialize;
 use rocket_auth::{AdminUser, User};
 use rocket_db_pools::Connection;
@@ -24,7 +25,7 @@ struct Context {
 impl Context {
     pub async fn err<M: std::fmt::Display>(
         _db: Connection<Db>,
-        _listing_id: i32,
+        _listing_id: &str,
         msg: M,
         user: User,
         admin_user: Option<AdminUser>,
@@ -40,12 +41,12 @@ impl Context {
 
     pub async fn raw(
         mut db: Connection<Db>,
-        listing_id: i32,
+        listing_id: &str,
         flash: Option<(String, String)>,
         user: User,
         admin_user: Option<AdminUser>,
     ) -> Context {
-        match ListingDisplay::single(&mut db, listing_id).await {
+        match ListingDisplay::single_by_public_id(&mut db, listing_id).await {
             Ok(listing_display) => {
                 if listing_display.listing.user_id == user.id() {
                     Context {
@@ -79,7 +80,7 @@ impl Context {
 
 #[post("/<id>/add_image", data = "<upload_image_form>")]
 async fn new(
-    id: i32,
+    id: &str,
     upload_image_form: Form<FileUploadForm<'_>>,
     mut db: Connection<Db>,
     user: User,
@@ -106,16 +107,16 @@ fn get_file_bytes(tmp_file: TempFile) -> Result<Vec<u8>, String> {
 }
 
 async fn upload_image(
-    id: i32,
+    id: &str,
     tmp_file: TempFile<'_>,
     db: &mut Connection<Db>,
     user: User,
     _admin_user: Option<AdminUser>,
 ) -> Result<(), String> {
-    let listing = Listing::single(db, id)
+    let listing = Listing::single_by_public_id(db, id)
         .await
         .map_err(|_| "failed to get listing")?;
-    let listing_images = ListingImage::all_for_listing(db, id)
+    let listing_images = ListingImage::all_for_listing(db, listing.id.unwrap())
         .await
         .map_err(|_| "failed to get listing")?;
 
@@ -134,7 +135,8 @@ async fn upload_image(
 
         let listing_image = ListingImage {
             id: None,
-            listing_id: id,
+            public_id: Uuid::new_v4().to_string(),
+            listing_id: listing.id.unwrap(),
             image_data: image_bytes,
             is_primary: false,
         };
@@ -147,29 +149,16 @@ async fn upload_image(
     }
 }
 
-// #[put("/<id>")]
-// async fn toggle(id: i32, mut db: Connection<Db>, user: User) -> Result<Redirect, Template> {
-//     match Task::toggle_with_id(id, &mut db).await {
-//         Ok(_) => Ok(Redirect::to("/")),
-//         Err(e) => {
-//             error_!("DB toggle({}) error: {}", id, e);
-//             Err(Template::render(
-//                 "index",
-//                 Context::err(db, "Failed to toggle task.", Some(user)).await,
-//             ))
-//         }
-//     }
-// }
-
 #[delete("/<id>/add_image/<image_id>")]
 async fn delete(
-    id: i32,
-    image_id: i32,
+    id: &str,
+    image_id: &str,
     mut db: Connection<Db>,
     user: User,
     admin_user: Option<AdminUser>,
 ) -> Result<Flash<Redirect>, Template> {
-    match delete_image(id, image_id, &mut db, user.clone(), admin_user.clone()).await {
+    match delete_image_with_public_id(id, image_id, &mut db, user.clone(), admin_user.clone()).await
+    {
         Ok(_) => Ok(Flash::success(
             Redirect::to(uri!("/add_listing_images", index(id))),
             "Listing image was deleted.",
@@ -198,17 +187,17 @@ async fn delete(
     // }
 }
 
-async fn delete_image(
-    listing_id: i32,
-    image_id: i32,
+async fn delete_image_with_public_id(
+    listing_id: &str,
+    image_id: &str,
     db: &mut Connection<Db>,
     user: User,
     _admin_user: Option<AdminUser>,
 ) -> Result<(), String> {
-    let listing = Listing::single(&mut *db, listing_id)
+    let listing = Listing::single_by_public_id(&mut *db, listing_id)
         .await
         .map_err(|_| "failed to get listing")?;
-    let listing_image = ListingImage::single(&mut *db, image_id)
+    let listing_image = ListingImage::single_by_public_id(&mut *db, image_id)
         .await
         .map_err(|_| "failed to get listing")?;
 
@@ -219,7 +208,7 @@ async fn delete_image(
     } else if listing.user_id != user.id() {
         Err("Listing belongs to a different user.".to_string())
     } else {
-        match ListingImage::delete_with_id(image_id, &mut *db).await {
+        match ListingImage::delete_with_public_id(image_id, &mut *db).await {
             Ok(num_deleted) => {
                 if num_deleted > 0 {
                     Ok(())
@@ -234,8 +223,8 @@ async fn delete_image(
 
 #[put("/<id>/set_primary/<image_id>")]
 async fn set_primary(
-    id: i32,
-    image_id: i32,
+    id: &str,
+    image_id: &str,
     mut db: Connection<Db>,
     user: User,
     admin_user: Option<AdminUser>,
@@ -256,16 +245,16 @@ async fn set_primary(
 }
 
 async fn mark_as_primary(
-    listing_id: i32,
-    image_id: i32,
+    listing_id: &str,
+    image_id: &str,
     db: &mut Connection<Db>,
     user: User,
     _admin_user: Option<AdminUser>,
 ) -> Result<(), String> {
-    let listing = Listing::single(&mut *db, listing_id)
+    let listing = Listing::single_by_public_id(&mut *db, listing_id)
         .await
         .map_err(|_| "failed to get listing")?;
-    let listing_image = ListingImage::single(&mut *db, image_id)
+    let listing_image = ListingImage::single_by_public_id(&mut *db, image_id)
         .await
         .map_err(|_| "failed to get listing")?;
 
@@ -276,7 +265,13 @@ async fn mark_as_primary(
     } else if listing.user_id != user.id() {
         Err("Listing belongs to a different user.".to_string())
     } else {
-        match ListingImage::mark_image_as_primary(&mut *db, listing_id, image_id).await {
+        match ListingImage::mark_image_as_primary_by_public_id(
+            &mut *db,
+            listing.id.unwrap(),
+            image_id,
+        )
+        .await
+        {
             Ok(num_marked) => {
                 if num_marked > 0 {
                     Ok(())
@@ -292,7 +287,7 @@ async fn mark_as_primary(
 #[get("/<id>")]
 async fn index(
     flash: Option<FlashMessage<'_>>,
-    id: i32,
+    id: &str,
     db: Connection<Db>,
     user: User,
     admin_user: Option<AdminUser>,
