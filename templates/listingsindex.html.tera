@@ -23,13 +23,11 @@
 	    <img src="/images/default_listing.png" style="width:256px;height:256px;" />
             {% endif %}
 	    </p>
-	  </a>
 
-          <form class="link" action="/listing/{{card.listing.public_id}}" method="post">
-            <input type="hidden" name="_method" value="get" />
-            <button class="link" type="submit">{{ card.listing.title }} ({{ card.listing.description }}) ({{ card.listing.price_msat }}) ({{ card.listing.user_id }})</button>
-          </form>
-        </li>
+          <p>{{ card.listing.title }}</p>
+
+          </a>
+	</li>
 
         {% endfor %}
         </ul>
