@@ -1,15 +1,5 @@
 {
   "db": "SQLite",
-  "0293dccfc5bab1e42b48d897fd8c4b3a879cde4ffc57bad924cfbcfa9dc981e5": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 2
-      }
-    },
-    "query": "INSERT INTO listingimages (listing_id, image_data) VALUES (?, ?)"
-  },
   "0389d1e24d67dbdc1c8b79f34a68bea56bf1a30a86f939ee07ca0ffddf63e72e": {
     "describe": {
       "columns": [
@@ -357,6 +347,16 @@
       }
     },
     "query": "select * from listingimages WHERE id = ?;"
+  },
+  "605752b2a483360181b72529b1f3308c826930b42a8e4e9eba09599b46d53954": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 3
+      }
+    },
+    "query": "INSERT INTO listingimages (public_id, listing_id, image_data) VALUES (?, ?, ?)"
   },
   "668690acaca0a0c0b4ac306b14d82aa1bee940f0776fae3f9962639b78328858": {
     "describe": {
