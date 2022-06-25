@@ -58,7 +58,7 @@
     },
     "query": "select * from shippingoptions WHERE listing_id = ? ORDER BY shippingoptions.price_msat ASC;"
   },
-  "05b9aa0aa21a3c1cbfefb2196ae0b85403a5db4384480e3d1bcb88e93604981b": {
+  "05c0822b9eebcc511eb0b340923a8ac412bed28737872bd101bee0ff5a6f9ccf": {
     "describe": {
       "columns": [
         {
@@ -67,44 +67,86 @@
           "type_info": "Int64"
         },
         {
-          "name": "listing_id",
+          "name": "user_id",
           "ordinal": 1,
           "type_info": "Int64"
         },
         {
-          "name": "description",
+          "name": "title",
           "ordinal": 2,
           "type_info": "Text"
         },
         {
-          "name": "price_msat",
+          "name": "description",
           "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "price_msat",
+          "ordinal": 4,
           "type_info": "Int64"
         },
         {
-          "name": "title",
-          "ordinal": 4,
-          "type_info": "Text"
+          "name": "submitted",
+          "ordinal": 5,
+          "type_info": "Bool"
+        },
+        {
+          "name": "approved",
+          "ordinal": 6,
+          "type_info": "Bool"
+        },
+        {
+          "name": "created_time_ms",
+          "ordinal": 7,
+          "type_info": "Int64"
+        },
+        {
+          "name": "image_id",
+          "ordinal": 8,
+          "type_info": "Int64"
         },
         {
           "name": "public_id",
-          "ordinal": 5,
+          "ordinal": 9,
           "type_info": "Text"
+        },
+        {
+          "name": "listing_id",
+          "ordinal": 10,
+          "type_info": "Int64"
+        },
+        {
+          "name": "image_data",
+          "ordinal": 11,
+          "type_info": "Blob"
+        },
+        {
+          "name": "is_primary",
+          "ordinal": 12,
+          "type_info": "Bool"
         }
       ],
       "nullable": [
+        true,
         false,
         false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
         false,
         false,
         false,
         false
       ],
       "parameters": {
-        "Right": 1
+        "Right": 0
       }
     },
-    "query": "select * from shippingoptions WHERE id = ?;"
+    "query": "\nselect\n listings.id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.submitted, listings.approved, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary\nfrom\n listings\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nGROUP BY\n listings.id\n;"
   },
   "11e3096becb72f427c8d3911ef4327afd9516143806981e11f8e34d069c14472": {
     "describe": {
@@ -195,16 +237,6 @@
       }
     },
     "query": "select * from listings;"
-  },
-  "2017f55f8161b8474fba2c43690677b3f9d3a7009f71b5b577aa757831ff8051": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "DELETE FROM shippingoptions WHERE id = ?"
   },
   "23f4121fdf237d52eda133d4169eab815dc827b57b88f05d3b97554fd286b393": {
     "describe": {
@@ -306,9 +338,15 @@
           "name": "is_primary",
           "ordinal": 3,
           "type_info": "Bool"
+        },
+        {
+          "name": "public_id",
+          "ordinal": 4,
+          "type_info": "Text"
         }
       ],
       "nullable": [
+        false,
         false,
         false,
         false,
@@ -508,90 +546,6 @@
     },
     "query": "select * from listings WHERE id = ?;"
   },
-  "a4b22e5af9a93d416c0db710559a0bda5dd09b4bba8871c3263b617d5b72b16d": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int64"
-        },
-        {
-          "name": "user_id",
-          "ordinal": 1,
-          "type_info": "Int64"
-        },
-        {
-          "name": "title",
-          "ordinal": 2,
-          "type_info": "Text"
-        },
-        {
-          "name": "description",
-          "ordinal": 3,
-          "type_info": "Text"
-        },
-        {
-          "name": "price_msat",
-          "ordinal": 4,
-          "type_info": "Int64"
-        },
-        {
-          "name": "submitted",
-          "ordinal": 5,
-          "type_info": "Bool"
-        },
-        {
-          "name": "approved",
-          "ordinal": 6,
-          "type_info": "Bool"
-        },
-        {
-          "name": "created_time_ms",
-          "ordinal": 7,
-          "type_info": "Int64"
-        },
-        {
-          "name": "image_id",
-          "ordinal": 8,
-          "type_info": "Int64"
-        },
-        {
-          "name": "listing_id",
-          "ordinal": 9,
-          "type_info": "Int64"
-        },
-        {
-          "name": "image_data",
-          "ordinal": 10,
-          "type_info": "Blob"
-        },
-        {
-          "name": "is_primary",
-          "ordinal": 11,
-          "type_info": "Bool"
-        }
-      ],
-      "nullable": [
-        true,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        true,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Right": 0
-      }
-    },
-    "query": "\nselect\n listings.id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.submitted, listings.approved, listings.created_time_ms, listingimages.id as image_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary\nfrom\n listings\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nGROUP BY\n listings.id\n;"
-  },
   "e94cd0fbe6f4a8d90120733fb88081da00668901ed37ba6ca200f82dc2331aaa": {
     "describe": {
       "columns": [
@@ -614,9 +568,15 @@
           "name": "is_primary",
           "ordinal": 3,
           "type_info": "Bool"
+        },
+        {
+          "name": "public_id",
+          "ordinal": 4,
+          "type_info": "Text"
         }
       ],
       "nullable": [
+        false,
         false,
         false,
         false,

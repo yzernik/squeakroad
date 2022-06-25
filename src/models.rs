@@ -6,7 +6,6 @@ use rocket::serde::{Deserialize, Serialize};
 use rocket_db_pools::{sqlx, Connection};
 use std::result::Result;
 extern crate base64;
-use rocket::serde::uuid::Uuid;
 use sqlx::Acquire;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -60,6 +59,7 @@ pub struct FileUploadForm<'f> {
 #[serde(crate = "rocket::serde")]
 pub struct ListingImage {
     pub id: Option<i32>,
+    pub public_id: String,
     pub listing_id: i32,
     pub image_data: Vec<u8>,
     pub is_primary: bool,
@@ -94,6 +94,7 @@ pub struct ListingCard {
 #[serde(crate = "rocket::serde")]
 pub struct ListingImageDisplay {
     pub id: Option<i32>,
+    pub public_id: String,
     pub listing_id: i32,
     pub image_data_base64: String,
     pub is_primary: bool,
@@ -306,6 +307,7 @@ impl ListingImage {
         .fetch(&mut **db)
         .map_ok(|r| ListingImage {
             id: Some(r.id.try_into().unwrap()),
+            public_id: r.public_id,
             listing_id: r.listing_id as _,
             image_data: r.image_data,
             is_primary: r.is_primary,
@@ -323,6 +325,7 @@ impl ListingImage {
             .fetch_one(&mut **db)
             .map_ok(|r| ListingImage {
                 id: Some(r.id.try_into().unwrap()),
+                public_id: r.public_id,
                 listing_id: r.listing_id as _,
                 image_data: r.image_data,
                 is_primary: r.is_primary,
@@ -424,6 +427,7 @@ impl ListingDisplay {
             .iter()
             .map(|img| ListingImageDisplay {
                 id: img.id,
+                public_id: img.clone().public_id,
                 listing_id: img.listing_id,
                 image_data_base64: base64::encode(&img.image_data),
                 is_primary: img.is_primary,
@@ -450,7 +454,7 @@ impl ListingCard {
         let listing_cards =
             sqlx::query!("
 select
- listings.id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.submitted, listings.approved, listings.created_time_ms, listingimages.id as image_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary
+ listings.id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.submitted, listings.approved, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary
 from
  listings
 LEFT JOIN
@@ -476,6 +480,7 @@ GROUP BY
                 };
                 let i = r.image_id.map(|_| ListingImage {
                     id: Some(r.image_id.unwrap().try_into().unwrap()),
+                    public_id: r.public_id,
                     listing_id: r.listing_id as _,
                     image_data: r.image_data,
                     is_primary: r.is_primary,
@@ -501,6 +506,7 @@ impl ListingCardDisplay {
                 listing: card.listing.clone(),
                 image: card.image.clone().map(|image| ListingImageDisplay {
                     id: image.id,
+                    public_id: image.public_id,
                     listing_id: image.listing_id,
                     image_data_base64: base64::encode(&image.image_data),
                     is_primary: image.is_primary,

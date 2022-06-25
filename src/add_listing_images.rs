@@ -6,6 +6,7 @@ use rocket::form::Form;
 use rocket::fs::TempFile;
 use rocket::request::FlashMessage;
 use rocket::response::{Flash, Redirect};
+use rocket::serde::uuid::Uuid;
 use rocket::serde::Serialize;
 use rocket_auth::{AdminUser, User};
 use rocket_db_pools::Connection;
@@ -134,6 +135,7 @@ async fn upload_image(
 
         let listing_image = ListingImage {
             id: None,
+            public_id: Uuid::new_v4().to_string(),
             listing_id: id,
             image_data: image_bytes,
             is_primary: false,

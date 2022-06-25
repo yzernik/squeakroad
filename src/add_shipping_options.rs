@@ -139,11 +139,9 @@ async fn add_shipping_option(
         Err("Maximum number of shipping options already exist.".to_string())
         // TODO: validate shipping option here.
     } else {
-        let my_uuid_str = Uuid::new_v4().to_string();
-
         let shipping_option = ShippingOption {
             id: None,
-            public_id: my_uuid_str,
+            public_id: Uuid::new_v4().to_string(),
             listing_id: id,
             title: title,
             description: description,
