@@ -238,7 +238,7 @@ async fn delete_image_with_public_id(
 #[put("/<id>/set_primary/<image_id>")]
 async fn set_primary(
     id: i32,
-    image_id: i32,
+    image_id: &str,
     mut db: Connection<Db>,
     user: User,
     admin_user: Option<AdminUser>,
@@ -260,7 +260,7 @@ async fn set_primary(
 
 async fn mark_as_primary(
     listing_id: i32,
-    image_id: i32,
+    image_id: &str,
     db: &mut Connection<Db>,
     user: User,
     _admin_user: Option<AdminUser>,
@@ -268,7 +268,7 @@ async fn mark_as_primary(
     let listing = Listing::single(&mut *db, listing_id)
         .await
         .map_err(|_| "failed to get listing")?;
-    let listing_image = ListingImage::single(&mut *db, image_id)
+    let listing_image = ListingImage::single_by_public_id(&mut *db, image_id)
         .await
         .map_err(|_| "failed to get listing")?;
 
@@ -279,7 +279,8 @@ async fn mark_as_primary(
     } else if listing.user_id != user.id() {
         Err("Listing belongs to a different user.".to_string())
     } else {
-        match ListingImage::mark_image_as_primary(&mut *db, listing_id, image_id).await {
+        match ListingImage::mark_image_as_primary_by_public_id(&mut *db, listing_id, image_id).await
+        {
             Ok(num_marked) => {
                 if num_marked > 0 {
                     Ok(())
