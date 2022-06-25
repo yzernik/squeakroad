@@ -564,21 +564,21 @@ impl ShippingOption {
         Ok(shipping_options)
     }
 
-    pub async fn single(db: &mut Connection<Db>, id: i32) -> Result<ShippingOption, sqlx::Error> {
-        let shipping_option = sqlx::query!("select * from shippingoptions WHERE id = ?;", id)
-            .fetch_one(&mut **db)
-            .map_ok(|r| ShippingOption {
-                id: Some(r.id.try_into().unwrap()),
-                public_id: r.public_id,
-                listing_id: r.listing_id as _,
-                title: r.title,
-                description: r.description,
-                price_msat: r.price_msat as _,
-            })
-            .await?;
+    // pub async fn single(db: &mut Connection<Db>, id: i32) -> Result<ShippingOption, sqlx::Error> {
+    //     let shipping_option = sqlx::query!("select * from shippingoptions WHERE id = ?;", id)
+    //         .fetch_one(&mut **db)
+    //         .map_ok(|r| ShippingOption {
+    //             id: Some(r.id.try_into().unwrap()),
+    //             public_id: r.public_id,
+    //             listing_id: r.listing_id as _,
+    //             title: r.title,
+    //             description: r.description,
+    //             price_msat: r.price_msat as _,
+    //         })
+    //         .await?;
 
-        Ok(shipping_option)
-    }
+    //     Ok(shipping_option)
+    // }
 
     pub async fn single_by_public_id(
         db: &mut Connection<Db>,
@@ -602,14 +602,14 @@ impl ShippingOption {
         Ok(shipping_option)
     }
 
-    /// Returns the number of affected rows: 1.
-    pub async fn delete_with_id(id: i32, db: &mut Connection<Db>) -> Result<usize, sqlx::Error> {
-        let delete_result = sqlx::query!("DELETE FROM shippingoptions WHERE id = ?", id)
-            .execute(&mut **db)
-            .await?;
+    // /// Returns the number of affected rows: 1.
+    // pub async fn delete_with_id(id: i32, db: &mut Connection<Db>) -> Result<usize, sqlx::Error> {
+    //     let delete_result = sqlx::query!("DELETE FROM shippingoptions WHERE id = ?", id)
+    //         .execute(&mut **db)
+    //         .await?;
 
-        Ok(delete_result.rows_affected() as _)
-    }
+    //     Ok(delete_result.rows_affected() as _)
+    // }
 
     /// Returns the number of affected rows: 1.
     pub async fn delete_with_public_id(
