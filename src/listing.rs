@@ -34,7 +34,7 @@ impl Context {
     pub async fn raw(
         mut db: Connection<Db>,
         listing_id: i32,
-        shipping_option_id: Option<i32>,
+        shipping_option_id: Option<&str>,
         flash: Option<(String, String)>,
         user: Option<User>,
         admin_user: Option<AdminUser>,
@@ -42,7 +42,7 @@ impl Context {
         let listing_display = ListingDisplay::single(&mut db, listing_id).await;
         let maybe_shipping_option = match shipping_option_id {
             Some(sid) => {
-                let shipping_option = ShippingOption::single(&mut db, sid).await;
+                let shipping_option = ShippingOption::single_by_public_id(&mut db, sid).await;
                 shipping_option.ok()
             }
             None => None,
@@ -102,7 +102,7 @@ impl Context {
 async fn index(
     flash: Option<FlashMessage<'_>>,
     id: i32,
-    shipping_option_id: Option<i32>,
+    shipping_option_id: Option<&str>,
     db: Connection<Db>,
     user: Option<User>,
     admin_user: Option<AdminUser>,

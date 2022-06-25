@@ -6,6 +6,7 @@ use rocket::serde::{Deserialize, Serialize};
 use rocket_db_pools::{sqlx, Connection};
 use std::result::Result;
 extern crate base64;
+use rocket::serde::uuid::Uuid;
 use sqlx::Acquire;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -102,6 +103,7 @@ pub struct ListingImageDisplay {
 #[serde(crate = "rocket::serde")]
 pub struct ShippingOption {
     pub id: Option<i32>,
+    pub public_id: String,
     pub listing_id: i32,
     pub title: String,
     pub description: String,
@@ -516,10 +518,14 @@ impl ShippingOption {
         shipping_option: ShippingOption,
         db: &mut Connection<Db>,
     ) -> Result<usize, sqlx::Error> {
+        // let my_uuid_str = Uuid::new_v4().to_string();
         let price_msat: i64 = shipping_option.price_msat as _;
 
+        println!("inserting shipping option: {:?}", shipping_option);
+
         let insert_result = sqlx::query!(
-            "INSERT INTO shippingoptions (listing_id, title, description, price_msat) VALUES (?, ?, ?, ?)",
+            "INSERT INTO shippingoptions (public_id, listing_id, title, description, price_msat) VALUES (?, ?, ?, ?, ?)",
+            shipping_option.public_id,
             shipping_option.listing_id,
             shipping_option.title,
             shipping_option.description,
@@ -528,7 +534,7 @@ impl ShippingOption {
         .execute(&mut **db)
         .await?;
 
-        println!("{:?}", insert_result);
+        println!("insert_result: {:?}", insert_result);
 
         Ok(insert_result.rows_affected() as _)
     }
@@ -544,6 +550,7 @@ impl ShippingOption {
         .fetch(&mut **db)
         .map_ok(|r| ShippingOption {
             id: Some(r.id.try_into().unwrap()),
+            public_id: r.public_id,
             listing_id: r.listing_id as _,
             title: r.title,
             description: r.description,
@@ -562,12 +569,35 @@ impl ShippingOption {
             .fetch_one(&mut **db)
             .map_ok(|r| ShippingOption {
                 id: Some(r.id.try_into().unwrap()),
+                public_id: r.public_id,
                 listing_id: r.listing_id as _,
                 title: r.title,
                 description: r.description,
                 price_msat: r.price_msat as _,
             })
             .await?;
+
+        Ok(shipping_option)
+    }
+
+    pub async fn single_by_public_id(
+        db: &mut Connection<Db>,
+        public_id: &str,
+    ) -> Result<ShippingOption, sqlx::Error> {
+        let shipping_option = sqlx::query!(
+            "select * from shippingoptions WHERE public_id = ?;",
+            public_id,
+        )
+        .fetch_one(&mut **db)
+        .map_ok(|r| ShippingOption {
+            id: Some(r.id.unwrap().try_into().unwrap()),
+            public_id: r.public_id,
+            listing_id: r.listing_id as _,
+            title: r.title,
+            description: r.description,
+            price_msat: r.price_msat as _,
+        })
+        .await?;
 
         Ok(shipping_option)
     }

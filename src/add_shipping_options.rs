@@ -4,6 +4,7 @@ use rocket::fairing::AdHoc;
 use rocket::form::Form;
 use rocket::request::FlashMessage;
 use rocket::response::{Flash, Redirect};
+use rocket::serde::uuid::Uuid;
 use rocket::serde::Serialize;
 use rocket_auth::{AdminUser, User};
 use rocket_db_pools::Connection;
@@ -138,8 +139,11 @@ async fn add_shipping_option(
         Err("Maximum number of shipping options already exist.".to_string())
         // TODO: validate shipping option here.
     } else {
+        let my_uuid_str = Uuid::new_v4().to_string();
+
         let shipping_option = ShippingOption {
             id: None,
+            public_id: my_uuid_str,
             listing_id: id,
             title: title,
             description: description,
