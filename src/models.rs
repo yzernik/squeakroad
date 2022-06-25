@@ -126,91 +126,6 @@ pub struct RocketAuthUser {
     pub username: String,
 }
 
-// #[derive(Debug, FromForm)]
-// pub struct InitialListingInfo {
-//     pub title: String,
-//     pub description: String,
-//     pub price_msat: u64,
-//     pub created_time_ms: u64,
-// }
-
-// impl Task {
-//     pub async fn all(mut db: Connection<Db>) -> Result<Vec<Task>, sqlx::Error> {
-//         let tasks = sqlx::query!("select * from tasks;")
-//             .fetch(&mut *db)
-//             .map_ok(|r| Task {
-//                 id: Some(r.id.try_into().unwrap()),
-//                 description: r.description,
-//                 submitted: r.submitted,
-//             })
-//             .try_collect::<Vec<_>>()
-//             .await?;
-
-//         println!("{}", tasks.len());
-//         println!("{:?}", tasks);
-
-//         Ok(tasks)
-//     }
-
-//     /// Returns the number of affected rows: 1.
-//     pub async fn insert(todo: Todo, mut db: Connection<Db>) -> Result<usize, sqlx::Error> {
-//         let insert_result = sqlx::query!(
-//             "INSERT INTO tasks (description, submitted) VALUES (?, ?)",
-//             todo.description,
-//             false,
-//         )
-//         .execute(&mut *db)
-//         .await?;
-
-//         println!("{:?}", insert_result);
-
-//         Ok(insert_result.rows_affected() as _)
-//     }
-
-//     /// Returns the number of affected rows: 1.
-//     pub async fn toggle_with_id(id: i32, db: &mut Connection<Db>) -> Result<usize, sqlx::Error> {
-//         let mut tx = db.begin().await?;
-
-//         let get_task_submitted = sqlx::query!("select * from tasks WHERE id = ?;", id)
-//             .fetch_one(&mut tx)
-//             .map_ok(|r| r.submitted)
-//             // .try_collect::<bool>()
-//             .await?;
-
-//         let new_submitted = !get_task_submitted;
-
-//         let update_result = sqlx::query!(
-//             "UPDATE tasks SET submitted = ? WHERE id = ?",
-//             // !task.submitted,
-//             new_submitted,
-//             id,
-//         )
-//         .execute(&mut tx)
-//         .await?;
-
-//         tx.commit().await?;
-
-//         println!("{:?}", update_result);
-
-//         Ok(update_result.rows_affected() as _)
-//     }
-
-//     /// Returns the number of affected rows: 1.
-//     pub async fn delete_with_id(id: i32, db: &mut Connection<Db>) -> Result<usize, sqlx::Error> {
-//         let delete_result = sqlx::query!("DELETE FROM tasks WHERE id = ?", id)
-//             .execute(&mut **db)
-//             .await?;
-
-//         Ok(delete_result.rows_affected() as _)
-//     }
-
-//     // /// Returns the number of affected rows.
-//     // #[cfg(test)]
-//     // pub async fn delete_all(conn: &DbConn) -> QueryResult<usize> {
-//     //     conn.run(|c| diesel::delete(all_tasks).execute(c)).await
-//     // }
-// }
-
 impl Listing {
     pub async fn all(db: &mut Connection<Db>) -> Result<Vec<Listing>, sqlx::Error> {
         let listings = sqlx::query!("select * from listings;")
@@ -325,21 +240,6 @@ impl ListingImage {
         Ok(listing_images)
     }
 
-    // pub async fn single(db: &mut Connection<Db>, id: i32) -> Result<ListingImage, sqlx::Error> {
-    //     let listing_image = sqlx::query!("select * from listingimages WHERE id = ?;", id)
-    //         .fetch_one(&mut **db)
-    //         .map_ok(|r| ListingImage {
-    //             id: Some(r.id.try_into().unwrap()),
-    //             public_id: r.public_id,
-    //             listing_id: r.listing_id as _,
-    //             image_data: r.image_data,
-    //             is_primary: r.is_primary,
-    //         })
-    //         .await?;
-
-    //     Ok(listing_image)
-    // }
-
     pub async fn single_by_public_id(
         db: &mut Connection<Db>,
         public_id: &str,
@@ -389,15 +289,6 @@ impl ListingImage {
 
         Ok(update_result.rows_affected() as _)
     }
-
-    // /// Returns the number of affected rows: 1.
-    // pub async fn delete_with_id(id: i32, db: &mut Connection<Db>) -> Result<usize, sqlx::Error> {
-    //     let delete_result = sqlx::query!("DELETE FROM listingimages WHERE id = ?", id)
-    //         .execute(&mut **db)
-    //         .await?;
-
-    //     Ok(delete_result.rows_affected() as _)
-    // }
 
     /// Returns the number of affected rows: 1.
     pub async fn delete_with_public_id(
@@ -610,22 +501,6 @@ impl ShippingOption {
         Ok(shipping_options)
     }
 
-    // pub async fn single(db: &mut Connection<Db>, id: i32) -> Result<ShippingOption, sqlx::Error> {
-    //     let shipping_option = sqlx::query!("select * from shippingoptions WHERE id = ?;", id)
-    //         .fetch_one(&mut **db)
-    //         .map_ok(|r| ShippingOption {
-    //             id: Some(r.id.try_into().unwrap()),
-    //             public_id: r.public_id,
-    //             listing_id: r.listing_id as _,
-    //             title: r.title,
-    //             description: r.description,
-    //             price_msat: r.price_msat as _,
-    //         })
-    //         .await?;
-
-    //     Ok(shipping_option)
-    // }
-
     pub async fn single_by_public_id(
         db: &mut Connection<Db>,
         public_id: &str,
@@ -647,15 +522,6 @@ impl ShippingOption {
 
         Ok(shipping_option)
     }
-
-    // /// Returns the number of affected rows: 1.
-    // pub async fn delete_with_id(id: i32, db: &mut Connection<Db>) -> Result<usize, sqlx::Error> {
-    //     let delete_result = sqlx::query!("DELETE FROM shippingoptions WHERE id = ?", id)
-    //         .execute(&mut **db)
-    //         .await?;
-
-    //     Ok(delete_result.rows_affected() as _)
-    // }
 
     /// Returns the number of affected rows: 1.
     pub async fn delete_with_public_id(
