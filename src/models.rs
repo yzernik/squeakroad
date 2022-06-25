@@ -361,32 +361,6 @@ impl RocketAuthUser {
 }
 
 impl ListingDisplay {
-    pub async fn single(db: &mut Connection<Db>, id: i32) -> Result<ListingDisplay, sqlx::Error> {
-        let listing = Listing::single(&mut *db, id).await?;
-        let images = ListingImage::all_for_listing(&mut *db, id).await?;
-        let image_displays = images
-            .iter()
-            .map(|img| ListingImageDisplay {
-                id: img.id,
-                public_id: img.clone().public_id,
-                listing_id: img.listing_id,
-                image_data_base64: base64::encode(&img.image_data),
-                is_primary: img.is_primary,
-            })
-            .collect::<Vec<_>>();
-        let shipping_options = ShippingOption::all_for_listing(&mut *db, id).await?;
-        let rocket_auth_user = RocketAuthUser::single(&mut *db, listing.user_id).await?;
-
-        let listing_display = ListingDisplay {
-            listing: listing,
-            images: image_displays,
-            shipping_options: shipping_options,
-            user: rocket_auth_user,
-        };
-
-        Ok(listing_display)
-    }
-
     pub async fn single_by_public_id(
         db: &mut Connection<Db>,
         public_id: &str,
