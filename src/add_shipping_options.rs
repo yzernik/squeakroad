@@ -22,7 +22,7 @@ struct Context {
 impl Context {
     pub async fn err<M: std::fmt::Display>(
         _db: Connection<Db>,
-        _listing_id: i32,
+        _listing_id: &str,
         msg: M,
         user: User,
         admin_user: Option<AdminUser>,
@@ -38,12 +38,12 @@ impl Context {
 
     pub async fn raw(
         mut db: Connection<Db>,
-        listing_id: i32,
+        listing_id: &str,
         flash: Option<(String, String)>,
         user: User,
         admin_user: Option<AdminUser>,
     ) -> Context {
-        match ListingDisplay::single(&mut db, listing_id).await {
+        match ListingDisplay::single_by_public_id(&mut db, listing_id).await {
             Ok(listing_display) => {
                 if listing_display.listing.user_id == user.id() {
                     println!("{:?}", listing_display.shipping_options);
@@ -78,7 +78,7 @@ impl Context {
 
 #[post("/<id>/add_shipping_option", data = "<shipping_option_form>")]
 async fn new(
-    id: i32,
+    id: &str,
     shipping_option_form: Form<ShippingOptionInfo>,
     mut db: Connection<Db>,
     user: User,
@@ -116,7 +116,7 @@ async fn new(
 }
 
 async fn add_shipping_option(
-    id: i32,
+    id: &str,
     title: String,
     description: String,
     price_msat: u64,
@@ -124,10 +124,10 @@ async fn add_shipping_option(
     user: User,
     _admin_user: Option<AdminUser>,
 ) -> Result<(), String> {
-    let listing = Listing::single(db, id)
+    let listing = Listing::single_by_public_id(db, id)
         .await
         .map_err(|_| "failed to get listing")?;
-    let shipping_options = ShippingOption::all_for_listing(db, id)
+    let shipping_options = ShippingOption::all_for_listing(db, listing.id.unwrap())
         .await
         .map_err(|_| "failed to get shipping options for listing")?;
 
@@ -142,7 +142,7 @@ async fn add_shipping_option(
         let shipping_option = ShippingOption {
             id: None,
             public_id: Uuid::new_v4().to_string(),
-            listing_id: id,
+            listing_id: listing.id.unwrap(),
             title: title,
             description: description,
             price_msat: price_msat,
@@ -158,7 +158,7 @@ async fn add_shipping_option(
 
 #[delete("/<id>/add_shipping_option/<shipping_option_id>")]
 async fn delete(
-    id: i32,
+    id: &str,
     shipping_option_id: &str,
     mut db: Connection<Db>,
     user: User,
@@ -195,13 +195,13 @@ async fn delete(
 }
 
 async fn delete_shipping_option(
-    listing_id: i32,
+    listing_id: &str,
     shipping_option_id: &str,
     db: &mut Connection<Db>,
     user: User,
     _admin_user: Option<AdminUser>,
 ) -> Result<(), String> {
-    let listing = Listing::single(&mut *db, listing_id)
+    let listing = Listing::single_by_public_id(&mut *db, listing_id)
         .await
         .map_err(|_| "failed to get listing")?;
     let shipping_option = ShippingOption::single_by_public_id(&mut *db, shipping_option_id)
@@ -231,7 +231,7 @@ async fn delete_shipping_option(
 #[get("/<id>")]
 async fn index(
     flash: Option<FlashMessage<'_>>,
-    id: i32,
+    id: &str,
     db: Connection<Db>,
     user: User,
     admin_user: Option<AdminUser>,
