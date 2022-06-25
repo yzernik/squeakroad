@@ -37,7 +37,7 @@
         <input type="hidden" name="_method" value="put" />
         <button class="link" type="submit">set primary</button>
       </form>
-      <form class="inline" action="/add_listing_images/{{listing_display.listing.id}}/add_image/{{image.id}}" method="post">
+      <form class="inline" action="/add_listing_images/{{listing_display.listing.id}}/add_image/{{image.public_id}}" method="post">
         <input type="hidden" name="_method" value="delete" />
         <button class="primary small" type="submit">delete</button>
       </form>

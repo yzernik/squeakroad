@@ -307,7 +307,7 @@ impl ListingImage {
         )
         .fetch(&mut **db)
         .map_ok(|r| ListingImage {
-            id: Some(r.id.try_into().unwrap()),
+            id: Some(r.id as _),
             public_id: r.public_id,
             listing_id: r.listing_id as _,
             image_data: r.image_data,
@@ -332,6 +332,27 @@ impl ListingImage {
                 is_primary: r.is_primary,
             })
             .await?;
+
+        Ok(listing_image)
+    }
+
+    pub async fn single_by_public_id(
+        db: &mut Connection<Db>,
+        public_id: &str,
+    ) -> Result<ListingImage, sqlx::Error> {
+        let listing_image = sqlx::query!(
+            "select * from listingimages WHERE public_id = ?;",
+            public_id
+        )
+        .fetch_one(&mut **db)
+        .map_ok(|r| ListingImage {
+            id: r.id.map(|n| n as _),
+            public_id: r.public_id,
+            listing_id: r.listing_id as _,
+            image_data: r.image_data,
+            is_primary: r.is_primary,
+        })
+        .await?;
 
         Ok(listing_image)
     }
@@ -370,6 +391,19 @@ impl ListingImage {
         let delete_result = sqlx::query!("DELETE FROM listingimages WHERE id = ?", id)
             .execute(&mut **db)
             .await?;
+
+        Ok(delete_result.rows_affected() as _)
+    }
+
+    /// Returns the number of affected rows: 1.
+    pub async fn delete_with_public_id(
+        public_id: &str,
+        db: &mut Connection<Db>,
+    ) -> Result<usize, sqlx::Error> {
+        let delete_result =
+            sqlx::query!("DELETE FROM listingimages WHERE public_id = ?", public_id)
+                .execute(&mut **db)
+                .await?;
 
         Ok(delete_result.rows_affected() as _)
     }
@@ -597,7 +631,7 @@ impl ShippingOption {
         )
         .fetch_one(&mut **db)
         .map_ok(|r| ShippingOption {
-            id: Some(r.id.unwrap().try_into().unwrap()),
+            id: r.id.map(|n| n as _),
             public_id: r.public_id,
             listing_id: r.listing_id as _,
             title: r.title,

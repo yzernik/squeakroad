@@ -546,6 +546,16 @@
     },
     "query": "select * from listings WHERE id = ?;"
   },
+  "cfa7d7cc21275c9db2ffc6d6c6fe7f1bfdce31858ababbde8407e1622cc63709": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "DELETE FROM listingimages WHERE public_id = ?"
+  },
   "e94cd0fbe6f4a8d90120733fb88081da00668901ed37ba6ca200f82dc2331aaa": {
     "describe": {
       "columns": [
@@ -587,6 +597,48 @@
       }
     },
     "query": "select * from listingimages WHERE listing_id = ? ORDER BY listingimages.is_primary DESC;"
+  },
+  "ed5a85251b933b1a71338d447e32bb5e275d767f7eb1894f5c31beef84a16505": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "listing_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        },
+        {
+          "name": "image_data",
+          "ordinal": 2,
+          "type_info": "Blob"
+        },
+        {
+          "name": "is_primary",
+          "ordinal": 3,
+          "type_info": "Bool"
+        },
+        {
+          "name": "public_id",
+          "ordinal": 4,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "select * from listingimages WHERE public_id = ?;"
   },
   "f3c7d0e13ccbd741995710b1f499ac389e10eedaa31fdcba90c411a9f2472323": {
     "describe": {
