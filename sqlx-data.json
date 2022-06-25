@@ -206,6 +206,16 @@
     },
     "query": "DELETE FROM shippingoptions WHERE id = ?"
   },
+  "23f4121fdf237d52eda133d4169eab815dc827b57b88f05d3b97554fd286b393": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "DELETE FROM shippingoptions WHERE public_id = ?"
+  },
   "261ae4d53a3d68662ee430409620d00cee4a835d5ea7b31a825b12e42213913f": {
     "describe": {
       "columns": [],

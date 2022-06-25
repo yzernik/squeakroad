@@ -161,7 +161,7 @@ async fn add_shipping_option(
 #[delete("/<id>/add_shipping_option/<shipping_option_id>")]
 async fn delete(
     id: i32,
-    shipping_option_id: i32,
+    shipping_option_id: &str,
     mut db: Connection<Db>,
     user: User,
     admin_user: Option<AdminUser>,
@@ -198,7 +198,7 @@ async fn delete(
 
 async fn delete_shipping_option(
     listing_id: i32,
-    shipping_option_id: i32,
+    shipping_option_id: &str,
     db: &mut Connection<Db>,
     user: User,
     _admin_user: Option<AdminUser>,
@@ -206,7 +206,7 @@ async fn delete_shipping_option(
     let listing = Listing::single(&mut *db, listing_id)
         .await
         .map_err(|_| "failed to get listing")?;
-    let shipping_option = ShippingOption::single(&mut *db, shipping_option_id)
+    let shipping_option = ShippingOption::single_by_public_id(&mut *db, shipping_option_id)
         .await
         .map_err(|_| "failed to get shipping option")?;
 
@@ -217,7 +217,7 @@ async fn delete_shipping_option(
     } else if listing.user_id != user.id() {
         Err("Listing belongs to a different user.".to_string())
     } else {
-        match ShippingOption::delete_with_id(shipping_option_id, &mut *db).await {
+        match ShippingOption::delete_with_public_id(shipping_option_id, &mut *db).await {
             Ok(num_deleted) => {
                 if num_deleted > 0 {
                     Ok(())
