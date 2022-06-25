@@ -201,40 +201,6 @@ async fn delete(
     // }
 }
 
-async fn delete_image(
-    listing_id: i32,
-    image_id: i32,
-    db: &mut Connection<Db>,
-    user: User,
-    _admin_user: Option<AdminUser>,
-) -> Result<(), String> {
-    let listing = Listing::single(&mut *db, listing_id)
-        .await
-        .map_err(|_| "failed to get listing")?;
-    let listing_image = ListingImage::single(&mut *db, image_id)
-        .await
-        .map_err(|_| "failed to get listing")?;
-
-    if listing_image.listing_id != listing.id.unwrap() {
-        Err("Invalid listing id given.".to_string())
-    } else if listing.submitted {
-        Err("Listing is already submitted.".to_string())
-    } else if listing.user_id != user.id() {
-        Err("Listing belongs to a different user.".to_string())
-    } else {
-        match ListingImage::delete_with_id(image_id, &mut *db).await {
-            Ok(num_deleted) => {
-                if num_deleted > 0 {
-                    Ok(())
-                } else {
-                    Err("No images deleted.".to_string())
-                }
-            }
-            Err(_) => Err("failed to delete image.".to_string()),
-        }
-    }
-}
-
 async fn delete_image_with_public_id(
     listing_id: i32,
     image_id: &str,
