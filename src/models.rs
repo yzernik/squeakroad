@@ -34,6 +34,7 @@ pub struct Post {
 #[serde(crate = "rocket::serde")]
 pub struct Listing {
     pub id: Option<i32>,
+    pub public_id: String,
     pub user_id: i32,
     pub title: String,
     pub description: String,
@@ -216,6 +217,7 @@ impl Listing {
             .fetch(&mut **db)
             .map_ok(|r| Listing {
                 id: Some(r.id.try_into().unwrap()),
+                public_id: r.public_id as _,
                 user_id: r.user_id as _,
                 title: r.title,
                 description: r.description,
@@ -239,7 +241,8 @@ impl Listing {
         let created_time_ms: i64 = listing.created_time_ms as _;
 
         let insert_result = sqlx::query!(
-            "INSERT INTO listings (user_id, title, description, price_msat, submitted, approved, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO listings (public_id, user_id, title, description, price_msat, submitted, approved, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            listing.public_id,
             listing.user_id,
             listing.title,
             listing.description,
@@ -261,6 +264,7 @@ impl Listing {
             .fetch_one(&mut **db)
             .map_ok(|r| Listing {
                 id: Some(r.id.try_into().unwrap()),
+                public_id: r.public_id as _,
                 user_id: r.user_id as _,
                 title: r.title,
                 description: r.description,
@@ -489,7 +493,7 @@ impl ListingCard {
         let listing_cards =
             sqlx::query!("
 select
- listings.id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.submitted, listings.approved, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary
+ listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.submitted, listings.approved, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary
 from
  listings
 LEFT JOIN
@@ -505,6 +509,7 @@ GROUP BY
             .map_ok(|r| {
                 let l = Listing {
                     id: Some(r.id.unwrap().try_into().unwrap()),
+                    public_id: r.public_id as _,
                     user_id: r.user_id as _,
                     title: r.title,
                     description: r.description,
@@ -515,7 +520,7 @@ GROUP BY
                 };
                 let i = r.image_id.map(|_| ListingImage {
                     id: Some(r.image_id.unwrap().try_into().unwrap()),
-                    public_id: r.public_id,
+                    public_id: r.image_public_id,
                     listing_id: r.listing_id as _,
                     image_data: r.image_data,
                     is_primary: r.is_primary,

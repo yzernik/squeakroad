@@ -4,6 +4,7 @@ use rocket::fairing::AdHoc;
 use rocket::form::Form;
 use rocket::request::FlashMessage;
 use rocket::response::{Flash, Redirect};
+use rocket::serde::uuid::Uuid;
 use rocket::serde::Serialize;
 use rocket_auth::{AdminUser, User};
 use rocket_db_pools::Connection;
@@ -80,6 +81,7 @@ async fn create_listing(
 
     let listing = Listing {
         id: None,
+        public_id: Uuid::new_v4().to_string(),
         user_id: user.id(),
         title: listing_info.title,
         description: listing_info.description,
