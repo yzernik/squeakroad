@@ -149,20 +149,6 @@ async fn upload_image(
     }
 }
 
-// #[put("/<id>")]
-// async fn toggle(id: i32, mut db: Connection<Db>, user: User) -> Result<Redirect, Template> {
-//     match Task::toggle_with_id(id, &mut db).await {
-//         Ok(_) => Ok(Redirect::to("/")),
-//         Err(e) => {
-//             error_!("DB toggle({}) error: {}", id, e);
-//             Err(Template::render(
-//                 "index",
-//                 Context::err(db, "Failed to toggle task.", Some(user)).await,
-//             ))
-//         }
-//     }
-// }
-
 #[delete("/<id>/add_image/<image_id>")]
 async fn delete(
     id: &str,
