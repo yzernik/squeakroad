@@ -17,19 +17,6 @@ pub struct Post {
     pub text: String,
 }
 
-// #[derive(Serialize, Debug, Clone)]
-// #[serde(crate = "rocket::serde")]
-// pub struct Task {
-//     pub id: Option<i32>,
-//     pub description: String,
-//     pub submitted: bool,
-// }
-
-// #[derive(Debug, FromForm)]
-// pub struct Todo {
-//     pub description: String,
-// }
-
 #[derive(Serialize, Debug, Clone)]
 #[serde(crate = "rocket::serde")]
 pub struct Listing {
