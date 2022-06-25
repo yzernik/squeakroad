@@ -181,6 +181,30 @@ impl Listing {
 
         Ok(listing)
     }
+
+    pub async fn single_by_public_id(
+        db: &mut Connection<Db>,
+        public_id: &str,
+    ) -> Result<Listing, sqlx::Error> {
+        let listing = sqlx::query!("select * from listings WHERE public_id = ?;", public_id)
+            .fetch_one(&mut **db)
+            .map_ok(|r| Listing {
+                id: r.id.map(|n| n as _),
+                public_id: r.public_id as _,
+                user_id: r.user_id as _,
+                title: r.title,
+                description: r.description,
+                price_msat: r.price_msat as _,
+                submitted: r.submitted,
+                approved: r.approved,
+                created_time_ms: r.created_time_ms as _,
+            })
+            .await?;
+
+        println!("{:?}", listing);
+
+        Ok(listing)
+    }
 }
 
 impl ListingImage {
