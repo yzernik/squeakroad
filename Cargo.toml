@@ -5,6 +5,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
+# rocket = { version = "0.5.0-rc.2", features = ["json", "uuid"] }
 rocket = { git = "https://github.com/yzernik/Rocket", branch = "upgrade_sqlx_v_0_6", features = ["json", "uuid"] }
 serde_json = "1.0.59"
 base64 = "0.13.0"
