@@ -29,9 +29,9 @@ impl AdminSettings {
 #[serde(crate = "rocket::serde")]
 struct Context {
     flash: Option<(String, String)>,
-    admin_settings: Option<AdminSettings>,
     user: User,
     admin_user: Option<AdminUser>,
+    admin_settings: Option<AdminSettings>,
 }
 
 impl Context {
@@ -44,9 +44,9 @@ impl Context {
         // TODO: get the listing display and put in context.
         Context {
             flash: Some(("error".into(), msg.to_string())),
-            admin_settings: None,
             user: user,
             admin_user,
+            admin_settings: None,
         }
     }
 
@@ -68,9 +68,9 @@ impl Context {
                 error_!("DB AdminSettings::single() error: {}", e);
                 Context {
                     flash: Some(("error".into(), "Fail to access database.".into())),
-                    admin_settings: None,
                     user: user,
                     admin_user: admin_user,
+                    admin_settings: None,
                 }
             }
         }
