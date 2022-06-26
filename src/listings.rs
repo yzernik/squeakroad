@@ -101,10 +101,10 @@ async fn index(
     admin_user: Option<AdminUser>,
 ) -> Result<Template, NotFound<String>> {
     let flash = flash.map(FlashMessage::into_inner);
-    match Context::raw(flash, db, user, admin_user).await {
-        Ok(ctx) => Ok(Template::render("listingsindex", ctx)),
-        Err(e) => Err(NotFound(e.to_string())),
-    }
+    Ok(Template::render(
+        "listingsindex",
+        Context::raw(flash, db, user, admin_user).await,
+    ))
 }
 
 pub fn listings_stage() -> AdHoc {
