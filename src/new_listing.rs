@@ -1,4 +1,5 @@
 use crate::db::Db;
+use crate::models::AdminSettings;
 use crate::models::{InitialListingInfo, Listing};
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
@@ -17,31 +18,42 @@ struct Context {
     flash: Option<(String, String)>,
     user: Option<User>,
     admin_user: Option<AdminUser>,
+    admin_settings: Option<AdminSettings>,
 }
 
 impl Context {
     pub async fn err<M: std::fmt::Display>(
+        mut db: Connection<Db>,
         msg: M,
         user: Option<User>,
         admin_user: Option<AdminUser>,
-    ) -> Context {
-        Context {
+    ) -> Result<Context, String> {
+        let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
+            .await
+            .map_err(|_| "failed to update market name.")?;
+        Ok(Context {
             flash: Some(("error".into(), msg.to_string())),
             user,
             admin_user,
-        }
+            admin_settings: Some(admin_settings),
+        })
     }
 
     pub async fn raw(
         flash: Option<(String, String)>,
+        mut db: Connection<Db>,
         user: Option<User>,
         admin_user: Option<AdminUser>,
-    ) -> Context {
-        Context {
+    ) -> Result<Context, String> {
+        let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
+            .await
+            .map_err(|_| "failed to update market name.")?;
+        Ok(Context {
             flash,
             user,
             admin_user,
-        }
+            admin_settings: Some(admin_settings),
+        })
     }
 }
 
@@ -63,7 +75,7 @@ async fn new(
             error_!("DB insertion error: {}", e);
             Err(Template::render(
                 "newlisting",
-                Context::err(e, Some(user), admin_user).await,
+                Context::err(db, e, Some(user), admin_user).await,
             ))
         }
     }
@@ -148,14 +160,14 @@ async fn create_listing(
 #[get("/")]
 async fn index(
     flash: Option<FlashMessage<'_>>,
-    _db: Connection<Db>,
+    db: Connection<Db>,
     user: User,
     admin_user: Option<AdminUser>,
 ) -> Template {
     let flash = flash.map(FlashMessage::into_inner);
     Template::render(
         "newlisting",
-        Context::raw(flash, Some(user), admin_user).await,
+        Context::raw(flash, db, Some(user), admin_user).await,
     )
 }
 
