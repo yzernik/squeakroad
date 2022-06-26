@@ -26,6 +26,7 @@ pub struct Listing {
     pub title: String,
     pub description: String,
     pub price_msat: u64,
+    pub quantity: u32,
     pub submitted: bool,
     pub approved: bool,
     pub removed: bool,
@@ -37,6 +38,7 @@ pub struct InitialListingInfo {
     pub title: String,
     pub description: String,
     pub price_sat: u64,
+    pub quantity: u32,
 }
 
 #[derive(FromForm)]
@@ -125,6 +127,7 @@ impl Listing {
                 title: r.title,
                 description: r.description,
                 price_msat: r.price_msat as _,
+                quantity: r.quantity as _,
                 submitted: r.submitted,
                 approved: r.approved,
                 removed: r.removed,
@@ -145,12 +148,13 @@ impl Listing {
         let created_time_ms: i64 = listing.created_time_ms as _;
 
         let insert_result = sqlx::query!(
-            "INSERT INTO listings (public_id, user_id, title, description, price_msat, submitted, approved, removed, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO listings (public_id, user_id, title, description, price_msat, quantity, submitted, approved, removed, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             listing.public_id,
             listing.user_id,
             listing.title,
             listing.description,
             price_msat,
+            listing.quantity,
             listing.submitted,
             listing.approved,
             listing.removed,
@@ -174,6 +178,7 @@ impl Listing {
                 title: r.title,
                 description: r.description,
                 price_msat: r.price_msat as _,
+                quantity: r.quantity as _,
                 submitted: r.submitted,
                 approved: r.approved,
                 removed: r.removed,
@@ -199,6 +204,7 @@ impl Listing {
                 title: r.title,
                 description: r.description,
                 price_msat: r.price_msat as _,
+                quantity: r.quantity as _,
                 submitted: r.submitted,
                 approved: r.approved,
                 removed: r.removed,
@@ -404,7 +410,7 @@ impl ListingCard {
         let listing_cards =
             sqlx::query!("
 select
- listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.submitted, listings.approved, listings.removed, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+ listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.quantity, listings.submitted, listings.approved, listings.removed, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  listings
 LEFT JOIN
@@ -429,6 +435,7 @@ GROUP BY
                     title: r.title,
                     description: r.description,
                     price_msat: r.price_msat as _,
+                    quantity: r.quantity as _,
                     submitted: r.submitted,
                     approved: r.approved,
                     removed: r.removed,

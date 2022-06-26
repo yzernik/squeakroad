@@ -86,6 +86,7 @@ async fn create_listing(
         title: listing_info.title,
         description: listing_info.description,
         price_msat: listing_info.price_sat * 1000,
+        quantity: listing_info.quantity,
         submitted: false,
         approved: false,
         removed: false,
@@ -94,6 +95,8 @@ async fn create_listing(
 
     if listing.description.is_empty() {
         Err("Description cannot be empty.".to_string())
+    } else if listing.quantity <= 0 {
+        Err("Quantity must be a positive number.".to_string())
     } else if user.is_admin {
         Err("Admin user cannot create a listing.".to_string())
     } else {
