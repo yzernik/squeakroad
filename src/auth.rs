@@ -34,11 +34,11 @@ async fn post_login(auth: Auth<'_>, form: Form<Login>) -> Result<Redirect, Error
 }
 
 #[get("/signup")]
-async fn get_signup(mut db: Connection<Db>) -> Result<Template, Error> {
+async fn get_signup(mut db: Connection<Db>, user: Option<User>) -> Result<Template, Error> {
     let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default()).await?;
     Ok(Template::render(
         "signup",
-        json!({ "admin_settings": admin_settings }),
+        json!({ "admin_settings": admin_settings, "user": user }),
     ))
 }
 
