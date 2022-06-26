@@ -55,25 +55,16 @@ impl Context {
         flash: Option<(String, String)>,
         user: User,
         admin_user: Option<AdminUser>,
-    ) -> Context {
-        let default_admin_settings = AdminSettings::get_default();
-        match AdminSettings::single(&mut db, default_admin_settings).await {
-            Ok(admin_settings) => Context {
-                flash,
-                admin_settings: Some(admin_settings),
-                user,
-                admin_user,
-            },
-            Err(e) => {
-                error_!("DB AdminSettings::single() error: {}", e);
-                Context {
-                    flash: Some(("error".into(), "Fail to access database.".into())),
-                    user: user,
-                    admin_user: admin_user,
-                    admin_settings: None,
-                }
-            }
-        }
+    ) -> Result<Context, String> {
+        let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
+            .await
+            .map_err(|_| "failed to get admin settings.")?;
+        Ok(Context {
+            flash,
+            user,
+            admin_user,
+            admin_settings: Some(admin_settings),
+        })
     }
 }
 
