@@ -37,6 +37,7 @@
 	<div class="container">
 	  <h3>{{ listing_display.listing.title }}</h3>
 	  <p><b>Price</b>: {{ listing_display.listing.price_msat / 1000 }} sats</p>
+	  <p><b>Quantity</b>: {{ listing_display.listing.quantity }}</p>
 	  <p><b>User</b>: <a href="/user/{{listing_display.user.username}}">{{ listing_display.user.username }}</a></p>
 
 	  <form action="" method="get">
