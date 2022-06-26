@@ -41,8 +41,8 @@ async fn post_signup(auth: Auth<'_>, form: Form<Signup>) -> Result<Redirect, Err
 }
 
 #[get("/logout")]
-fn logout(auth: Auth<'_>) -> Result<Template, Error> {
-    auth.logout()?;
+async fn logout(auth: Auth<'_>) -> Result<Template, Error> {
+    auth.logout().await?;
     Ok(Template::render("logout", json!({})))
 }
 

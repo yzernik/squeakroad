@@ -67,7 +67,7 @@ pub struct ListingDisplay {
 pub struct ListingCardDisplay {
     pub listing: Listing,
     pub image: Option<ListingImageDisplay>,
-    // pub user: RocketAuthUser,
+    pub user: RocketAuthUser,
 }
 
 #[derive(Serialize, Debug, Clone)]
@@ -75,7 +75,7 @@ pub struct ListingCardDisplay {
 pub struct ListingCard {
     pub listing: Listing,
     pub image: Option<ListingImage>,
-    // pub user: RocketAuthUser,
+    pub user: RocketAuthUser,
 }
 
 #[derive(Serialize, Debug, Clone)]
@@ -237,7 +237,7 @@ impl ListingImage {
         )
         .fetch(&mut **db)
         .map_ok(|r| ListingImage {
-            id: Some(r.id as _),
+            id: r.id.map(|n| n as _),
             public_id: r.public_id,
             listing_id: r.listing_id as _,
             image_data: r.image_data,
@@ -399,7 +399,7 @@ impl ListingCard {
         let listing_cards =
             sqlx::query!("
 select
- listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.submitted, listings.approved, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary
+ listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.submitted, listings.approved, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  listings
 LEFT JOIN
@@ -408,13 +408,17 @@ ON
  listings.id = listingimages.listing_id
 AND
  listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)
+INNER JOIN
+ users
+ON
+ listings.user_id = users.id
 GROUP BY
  listings.id
 ;")
                 .fetch(&mut **db)
             .map_ok(|r| {
                 let l = Listing {
-                    id: Some(r.id.unwrap().try_into().unwrap()),
+                    id: Some(r.id as _),
                     public_id: r.public_id as _,
                     user_id: r.user_id as _,
                     title: r.title,
@@ -431,9 +435,14 @@ GROUP BY
                     image_data: r.image_data,
                     is_primary: r.is_primary,
                 });
+                let u = r.rocket_auth_user_id.map(|_| RocketAuthUser {
+                    id: Some(r.rocket_auth_user_id.unwrap().try_into().unwrap()),
+                    username: r.rocket_auth_user_username.unwrap(),
+                });
                 ListingCard {
                     listing: l,
                     image: i,
+                    user: u.unwrap(),
                 }
             })
                 .try_collect::<Vec<_>>()
@@ -457,6 +466,7 @@ impl ListingCardDisplay {
                     image_data_base64: base64::encode(&image.image_data),
                     is_primary: image.is_primary,
                 }),
+                user: card.clone().user,
             })
             .collect::<Vec<_>>();
 
@@ -501,7 +511,7 @@ impl ShippingOption {
         )
         .fetch(&mut **db)
         .map_ok(|r| ShippingOption {
-            id: Some(r.id.try_into().unwrap()),
+            id: r.id.map(|n| n as _),
             public_id: r.public_id,
             listing_id: r.listing_id as _,
             title: r.title,
