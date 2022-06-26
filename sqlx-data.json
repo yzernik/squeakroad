@@ -432,6 +432,16 @@
     },
     "query": "DELETE FROM posts WHERE id = ?"
   },
+  "83f994a3f0b310e4faa8b4fb7e800ff508988f5edd5cb60ad635d71e1b398865": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "UPDATE adminsettings SET market_name = ?"
+  },
   "88bd66872045161c59db2a2eb7d828bb3fd56a96dbe99d9773a89b0d7b935538": {
     "describe": {
       "columns": [
@@ -681,16 +691,6 @@
       }
     },
     "query": "UPDATE listingimages SET is_primary = true WHERE listing_id = ? AND public_id = ?"
-  },
-  "bc2c03139c0c97f5fb14891e1adc9e531d3515cdf365580f85d38b90f5d7daff": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 0
-      }
-    },
-    "query": "DELETE FROM adminsettings;"
   },
   "be99d8673183a949c574c4f6ad6dbdc625755f69f860876ee64737ffbb1a9bbf": {
     "describe": {

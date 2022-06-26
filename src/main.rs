@@ -15,6 +15,7 @@ mod models;
 mod new_listing;
 mod posts;
 mod routes;
+mod update_market_name;
 mod user;
 
 #[launch]
