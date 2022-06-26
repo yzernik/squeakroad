@@ -43,51 +43,26 @@ impl Context {
 
     pub async fn raw(
         flash: Option<(String, String)>,
-        listing_cards: Vec<ListingCardDisplay>,
+        mut db: Connection<Db>,
         user: Option<User>,
         admin_user: Option<AdminUser>,
-        admin_settings: AdminSettings,
-    ) -> Context {
-        Context {
+    ) -> Result<Context, String> {
+        let listing_cards = ListingCardDisplay::all(&mut db)
+            .await
+            .map_err(|_| "failed to update market name.")?;
+
+        let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
+            .await
+            .map_err(|_| "failed to update market name.")?;
+
+        Ok(Context {
             flash,
             listing_cards: listing_cards,
             user,
             admin_user,
             admin_settings: Some(admin_settings),
-        }
+        })
     }
-
-    // match ListingCardDisplay::all(&mut db).await {
-    //     Ok(listing_cards) => Context {
-    //         flash,
-    //         listing_cards: listing_cards,
-    //         user,
-    //         admin_user,
-    //     },
-    //     Err(e) => {
-    //         error_!("DB Listing::all() error: {}", e);
-    //         Context {
-    //             flash: Some(("error".into(), "Fail to access database.".into())),
-    //             listing_cards: vec![],
-    //             user: user,
-    //             admin_user: admin_user,
-    //         }
-    //     }
-    // }
-}
-
-async fn get_context_fields(
-    mut db: Connection<Db>,
-) -> Result<(Vec<ListingCardDisplay>, AdminSettings), String> {
-    let listing_cards = ListingCardDisplay::all(&mut db)
-        .await
-        .map_err(|_| "failed to update market name.")?;
-
-    let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
-        .await
-        .map_err(|_| "failed to update market name.")?;
-
-    Ok((listing_cards, admin_settings))
 }
 
 // #[put("/<id>")]
@@ -126,12 +101,8 @@ async fn index(
     admin_user: Option<AdminUser>,
 ) -> Result<Template, NotFound<String>> {
     let flash = flash.map(FlashMessage::into_inner);
-
-    match get_context_fields(db).await {
-        Ok((listing_cards, admin_settings)) => Ok(Template::render(
-            "listingsindex",
-            Context::raw(flash, listing_cards, user, admin_user, admin_settings).await,
-        )),
+    match Context::raw(flash, db, user, admin_user).await {
+        Ok(ctx) => Ok(Template::render("listingsindex", ctx)),
         Err(e) => Err(NotFound(e.to_string())),
     }
 }
