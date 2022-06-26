@@ -407,6 +407,8 @@ impl ListingCard {
     pub async fn all(db: &mut Connection<Db>) -> Result<Vec<ListingCard>, sqlx::Error> {
         // Example query for this kind of join/group by: https://stackoverflow.com/a/63037790/1639564
         // Other example query: https://stackoverflow.com/a/13698334/1639564
+        // TODO: change WHERE condition to use dynamically calculated remaining quantity
+        // based on number of completed orders.
         let listing_cards =
             sqlx::query!("
 select
@@ -423,6 +425,7 @@ INNER JOIN
  users
 ON
  listings.user_id = users.id
+WHERE listings.quantity > 0
 GROUP BY
  listings.id
 ;")
