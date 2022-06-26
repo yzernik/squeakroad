@@ -602,20 +602,22 @@ impl AdminSettings {
         db: &mut Connection<Db>,
         default_admin_settings: AdminSettings,
     ) -> Result<AdminSettings, sqlx::Error> {
-        AdminSettings::insert_if_doesnt_exist(db, default_admin_settings).await?;
-
         let maybe_admin_settings = sqlx::query!("select * from adminsettings;")
-            .fetch_one(&mut **db)
-            .map_ok(|r| AdminSettings {
-                id: Some(r.id.try_into().unwrap()),
-                market_name: r.market_name,
-                fee_rate_basis_points: r.fee_rate_basis_points as _,
+            .fetch_optional(&mut **db)
+            .map_ok(|maybe_r| {
+                maybe_r.map(|r| AdminSettings {
+                    id: Some(r.id.try_into().unwrap()),
+                    market_name: r.market_name,
+                    fee_rate_basis_points: r.fee_rate_basis_points as _,
+                })
             })
             .await?;
 
-        println!("{:?}", maybe_admin_settings);
+        let admin_settings = maybe_admin_settings.unwrap_or(default_admin_settings);
 
-        Ok(maybe_admin_settings)
+        println!("{:?}", admin_settings);
+
+        Ok(admin_settings)
     }
 
     /// Returns the number of affected rows: 1.
