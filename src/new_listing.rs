@@ -88,6 +88,7 @@ async fn create_listing(
         price_msat: listing_info.price_sat * 1000,
         submitted: false,
         approved: false,
+        removed: false,
         created_time_ms: now,
     };
 
