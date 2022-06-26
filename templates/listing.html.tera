@@ -6,9 +6,10 @@
   <div class="full-width-container">
     <p><!--Nothing to see here --></p>
 
+    <!-- Options for the owner of the listing -->
     {% if user and listing_display.listing.user_id == user.id %}
     {% if not listing_display.listing.submitted %}
-    <h5>Not submitted</h5>
+    <h5>Unsubmitted Listing</h5>
     <p><a href="/add_listing_images/{{ listing_display.listing.public_id }}">Add images</a></p>
     <p><a href="/add_shipping_options/{{ listing_display.listing.public_id }}">Add shipping options</a></p>
     <form class="inline" action="submit_listing" method="post">
@@ -16,10 +17,14 @@
       <button class="small" type="submit">Submit Listing</button>
     </form>
     {% elif not listing_display.listing.approved %}
-    <h5>Not approved</h5>
+    <h5>Pending Listing (waiting for admin approval)</h5>
     {% else %}
-    <h5>Approved</h5>
+    <h5>Approved Listing</h5>
     {% endif %}
+    <form class="inline" action="remove_listing" method="post">
+      <input type="hidden" name="_method" value="put" />
+      <button class="small" type="submit">Remove Listing</button>
+    </form>
     {% endif %}
 
 
