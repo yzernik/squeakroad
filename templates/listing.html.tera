@@ -16,8 +16,10 @@
       <input type="hidden" name="_method" value="put" />
       <button class="small" type="submit">Submit Listing</button>
     </form>
-    {% elif not listing_display.listing.approved %}
+    {% elif not listing_display.listing.reviewed %}
     <h5>Pending Listing (waiting for admin approval)</h5>
+    {% elif not listing_display.listing.approved %}
+    <h5>Rejected Listing</h5>
     {% else %}
     <h5>Approved Listing</h5>
     {% endif %}
@@ -27,6 +29,30 @@
     </form>
     {% endif %}
 
+    <!-- Options for admin -->
+    {% if admin_user %}
+    {% if not listing_display.listing.submitted %}
+    <h5>Unsubmitted Listing</h5>
+    {% elif not listing_display.listing.reviewed %}
+    <h5>Pending Listing (waiting for admin approval)</h5>
+    <form class="inline" action="approve_listing" method="post">
+      <input type="hidden" name="_method" value="put" />
+      <button class="small" type="submit">Approve Listing</button>
+    </form>
+    <form class="inline" action="reject_listing" method="post">
+      <input type="hidden" name="_method" value="put" />
+      <button class="small" type="submit">Reject Listing</button>
+    </form>
+    {% elif not listing_display.listing.approved %}
+    <h5>Rejected Listing</h5>
+    {% else %}
+    <h5>Approved Listing</h5>
+    {% endif %}
+    <form class="inline" action="remove_listing" method="post">
+      <input type="hidden" name="_method" value="put" />
+      <button class="small" type="submit">Remove Listing</button>
+    </form>
+    {% endif %}
 
     <!-- there are a few shorthand columns widths as well -->
     <div class="row">
