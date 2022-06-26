@@ -1,5 +1,5 @@
 use crate::db::Db;
-use crate::models::{ListingDisplay, ShippingOption};
+use crate::models::{AdminSettings, ListingDisplay, ShippingOption};
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::serde::Serialize;
@@ -16,6 +16,7 @@ struct Context {
     selected_shipping_option: Option<ShippingOption>,
     user: Option<User>,
     admin_user: Option<AdminUser>,
+    admin_settings: Option<AdminSettings>,
 }
 
 impl Context {
@@ -38,7 +39,7 @@ impl Context {
         flash: Option<(String, String)>,
         user: Option<User>,
         admin_user: Option<AdminUser>,
-    ) -> Context {
+    ) -> Result<Context, String> {
         let listing_display = ListingDisplay::single_by_public_id(&mut db, listing_id).await;
         let maybe_shipping_option = match shipping_option_id {
             Some(sid) => {
@@ -47,24 +48,29 @@ impl Context {
             }
             None => None,
         };
+        let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
+            .await
+            .map_err(|_| "failed to get admin settings.")?;
 
         match listing_display {
-            Ok(listing_display) => Context {
+            Ok(listing_display) => Ok(Context {
                 flash,
                 listing_display: Some(listing_display),
                 selected_shipping_option: maybe_shipping_option,
                 user,
                 admin_user,
-            },
+                admin_settings: Some(admin_settings),
+            }),
             Err(e) => {
                 error_!("DB Listing::all() error: {}", e);
-                Context {
+                Ok(Context {
                     flash: Some(("error".into(), "Fail to access database.".into())),
                     listing_display: None,
                     selected_shipping_option: None,
                     user: user,
                     admin_user: admin_user,
-                }
+                    admin_settings: Some(admin_settings),
+                })
             }
         }
     }
