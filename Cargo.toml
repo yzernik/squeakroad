@@ -9,6 +9,7 @@ publish = false
 rocket = { git = "https://github.com/yzernik/Rocket", branch = "upgrade_sqlx_v_0_6", features = ["json", "uuid"] }
 serde_json = "1.0.59"
 base64 = "0.13.0"
+tonic_lnd = "0.3.0"
 
 [dependencies.sqlx]
 version = "0.6.0"
