@@ -117,6 +117,14 @@ pub struct RocketAuthUser {
     pub username: String,
 }
 
+#[derive(Serialize, Debug, Clone)]
+#[serde(crate = "rocket::serde")]
+pub struct AdminSettings {
+    pub id: Option<i32>,
+    pub market_name: String,
+    pub fee_rate_basis_points: u32,
+}
+
 impl Listing {
     pub async fn all(db: &mut Connection<Db>) -> Result<Vec<Listing>, sqlx::Error> {
         let listings = sqlx::query!("select * from listings;")
@@ -581,5 +589,49 @@ impl ShippingOption {
                 .await?;
 
         Ok(delete_result.rows_affected() as _)
+    }
+}
+
+impl AdminSettings {
+    /// Returns the number of affected rows: 1.
+    pub async fn insert(
+        admin_settings: AdminSettings,
+        db: &mut Connection<Db>,
+    ) -> Result<usize, sqlx::Error> {
+        let mut tx = db.begin().await?;
+
+        // Delete all existing rows before inserting.
+        sqlx::query!("DELETE FROM adminsettings;")
+            .execute(&mut tx)
+            .await?;
+
+        let insert_result = sqlx::query!(
+            "INSERT INTO adminsettings (market_name, fee_rate_basis_points) VALUES (?, ?)",
+            admin_settings.market_name,
+            admin_settings.fee_rate_basis_points,
+        )
+        .execute(&mut tx)
+        .await?;
+
+        tx.commit().await?;
+
+        Ok(insert_result.rows_affected() as _)
+    }
+
+    pub async fn single(db: &mut Connection<Db>) -> Result<Option<AdminSettings>, sqlx::Error> {
+        let maybe_admin_settings = sqlx::query!("select * from adminsettings;")
+            .fetch_optional(&mut **db)
+            .map_ok(|maybe_r| {
+                maybe_r.map(|r| AdminSettings {
+                    id: Some(r.id.try_into().unwrap()),
+                    market_name: r.market_name,
+                    fee_rate_basis_points: r.fee_rate_basis_points as _,
+                })
+            })
+            .await?;
+
+        println!("{:?}", maybe_admin_settings);
+
+        Ok(maybe_admin_settings)
     }
 }
