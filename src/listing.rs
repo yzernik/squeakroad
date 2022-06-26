@@ -40,7 +40,9 @@ impl Context {
         user: Option<User>,
         admin_user: Option<AdminUser>,
     ) -> Result<Context, String> {
-        let listing_display = ListingDisplay::single_by_public_id(&mut db, listing_id).await;
+        let listing_display = ListingDisplay::single_by_public_id(&mut db, listing_id)
+            .await
+            .map_err(|_| "failed to get admin settings.")?;
         let maybe_shipping_option = match shipping_option_id {
             Some(sid) => {
                 let shipping_option = ShippingOption::single_by_public_id(&mut db, sid).await;
@@ -52,27 +54,14 @@ impl Context {
             .await
             .map_err(|_| "failed to get admin settings.")?;
 
-        match listing_display {
-            Ok(listing_display) => Ok(Context {
-                flash,
-                listing_display: Some(listing_display),
-                selected_shipping_option: maybe_shipping_option,
-                user,
-                admin_user,
-                admin_settings: Some(admin_settings),
-            }),
-            Err(e) => {
-                error_!("DB Listing::all() error: {}", e);
-                Ok(Context {
-                    flash: Some(("error".into(), "Fail to access database.".into())),
-                    listing_display: None,
-                    selected_shipping_option: None,
-                    user: user,
-                    admin_user: admin_user,
-                    admin_settings: Some(admin_settings),
-                })
-            }
-        }
+        Ok(Context {
+            flash,
+            listing_display: Some(listing_display),
+            selected_shipping_option: maybe_shipping_option,
+            user,
+            admin_user,
+            admin_settings: Some(admin_settings),
+        })
     }
 }
 
