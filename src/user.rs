@@ -1,4 +1,5 @@
 use crate::db::Db;
+use crate::models::AdminSettings;
 use crate::models::RocketAuthUser;
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
@@ -15,6 +16,7 @@ struct Context {
     user: Option<User>,
     admin_user: Option<AdminUser>,
     visited_user: Option<RocketAuthUser>,
+    admin_settings: Option<AdminSettings>,
 }
 
 impl Context {
@@ -36,24 +38,21 @@ impl Context {
         flash: Option<(String, String)>,
         user: Option<User>,
         admin_user: Option<AdminUser>,
-    ) -> Context {
-        match RocketAuthUser::single_by_username(&mut db, username).await {
-            Ok(rocket_auth_user) => Context {
-                flash,
-                visited_user: Some(rocket_auth_user),
-                user,
-                admin_user,
-            },
-            Err(e) => {
-                error_!("DB RocketAuthUser::single_by_username() error: {}", e);
-                Context {
-                    flash: Some(("error".into(), "Fail to access database.".into())),
-                    visited_user: None,
-                    user: user,
-                    admin_user: admin_user,
-                }
-            }
-        }
+    ) -> Result<Context, String> {
+        let visited_user = RocketAuthUser::single_by_username(&mut db, username)
+            .await
+            .map_err(|_| "failed to get visited user.")?;
+        let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
+            .await
+            .map_err(|_| "failed to get admin settings.")?;
+
+        Ok(Context {
+            flash,
+            visited_user: Some(visited_user),
+            user,
+            admin_user,
+            admin_settings: Some(admin_settings),
+        })
     }
 }
 

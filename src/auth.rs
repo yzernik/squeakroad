@@ -1,4 +1,5 @@
 use crate::db::Db;
+use crate::models::AdminSettings;
 use rocket::fairing::AdHoc;
 use rocket::{form::*, get, post, response::Redirect, routes};
 use rocket_auth::{Auth, Error, Login, Signup, User};
@@ -16,8 +17,12 @@ fn not_authorized() -> Redirect {
 }
 
 #[get("/login")]
-fn get_login() -> Template {
-    Template::render("login", json!({}))
+async fn get_login(mut db: Connection<Db>, user: Option<User>) -> Result<Template, Error> {
+    let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default()).await?;
+    Ok(Template::render(
+        "login",
+        json!({"admin_settings": admin_settings, "user": user}),
+    ))
 }
 
 #[post("/login", data = "<form>")]
@@ -29,8 +34,12 @@ async fn post_login(auth: Auth<'_>, form: Form<Login>) -> Result<Redirect, Error
 }
 
 #[get("/signup")]
-async fn get_signup() -> Template {
-    Template::render("signup", json!({}))
+async fn get_signup(mut db: Connection<Db>, user: Option<User>) -> Result<Template, Error> {
+    let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default()).await?;
+    Ok(Template::render(
+        "signup",
+        json!({ "admin_settings": admin_settings, "user": user }),
+    ))
 }
 
 #[post("/signup", data = "<form>")]
@@ -41,9 +50,13 @@ async fn post_signup(auth: Auth<'_>, form: Form<Signup>) -> Result<Redirect, Err
 }
 
 #[get("/logout")]
-async fn logout(auth: Auth<'_>) -> Result<Template, Error> {
+async fn logout(auth: Auth<'_>, mut db: Connection<Db>) -> Result<Template, Error> {
     auth.logout().await?;
-    Ok(Template::render("logout", json!({})))
+    let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default()).await?;
+    Ok(Template::render(
+        "logout",
+        json!({ "admin_settings": admin_settings }),
+    ))
 }
 
 #[get("/delete")]
@@ -55,10 +68,11 @@ async fn delete_auth(auth: Auth<'_>) -> Result<Template, Error> {
 #[get("/show_all_users")]
 async fn show_all_users(mut db: Connection<Db>, user: Option<User>) -> Result<Template, Error> {
     let users: Vec<User> = query_as("select * from users;").fetch_all(&mut *db).await?;
+    let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default()).await?;
     println!("{:?}", users);
     Ok(Template::render(
         "users",
-        json!({"users": users, "user": user}),
+        json!({"users": users, "user": user, "admin_settings": admin_settings}),
     ))
 }
 

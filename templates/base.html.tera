@@ -40,7 +40,7 @@
 
     </style>
 
-    <title>Rocket Auth Example</title>
+    <title>{{ admin_settings.market_name }} - Squeakroad</title>
 </head>
 
 <body>
@@ -50,7 +50,7 @@
 
       <nav class="navbar navbar-expand-lg navbar-dark bg-success">
         <div class="container-fluid">
-          <a class="navbar-brand" href="/">Rocket Auth Example</a>
+          <a class="navbar-brand" href="/">{{ admin_settings.market_name }}</a>
           <div>
             {% if user %}
             Welcome, <a class="navbar-brand" href="/user/{{ user.email }}">{{ user.email }}</a>

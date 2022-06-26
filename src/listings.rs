@@ -1,11 +1,22 @@
 use crate::db::Db;
-use crate::models::ListingCardDisplay;
+use crate::models::{AdminSettings, ListingCardDisplay};
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
+use rocket::response::status::NotFound;
 use rocket::serde::Serialize;
 use rocket_auth::{AdminUser, User};
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
+
+// impl AdminSettings {
+//     pub fn get_default() -> AdminSettings {
+//         AdminSettings {
+//             id: None,
+//             market_name: "default market name".to_string(),
+//             fee_rate_basis_points: 500,
+//         }
+//     }
+// }
 
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -14,6 +25,7 @@ struct Context {
     listing_cards: Vec<ListingCardDisplay>,
     user: Option<User>,
     admin_user: Option<AdminUser>,
+    admin_settings: Option<AdminSettings>,
 }
 
 impl Context {
@@ -30,28 +42,26 @@ impl Context {
     // }
 
     pub async fn raw(
-        mut db: Connection<Db>,
         flash: Option<(String, String)>,
+        mut db: Connection<Db>,
         user: Option<User>,
         admin_user: Option<AdminUser>,
-    ) -> Context {
-        match ListingCardDisplay::all(&mut db).await {
-            Ok(listing_cards) => Context {
-                flash,
-                listing_cards: listing_cards,
-                user,
-                admin_user,
-            },
-            Err(e) => {
-                error_!("DB Listing::all() error: {}", e);
-                Context {
-                    flash: Some(("error".into(), "Fail to access database.".into())),
-                    listing_cards: vec![],
-                    user: user,
-                    admin_user: admin_user,
-                }
-            }
-        }
+    ) -> Result<Context, String> {
+        let listing_cards = ListingCardDisplay::all(&mut db)
+            .await
+            .map_err(|_| "failed to update market name.")?;
+
+        let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
+            .await
+            .map_err(|_| "failed to update market name.")?;
+
+        Ok(Context {
+            flash,
+            listing_cards: listing_cards,
+            user,
+            admin_user,
+            admin_settings: Some(admin_settings),
+        })
     }
 }
 
@@ -89,12 +99,12 @@ async fn index(
     db: Connection<Db>,
     user: Option<User>,
     admin_user: Option<AdminUser>,
-) -> Template {
+) -> Result<Template, NotFound<String>> {
     let flash = flash.map(FlashMessage::into_inner);
-    Template::render(
+    Ok(Template::render(
         "listingsindex",
-        Context::raw(db, flash, user, admin_user).await,
-    )
+        Context::raw(flash, db, user, admin_user).await,
+    ))
 }
 
 pub fn listings_stage() -> AdHoc {

@@ -1,5 +1,5 @@
 use crate::db::Db;
-use crate::models::{Listing, ListingDisplay, ShippingOption, ShippingOptionInfo};
+use crate::models::{AdminSettings, Listing, ListingDisplay, ShippingOption, ShippingOptionInfo};
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
 use rocket::request::FlashMessage;
@@ -17,6 +17,7 @@ struct Context {
     listing_display: Option<ListingDisplay>,
     user: User,
     admin_user: Option<AdminUser>,
+    admin_settings: Option<AdminSettings>,
 }
 
 impl Context {
@@ -33,6 +34,7 @@ impl Context {
             listing_display: None,
             user: user,
             admin_user,
+            admin_settings: None,
         }
     }
 
@@ -42,36 +44,32 @@ impl Context {
         flash: Option<(String, String)>,
         user: User,
         admin_user: Option<AdminUser>,
-    ) -> Context {
-        match ListingDisplay::single_by_public_id(&mut db, listing_id).await {
-            Ok(listing_display) => {
-                if listing_display.listing.user_id == user.id() {
-                    println!("{:?}", listing_display.shipping_options);
-                    Context {
-                        flash,
-                        listing_display: Some(listing_display),
-                        user,
-                        admin_user,
-                    }
-                } else {
-                    error_!("Listing belongs to other user.");
-                    Context {
-                        flash: Some(("error".into(), "Listing belongs to other user.".into())),
-                        listing_display: None,
-                        user: user,
-                        admin_user: admin_user,
-                    }
-                }
-            }
-            Err(e) => {
-                error_!("DB Listing::single() error: {}", e);
-                Context {
-                    flash: Some(("error".into(), "Fail to access database.".into())),
-                    listing_display: None,
-                    user: user,
-                    admin_user: admin_user,
-                }
-            }
+    ) -> Result<Context, String> {
+        let listing_display = ListingDisplay::single_by_public_id(&mut db, listing_id)
+            .await
+            .map_err(|_| "failed to get listing display.")?;
+        let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
+            .await
+            .map_err(|_| "failed to get admin settings.")?;
+
+        if listing_display.listing.user_id == user.id() {
+            println!("{:?}", listing_display.shipping_options);
+            Ok(Context {
+                flash,
+                listing_display: Some(listing_display),
+                user,
+                admin_user,
+                admin_settings: Some(admin_settings),
+            })
+        } else {
+            error_!("Listing belongs to other user.");
+            Ok(Context {
+                flash: Some(("error".into(), "Listing belongs to other user.".into())),
+                listing_display: None,
+                user: user,
+                admin_user: admin_user,
+                admin_settings: Some(admin_settings),
+            })
         }
     }
 }

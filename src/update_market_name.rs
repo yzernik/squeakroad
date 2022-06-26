@@ -4,7 +4,6 @@ use rocket::fairing::AdHoc;
 use rocket::form::Form;
 use rocket::request::FlashMessage;
 use rocket::response::{Flash, Redirect};
-use rocket::serde::uuid::Uuid;
 use rocket::serde::Serialize;
 use rocket_auth::{AdminUser, User};
 use rocket_db_pools::Connection;
@@ -30,9 +29,9 @@ impl AdminSettings {
 #[serde(crate = "rocket::serde")]
 struct Context {
     flash: Option<(String, String)>,
-    admin_settings: Option<AdminSettings>,
     user: User,
     admin_user: Option<AdminUser>,
+    admin_settings: Option<AdminSettings>,
 }
 
 impl Context {
@@ -45,9 +44,9 @@ impl Context {
         // TODO: get the listing display and put in context.
         Context {
             flash: Some(("error".into(), msg.to_string())),
-            admin_settings: None,
             user: user,
             admin_user,
+            admin_settings: None,
         }
     }
 
@@ -56,25 +55,16 @@ impl Context {
         flash: Option<(String, String)>,
         user: User,
         admin_user: Option<AdminUser>,
-    ) -> Context {
-        let default_admin_settings = AdminSettings::get_default();
-        match AdminSettings::single(&mut db, default_admin_settings).await {
-            Ok(admin_settings) => Context {
-                flash,
-                admin_settings: Some(admin_settings),
-                user,
-                admin_user,
-            },
-            Err(e) => {
-                error_!("DB AdminSettings::single() error: {}", e);
-                Context {
-                    flash: Some(("error".into(), "Fail to access database.".into())),
-                    admin_settings: None,
-                    user: user,
-                    admin_user: admin_user,
-                }
-            }
-        }
+    ) -> Result<Context, String> {
+        let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
+            .await
+            .map_err(|_| "failed to get admin settings.")?;
+        Ok(Context {
+            flash,
+            user,
+            admin_user,
+            admin_settings: Some(admin_settings),
+        })
     }
 }
 
@@ -82,8 +72,8 @@ impl Context {
 async fn update(
     market_name_form: Form<MarketNameInput>,
     mut db: Connection<Db>,
-    user: User,
-    admin_user: AdminUser,
+    _user: User,
+    _admin_user: AdminUser,
 ) -> Flash<Redirect> {
     let market_name_input = market_name_form.into_inner();
     let new_market_name = market_name_input.market_name;
@@ -117,78 +107,6 @@ async fn change_market_name(
         Ok(())
     }
 }
-
-// #[delete("/<id>/add_shipping_option/<shipping_option_id>")]
-// async fn delete(
-//     id: &str,
-//     shipping_option_id: &str,
-//     mut db: Connection<Db>,
-//     user: User,
-//     admin_user: Option<AdminUser>,
-// ) -> Result<Flash<Redirect>, Template> {
-//     match delete_shipping_option(
-//         id,
-//         shipping_option_id,
-//         &mut db,
-//         user.clone(),
-//         admin_user.clone(),
-//     )
-//     .await
-//     {
-//         Ok(_) => Ok(Flash::success(
-//             Redirect::to(uri!("/add_shipping_options", index(id))),
-//             "Shipping option was deleted.",
-//         )),
-//         Err(e) => {
-//             error_!("DB deletion({}) error: {}", id, e);
-//             Err(Template::render(
-//                 "addshippingoptions",
-//                 Context::err(
-//                     db,
-//                     id,
-//                     "Failed to delete shipping option.",
-//                     user,
-//                     admin_user,
-//                 )
-//                 .await,
-//             ))
-//         }
-//     }
-// }
-
-// async fn delete_shipping_option(
-//     listing_id: &str,
-//     shipping_option_id: &str,
-//     db: &mut Connection<Db>,
-//     user: User,
-//     _admin_user: Option<AdminUser>,
-// ) -> Result<(), String> {
-//     let listing = Listing::single_by_public_id(&mut *db, listing_id)
-//         .await
-//         .map_err(|_| "failed to get listing")?;
-//     let shipping_option = ShippingOption::single_by_public_id(&mut *db, shipping_option_id)
-//         .await
-//         .map_err(|_| "failed to get shipping option")?;
-
-//     if shipping_option.listing_id != listing.id.unwrap() {
-//         Err("Invalid listing id given.".to_string())
-//     } else if listing.submitted {
-//         Err("Listing is already submitted.".to_string())
-//     } else if listing.user_id != user.id() {
-//         Err("Listing belongs to a different user.".to_string())
-//     } else {
-//         match ShippingOption::delete_with_public_id(shipping_option_id, &mut *db).await {
-//             Ok(num_deleted) => {
-//                 if num_deleted > 0 {
-//                     Ok(())
-//                 } else {
-//                     Err("No shipping options deleted.".to_string())
-//                 }
-//             }
-//             Err(_) => Err("failed to delete shipping option.".to_string()),
-//         }
-//     }
-// }
 
 #[get("/")]
 async fn index(

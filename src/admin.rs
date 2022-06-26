@@ -1,4 +1,5 @@
 use crate::db::Db;
+use crate::models::AdminSettings;
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::serde::Serialize;
@@ -13,6 +14,7 @@ struct Context {
     flash: Option<(String, String)>,
     user: Option<User>,
     admin_user: Option<AdminUser>,
+    admin_settings: Option<AdminSettings>,
 }
 
 impl Context {
@@ -29,16 +31,20 @@ impl Context {
     // }
 
     pub async fn raw(
-        _db: Connection<Db>,
+        mut db: Connection<Db>,
         flash: Option<(String, String)>,
         user: Option<User>,
         admin_user: Option<AdminUser>,
-    ) -> Context {
-        Context {
+    ) -> Result<Context, String> {
+        let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
+            .await
+            .map_err(|_| "failed to get admin settings.")?;
+        Ok(Context {
             flash,
             user,
             admin_user,
-        }
+            admin_settings: Some(admin_settings),
+        })
     }
 }
 
