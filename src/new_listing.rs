@@ -86,6 +86,7 @@ async fn create_listing(
         title: listing_info.title,
         description: listing_info.description,
         price_msat: listing_info.price_sat * 1000,
+        quantity: 1, // TODO: get quantity from form input.
         submitted: false,
         approved: false,
         removed: false,
