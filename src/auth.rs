@@ -68,10 +68,11 @@ async fn delete_auth(auth: Auth<'_>) -> Result<Template, Error> {
 #[get("/show_all_users")]
 async fn show_all_users(mut db: Connection<Db>, user: Option<User>) -> Result<Template, Error> {
     let users: Vec<User> = query_as("select * from users;").fetch_all(&mut *db).await?;
+    let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default()).await?;
     println!("{:?}", users);
     Ok(Template::render(
         "users",
-        json!({"users": users, "user": user}),
+        json!({"users": users, "user": user, "admin_settings": admin_settings}),
     ))
 }
 
