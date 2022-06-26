@@ -117,6 +117,19 @@ pub struct RocketAuthUser {
     pub username: String,
 }
 
+#[derive(Serialize, Debug, Clone)]
+#[serde(crate = "rocket::serde")]
+pub struct AdminSettings {
+    pub id: Option<i32>,
+    pub market_name: String,
+    pub fee_rate_basis_points: u32,
+}
+
+#[derive(Debug, FromForm)]
+pub struct MarketNameInput {
+    pub market_name: String,
+}
+
 impl Listing {
     pub async fn all(db: &mut Connection<Db>) -> Result<Vec<Listing>, sqlx::Error> {
         let listings = sqlx::query!("select * from listings;")
@@ -581,5 +594,69 @@ impl ShippingOption {
                 .await?;
 
         Ok(delete_result.rows_affected() as _)
+    }
+}
+
+impl AdminSettings {
+    pub async fn single(
+        db: &mut Connection<Db>,
+        default_admin_settings: AdminSettings,
+    ) -> Result<AdminSettings, sqlx::Error> {
+        let maybe_admin_settings = sqlx::query!("select * from adminsettings;")
+            .fetch_optional(&mut **db)
+            .map_ok(|maybe_r| {
+                maybe_r.map(|r| AdminSettings {
+                    id: Some(r.id.try_into().unwrap()),
+                    market_name: r.market_name,
+                    fee_rate_basis_points: r.fee_rate_basis_points as _,
+                })
+            })
+            .await?;
+
+        let admin_settings = maybe_admin_settings.unwrap_or(default_admin_settings);
+
+        println!("{:?}", admin_settings);
+
+        Ok(admin_settings)
+    }
+
+    /// Returns the number of affected rows: 1.
+    async fn insert_if_doesnt_exist(
+        db: &mut Connection<Db>,
+        admin_settings: AdminSettings,
+    ) -> Result<(), sqlx::Error> {
+        let mut tx = db.begin().await?;
+
+        let maybe_admin_settings = sqlx::query!("select * from adminsettings;")
+            .fetch_optional(&mut tx)
+            .await?;
+
+        if let None = maybe_admin_settings {
+            let insert_result = sqlx::query!(
+                "INSERT INTO adminsettings (market_name, fee_rate_basis_points) VALUES (?, ?)",
+                admin_settings.market_name,
+                admin_settings.fee_rate_basis_points,
+            )
+            .execute(&mut tx)
+            .await?;
+        }
+
+        tx.commit().await?;
+
+        Ok(())
+    }
+
+    pub async fn set_market_name(
+        db: &mut Connection<Db>,
+        new_market_name: &str,
+        default_admin_settings: AdminSettings,
+    ) -> Result<(), sqlx::Error> {
+        AdminSettings::insert_if_doesnt_exist(db, default_admin_settings).await?;
+
+        sqlx::query!("UPDATE adminsettings SET market_name = ?", new_market_name,)
+            .execute(&mut **db)
+            .await?;
+
+        Ok(())
     }
 }

@@ -192,6 +192,16 @@
     },
     "query": "INSERT INTO posts (title, text) VALUES (?, ?)"
   },
+  "3f31a93fe04c7842a54db02d3c9268bbb9b9b568148d3754fe23c4b5759efd86": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "INSERT INTO adminsettings (market_name, fee_rate_basis_points) VALUES (?, ?)"
+  },
   "4415c35941e52a981b10707fe2e1ceb0bad0e473701e51ef21ecb2973c76b4df": {
     "describe": {
       "columns": [
@@ -421,6 +431,16 @@
       }
     },
     "query": "DELETE FROM posts WHERE id = ?"
+  },
+  "83f994a3f0b310e4faa8b4fb7e800ff508988f5edd5cb60ad635d71e1b398865": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "UPDATE adminsettings SET market_name = ?"
   },
   "88bd66872045161c59db2a2eb7d828bb3fd56a96dbe99d9773a89b0d7b935538": {
     "describe": {
@@ -671,6 +691,36 @@
       }
     },
     "query": "UPDATE listingimages SET is_primary = true WHERE listing_id = ? AND public_id = ?"
+  },
+  "be99d8673183a949c574c4f6ad6dbdc625755f69f860876ee64737ffbb1a9bbf": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "market_name",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "fee_rate_basis_points",
+          "ordinal": 2,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "select * from adminsettings;"
   },
   "cfa7d7cc21275c9db2ffc6d6c6fe7f1bfdce31858ababbde8407e1622cc63709": {
     "describe": {

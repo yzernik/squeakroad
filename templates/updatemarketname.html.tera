@@ -1,0 +1,37 @@
+{% extends "base" %}
+{% block body %}
+
+{% if admin_settings %}
+Market Name: {{ admin_settings.market_name }}
+{% else %}
+Admin settings not found.
+{% endif %}
+
+<br>
+
+
+  <div class="container">
+    <p><!--Nothing to see here --></p>
+
+    <div class="row">
+      <h4>Update Market Name</h4>
+      <form action="/update_market_name/change" method="post">
+        <div class="ten columns">
+          <input type="text" placeholder="enter a new market name..."
+            name="market_name" id="market_name" value="" autofocus
+            class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" />
+          {% if flash %}
+            <small class="field-{{flash.0}}-msg">
+               {{ flash.1 }}
+            </small>
+          {% endif %}
+        </div>
+        <div class="two columns">
+          <input type="submit" value="Change Market Name">
+        </div>
+      </form>
+    </div>
+
+  </div>
+
+{% endblock body %}
