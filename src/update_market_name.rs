@@ -72,8 +72,8 @@ impl Context {
 async fn update(
     market_name_form: Form<MarketNameInput>,
     mut db: Connection<Db>,
-    user: User,
-    admin_user: AdminUser,
+    _user: User,
+    _admin_user: AdminUser,
 ) -> Flash<Redirect> {
     let market_name_input = market_name_form.into_inner();
     let new_market_name = market_name_input.market_name;

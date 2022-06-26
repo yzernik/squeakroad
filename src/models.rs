@@ -632,7 +632,7 @@ impl AdminSettings {
             .await?;
 
         if let None = maybe_admin_settings {
-            let insert_result = sqlx::query!(
+            sqlx::query!(
                 "INSERT INTO adminsettings (market_name, fee_rate_basis_points) VALUES (?, ?)",
                 admin_settings.market_name,
                 admin_settings.fee_rate_basis_points,
