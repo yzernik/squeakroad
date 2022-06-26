@@ -25,6 +25,8 @@
 	    </p>
 
           <p>{{ card.listing.title }}</p>
+          <p>{{ card.listing.price_msat/1000 }} sats</p>
+          <p>{{ card.user.username }}</p>
 
           </a>
 	</li>
