@@ -35,7 +35,7 @@
         }
       ],
       "nullable": [
-        false,
+        true,
         false,
         false,
         false,
@@ -522,7 +522,7 @@
         }
       ],
       "nullable": [
-        false,
+        true,
         false,
         false,
         false,
@@ -651,7 +651,7 @@
         }
       ],
       "nullable": [
-        true,
+        false,
         false,
         false,
         false,

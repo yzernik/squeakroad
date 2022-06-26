@@ -237,7 +237,7 @@ impl ListingImage {
         )
         .fetch(&mut **db)
         .map_ok(|r| ListingImage {
-            id: Some(r.id as _),
+            id: r.id.map(|n| n as _),
             public_id: r.public_id,
             listing_id: r.listing_id as _,
             image_data: r.image_data,
@@ -414,7 +414,7 @@ GROUP BY
                 .fetch(&mut **db)
             .map_ok(|r| {
                 let l = Listing {
-                    id: Some(r.id.unwrap().try_into().unwrap()),
+                    id: Some(r.id as _),
                     public_id: r.public_id as _,
                     user_id: r.user_id as _,
                     title: r.title,
@@ -501,7 +501,7 @@ impl ShippingOption {
         )
         .fetch(&mut **db)
         .map_ok(|r| ShippingOption {
-            id: Some(r.id.try_into().unwrap()),
+            id: r.id.map(|n| n as _),
             public_id: r.public_id,
             listing_id: r.listing_id as _,
             title: r.title,
