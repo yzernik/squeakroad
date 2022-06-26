@@ -1,11 +1,21 @@
 use crate::db::Db;
-use crate::models::ListingCardDisplay;
+use crate::models::{AdminSettings, ListingCardDisplay};
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::serde::Serialize;
 use rocket_auth::{AdminUser, User};
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
+
+// impl AdminSettings {
+//     pub fn get_default() -> AdminSettings {
+//         AdminSettings {
+//             id: None,
+//             market_name: "default market name".to_string(),
+//             fee_rate_basis_points: 500,
+//         }
+//     }
+// }
 
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -14,6 +24,7 @@ struct Context {
     listing_cards: Vec<ListingCardDisplay>,
     user: Option<User>,
     admin_user: Option<AdminUser>,
+    admin_settings: Option<AdminSettings>,
 }
 
 impl Context {
@@ -35,12 +46,13 @@ impl Context {
         user: Option<User>,
         admin_user: Option<AdminUser>,
     ) -> Context {
-        match ListingCardDisplay::all(&mut db).await {
-            Ok(listing_cards) => Context {
+        match get_context_fields(&mut db).await {
+            Ok((listing_cards, admin_settings)) => Context {
                 flash,
                 listing_cards: listing_cards,
                 user,
                 admin_user,
+                admin_settings: Some(admin_settings),
             },
             Err(e) => {
                 error_!("DB Listing::all() error: {}", e);
@@ -49,10 +61,43 @@ impl Context {
                     listing_cards: vec![],
                     user: user,
                     admin_user: admin_user,
+                    admin_settings: None,
                 }
             }
         }
+
+        // match ListingCardDisplay::all(&mut db).await {
+        //     Ok(listing_cards) => Context {
+        //         flash,
+        //         listing_cards: listing_cards,
+        //         user,
+        //         admin_user,
+        //     },
+        //     Err(e) => {
+        //         error_!("DB Listing::all() error: {}", e);
+        //         Context {
+        //             flash: Some(("error".into(), "Fail to access database.".into())),
+        //             listing_cards: vec![],
+        //             user: user,
+        //             admin_user: admin_user,
+        //         }
+        //     }
+        // }
     }
+}
+
+async fn get_context_fields(
+    db: &mut Connection<Db>,
+) -> Result<(Vec<ListingCardDisplay>, AdminSettings), String> {
+    let listing_cards = ListingCardDisplay::all(db)
+        .await
+        .map_err(|_| "failed to update market name.")?;
+
+    let admin_settings = AdminSettings::single(db, AdminSettings::get_default())
+        .await
+        .map_err(|_| "failed to update market name.")?;
+
+    Ok((listing_cards, admin_settings))
 }
 
 // #[put("/<id>")]
