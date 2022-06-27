@@ -672,6 +672,16 @@
     },
     "query": "select * from listings WHERE id = ?;"
   },
+  "ac5550e56a3605c06f943cd68b5dc6e8aa82582f4384cef402b5d9d6a63f5d0b": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "UPDATE listings SET reviewed = true, approved = true WHERE public_id = ?"
+  },
   "b26ae7c5b32514b2b055605b39373406f820c6534ec6583bb52b3c1ac00a6855": {
     "describe": {
       "columns": [],

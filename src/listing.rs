@@ -2,7 +2,6 @@ use crate::db::Db;
 use crate::models::{AdminSettings, Listing, ListingDisplay, ShippingOption};
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
-use rocket::response::status::NotFound;
 use rocket::response::Flash;
 use rocket::response::Redirect;
 use rocket::serde::Serialize;
@@ -99,7 +98,7 @@ async fn submit_listing(db: &mut Connection<Db>, id: &str) -> Result<(), String>
     if listing.submitted {
         Err("Listing is already submitted.".to_string())
     } else if listing.approved {
-        Err("Listing has not been approved.".to_string())
+        Err("Listing is already approved.".to_string())
     } else {
         Listing::mark_as_submitted(db, id)
             .await
@@ -114,21 +113,36 @@ async fn approve(
     mut db: Connection<Db>,
     user: User,
     admin_user: AdminUser,
-) -> Result<String, NotFound<String>> {
-    // match Task::toggle_with_id(id, &mut db).await {
-    //     Ok(_) => Ok(Redirect::to("/")),
-    //     Err(e) => {
-    //         error_!("DB toggle({}) error: {}", id, e);
-    //         Err(Template::render(
-    //             "index",
-    //             Context::err(db, "Failed to toggle task.", Some(user)).await,
-    //         ))
-    //     }
-    // }
+) -> Result<Flash<Redirect>, Flash<Redirect>> {
+    match approve_listing(&mut db, id).await {
+        Ok(_) => Ok(Flash::success(
+            Redirect::to(uri!("/listing", index(id, Some(id)))),
+            "Marked as approved".to_string(),
+        )),
+        Err(e) => {
+            error_!("Mark approved({}) error: {}", id, e);
+            Err(Flash::error(
+                Redirect::to(uri!("/listing", index(id, Some(id)))),
+                e,
+            ))
+        }
+    }
+}
 
-    println!("Handling approve endpoint for {:?}", id);
-
-    Ok("foo".to_string())
+async fn approve_listing(db: &mut Connection<Db>, id: &str) -> Result<(), String> {
+    let listing = Listing::single_by_public_id(db, id)
+        .await
+        .map_err(|_| "failed to get listing")?;
+    if !listing.submitted {
+        Err("Listing is not submitted.".to_string())
+    } else if listing.approved {
+        Err("Listing is already approved.".to_string())
+    } else {
+        Listing::mark_as_approved(db, id)
+            .await
+            .map_err(|_| "failed to update listing")?;
+        Ok(())
+    }
 }
 
 // #[delete("/<id>")]
