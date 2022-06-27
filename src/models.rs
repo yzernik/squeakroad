@@ -240,6 +240,19 @@ impl Listing {
 
         Ok(listing)
     }
+
+    pub async fn mark_as_submitted(
+        db: &mut Connection<Db>,
+        public_id: &str,
+    ) -> Result<(), sqlx::Error> {
+        sqlx::query!(
+            "UPDATE listings SET submitted = true WHERE public_id = ?",
+            public_id,
+        )
+        .execute(&mut **db)
+        .await?;
+        Ok(())
+    }
 }
 
 impl ListingImage {

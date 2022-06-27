@@ -1,7 +1,10 @@
 use crate::db::Db;
-use crate::models::{AdminSettings, ListingDisplay, ShippingOption};
+use crate::models::{AdminSettings, Listing, ListingDisplay, ShippingOption};
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
+use rocket::response::status::NotFound;
+use rocket::response::Flash;
+use rocket::response::Redirect;
 use rocket::serde::Serialize;
 use rocket_auth::AdminUser;
 use rocket_auth::User;
@@ -65,19 +68,89 @@ impl Context {
     }
 }
 
-// #[put("/<id>")]
-// async fn toggle(id: i32, mut db: Connection<Db>, user: User) -> Result<Redirect, Template> {
-//     match Task::toggle_with_id(id, &mut db).await {
-//         Ok(_) => Ok(Redirect::to("/")),
-//         Err(e) => {
-//             error_!("DB toggle({}) error: {}", id, e);
-//             Err(Template::render(
-//                 "index",
-//                 Context::err(db, "Failed to toggle task.", Some(user)).await,
-//             ))
-//         }
-//     }
-// }
+#[put("/<id>/submit")]
+async fn submit(
+    id: &str,
+    mut db: Connection<Db>,
+    user: User,
+    admin_user: Option<AdminUser>,
+) -> Result<Flash<Redirect>, Flash<Redirect>> {
+    // match Task::toggle_with_id(id, &mut db).await {
+    //     Ok(_) => Ok(Redirect::to("/")),
+    //     Err(e) => {
+    //         error_!("DB toggle({}) error: {}", id, e);
+    //         Err(Template::render(
+    //             "index",
+    //             Context::err(db, "Failed to toggle task.", Some(user)).await,
+    //         ))
+    //     }
+    // }
+    println!("Handling submit endpoint for {:?}", id);
+
+    match Listing::mark_as_submitted(&mut db, id).await {
+        Ok(_) => Ok(Flash::success(
+            Redirect::to(uri!("/listing", index(id, Some(id)))),
+            "Marked as submitted".to_string(),
+        )),
+        Err(e) => {
+            error_!("Mark submitted({}) error: {}", id, e);
+            Err(Flash::error(
+                Redirect::to(uri!("/listing", index(id, Some(id)))),
+                "Failed to mark as submitted".to_string(),
+            ))
+        }
+    }
+}
+
+async fn submit_listing(id: &str, db: &mut Connection<Db>, user: User) -> Result<(), String> {
+    let listing = Listing::single_by_public_id(db, id)
+        .await
+        .map_err(|_| "failed to get listing")?;
+
+    if listing.approved {
+        Err("Listing is already approved.".to_string())
+    } else if !listing.submitted {
+        Err("Listing has not been submitted.".to_string())
+    } else {
+        // let shipping_option = ShippingOption {
+        //     id: None,
+        //     public_id: Uuid::new_v4().to_string(),
+        //     listing_id: listing.id.unwrap(),
+        //     title: title,
+        //     description: description,
+        //     price_sat: price_sat,
+        // };
+
+        // ShippingOption::insert(shipping_option, db)
+        //     .await
+        //     .map_err(|_| "failed to save shipping option.")?;
+
+        Ok(())
+    }
+}
+
+#[put("/<id>/approve")]
+async fn approve(
+    id: &str,
+    mut db: Connection<Db>,
+    user: User,
+    admin_user: AdminUser,
+) -> Result<String, NotFound<String>> {
+    // match Task::toggle_with_id(id, &mut db).await {
+    //     Ok(_) => Ok(Redirect::to("/")),
+    //     Err(e) => {
+    //         error_!("DB toggle({}) error: {}", id, e);
+    //         Err(Template::render(
+    //             "index",
+    //             Context::err(db, "Failed to toggle task.", Some(user)).await,
+    //         ))
+    //     }
+    // }
+
+    println!("Handling approve endpoint for {:?}", id);
+
+    Ok("foo".to_string())
+}
 
 // #[delete("/<id>")]
 // async fn delete(id: i32, mut db: Connection<Db>, user: User) -> Result<Flash<Redirect>, Template> {
@@ -114,6 +187,6 @@ async fn index(
 
 pub fn listing_stage() -> AdHoc {
     AdHoc::on_ignite("Listing Stage", |rocket| async {
-        rocket.mount("/listing", routes![index])
+        rocket.mount("/listing", routes![index, submit, approve])
     })
 }

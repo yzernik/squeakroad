@@ -6,13 +6,19 @@
   <div class="full-width-container">
     <p><!--Nothing to see here --></p>
 
+    {% if flash %}
+    <small class="field-{{flash.0}}-msg">
+      {{ flash.1 }}
+    </small>
+    {% endif %}
+
     <!-- Options for the owner of the listing -->
     {% if user and listing_display.listing.user_id == user.id %}
     {% if not listing_display.listing.submitted %}
     <h5>Unsubmitted Listing</h5>
     <p><a href="/update_listing_images/{{ listing_display.listing.public_id }}">Update images</a></p>
     <p><a href="/update_shipping_options/{{ listing_display.listing.public_id }}">Update shipping options</a></p>
-    <form class="inline" action="submit_listing" method="post">
+    <form class="inline" action="/listing/{{ listing_display.listing.public_id }}/submit" method="post">
       <input type="hidden" name="_method" value="put" />
       <button class="small" type="submit">Submit Listing</button>
     </form>
@@ -35,11 +41,11 @@
     <h5>Unsubmitted Listing</h5>
     {% elif not listing_display.listing.reviewed %}
     <h5>Pending Listing (waiting for admin approval)</h5>
-    <form class="inline" action="approve_listing" method="post">
+    <form class="inline" action="/listing/{{ listing_display.listing.public_id }}/approve" method="post">
       <input type="hidden" name="_method" value="put" />
       <button class="small" type="submit">Approve Listing</button>
     </form>
-    <form class="inline" action="reject_listing" method="post">
+    <form class="inline" action="/listing/approve" method="post">
       <input type="hidden" name="_method" value="put" />
       <button class="small" type="submit">Reject Listing</button>
     </form>

@@ -1,5 +1,15 @@
 {
   "db": "SQLite",
+  "06b8e3736f6c017aafb117c0e3ca2dae65a8cde45a73ef585d222cc6b41e69c3": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "UPDATE listings SET submitted = true WHERE public_id = ?"
+  },
   "11e3096becb72f427c8d3911ef4327afd9516143806981e11f8e34d069c14472": {
     "describe": {
       "columns": [
