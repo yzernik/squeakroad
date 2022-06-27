@@ -61,7 +61,7 @@ pub fn stage() -> AdHoc {
     AdHoc::on_ignite("SQLx Stage", |rocket| async {
         rocket
             .attach(Db::init())
-            //.attach(AdHoc::try_on_ignite("SQLx Migrations", run_migrations))
+            .attach(AdHoc::try_on_ignite("SQLx Migrations", run_migrations))
             .attach(AdHoc::try_on_ignite(
                 "SQLx Create Users table",
                 create_users_table,
