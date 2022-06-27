@@ -54,9 +54,11 @@
           <div>
             {% if user %}
             Welcome, <a class="navbar-brand" href="/user/{{ user.email }}">{{ user.email }}</a>
-            {% endif %}
             {% if admin_user %}
             <a class="navbar-brand" href="/admin">Admin</a>
+            {% else %}
+            <a class="navbar-brand" href="/account">Account</a>
+            {% endif %}
             {% endif %}
             {% if not user %}
             <a class="navbar-brand" href="/login">Login</a>
