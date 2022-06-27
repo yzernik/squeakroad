@@ -1,53 +1,5 @@
 {
   "db": "SQLite",
-  "0389d1e24d67dbdc1c8b79f34a68bea56bf1a30a86f939ee07ca0ffddf63e72e": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int64"
-        },
-        {
-          "name": "listing_id",
-          "ordinal": 1,
-          "type_info": "Int64"
-        },
-        {
-          "name": "description",
-          "ordinal": 2,
-          "type_info": "Text"
-        },
-        {
-          "name": "price_msat",
-          "ordinal": 3,
-          "type_info": "Int64"
-        },
-        {
-          "name": "title",
-          "ordinal": 4,
-          "type_info": "Text"
-        },
-        {
-          "name": "public_id",
-          "ordinal": 5,
-          "type_info": "Text"
-        }
-      ],
-      "nullable": [
-        true,
-        false,
-        false,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "select * from shippingoptions WHERE listing_id = ? ORDER BY shippingoptions.price_msat ASC;"
-  },
   "11e3096becb72f427c8d3911ef4327afd9516143806981e11f8e34d069c14472": {
     "describe": {
       "columns": [
@@ -102,7 +54,7 @@
           "type_info": "Text"
         },
         {
-          "name": "price_msat",
+          "name": "price_sat",
           "ordinal": 4,
           "type_info": "Int64"
         },
@@ -162,105 +114,7 @@
     },
     "query": "select * from listings;"
   },
-  "23f4121fdf237d52eda133d4169eab815dc827b57b88f05d3b97554fd286b393": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "DELETE FROM shippingoptions WHERE public_id = ?"
-  },
-  "261ae4d53a3d68662ee430409620d00cee4a835d5ea7b31a825b12e42213913f": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 5
-      }
-    },
-    "query": "INSERT INTO shippingoptions (public_id, listing_id, title, description, price_msat) VALUES (?, ?, ?, ?, ?)"
-  },
-  "3c289da9873097a11191dbedc5c78d86afd6a6d36771bfeb12f331abca6279cf": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 2
-      }
-    },
-    "query": "INSERT INTO posts (title, text) VALUES (?, ?)"
-  },
-  "3f31a93fe04c7842a54db02d3c9268bbb9b9b568148d3754fe23c4b5759efd86": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 2
-      }
-    },
-    "query": "INSERT INTO adminsettings (market_name, fee_rate_basis_points) VALUES (?, ?)"
-  },
-  "4415c35941e52a981b10707fe2e1ceb0bad0e473701e51ef21ecb2973c76b4df": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int64"
-        }
-      ],
-      "nullable": [
-        false
-      ],
-      "parameters": {
-        "Right": 0
-      }
-    },
-    "query": "SELECT id FROM posts"
-  },
-  "4d4b254d378298478a0f2617b46a5b823b6b8c7f04d3d4ac4f9fd9851dc84901": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 11
-      }
-    },
-    "query": "INSERT INTO listings (public_id, user_id, title, description, price_msat, quantity, submitted, reviewed, approved, removed, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-  },
-  "501eb603b5ab9e467ecb0b5211b67740d1455a34904bbe5ba45bdb0975f18b50": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "UPDATE listingimages SET is_primary = false WHERE listing_id = ?"
-  },
-  "605752b2a483360181b72529b1f3308c826930b42a8e4e9eba09599b46d53954": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 3
-      }
-    },
-    "query": "INSERT INTO listingimages (public_id, listing_id, image_data) VALUES (?, ?, ?)"
-  },
-  "668690acaca0a0c0b4ac306b14d82aa1bee940f0776fae3f9962639b78328858": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 0
-      }
-    },
-    "query": "DELETE FROM posts"
-  },
-  "6c38b6df55028db9604f2fd1e6d1fc919fece78e2c56af3e9e1e654a7f895ddf": {
+  "1f596c66681c6b85bf47565432ed92c509a9271737e13abe442fe70d71f47b2d": {
     "describe": {
       "columns": [
         {
@@ -289,7 +143,7 @@
           "type_info": "Text"
         },
         {
-          "name": "price_msat",
+          "name": "price_sat",
           "ordinal": 5,
           "type_info": "Int64"
         },
@@ -384,7 +238,133 @@
         "Right": 0
       }
     },
-    "query": "\nselect\n listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.quantity, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username\nfrom\n listings\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nINNER JOIN\n users\nON\n listings.user_id = users.id\nWHERE listings.quantity > 0\nGROUP BY\n listings.id\n;"
+    "query": "\nselect\n listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username\nfrom\n listings\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nINNER JOIN\n users\nON\n listings.user_id = users.id\nWHERE listings.quantity > 0\nGROUP BY\n listings.id\n;"
+  },
+  "23f4121fdf237d52eda133d4169eab815dc827b57b88f05d3b97554fd286b393": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "DELETE FROM shippingoptions WHERE public_id = ?"
+  },
+  "3c289da9873097a11191dbedc5c78d86afd6a6d36771bfeb12f331abca6279cf": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "INSERT INTO posts (title, text) VALUES (?, ?)"
+  },
+  "3f31a93fe04c7842a54db02d3c9268bbb9b9b568148d3754fe23c4b5759efd86": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "INSERT INTO adminsettings (market_name, fee_rate_basis_points) VALUES (?, ?)"
+  },
+  "4415c35941e52a981b10707fe2e1ceb0bad0e473701e51ef21ecb2973c76b4df": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "SELECT id FROM posts"
+  },
+  "501eb603b5ab9e467ecb0b5211b67740d1455a34904bbe5ba45bdb0975f18b50": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "UPDATE listingimages SET is_primary = false WHERE listing_id = ?"
+  },
+  "605752b2a483360181b72529b1f3308c826930b42a8e4e9eba09599b46d53954": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 3
+      }
+    },
+    "query": "INSERT INTO listingimages (public_id, listing_id, image_data) VALUES (?, ?, ?)"
+  },
+  "668690acaca0a0c0b4ac306b14d82aa1bee940f0776fae3f9962639b78328858": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "DELETE FROM posts"
+  },
+  "7167813bfa8f2699a158c45c3605558b398d5bcc779ab036e5b5796f89a4f262": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "listing_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        },
+        {
+          "name": "description",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "price_sat",
+          "ordinal": 3,
+          "type_info": "Int64"
+        },
+        {
+          "name": "title",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "public_id",
+          "ordinal": 5,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "select * from shippingoptions WHERE listing_id = ? ORDER BY shippingoptions.price_sat ASC;"
   },
   "770ec17e2277e313a56c78ecab71d0ee460922cac72efddf9869ca4194276572": {
     "describe": {
@@ -466,7 +446,7 @@
           "type_info": "Text"
         },
         {
-          "name": "price_msat",
+          "name": "price_sat",
           "ordinal": 4,
           "type_info": "Int64"
         },
@@ -569,7 +549,7 @@
           "type_info": "Text"
         },
         {
-          "name": "price_msat",
+          "name": "price_sat",
           "ordinal": 3,
           "type_info": "Int64"
         },
@@ -622,7 +602,7 @@
           "type_info": "Text"
         },
         {
-          "name": "price_msat",
+          "name": "price_sat",
           "ordinal": 4,
           "type_info": "Int64"
         },
@@ -682,6 +662,16 @@
     },
     "query": "select * from listings WHERE id = ?;"
   },
+  "b26ae7c5b32514b2b055605b39373406f820c6534ec6583bb52b3c1ac00a6855": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 5
+      }
+    },
+    "query": "INSERT INTO shippingoptions (public_id, listing_id, title, description, price_sat) VALUES (?, ?, ?, ?, ?)"
+  },
   "b3f7779f61e725801c7ca07f135147d29d40d68fdc545e1ed71c624daf195562": {
     "describe": {
       "columns": [],
@@ -731,6 +721,16 @@
       }
     },
     "query": "DELETE FROM listingimages WHERE public_id = ?"
+  },
+  "df4b457087c914a481898c500668044088a27682ed5e35b3055ddcfd84930e3f": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 11
+      }
+    },
+    "query": "INSERT INTO listings (public_id, user_id, title, description, price_sat, quantity, submitted, reviewed, approved, removed, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
   },
   "e94cd0fbe6f4a8d90120733fb88081da00668901ed37ba6ca200f82dc2331aaa": {
     "describe": {

@@ -40,7 +40,7 @@
     {% for shipping_option in listing_display.shipping_options %}
     <li>
       <p>{{ shipping_option.title }}</p>
-      <p>Price: {{ shipping_option.price_msat/1000 }} sats</p>
+      <p>Price: {{ shipping_option.price_sat }} sats</p>
       <p>{{ shipping_option.description }}</p>
       <form class="inline" action="/add_shipping_options/{{listing_display.listing.public_id}}/add_shipping_option/{{shipping_option.public_id}}" method="post">
         <input type="hidden" name="_method" value="delete" />

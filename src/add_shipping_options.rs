@@ -87,19 +87,9 @@ async fn new(
     let shipping_option_info = shipping_option_form.into_inner();
     let title = shipping_option_info.title;
     let description = shipping_option_info.description;
-    let price_msat = shipping_option_info.price_sat * 1000;
+    let price_sat = shipping_option_info.price_sat;
 
-    match add_shipping_option(
-        id,
-        title,
-        description,
-        price_msat,
-        &mut db,
-        user,
-        admin_user,
-    )
-    .await
-    {
+    match add_shipping_option(id, title, description, price_sat, &mut db, user, admin_user).await {
         Ok(_) => Flash::success(
             Redirect::to(uri!("/add_shipping_options", index(id))),
             "Shipping option successfully added.",
@@ -117,7 +107,7 @@ async fn add_shipping_option(
     id: &str,
     title: String,
     description: String,
-    price_msat: u64,
+    price_sat: u64,
     db: &mut Connection<Db>,
     user: User,
     _admin_user: Option<AdminUser>,
@@ -143,7 +133,7 @@ async fn add_shipping_option(
             listing_id: listing.id.unwrap(),
             title: title,
             description: description,
-            price_msat: price_msat,
+            price_sat: price_sat,
         };
 
         ShippingOption::insert(shipping_option, db)

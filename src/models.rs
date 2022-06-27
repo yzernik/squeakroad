@@ -26,7 +26,7 @@ pub struct Listing {
     pub user_id: i32,
     pub title: String,
     pub description: String,
-    pub price_msat: u64,
+    pub price_sat: u64,
     pub quantity: u32,
     pub submitted: bool,
     pub reviewed: bool,
@@ -101,7 +101,7 @@ pub struct ShippingOption {
     pub listing_id: i32,
     pub title: String,
     pub description: String,
-    pub price_msat: u64,
+    pub price_sat: u64,
 }
 
 #[derive(Debug, FromForm)]
@@ -141,7 +141,7 @@ impl Listing {
                 user_id: r.user_id as _,
                 title: r.title,
                 description: r.description,
-                price_msat: r.price_msat as _,
+                price_sat: r.price_sat as _,
                 quantity: r.quantity as _,
                 submitted: r.submitted,
                 reviewed: r.reviewed,
@@ -160,18 +160,18 @@ impl Listing {
 
     /// Returns the id of the inserted row.
     pub async fn insert(listing: Listing, db: &mut Connection<Db>) -> Result<i32, sqlx::Error> {
-        let price_msat = i64::try_from(listing.price_msat).ok().unwrap();
+        let price_sat = i64::try_from(listing.price_sat).ok().unwrap();
         let created_time_ms = i64::try_from(listing.created_time_ms).ok().unwrap();
-        println!("price_msat: {:?}", price_msat);
+        println!("price_sat: {:?}", price_sat);
         println!("created_time_ms: {:?}", created_time_ms);
 
         let insert_result = sqlx::query!(
-            "INSERT INTO listings (public_id, user_id, title, description, price_msat, quantity, submitted, reviewed, approved, removed, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO listings (public_id, user_id, title, description, price_sat, quantity, submitted, reviewed, approved, removed, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             listing.public_id,
             listing.user_id,
             listing.title,
             listing.description,
-            price_msat,
+            price_sat,
             listing.quantity,
             listing.submitted,
             listing.reviewed,
@@ -196,7 +196,7 @@ impl Listing {
                 user_id: r.user_id as _,
                 title: r.title,
                 description: r.description,
-                price_msat: u64::try_from(r.price_msat).ok().unwrap(),
+                price_sat: u64::try_from(r.price_sat).ok().unwrap(),
                 quantity: r.quantity as _,
                 submitted: r.submitted,
                 reviewed: r.reviewed,
@@ -207,7 +207,7 @@ impl Listing {
             .await?;
 
         println!("{:?}", listing);
-        println!("price_msat: {:?}", listing.price_msat);
+        println!("price_sat: {:?}", listing.price_sat);
         println!("created_time_ms: {:?}", listing.created_time_ms);
 
         Ok(listing)
@@ -225,7 +225,7 @@ impl Listing {
                 user_id: r.user_id as _,
                 title: r.title,
                 description: r.description,
-                price_msat: r.price_msat as _,
+                price_sat: r.price_sat as _,
                 quantity: r.quantity as _,
                 submitted: r.submitted,
                 reviewed: r.reviewed,
@@ -236,7 +236,7 @@ impl Listing {
             .await?;
 
         println!("{:?}", listing);
-        println!("price_msat: {:?}", listing.price_msat);
+        println!("price_sat: {:?}", listing.price_sat);
         println!("created_time_ms: {:?}", listing.created_time_ms);
 
         Ok(listing)
@@ -437,7 +437,7 @@ impl ListingCard {
         let listing_cards =
             sqlx::query!("
 select
- listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.quantity, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+ listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  listings
 LEFT JOIN
@@ -462,7 +462,7 @@ GROUP BY
                     user_id: r.user_id as _,
                     title: r.title,
                     description: r.description,
-                    price_msat: r.price_msat as _,
+                    price_sat: r.price_sat as _,
                     quantity: r.quantity as _,
                     submitted: r.submitted,
                     reviewed: r.reviewed,
@@ -523,17 +523,17 @@ impl ShippingOption {
         db: &mut Connection<Db>,
     ) -> Result<usize, sqlx::Error> {
         // let my_uuid_str = Uuid::new_v4().to_string();
-        let price_msat = i64::try_from(shipping_option.price_msat).ok().unwrap();
+        let price_sat = i64::try_from(shipping_option.price_sat).ok().unwrap();
 
         println!("inserting shipping option: {:?}", shipping_option);
 
         let insert_result = sqlx::query!(
-            "INSERT INTO shippingoptions (public_id, listing_id, title, description, price_msat) VALUES (?, ?, ?, ?, ?)",
+            "INSERT INTO shippingoptions (public_id, listing_id, title, description, price_sat) VALUES (?, ?, ?, ?, ?)",
             shipping_option.public_id,
             shipping_option.listing_id,
             shipping_option.title,
             shipping_option.description,
-            price_msat,
+            price_sat,
         )
             .execute(&mut **db)
             .await?;
@@ -548,7 +548,7 @@ impl ShippingOption {
         listing_id: i32,
     ) -> Result<Vec<ShippingOption>, sqlx::Error> {
         let shipping_options = sqlx::query!(
-            "select * from shippingoptions WHERE listing_id = ? ORDER BY shippingoptions.price_msat ASC;",
+            "select * from shippingoptions WHERE listing_id = ? ORDER BY shippingoptions.price_sat ASC;",
             listing_id
         )
         .fetch(&mut **db)
@@ -558,7 +558,7 @@ impl ShippingOption {
             listing_id: r.listing_id as _,
             title: r.title,
             description: r.description,
-            price_msat: r.price_msat as _,
+            price_sat: r.price_sat as _,
         })
         .try_collect::<Vec<_>>()
         .await?;
@@ -583,7 +583,7 @@ impl ShippingOption {
             listing_id: r.listing_id as _,
             title: r.title,
             description: r.description,
-            price_msat: r.price_msat as _,
+            price_sat: r.price_sat as _,
         })
         .await?;
 

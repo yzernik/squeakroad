@@ -67,7 +67,7 @@
       <div class="one-half column">
 	<div class="container">
 	  <h3>{{ listing_display.listing.title }}</h3>
-	  <p><b>Price</b>: {{ listing_display.listing.price_msat }} msats</p>
+	  <p><b>Price</b>: {{ listing_display.listing.price_sat }} sats</p>
 	  <p><b>Quantity</b>: {{ listing_display.listing.quantity }}</p>
 	  <p><b>User</b>: <a href="/user/{{listing_display.user.username}}">{{ listing_display.user.username }}</a></p>
 
@@ -76,14 +76,14 @@
 	    <select id="shipping_option_id" name="shipping_option_id">
 	      <option disabled selected value> -- select an option -- </option>
 	      {% for shipping_option in listing_display.shipping_options %}
-	      <option value="{{ shipping_option.public_id }}" {% if selected_shipping_option and shipping_option.id == selected_shipping_option.id %}selected{% endif %}>{{ shipping_option.title }} ({{ shipping_option.price_msat }} msats)</option>
+	      <option value="{{ shipping_option.public_id }}" {% if selected_shipping_option and shipping_option.id == selected_shipping_option.id %}selected{% endif %}>{{ shipping_option.title }} ({{ shipping_option.price_sat }} sats)</option>
 	      {% endfor %}
 	    </select>
 	    <input type="submit" value="Update Shipping Option">
 	  </form>
 
 	  {% if selected_shipping_option %}
-	  <p><b>Shipping Option</b>: {{ selected_shipping_option.title }} ({{ selected_shipping_option.price_msat/1000 }} sats)</p>
+	  <p><b>Shipping Option</b>: {{ selected_shipping_option.title }} ({{ selected_shipping_option.price_sat }} sats)</p>
 	  <p>{{ selected_shipping_option.description }}</p>
 	  {% endif %}
 
