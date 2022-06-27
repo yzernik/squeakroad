@@ -119,7 +119,15 @@ async fn add_shipping_option(
         .await
         .map_err(|_| "failed to get shipping options for listing")?;
 
-    if listing.user_id != user.id() {
+    if title.is_empty() {
+        Err("Title cannot be empty.".to_string())
+    } else if description.is_empty() {
+        Err("Description cannot be empty.".to_string())
+    } else if title.len() > 64 {
+        Err("Title length is too long.".to_string())
+    } else if description.len() > 4096 {
+        Err("Description length is too long.".to_string())
+    } else if listing.user_id != user.id() {
         Err("Listing belongs to a different user.".to_string())
     } else if listing.submitted {
         Err("Listing is already submitted.".to_string())

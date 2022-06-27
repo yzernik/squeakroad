@@ -91,28 +91,33 @@ async fn create_listing(
         .unwrap()
         .as_millis() as u64;
 
-    let listing = Listing {
-        id: None,
-        public_id: Uuid::new_v4().to_string(),
-        user_id: user.id(),
-        title: listing_info.title,
-        description: listing_info.description,
-        price_sat: listing_info.price_sat,
-        quantity: listing_info.quantity,
-        submitted: false,
-        reviewed: false,
-        approved: false,
-        removed: false,
-        created_time_ms: now,
-    };
-
-    if listing.description.is_empty() {
+    if listing_info.title.is_empty() {
+        Err("Title cannot be empty.".to_string())
+    } else if listing_info.description.is_empty() {
         Err("Description cannot be empty.".to_string())
-    } else if listing.quantity <= 0 {
+    } else if listing_info.title.len() > 64 {
+        Err("Title length is too long.".to_string())
+    } else if listing_info.description.len() > 4096 {
+        Err("Description length is too long.".to_string())
+    } else if listing_info.quantity <= 0 {
         Err("Quantity must be a positive number.".to_string())
     } else if user.is_admin {
         Err("Admin user cannot create a listing.".to_string())
     } else {
+        let listing = Listing {
+            id: None,
+            public_id: Uuid::new_v4().to_string(),
+            user_id: user.id(),
+            title: listing_info.title,
+            description: listing_info.description,
+            price_sat: listing_info.price_sat,
+            quantity: listing_info.quantity,
+            submitted: false,
+            reviewed: false,
+            approved: false,
+            removed: false,
+            created_time_ms: now,
+        };
         match Listing::insert(listing, db).await {
             Ok(listing_id) => match Listing::single(db, listing_id).await {
                 Ok(new_listing) => Ok(new_listing.public_id.clone()),
