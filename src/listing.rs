@@ -3,6 +3,8 @@ use crate::models::{AdminSettings, Listing, ListingDisplay, ShippingOption};
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::response::status::NotFound;
+use rocket::response::Flash;
+use rocket::response::Redirect;
 use rocket::serde::Serialize;
 use rocket_auth::AdminUser;
 use rocket_auth::User;
@@ -72,7 +74,7 @@ async fn submit(
     mut db: Connection<Db>,
     user: User,
     admin_user: Option<AdminUser>,
-) -> Result<String, NotFound<String>> {
+) -> Result<Flash<Redirect>, Flash<Redirect>> {
     // match Task::toggle_with_id(id, &mut db).await {
     //     Ok(_) => Ok(Redirect::to("/")),
     //     Err(e) => {
@@ -83,10 +85,21 @@ async fn submit(
     //         ))
     //     }
     // }
-
     println!("Handling submit endpoint for {:?}", id);
 
-    Ok("foo".to_string())
+    match Listing::mark_as_submitted(&mut db, id).await {
+        Ok(_) => Ok(Flash::success(
+            Redirect::to(uri!("/listing", index(id, Some(id)))),
+            "Marked as submitted".to_string(),
+        )),
+        Err(e) => {
+            error_!("Mark submitted({}) error: {}", id, e);
+            Err(Flash::error(
+                Redirect::to(uri!("/listing", index(id, Some(id)))),
+                "Failed to mark as submitted".to_string(),
+            ))
+        }
+    }
 }
 
 async fn submit_listing(id: &str, db: &mut Connection<Db>, user: User) -> Result<(), String> {
