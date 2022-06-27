@@ -9,10 +9,10 @@ Username: {{ user.email }}.
 <a href="my_active_listings">My Active Listings</a>
 
 <br>
-<a href="my_unsubmitted_listings">My Unsubmitted :istings</a>
+<a href="my_unsubmitted_listings">My Unsubmitted Listings</a>
 
 <br>
-<a href="my_pending_listings">My pPending Listings</a>
+<a href="my_pending_listings">My Pending Listings</a>
 
 <br>
 <a href="my_rejected_listings">My Rejected Listings</a>
