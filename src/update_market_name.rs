@@ -81,7 +81,7 @@ async fn update(
     match change_market_name(new_market_name, &mut db).await {
         Ok(_) => Flash::success(
             Redirect::to(uri!("/update_market_name", index())),
-            "Market name successfully added.",
+            "Market name successfully updated.",
         ),
         Err(e) => Flash::error(Redirect::to(uri!("/update_market_name", index())), e),
     }
