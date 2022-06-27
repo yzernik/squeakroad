@@ -11,6 +11,7 @@ mod listing;
 mod listings;
 mod models;
 mod new_listing;
+mod pending_listings;
 mod posts;
 mod routes;
 mod update_listing_images;

@@ -47,7 +47,7 @@ impl Context {
         user: Option<User>,
         admin_user: Option<AdminUser>,
     ) -> Result<Context, String> {
-        let listing_cards = ListingCardDisplay::all(&mut db)
+        let listing_cards = ListingCardDisplay::all_approved(&mut db)
             .await
             .map_err(|_| "failed to update market name.")?;
 

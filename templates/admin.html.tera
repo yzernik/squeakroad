@@ -15,5 +15,8 @@ Hello there, your email is {{ user.email }}.
 <a href="/update_market_name">Update Market Name</a>
 
 <br>
+<a href="/review_pending_listings">Review Pending Listings</a>
+
+<br>
 
 {% endblock body %}
