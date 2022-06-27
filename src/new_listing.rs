@@ -106,7 +106,9 @@ async fn create_listing(
         created_time_ms: now,
     };
 
-    if listing.description.is_empty() {
+    if listing.title.is_empty() {
+        Err("Title cannot be empty.".to_string())
+    } else if listing.description.is_empty() {
         Err("Description cannot be empty.".to_string())
     } else if listing.quantity <= 0 {
         Err("Quantity must be a positive number.".to_string())

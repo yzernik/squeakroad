@@ -96,7 +96,7 @@ async fn change_market_name(
     new_market_name: String,
     db: &mut Connection<Db>,
 ) -> Result<(), String> {
-    if new_market_name.len() == 0 {
+    if new_market_name.is_empty() {
         Err("Market name cannot be empty.".to_string())
     } else if new_market_name.len() >= 64 {
         Err("Market name is too long.".to_string())
