@@ -614,7 +614,7 @@ impl AdminSettings {
                 maybe_r.map(|r| AdminSettings {
                     id: Some(r.id.try_into().unwrap()),
                     market_name: r.market_name,
-                    fee_rate_basis_points: r.fee_rate_basis_points as _,
+                    fee_rate_basis_points: r.fee_rate_basis_points.try_into().unwrap(),
                 })
             })
             .await?;
