@@ -75,18 +75,7 @@ async fn submit(
     user: User,
     admin_user: Option<AdminUser>,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
-    // match Task::toggle_with_id(id, &mut db).await {
-    //     Ok(_) => Ok(Redirect::to("/")),
-    //     Err(e) => {
-    //         error_!("DB toggle({}) error: {}", id, e);
-    //         Err(Template::render(
-    //             "index",
-    //             Context::err(db, "Failed to toggle task.", Some(user)).await,
-    //         ))
-    //     }
-    // }
     println!("Handling submit endpoint for {:?}", id);
-
     match Listing::mark_as_submitted(&mut db, id).await {
         Ok(_) => Ok(Flash::success(
             Redirect::to(uri!("/listing", index(id, Some(id)))),
