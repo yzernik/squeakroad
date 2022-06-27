@@ -475,7 +475,10 @@ INNER JOIN
  users
 ON
  listings.user_id = users.id
-WHERE listings.quantity > 0
+WHERE
+ listings.approved
+AND
+ listings.quantity > 0
 GROUP BY
  listings.id
 ;")
