@@ -87,7 +87,7 @@ async fn update(
     }
 
     // Flash::error(
-    //     Redirect::to(uri!("/add_shipping_options", index(id))),
+    //     Redirect::to(uri!("/update_shipping_options", index(id))),
     //     "not implemented".to_string(),
     // )
 }

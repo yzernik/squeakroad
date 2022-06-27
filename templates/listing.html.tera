@@ -11,7 +11,7 @@
     {% if not listing_display.listing.submitted %}
     <h5>Unsubmitted Listing</h5>
     <p><a href="/update_listing_images/{{ listing_display.listing.public_id }}">Update images</a></p>
-    <p><a href="/add_shipping_options/{{ listing_display.listing.public_id }}">Add shipping options</a></p>
+    <p><a href="/update_shipping_options/{{ listing_display.listing.public_id }}">Update shipping options</a></p>
     <form class="inline" action="submit_listing" method="post">
       <input type="hidden" name="_method" value="put" />
       <button class="small" type="submit">Submit Listing</button>
