@@ -137,7 +137,7 @@ impl Listing {
             .map_ok(|r| Listing {
                 id: Some(r.id.try_into().unwrap()),
                 public_id: r.public_id,
-                user_id: r.user_id as _,
+                user_id: r.user_id.try_into().unwrap(),
                 title: r.title,
                 description: r.description,
                 price_sat: r.price_sat.try_into().unwrap(),
@@ -192,7 +192,7 @@ impl Listing {
             .map_ok(|r| Listing {
                 id: Some(r.id.try_into().unwrap()),
                 public_id: r.public_id,
-                user_id: r.user_id as _,
+                user_id: r.user_id.try_into().unwrap(),
                 title: r.title,
                 description: r.description,
                 price_sat: r.price_sat.try_into().unwrap(),
@@ -221,7 +221,7 @@ impl Listing {
             .map_ok(|r| Listing {
                 id: r.id.map(|n| n as _),
                 public_id: r.public_id,
-                user_id: r.user_id as _,
+                user_id: r.user_id.try_into().unwrap(),
                 title: r.title,
                 description: r.description,
                 price_sat: r.price_sat.try_into().unwrap(),
@@ -458,7 +458,7 @@ GROUP BY
                 let l = Listing {
                     id: Some(r.id as _),
                     public_id: r.public_id,
-                    user_id: r.user_id as _,
+                    user_id: r.user_id.try_into().unwrap(),
                     title: r.title,
                     description: r.description,
                     price_sat: r.price_sat.try_into().unwrap(),
