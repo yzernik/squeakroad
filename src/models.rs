@@ -141,7 +141,7 @@ impl Listing {
                 user_id: r.user_id as _,
                 title: r.title,
                 description: r.description,
-                price_sat: r.price_sat as _,
+                price_sat: u64::try_from(r.price_sat).ok().unwrap(),
                 quantity: r.quantity as _,
                 submitted: r.submitted,
                 reviewed: r.reviewed,
@@ -225,7 +225,7 @@ impl Listing {
                 user_id: r.user_id as _,
                 title: r.title,
                 description: r.description,
-                price_sat: r.price_sat as _,
+                price_sat: u64::try_from(r.price_sat).ok().unwrap(),
                 quantity: r.quantity as _,
                 submitted: r.submitted,
                 reviewed: r.reviewed,
@@ -462,7 +462,7 @@ GROUP BY
                     user_id: r.user_id as _,
                     title: r.title,
                     description: r.description,
-                    price_sat: r.price_sat as _,
+                    price_sat: u64::try_from(r.price_sat).ok().unwrap(),
                     quantity: r.quantity as _,
                     submitted: r.submitted,
                     reviewed: r.reviewed,
@@ -558,7 +558,7 @@ impl ShippingOption {
             listing_id: r.listing_id as _,
             title: r.title,
             description: r.description,
-            price_sat: r.price_sat as _,
+            price_sat: u64::try_from(r.price_sat).ok().unwrap(),
         })
         .try_collect::<Vec<_>>()
         .await?;
@@ -583,7 +583,7 @@ impl ShippingOption {
             listing_id: r.listing_id as _,
             title: r.title,
             description: r.description,
-            price_sat: r.price_sat as _,
+            price_sat: u64::try_from(r.price_sat).ok().unwrap(),
         })
         .await?;
 
