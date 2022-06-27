@@ -478,6 +478,8 @@ ON
 WHERE
  listings.approved
 AND
+ not listings.removed
+AND
  listings.quantity > 0
 GROUP BY
  listings.id
@@ -546,6 +548,8 @@ WHERE
  listings.submitted
 AND
  NOT listings.approved
+AND
+ not listings.removed
 AND
  listings.quantity > 0
 GROUP BY
@@ -618,6 +622,8 @@ WHERE
  listings.submitted
 AND
  NOT listings.approved
+AND
+ not listings.removed
 AND
  listings.quantity > 0
 AND

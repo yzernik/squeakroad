@@ -99,6 +99,8 @@ async fn submit_listing(db: &mut Connection<Db>, id: &str) -> Result<(), String>
         Err("Listing is already submitted.".to_string())
     } else if listing.approved {
         Err("Listing is already approved.".to_string())
+    } else if listing.removed {
+        Err("Listing is already removed.".to_string())
     } else {
         Listing::mark_as_submitted(db, id)
             .await
@@ -137,6 +139,8 @@ async fn approve_listing(db: &mut Connection<Db>, id: &str) -> Result<(), String
         Err("Listing is not submitted.".to_string())
     } else if listing.approved {
         Err("Listing is already approved.".to_string())
+    } else if listing.removed {
+        Err("Listing is already removed.".to_string())
     } else {
         Listing::mark_as_approved(db, id)
             .await
