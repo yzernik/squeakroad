@@ -137,7 +137,7 @@ impl Listing {
             .fetch(&mut **db)
             .map_ok(|r| Listing {
                 id: Some(r.id.try_into().unwrap()),
-                public_id: r.public_id as _,
+                public_id: r.public_id,
                 user_id: r.user_id as _,
                 title: r.title,
                 description: r.description,
@@ -192,7 +192,7 @@ impl Listing {
             .fetch_one(&mut **db)
             .map_ok(|r| Listing {
                 id: Some(r.id.try_into().unwrap()),
-                public_id: r.public_id as _,
+                public_id: r.public_id,
                 user_id: r.user_id as _,
                 title: r.title,
                 description: r.description,
@@ -221,7 +221,7 @@ impl Listing {
             .fetch_one(&mut **db)
             .map_ok(|r| Listing {
                 id: r.id.map(|n| n as _),
-                public_id: r.public_id as _,
+                public_id: r.public_id,
                 user_id: r.user_id as _,
                 title: r.title,
                 description: r.description,
@@ -458,7 +458,7 @@ GROUP BY
             .map_ok(|r| {
                 let l = Listing {
                     id: Some(r.id as _),
-                    public_id: r.public_id as _,
+                    public_id: r.public_id,
                     user_id: r.user_id as _,
                     title: r.title,
                     description: r.description,
