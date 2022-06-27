@@ -95,6 +95,10 @@ async fn create_listing(
         Err("Title cannot be empty.".to_string())
     } else if listing_info.description.is_empty() {
         Err("Description cannot be empty.".to_string())
+    } else if listing_info.title.len() > 64 {
+        Err("Title length is too long.".to_string())
+    } else if listing_info.description.len() > 4096 {
+        Err("Description length is too long.".to_string())
     } else if listing_info.quantity <= 0 {
         Err("Quantity must be a positive number.".to_string())
     } else if user.is_admin {
