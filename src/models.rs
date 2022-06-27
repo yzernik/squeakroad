@@ -259,7 +259,7 @@ impl Listing {
         public_id: &str,
     ) -> Result<(), sqlx::Error> {
         sqlx::query!(
-            "UPDATE listings SET approved = true WHERE public_id = ?",
+            "UPDATE listings SET reviewed = true, approved = true WHERE public_id = ?",
             public_id,
         )
         .execute(&mut **db)

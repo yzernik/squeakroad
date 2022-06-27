@@ -422,16 +422,6 @@
     },
     "query": "DELETE FROM posts WHERE id = ?"
   },
-  "7ef32fcaa050eb5b261b2e78eb2511757f6f63d2db15d1249983e618745427d6": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "UPDATE listings SET approved = true WHERE public_id = ?"
-  },
   "83f994a3f0b310e4faa8b4fb7e800ff508988f5edd5cb60ad635d71e1b398865": {
     "describe": {
       "columns": [],
@@ -681,6 +671,16 @@
       }
     },
     "query": "select * from listings WHERE id = ?;"
+  },
+  "ac5550e56a3605c06f943cd68b5dc6e8aa82582f4384cef402b5d9d6a63f5d0b": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "UPDATE listings SET reviewed = true, approved = true WHERE public_id = ?"
   },
   "b26ae7c5b32514b2b055605b39373406f820c6534ec6583bb52b3c1ac00a6855": {
     "describe": {
