@@ -3,7 +3,7 @@ CREATE TABLE listings (
     user_id INTEGER NOT NULL,
     title VARCHAR NOT NULL,
     description VARCHAR NOT NULL,
-    price_msat UNSIGNED BIG INT NOT NULL,
+    price_sat UNSIGNED BIG INT NOT NULL,
     completed BOOLEAN NOT NULL,
     approved BOOLEAN NOT NULL,
     created_time_ms UNSIGNED BIG INT NOT NULL

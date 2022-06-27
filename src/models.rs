@@ -7,7 +7,6 @@ use rocket_db_pools::{sqlx, Connection};
 use std::result::Result;
 extern crate base64;
 use sqlx::Acquire;
-use std::convert::TryFrom;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -26,7 +25,7 @@ pub struct Listing {
     pub user_id: i32,
     pub title: String,
     pub description: String,
-    pub price_msat: u64,
+    pub price_sat: u64,
     pub quantity: u32,
     pub submitted: bool,
     pub reviewed: bool,
@@ -101,7 +100,7 @@ pub struct ShippingOption {
     pub listing_id: i32,
     pub title: String,
     pub description: String,
-    pub price_msat: u64,
+    pub price_sat: u64,
 }
 
 #[derive(Debug, FromForm)]
@@ -137,17 +136,17 @@ impl Listing {
             .fetch(&mut **db)
             .map_ok(|r| Listing {
                 id: Some(r.id.try_into().unwrap()),
-                public_id: r.public_id as _,
-                user_id: r.user_id as _,
+                public_id: r.public_id,
+                user_id: r.user_id.try_into().unwrap(),
                 title: r.title,
                 description: r.description,
-                price_msat: r.price_msat as _,
-                quantity: r.quantity as _,
+                price_sat: r.price_sat.try_into().unwrap(),
+                quantity: r.quantity.try_into().unwrap(),
                 submitted: r.submitted,
                 reviewed: r.reviewed,
                 approved: r.approved,
                 removed: r.removed,
-                created_time_ms: r.created_time_ms as _,
+                created_time_ms: r.created_time_ms.try_into().unwrap(),
             })
             .try_collect::<Vec<_>>()
             .await?;
@@ -160,18 +159,18 @@ impl Listing {
 
     /// Returns the id of the inserted row.
     pub async fn insert(listing: Listing, db: &mut Connection<Db>) -> Result<i32, sqlx::Error> {
-        let price_msat = i64::try_from(listing.price_msat).ok().unwrap();
-        let created_time_ms = i64::try_from(listing.created_time_ms).ok().unwrap();
-        println!("price_msat: {:?}", price_msat);
+        let price_sat: i64 = listing.price_sat.try_into().unwrap();
+        let created_time_ms: i64 = listing.created_time_ms.try_into().unwrap();
+        println!("price_sat: {:?}", price_sat);
         println!("created_time_ms: {:?}", created_time_ms);
 
         let insert_result = sqlx::query!(
-            "INSERT INTO listings (public_id, user_id, title, description, price_msat, quantity, submitted, reviewed, approved, removed, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO listings (public_id, user_id, title, description, price_sat, quantity, submitted, reviewed, approved, removed, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             listing.public_id,
             listing.user_id,
             listing.title,
             listing.description,
-            price_msat,
+            price_sat,
             listing.quantity,
             listing.submitted,
             listing.reviewed,
@@ -192,22 +191,22 @@ impl Listing {
             .fetch_one(&mut **db)
             .map_ok(|r| Listing {
                 id: Some(r.id.try_into().unwrap()),
-                public_id: r.public_id as _,
-                user_id: r.user_id as _,
+                public_id: r.public_id,
+                user_id: r.user_id.try_into().unwrap(),
                 title: r.title,
                 description: r.description,
-                price_msat: u64::try_from(r.price_msat).ok().unwrap(),
-                quantity: r.quantity as _,
+                price_sat: r.price_sat.try_into().unwrap(),
+                quantity: r.quantity.try_into().unwrap(),
                 submitted: r.submitted,
                 reviewed: r.reviewed,
                 approved: r.approved,
                 removed: r.removed,
-                created_time_ms: u64::try_from(r.created_time_ms).ok().unwrap(),
+                created_time_ms: r.created_time_ms.try_into().unwrap(),
             })
             .await?;
 
         println!("{:?}", listing);
-        println!("price_msat: {:?}", listing.price_msat);
+        println!("price_sat: {:?}", listing.price_sat);
         println!("created_time_ms: {:?}", listing.created_time_ms);
 
         Ok(listing)
@@ -220,23 +219,23 @@ impl Listing {
         let listing = sqlx::query!("select * from listings WHERE public_id = ?;", public_id)
             .fetch_one(&mut **db)
             .map_ok(|r| Listing {
-                id: r.id.map(|n| n as _),
-                public_id: r.public_id as _,
-                user_id: r.user_id as _,
+                id: r.id.map(|n| n.try_into().unwrap()),
+                public_id: r.public_id,
+                user_id: r.user_id.try_into().unwrap(),
                 title: r.title,
                 description: r.description,
-                price_msat: r.price_msat as _,
-                quantity: r.quantity as _,
+                price_sat: r.price_sat.try_into().unwrap(),
+                quantity: r.quantity.try_into().unwrap(),
                 submitted: r.submitted,
                 reviewed: r.reviewed,
                 approved: r.approved,
                 removed: r.removed,
-                created_time_ms: r.created_time_ms as _,
+                created_time_ms: r.created_time_ms.try_into().unwrap(),
             })
             .await?;
 
         println!("{:?}", listing);
-        println!("price_msat: {:?}", listing.price_msat);
+        println!("price_sat: {:?}", listing.price_sat);
         println!("created_time_ms: {:?}", listing.created_time_ms);
 
         Ok(listing)
@@ -273,9 +272,9 @@ impl ListingImage {
         )
         .fetch(&mut **db)
         .map_ok(|r| ListingImage {
-            id: r.id.map(|n| n as _),
+            id: r.id.map(|n| n.try_into().unwrap()),
             public_id: r.public_id,
-            listing_id: r.listing_id as _,
+            listing_id: r.listing_id.try_into().unwrap(),
             image_data: r.image_data,
             is_primary: r.is_primary,
         })
@@ -297,9 +296,9 @@ impl ListingImage {
         )
         .fetch_one(&mut **db)
         .map_ok(|r| ListingImage {
-            id: r.id.map(|n| n as _),
+            id: r.id.map(|n| n.try_into().unwrap()),
             public_id: r.public_id,
-            listing_id: r.listing_id as _,
+            listing_id: r.listing_id.try_into().unwrap(),
             image_data: r.image_data,
             is_primary: r.is_primary,
         })
@@ -437,7 +436,7 @@ impl ListingCard {
         let listing_cards =
             sqlx::query!("
 select
- listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_msat, listings.quantity, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+ listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  listings
 LEFT JOIN
@@ -457,28 +456,28 @@ GROUP BY
                 .fetch(&mut **db)
             .map_ok(|r| {
                 let l = Listing {
-                    id: Some(r.id as _),
-                    public_id: r.public_id as _,
-                    user_id: r.user_id as _,
+                    id: Some(r.id.try_into().unwrap()),
+                    public_id: r.public_id,
+                    user_id: r.user_id.try_into().unwrap(),
                     title: r.title,
                     description: r.description,
-                    price_msat: r.price_msat as _,
-                    quantity: r.quantity as _,
+                    price_sat: r.price_sat.try_into().unwrap(),
+                    quantity: r.quantity.try_into().unwrap(),
                     submitted: r.submitted,
                     reviewed: r.reviewed,
                     approved: r.approved,
                     removed: r.removed,
-                    created_time_ms: r.created_time_ms as _,
+                    created_time_ms: r.created_time_ms.try_into().unwrap(),
                 };
-                let i = r.image_id.map(|_| ListingImage {
-                    id: Some(r.image_id.unwrap().try_into().unwrap()),
+                let i = r.image_id.map(|image_id| ListingImage {
+                    id: Some(image_id.try_into().unwrap()),
                     public_id: r.image_public_id,
-                    listing_id: r.listing_id as _,
+                    listing_id: r.listing_id.try_into().unwrap(),
                     image_data: r.image_data,
                     is_primary: r.is_primary,
                 });
-                let u = r.rocket_auth_user_id.map(|_| RocketAuthUser {
-                    id: Some(r.rocket_auth_user_id.unwrap().try_into().unwrap()),
+                let u = r.rocket_auth_user_id.map(|rocket_auth_user_id| RocketAuthUser {
+                    id: Some(rocket_auth_user_id.try_into().unwrap()),
                     username: r.rocket_auth_user_username.unwrap(),
                 });
                 ListingCard {
@@ -523,17 +522,17 @@ impl ShippingOption {
         db: &mut Connection<Db>,
     ) -> Result<usize, sqlx::Error> {
         // let my_uuid_str = Uuid::new_v4().to_string();
-        let price_msat = i64::try_from(shipping_option.price_msat).ok().unwrap();
+        let price_sat: i64 = shipping_option.price_sat.try_into().unwrap();
 
         println!("inserting shipping option: {:?}", shipping_option);
 
         let insert_result = sqlx::query!(
-            "INSERT INTO shippingoptions (public_id, listing_id, title, description, price_msat) VALUES (?, ?, ?, ?, ?)",
+            "INSERT INTO shippingoptions (public_id, listing_id, title, description, price_sat) VALUES (?, ?, ?, ?, ?)",
             shipping_option.public_id,
             shipping_option.listing_id,
             shipping_option.title,
             shipping_option.description,
-            price_msat,
+            price_sat,
         )
             .execute(&mut **db)
             .await?;
@@ -548,17 +547,17 @@ impl ShippingOption {
         listing_id: i32,
     ) -> Result<Vec<ShippingOption>, sqlx::Error> {
         let shipping_options = sqlx::query!(
-            "select * from shippingoptions WHERE listing_id = ? ORDER BY shippingoptions.price_msat ASC;",
+            "select * from shippingoptions WHERE listing_id = ? ORDER BY shippingoptions.price_sat ASC;",
             listing_id
         )
         .fetch(&mut **db)
         .map_ok(|r| ShippingOption {
-            id: r.id.map(|n| n as _),
+            id: r.id.map(|n| n.try_into().unwrap()),
             public_id: r.public_id,
-            listing_id: r.listing_id as _,
+            listing_id: r.listing_id.try_into().unwrap(),
             title: r.title,
             description: r.description,
-            price_msat: r.price_msat as _,
+            price_sat: r.price_sat.try_into().unwrap(),
         })
         .try_collect::<Vec<_>>()
         .await?;
@@ -578,12 +577,12 @@ impl ShippingOption {
         )
         .fetch_one(&mut **db)
         .map_ok(|r| ShippingOption {
-            id: r.id.map(|n| n as _),
+            id: r.id.map(|n| n.try_into().unwrap()),
             public_id: r.public_id,
-            listing_id: r.listing_id as _,
+            listing_id: r.listing_id.try_into().unwrap(),
             title: r.title,
             description: r.description,
-            price_msat: r.price_msat as _,
+            price_sat: r.price_sat.try_into().unwrap(),
         })
         .await?;
 
@@ -615,7 +614,7 @@ impl AdminSettings {
                 maybe_r.map(|r| AdminSettings {
                     id: Some(r.id.try_into().unwrap()),
                     market_name: r.market_name,
-                    fee_rate_basis_points: r.fee_rate_basis_points as _,
+                    fee_rate_basis_points: r.fee_rate_basis_points.try_into().unwrap(),
                 })
             })
             .await?;
