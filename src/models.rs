@@ -274,7 +274,7 @@ impl ListingImage {
         .map_ok(|r| ListingImage {
             id: r.id.map(|n| n.try_into().unwrap()),
             public_id: r.public_id,
-            listing_id: r.listing_id as _,
+            listing_id: r.listing_id.try_into().unwrap(),
             image_data: r.image_data,
             is_primary: r.is_primary,
         })
@@ -298,7 +298,7 @@ impl ListingImage {
         .map_ok(|r| ListingImage {
             id: r.id.map(|n| n.try_into().unwrap()),
             public_id: r.public_id,
-            listing_id: r.listing_id as _,
+            listing_id: r.listing_id.try_into().unwrap(),
             image_data: r.image_data,
             is_primary: r.is_primary,
         })
@@ -456,7 +456,7 @@ GROUP BY
                 .fetch(&mut **db)
             .map_ok(|r| {
                 let l = Listing {
-                    id: Some(r.id as _),
+                    id: Some(r.id.try_into().unwrap()),
                     public_id: r.public_id,
                     user_id: r.user_id.try_into().unwrap(),
                     title: r.title,
@@ -472,7 +472,7 @@ GROUP BY
                 let i = r.image_id.map(|image_id| ListingImage {
                     id: Some(image_id.try_into().unwrap()),
                     public_id: r.image_public_id,
-                    listing_id: r.listing_id as _,
+                    listing_id: r.listing_id.try_into().unwrap(),
                     image_data: r.image_data,
                     is_primary: r.is_primary,
                 });
@@ -554,7 +554,7 @@ impl ShippingOption {
         .map_ok(|r| ShippingOption {
             id: r.id.map(|n| n.try_into().unwrap()),
             public_id: r.public_id,
-            listing_id: r.listing_id as _,
+            listing_id: r.listing_id.try_into().unwrap(),
             title: r.title,
             description: r.description,
             price_sat: r.price_sat.try_into().unwrap(),
@@ -579,7 +579,7 @@ impl ShippingOption {
         .map_ok(|r| ShippingOption {
             id: r.id.map(|n| n.try_into().unwrap()),
             public_id: r.public_id,
-            listing_id: r.listing_id as _,
+            listing_id: r.listing_id.try_into().unwrap(),
             title: r.title,
             description: r.description,
             price_sat: r.price_sat.try_into().unwrap(),
