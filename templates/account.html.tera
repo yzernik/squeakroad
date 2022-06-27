@@ -6,13 +6,16 @@
 Username: {{ user.email }}.
 
 <br>
-<a href="my_listings">My active listings</a>
+<a href="my_active_listings">My Active Listings</a>
 
 <br>
-<a href="my_pending_listings">My pending listings</a>
+<a href="my_unsubmitted_listings">My Unsubmitted :istings</a>
 
 <br>
-<a href="my_rejected_listings">My rejected listings</a>
+<a href="my_pending_listings">My pPending Listings</a>
+
+<br>
+<a href="my_rejected_listings">My Rejected Listings</a>
 
 <br>
 
