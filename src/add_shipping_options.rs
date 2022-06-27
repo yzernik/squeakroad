@@ -234,7 +234,7 @@ async fn index(
 pub fn add_shipping_options_stage() -> AdHoc {
     AdHoc::on_ignite("Add Shipping Options Stage", |rocket| async {
         rocket
-            // .mount("/add_listing_images", routes![index, new])
+            // .mount("/update_listing_images", routes![index, new])
             .mount("/add_shipping_options", routes![index, new, delete])
     })
 }

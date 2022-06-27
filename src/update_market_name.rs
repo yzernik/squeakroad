@@ -127,7 +127,7 @@ async fn index(
 pub fn update_market_name_stage() -> AdHoc {
     AdHoc::on_ignite("Update Market Name Stage", |rocket| async {
         rocket
-            // .mount("/add_listing_images", routes![index, new])
+            // .mount("/update_listing_images", routes![index, new])
             .mount("/update_market_name", routes![index, update])
     })
 }

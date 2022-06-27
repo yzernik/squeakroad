@@ -86,10 +86,10 @@ async fn new(
 
     match upload_image(id, file, &mut db, user, admin_user).await {
         Ok(_) => Flash::success(
-            Redirect::to(uri!("/add_listing_images", index(id))),
+            Redirect::to(uri!("/update_listing_images", index(id))),
             "Listing image successfully added.",
         ),
-        Err(e) => Flash::error(Redirect::to(uri!("/add_listing_images", index(id))), e),
+        Err(e) => Flash::error(Redirect::to(uri!("/update_listing_images", index(id))), e),
     }
 }
 
@@ -153,13 +153,13 @@ async fn delete(
     match delete_image_with_public_id(id, image_id, &mut db, user.clone(), admin_user.clone()).await
     {
         Ok(_) => Ok(Flash::success(
-            Redirect::to(uri!("/add_listing_images", index(id))),
+            Redirect::to(uri!("/update_listing_images", index(id))),
             "Listing image was deleted.",
         )),
         Err(e) => {
             error_!("DB deletion({}) error: {}", id, e);
             Err(Template::render(
-                "addlistingimages",
+                "updatelistingimages",
                 Context::err(db, id, "Failed to delete listing image.", user, admin_user).await,
             ))
         }
@@ -167,13 +167,13 @@ async fn delete(
 
     // match ListingImage::delete_with_id(image_id, &mut db).await {
     //     Ok(_) => Ok(Flash::success(
-    //         Redirect::to(uri!("/add_listing_images", index(id))),
+    //         Redirect::to(uri!("/update_listing_images", index(id))),
     //         "Listing image was deleted.",
     //     )),
     //     Err(e) => {
     //         error_!("DB deletion({}) error: {}", id, e);
     //         Err(Template::render(
-    //             "addlistingimages",
+    //             "updatelistingimages",
     //             Context::err(db, id, "Failed to delete listing image.", user, admin_user).await,
     //         ))
     //     }
@@ -224,13 +224,13 @@ async fn set_primary(
 ) -> Result<Flash<Redirect>, Template> {
     match mark_as_primary(id, image_id, &mut db, user.clone(), admin_user.clone()).await {
         Ok(_) => Ok(Flash::success(
-            Redirect::to(uri!("/add_listing_images", index(id))),
+            Redirect::to(uri!("/update_listing_images", index(id))),
             "Image was marked as primary.",
         )),
         Err(e) => {
             error_!("DB update({}) error: {}", id, e);
             Err(Template::render(
-                "addlistingimages",
+                "updatelistingimages",
                 Context::err(db, id, "Failed to mark image as primary.", user, admin_user).await,
             ))
         }
@@ -287,17 +287,17 @@ async fn index(
 ) -> Template {
     let flash = flash.map(FlashMessage::into_inner);
     Template::render(
-        "addlistingimages",
+        "updatelistingimages",
         Context::raw(db, id, flash, user, admin_user).await,
     )
 }
 
-pub fn add_listing_images_stage() -> AdHoc {
+pub fn update_listing_images_stage() -> AdHoc {
     AdHoc::on_ignite("Add Listing Images Stage", |rocket| async {
         rocket
-            // .mount("/add_listing_images", routes![index, new])
+            // .mount("/update_listing_images", routes![index, new])
             .mount(
-                "/add_listing_images",
+                "/update_listing_images",
                 routes![index, new, delete, set_primary],
             )
     })
