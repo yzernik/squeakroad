@@ -219,7 +219,7 @@ impl Listing {
         let listing = sqlx::query!("select * from listings WHERE public_id = ?;", public_id)
             .fetch_one(&mut **db)
             .map_ok(|r| Listing {
-                id: r.id.map(|n| n as _),
+                id: r.id.map(|n| n.try_into().unwrap()),
                 public_id: r.public_id,
                 user_id: r.user_id.try_into().unwrap(),
                 title: r.title,
@@ -272,7 +272,7 @@ impl ListingImage {
         )
         .fetch(&mut **db)
         .map_ok(|r| ListingImage {
-            id: r.id.map(|n| n as _),
+            id: r.id.map(|n| n.try_into().unwrap()),
             public_id: r.public_id,
             listing_id: r.listing_id as _,
             image_data: r.image_data,
@@ -296,7 +296,7 @@ impl ListingImage {
         )
         .fetch_one(&mut **db)
         .map_ok(|r| ListingImage {
-            id: r.id.map(|n| n as _),
+            id: r.id.map(|n| n.try_into().unwrap()),
             public_id: r.public_id,
             listing_id: r.listing_id as _,
             image_data: r.image_data,
@@ -469,15 +469,15 @@ GROUP BY
                     removed: r.removed,
                     created_time_ms: r.created_time_ms.try_into().unwrap(),
                 };
-                let i = r.image_id.map(|_| ListingImage {
-                    id: Some(r.image_id.unwrap().try_into().unwrap()),
+                let i = r.image_id.map(|image_id| ListingImage {
+                    id: Some(image_id.try_into().unwrap()),
                     public_id: r.image_public_id,
                     listing_id: r.listing_id as _,
                     image_data: r.image_data,
                     is_primary: r.is_primary,
                 });
-                let u = r.rocket_auth_user_id.map(|_| RocketAuthUser {
-                    id: Some(r.rocket_auth_user_id.unwrap().try_into().unwrap()),
+                let u = r.rocket_auth_user_id.map(|rocket_auth_user_id| RocketAuthUser {
+                    id: Some(rocket_auth_user_id.try_into().unwrap()),
                     username: r.rocket_auth_user_username.unwrap(),
                 });
                 ListingCard {
@@ -552,7 +552,7 @@ impl ShippingOption {
         )
         .fetch(&mut **db)
         .map_ok(|r| ShippingOption {
-            id: r.id.map(|n| n as _),
+            id: r.id.map(|n| n.try_into().unwrap()),
             public_id: r.public_id,
             listing_id: r.listing_id as _,
             title: r.title,
@@ -577,7 +577,7 @@ impl ShippingOption {
         )
         .fetch_one(&mut **db)
         .map_ok(|r| ShippingOption {
-            id: r.id.map(|n| n as _),
+            id: r.id.map(|n| n.try_into().unwrap()),
             public_id: r.public_id,
             listing_id: r.listing_id as _,
             title: r.title,
