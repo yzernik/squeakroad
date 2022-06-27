@@ -75,19 +75,9 @@ async fn submit(
     user: User,
     admin_user: Option<AdminUser>,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
-    // match Task::toggle_with_id(id, &mut db).await {
-    //     Ok(_) => Ok(Redirect::to("/")),
-    //     Err(e) => {
-    //         error_!("DB toggle({}) error: {}", id, e);
-    //         Err(Template::render(
-    //             "index",
-    //             Context::err(db, "Failed to toggle task.", Some(user)).await,
-    //         ))
-    //     }
-    // }
     println!("Handling submit endpoint for {:?}", id);
-
-    match Listing::mark_as_submitted(&mut db, id).await {
+    //match Listing::mark_as_submitted(&mut db, id).await {
+    match submit_listing(&mut db, id).await {
         Ok(_) => Ok(Flash::success(
             Redirect::to(uri!("/listing", index(id, Some(id)))),
             "Marked as submitted".to_string(),
@@ -96,35 +86,24 @@ async fn submit(
             error_!("Mark submitted({}) error: {}", id, e);
             Err(Flash::error(
                 Redirect::to(uri!("/listing", index(id, Some(id)))),
-                "Failed to mark as submitted".to_string(),
+                e,
             ))
         }
     }
 }
 
-async fn submit_listing(id: &str, db: &mut Connection<Db>, user: User) -> Result<(), String> {
+async fn submit_listing(db: &mut Connection<Db>, id: &str) -> Result<(), String> {
     let listing = Listing::single_by_public_id(db, id)
         .await
         .map_err(|_| "failed to get listing")?;
-
-    if listing.approved {
-        Err("Listing is already approved.".to_string())
-    } else if !listing.submitted {
-        Err("Listing has not been submitted.".to_string())
+    if listing.submitted {
+        Err("Listing is already submitted.".to_string())
+    } else if listing.approved {
+        Err("Listing has not been approved.".to_string())
     } else {
-        // let shipping_option = ShippingOption {
-        //     id: None,
-        //     public_id: Uuid::new_v4().to_string(),
-        //     listing_id: listing.id.unwrap(),
-        //     title: title,
-        //     description: description,
-        //     price_sat: price_sat,
-        // };
-
-        // ShippingOption::insert(shipping_option, db)
-        //     .await
-        //     .map_err(|_| "failed to save shipping option.")?;
-
+        Listing::mark_as_submitted(db, id)
+            .await
+            .map_err(|_| "failed to update listing")?;
         Ok(())
     }
 }
