@@ -1,0 +1,19 @@
+{% extends "base" %}
+{% block body %}
+
+<h3>My Account</h3>
+
+Username: {{ user.email }}.
+
+<br>
+<a href="my_listings">My active listings</a>
+
+<br>
+<a href="my_pending_listings">My pending listings</a>
+
+<br>
+<a href="my_rejected_listings">My rejected listings</a>
+
+<br>
+
+{% endblock body %}
