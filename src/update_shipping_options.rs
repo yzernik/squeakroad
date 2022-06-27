@@ -91,14 +91,14 @@ async fn new(
 
     match add_shipping_option(id, title, description, price_sat, &mut db, user, admin_user).await {
         Ok(_) => Flash::success(
-            Redirect::to(uri!("/add_shipping_options", index(id))),
+            Redirect::to(uri!("/update_shipping_options", index(id))),
             "Shipping option successfully added.",
         ),
-        Err(e) => Flash::error(Redirect::to(uri!("/add_shipping_options", index(id))), e),
+        Err(e) => Flash::error(Redirect::to(uri!("/update_shipping_options", index(id))), e),
     }
 
     // Flash::error(
-    //     Redirect::to(uri!("/add_shipping_options", index(id))),
+    //     Redirect::to(uri!("/update_shipping_options", index(id))),
     //     "not implemented".to_string(),
     // )
 }
@@ -162,13 +162,13 @@ async fn delete(
     .await
     {
         Ok(_) => Ok(Flash::success(
-            Redirect::to(uri!("/add_shipping_options", index(id))),
+            Redirect::to(uri!("/update_shipping_options", index(id))),
             "Shipping option was deleted.",
         )),
         Err(e) => {
             error_!("DB deletion({}) error: {}", id, e);
             Err(Template::render(
-                "addshippingoptions",
+                "updateshippingoptions",
                 Context::err(
                     db,
                     id,
@@ -226,15 +226,15 @@ async fn index(
 ) -> Template {
     let flash = flash.map(FlashMessage::into_inner);
     Template::render(
-        "addshippingoptions",
+        "updateshippingoptions",
         Context::raw(db, id, flash, user, admin_user).await,
     )
 }
 
-pub fn add_shipping_options_stage() -> AdHoc {
+pub fn update_shipping_options_stage() -> AdHoc {
     AdHoc::on_ignite("Add Shipping Options Stage", |rocket| async {
         rocket
-            // .mount("/add_listing_images", routes![index, new])
-            .mount("/add_shipping_options", routes![index, new, delete])
+            // .mount("/update_listing_images", routes![index, new])
+            .mount("/update_shipping_options", routes![index, new, delete])
     })
 }

@@ -4,8 +4,6 @@ extern crate rocket;
 #[cfg(test)]
 mod tests;
 
-mod add_listing_images;
-mod add_shipping_options;
 mod admin;
 mod auth;
 mod db;
@@ -15,7 +13,9 @@ mod models;
 mod new_listing;
 mod posts;
 mod routes;
+mod update_listing_images;
 mod update_market_name;
+mod update_shipping_options;
 mod user;
 
 #[launch]

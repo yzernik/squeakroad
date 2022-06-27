@@ -87,7 +87,7 @@ async fn update(
     }
 
     // Flash::error(
-    //     Redirect::to(uri!("/add_shipping_options", index(id))),
+    //     Redirect::to(uri!("/update_shipping_options", index(id))),
     //     "not implemented".to_string(),
     // )
 }
@@ -127,7 +127,7 @@ async fn index(
 pub fn update_market_name_stage() -> AdHoc {
     AdHoc::on_ignite("Update Market Name Stage", |rocket| async {
         rocket
-            // .mount("/add_listing_images", routes![index, new])
+            // .mount("/update_listing_images", routes![index, new])
             .mount("/update_market_name", routes![index, update])
     })
 }
