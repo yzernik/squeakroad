@@ -159,11 +159,11 @@ impl Listing {
     }
 
     /// Returns the id of the inserted row.
-    pub async fn insert(listing: Listing, db: &mut Connection<Db>) -> Result<i32, String> {
-        let price_msat = i64::try_from(listing.price_msat)
-            .map_err(|_| "failed to convert price_msat to i64.")?;
-        let created_time_ms = i64::try_from(listing.created_time_ms)
-            .map_err(|_| "failed to convert time_ms to i64.")?;
+    pub async fn insert(listing: Listing, db: &mut Connection<Db>) -> Result<i32, sqlx::Error> {
+        let price_msat = i64::try_from(listing.price_msat).ok().unwrap();
+        let created_time_ms = i64::try_from(listing.created_time_ms).ok().unwrap();
+        println!("price_msat: {:?}", price_msat);
+        println!("created_time_ms: {:?}", created_time_ms);
 
         let insert_result = sqlx::query!(
             "INSERT INTO listings (public_id, user_id, title, description, price_msat, quantity, submitted, reviewed, approved, removed, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -180,8 +180,7 @@ impl Listing {
             created_time_ms,
         )
             .execute(&mut **db)
-            .await
-            .map_err(|_| "failed to insert listing.")?;
+            .await?;
 
         println!("{:?}", insert_result);
 
@@ -208,6 +207,8 @@ impl Listing {
             .await?;
 
         println!("{:?}", listing);
+        println!("price_msat: {:?}", listing.price_msat);
+        println!("created_time_ms: {:?}", listing.created_time_ms);
 
         Ok(listing)
     }
@@ -235,6 +236,8 @@ impl Listing {
             .await?;
 
         println!("{:?}", listing);
+        println!("price_msat: {:?}", listing.price_msat);
+        println!("created_time_ms: {:?}", listing.created_time_ms);
 
         Ok(listing)
     }
@@ -518,10 +521,9 @@ impl ShippingOption {
     pub async fn insert(
         shipping_option: ShippingOption,
         db: &mut Connection<Db>,
-    ) -> Result<usize, String> {
+    ) -> Result<usize, sqlx::Error> {
         // let my_uuid_str = Uuid::new_v4().to_string();
-        let price_msat = i64::try_from(shipping_option.price_msat)
-            .map_err(|_| "failed to convert price_msat to i64.")?;
+        let price_msat = i64::try_from(shipping_option.price_msat).ok().unwrap();
 
         println!("inserting shipping option: {:?}", shipping_option);
 
@@ -534,8 +536,7 @@ impl ShippingOption {
             price_msat,
         )
             .execute(&mut **db)
-            .await
-            .map_err(|_| "failed to insert shipping option.")?;
+            .await?;
 
         println!("insert_result: {:?}", insert_result);
 
