@@ -422,6 +422,16 @@
     },
     "query": "DELETE FROM posts WHERE id = ?"
   },
+  "7ef32fcaa050eb5b261b2e78eb2511757f6f63d2db15d1249983e618745427d6": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "UPDATE listings SET approved = true WHERE public_id = ?"
+  },
   "83f994a3f0b310e4faa8b4fb7e800ff508988f5edd5cb60ad635d71e1b398865": {
     "describe": {
       "columns": [],

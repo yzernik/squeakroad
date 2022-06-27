@@ -253,6 +253,19 @@ impl Listing {
         .await?;
         Ok(())
     }
+
+    pub async fn mark_as_approved(
+        db: &mut Connection<Db>,
+        public_id: &str,
+    ) -> Result<(), sqlx::Error> {
+        sqlx::query!(
+            "UPDATE listings SET approved = true WHERE public_id = ?",
+            public_id,
+        )
+        .execute(&mut **db)
+        .await?;
+        Ok(())
+    }
 }
 
 impl ListingImage {
