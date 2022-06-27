@@ -140,13 +140,13 @@ impl Listing {
                 user_id: r.user_id as _,
                 title: r.title,
                 description: r.description,
-                price_sat: r.price_sat.try_into().ok().unwrap(),
-                quantity: r.quantity as _,
+                price_sat: r.price_sat.try_into().unwrap(),
+                quantity: r.quantity.try_into().unwrap(),
                 submitted: r.submitted,
                 reviewed: r.reviewed,
                 approved: r.approved,
                 removed: r.removed,
-                created_time_ms: r.created_time_ms.try_into().ok().unwrap(),
+                created_time_ms: r.created_time_ms.try_into().unwrap(),
             })
             .try_collect::<Vec<_>>()
             .await?;
@@ -159,8 +159,8 @@ impl Listing {
 
     /// Returns the id of the inserted row.
     pub async fn insert(listing: Listing, db: &mut Connection<Db>) -> Result<i32, sqlx::Error> {
-        let price_sat: i64 = listing.price_sat.try_into().ok().unwrap();
-        let created_time_ms: i64 = listing.created_time_ms.try_into().ok().unwrap();
+        let price_sat: i64 = listing.price_sat.try_into().unwrap();
+        let created_time_ms: i64 = listing.created_time_ms.try_into().unwrap();
         println!("price_sat: {:?}", price_sat);
         println!("created_time_ms: {:?}", created_time_ms);
 
@@ -195,13 +195,13 @@ impl Listing {
                 user_id: r.user_id as _,
                 title: r.title,
                 description: r.description,
-                price_sat: r.price_sat.try_into().ok().unwrap(),
-                quantity: r.quantity as _,
+                price_sat: r.price_sat.try_into().unwrap(),
+                quantity: r.quantity.try_into().unwrap(),
                 submitted: r.submitted,
                 reviewed: r.reviewed,
                 approved: r.approved,
                 removed: r.removed,
-                created_time_ms: r.created_time_ms.try_into().ok().unwrap(),
+                created_time_ms: r.created_time_ms.try_into().unwrap(),
             })
             .await?;
 
@@ -224,13 +224,13 @@ impl Listing {
                 user_id: r.user_id as _,
                 title: r.title,
                 description: r.description,
-                price_sat: r.price_sat.try_into().ok().unwrap(),
-                quantity: r.quantity as _,
+                price_sat: r.price_sat.try_into().unwrap(),
+                quantity: r.quantity.try_into().unwrap(),
                 submitted: r.submitted,
                 reviewed: r.reviewed,
                 approved: r.approved,
                 removed: r.removed,
-                created_time_ms: r.created_time_ms.try_into().ok().unwrap(),
+                created_time_ms: r.created_time_ms.try_into().unwrap(),
             })
             .await?;
 
@@ -461,13 +461,13 @@ GROUP BY
                     user_id: r.user_id as _,
                     title: r.title,
                     description: r.description,
-                    price_sat: r.price_sat.try_into().ok().unwrap(),
-                    quantity: r.quantity as _,
+                    price_sat: r.price_sat.try_into().unwrap(),
+                    quantity: r.quantity.try_into().unwrap(),
                     submitted: r.submitted,
                     reviewed: r.reviewed,
                     approved: r.approved,
                     removed: r.removed,
-                    created_time_ms: r.created_time_ms.try_into().ok().unwrap(),
+                    created_time_ms: r.created_time_ms.try_into().unwrap(),
                 };
                 let i = r.image_id.map(|_| ListingImage {
                     id: Some(r.image_id.unwrap().try_into().unwrap()),
@@ -522,7 +522,7 @@ impl ShippingOption {
         db: &mut Connection<Db>,
     ) -> Result<usize, sqlx::Error> {
         // let my_uuid_str = Uuid::new_v4().to_string();
-        let price_sat: i64 = shipping_option.price_sat.try_into().ok().unwrap();
+        let price_sat: i64 = shipping_option.price_sat.try_into().unwrap();
 
         println!("inserting shipping option: {:?}", shipping_option);
 
@@ -557,7 +557,7 @@ impl ShippingOption {
             listing_id: r.listing_id as _,
             title: r.title,
             description: r.description,
-            price_sat: r.price_sat.try_into().ok().unwrap(),
+            price_sat: r.price_sat.try_into().unwrap(),
         })
         .try_collect::<Vec<_>>()
         .await?;
@@ -582,7 +582,7 @@ impl ShippingOption {
             listing_id: r.listing_id as _,
             title: r.title,
             description: r.description,
-            price_sat: r.price_sat.try_into().ok().unwrap(),
+            price_sat: r.price_sat.try_into().unwrap(),
         })
         .await?;
 
