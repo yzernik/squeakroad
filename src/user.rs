@@ -1,6 +1,5 @@
 use crate::db::Db;
-use crate::models::AdminSettings;
-use crate::models::RocketAuthUser;
+use crate::models::{AdminSettings, ListingCardDisplay, RocketAuthUser};
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::serde::Serialize;
@@ -13,9 +12,10 @@ use rocket_dyn_templates::Template;
 #[serde(crate = "rocket::serde")]
 struct Context {
     flash: Option<(String, String)>,
+    visited_user: Option<RocketAuthUser>,
+    listing_cards: Vec<ListingCardDisplay>,
     user: Option<User>,
     admin_user: Option<AdminUser>,
-    visited_user: Option<RocketAuthUser>,
     admin_settings: Option<AdminSettings>,
 }
 
@@ -42,6 +42,10 @@ impl Context {
         let visited_user = RocketAuthUser::single_by_username(&mut db, username)
             .await
             .map_err(|_| "failed to get visited user.")?;
+        let listing_cards =
+            ListingCardDisplay::all_approved_for_user(&mut db, visited_user.id.unwrap())
+                .await
+                .map_err(|_| "failed to get approved listings.")?;
         let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
             .await
             .map_err(|_| "failed to get admin settings.")?;
@@ -49,6 +53,7 @@ impl Context {
         Ok(Context {
             flash,
             visited_user: Some(visited_user),
+            listing_cards: listing_cards,
             user,
             admin_user,
             admin_settings: Some(admin_settings),
