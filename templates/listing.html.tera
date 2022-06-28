@@ -97,6 +97,12 @@
 	  </form>
 
 	  {% if selected_shipping_option %}
+	  <form action="/confirm_order/{{ listing_display.listing.public_id }}" method="get">
+	    <input type="hidden" id="shipping_option_id" name="shipping_option_id" value="{{ selected_shipping_option.public_id }}">
+	    <input type="hidden" id="quantity" name="quantity" value="1">
+	    <input type="submit" value="Prepare Order">
+	  </form>
+
 	  <p><b>Shipping Option</b>: {{ selected_shipping_option.title }} ({{ selected_shipping_option.price_sat }} sats)</p>
 	  <p>{{ selected_shipping_option.description }}</p>
 	  {% endif %}
