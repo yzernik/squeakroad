@@ -78,13 +78,13 @@ async fn submit(
     //match Listing::mark_as_submitted(&mut db, id).await {
     match submit_listing(&mut db, id, user).await {
         Ok(_) => Ok(Flash::success(
-            Redirect::to(uri!("/listing", index(id, Some(id)))),
+            Redirect::to(uri!("/listing", index(id, Some("")))),
             "Marked as submitted".to_string(),
         )),
         Err(e) => {
             error_!("Mark submitted({}) error: {}", id, e);
             Err(Flash::error(
-                Redirect::to(uri!("/listing", index(id, Some(id)))),
+                Redirect::to(uri!("/listing", index(id, Some("")))),
                 e,
             ))
         }
@@ -120,13 +120,13 @@ async fn approve(
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
     match approve_listing(&mut db, id).await {
         Ok(_) => Ok(Flash::success(
-            Redirect::to(uri!("/listing", index(id, Some(id)))),
+            Redirect::to(uri!("/listing", index(id, Some("")))),
             "Marked as approved".to_string(),
         )),
         Err(e) => {
             error_!("Mark approved({}) error: {}", id, e);
             Err(Flash::error(
-                Redirect::to(uri!("/listing", index(id, Some(id)))),
+                Redirect::to(uri!("/listing", index(id, Some("")))),
                 e,
             ))
         }
@@ -160,13 +160,13 @@ async fn reject(
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
     match reject_listing(&mut db, id).await {
         Ok(_) => Ok(Flash::success(
-            Redirect::to(uri!("/listing", index(id, Some(id)))),
+            Redirect::to(uri!("/listing", index(id, Some("")))),
             "Marked as rejected".to_string(),
         )),
         Err(e) => {
             error_!("Mark rejected({}) error: {}", id, e);
             Err(Flash::error(
-                Redirect::to(uri!("/listing", index(id, Some(id)))),
+                Redirect::to(uri!("/listing", index(id, Some("")))),
                 e,
             ))
         }
@@ -200,13 +200,13 @@ async fn remove(
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
     match remove_listing(&mut db, id, user, admin_user).await {
         Ok(_) => Ok(Flash::success(
-            Redirect::to(uri!("/listing", index(id, Some(id)))),
+            Redirect::to(uri!("/listing", index(id, Some("")))),
             "Marked as removed".to_string(),
         )),
         Err(e) => {
             error_!("Mark removed({}) error: {}", id, e);
             Err(Flash::error(
-                Redirect::to(uri!("/listing", index(id, Some(id)))),
+                Redirect::to(uri!("/listing", index(id, Some("")))),
                 e,
             ))
         }
