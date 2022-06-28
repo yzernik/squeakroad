@@ -667,6 +667,82 @@ GROUP BY
 
         Ok(listing_cards)
     }
+
+    pub async fn all_pending_for_user(
+        db: &mut Connection<Db>,
+        user_id: i32,
+    ) -> Result<Vec<ListingCard>, sqlx::Error> {
+        // Example query for this kind of join/group by: https://stackoverflow.com/a/63037790/1639564
+        // Other example query: https://stackoverflow.com/a/13698334/1639564
+        // TODO: change WHERE condition to use dynamically calculated remaining quantity
+        // based on number of completed orders.
+        let listing_cards =
+            sqlx::query!("
+select
+ listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+from
+ listings
+LEFT JOIN
+ listingimages
+ON
+ listings.id = listingimages.listing_id
+AND
+ listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)
+INNER JOIN
+ users
+ON
+ listings.user_id = users.id
+WHERE
+ listings.submitted
+AND
+ not listings.reviewed
+AND
+ not listings.removed
+AND
+ listings.quantity > 0
+AND
+ users.id = ?
+GROUP BY
+ listings.id
+;", user_id)
+                .fetch(&mut **db)
+            .map_ok(|r| {
+                let l = Listing {
+                    id: Some(r.id.try_into().unwrap()),
+                    public_id: r.public_id,
+                    user_id: r.user_id.try_into().unwrap(),
+                    title: r.title,
+                    description: r.description,
+                    price_sat: r.price_sat.try_into().unwrap(),
+                    quantity: r.quantity.try_into().unwrap(),
+                    submitted: r.submitted,
+                    reviewed: r.reviewed,
+                    approved: r.approved,
+                    removed: r.removed,
+                    created_time_ms: r.created_time_ms.try_into().unwrap(),
+                };
+                let i = r.image_id.map(|image_id| ListingImage {
+                    id: Some(image_id.try_into().unwrap()),
+                    public_id: r.image_public_id,
+                    listing_id: r.listing_id.try_into().unwrap(),
+                    image_data: r.image_data,
+                    is_primary: r.is_primary,
+                });
+                let u = r.rocket_auth_user_id.map(|rocket_auth_user_id| RocketAuthUser {
+                    id: Some(rocket_auth_user_id.try_into().unwrap()),
+                    username: r.rocket_auth_user_username.unwrap(),
+                });
+                ListingCard {
+                    listing: l,
+                    image: i,
+                    user: u.unwrap(),
+                }
+            })
+                .try_collect::<Vec<_>>()
+                .await?;
+
+        Ok(listing_cards)
+    }
 }
 
 impl ListingCardDisplay {
@@ -713,6 +789,19 @@ impl ListingCardDisplay {
         user_id: i32,
     ) -> Result<Vec<ListingCardDisplay>, sqlx::Error> {
         let listing_cards = ListingCard::all_unsubmitted_for_user(db, user_id).await?;
+        let listing_card_displays = listing_cards
+            .iter()
+            .map(|card| ListingCardDisplay::listing_card_to_display(card))
+            .collect::<Vec<_>>();
+
+        Ok(listing_card_displays)
+    }
+
+    pub async fn all_pending_for_user(
+        db: &mut Connection<Db>,
+        user_id: i32,
+    ) -> Result<Vec<ListingCardDisplay>, sqlx::Error> {
+        let listing_cards = ListingCard::all_pending_for_user(db, user_id).await?;
         let listing_card_displays = listing_cards
             .iter()
             .map(|card| ListingCardDisplay::listing_card_to_display(card))
