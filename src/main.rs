@@ -7,6 +7,7 @@ mod tests;
 mod account;
 mod admin;
 mod auth;
+mod confirm_order;
 mod db;
 mod listing;
 mod listings;

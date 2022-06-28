@@ -1,0 +1,26 @@
+{% extends "base" %}
+{% block body %}
+
+{% if listing_display %}
+
+  <div class="full-width-container">
+    <p><!--Nothing to see here --></p>
+
+    {% if flash %}
+    <small class="field-{{flash.0}}-msg">
+      {{ flash.1 }}
+    </small>
+    {% endif %}
+
+    <h3>Confirm Order</h3>
+    <p><b>Listing</b>: {{ listing_display.listing.title }}</p>
+    <p><b>Listing Price</b>: {{ listing_display.listing.price_sat }} sats</p>
+    <p><b>Shipping Option</b>: {{ selected_shipping_option.title }}</p>
+    <p><b>Shipping Option Price</b>: {{ selected_shipping_option.price_sat }} sats</p>
+    <p><b>Quantity</b>: TODO</p>
+
+  </div>
+
+{% endif %}
+
+{% endblock body %}
