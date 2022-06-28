@@ -15,7 +15,8 @@ use rocket_dyn_templates::Template;
 struct Context {
     flash: Option<(String, String)>,
     listing_display: Option<ListingDisplay>,
-    selected_shipping_option: Option<ShippingOption>,
+    selected_shipping_option: ShippingOption,
+    quantity: i32,
     user: Option<User>,
     admin_user: Option<AdminUser>,
     admin_settings: Option<AdminSettings>,
@@ -25,7 +26,8 @@ impl Context {
     pub async fn raw(
         mut db: Connection<Db>,
         listing_id: &str,
-        shipping_option_id: Option<&str>,
+        shipping_option_id: &str,
+        quantity: i32,
         flash: Option<(String, String)>,
         user: Option<User>,
         admin_user: Option<AdminUser>,
@@ -33,13 +35,9 @@ impl Context {
         let listing_display = ListingDisplay::single_by_public_id(&mut db, listing_id)
             .await
             .map_err(|_| "failed to get admin settings.")?;
-        let maybe_shipping_option = match shipping_option_id {
-            Some(sid) => {
-                let shipping_option = ShippingOption::single_by_public_id(&mut db, sid).await;
-                shipping_option.ok()
-            }
-            None => None,
-        };
+        let shipping_option = ShippingOption::single_by_public_id(&mut db, shipping_option_id)
+            .await
+            .map_err(|_| "failed to get shipping option.")?;
         let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
             .await
             .map_err(|_| "failed to get admin settings.")?;
@@ -47,7 +45,8 @@ impl Context {
         Ok(Context {
             flash,
             listing_display: Some(listing_display),
-            selected_shipping_option: maybe_shipping_option,
+            selected_shipping_option: shipping_option,
+            quantity: quantity,
             user,
             admin_user,
             admin_settings: Some(admin_settings),
@@ -55,11 +54,12 @@ impl Context {
     }
 }
 
-#[get("/<id>?<shipping_option_id>")]
+#[get("/<id>?<shipping_option_id>&<quantity>")]
 async fn index(
     flash: Option<FlashMessage<'_>>,
     id: &str,
     shipping_option_id: Option<&str>,
+    quantity: Option<i32>,
     db: Connection<Db>,
     user: Option<User>,
     admin_user: Option<AdminUser>,
@@ -67,10 +67,14 @@ async fn index(
     println!("looking for listing...");
     println!("Shipping option id: {:?}", shipping_option_id);
 
+    // TODO: Don't use unwrap.
+    let sid = shipping_option_id.unwrap();
+    let quantity = quantity.unwrap();
+
     let flash = flash.map(FlashMessage::into_inner);
     Template::render(
         "confirmorder",
-        Context::raw(db, id, shipping_option_id, flash, user, admin_user).await,
+        Context::raw(db, id, sid, quantity, flash, user, admin_user).await,
     )
 }
 

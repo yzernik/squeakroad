@@ -17,7 +17,7 @@
     <p><b>Listing Price</b>: {{ listing_display.listing.price_sat }} sats</p>
     <p><b>Shipping Option</b>: {{ selected_shipping_option.title }}</p>
     <p><b>Shipping Option Price</b>: {{ selected_shipping_option.price_sat }} sats</p>
-    <p><b>Quantity</b>: TODO</p>
+    <p><b>Quantity</b>: {{ quantity }}</p>
 
   </div>
 
