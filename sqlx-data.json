@@ -50,6 +50,16 @@
     },
     "query": "SELECT id, title, text FROM posts WHERE id = ?"
   },
+  "12986ccce72c654f36e323cea9271b54570be88f6105d39e7744cdcb456a6981": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "UPDATE listings SET removed = true WHERE public_id = ?"
+  },
   "1a1634376a31188dcb88d3ea0fe135524e26d9df31d44c5804e2f0705ecc102d": {
     "describe": {
       "columns": [
