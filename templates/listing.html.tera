@@ -14,7 +14,9 @@
 
     <!-- Options for the owner of the listing -->
     {% if user and listing_display.listing.user_id == user.id %}
-    {% if not listing_display.listing.submitted %}
+    {% if listing_display.listing.removed %}
+    <h5>Removed Listing</h5>
+    {% elif not listing_display.listing.submitted %}
     <h5>Unsubmitted Listing</h5>
     <p><a href="/update_listing_images/{{ listing_display.listing.public_id }}">Update images</a></p>
     <p><a href="/update_shipping_options/{{ listing_display.listing.public_id }}">Update shipping options</a></p>
@@ -29,7 +31,7 @@
     {% else %}
     <h5>Approved Listing</h5>
     {% endif %}
-    <form class="inline" action="remove_listing" method="post">
+    <form class="inline" action="/listing/{{ listing_display.listing.public_id }}/remove" method="post">
       <input type="hidden" name="_method" value="put" />
       <button class="small" type="submit">Remove Listing</button>
     </form>
@@ -37,7 +39,9 @@
 
     <!-- Options for admin -->
     {% if admin_user %}
-    {% if not listing_display.listing.submitted %}
+    {% if listing_display.listing.removed %}
+    <h5>Removed Listing</h5>
+    {% elif not listing_display.listing.submitted %}
     <h5>Unsubmitted Listing</h5>
     {% elif not listing_display.listing.reviewed %}
     <h5>Pending Listing (waiting for admin approval)</h5>
@@ -54,7 +58,7 @@
     {% else %}
     <h5>Approved Listing</h5>
     {% endif %}
-    <form class="inline" action="remove_listing" method="post">
+    <form class="inline" action="/listing/{{ listing_display.listing.public_id }}/remove" method="post">
       <input type="hidden" name="_method" value="put" />
       <button class="small" type="submit">Remove Listing</button>
     </form>
