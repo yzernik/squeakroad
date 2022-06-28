@@ -17,7 +17,7 @@ struct Context {
     listing_display: Option<ListingDisplay>,
     selected_shipping_option: ShippingOption,
     quantity: i32,
-    user: Option<User>,
+    user: User,
     admin_user: Option<AdminUser>,
     admin_settings: Option<AdminSettings>,
 }
@@ -29,7 +29,7 @@ impl Context {
         shipping_option_id: &str,
         quantity: i32,
         flash: Option<(String, String)>,
-        user: Option<User>,
+        user: User,
         admin_user: Option<AdminUser>,
     ) -> Result<Context, String> {
         let listing_display = ListingDisplay::single_by_public_id(&mut db, listing_id)
@@ -61,7 +61,7 @@ async fn index(
     shipping_option_id: Option<&str>,
     quantity: Option<i32>,
     db: Connection<Db>,
-    user: Option<User>,
+    user: User,
     admin_user: Option<AdminUser>,
 ) -> Template {
     println!("looking for listing...");
