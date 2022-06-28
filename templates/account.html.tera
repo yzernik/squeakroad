@@ -6,9 +6,6 @@
 Username: {{ user.email }}.
 
 <br>
-<a href="my_active_listings">My Active Listings</a>
-
-<br>
 <a href="my_unsubmitted_listings">My Unsubmitted Listings</a>
 
 <br>
