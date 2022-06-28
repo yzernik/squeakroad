@@ -12,6 +12,9 @@ Username: {{ user.email }}.
 <a href="/update_market_name">Update Market Name</a>
 
 <br>
+<a href="/update_fee_rate">Update Fee Rate</a>
+
+<br>
 <a href="/review_pending_listings">Review Pending Listings</a>
 
 <br>
