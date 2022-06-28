@@ -76,7 +76,7 @@ async fn submit(
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
     println!("Handling submit endpoint for {:?}", id);
     //match Listing::mark_as_submitted(&mut db, id).await {
-    match submit_listing(&mut db, id).await {
+    match submit_listing(&mut db, id, user).await {
         Ok(_) => Ok(Flash::success(
             Redirect::to(uri!("/listing", index(id, Some(id)))),
             "Marked as submitted".to_string(),
@@ -91,11 +91,13 @@ async fn submit(
     }
 }
 
-async fn submit_listing(db: &mut Connection<Db>, id: &str) -> Result<(), String> {
+async fn submit_listing(db: &mut Connection<Db>, id: &str, user: User) -> Result<(), String> {
     let listing = Listing::single_by_public_id(db, id)
         .await
         .map_err(|_| "failed to get listing")?;
-    if listing.submitted {
+    if listing.user_id != user.id() {
+        Err("Listing belongs to a different user.".to_string())
+    } else if listing.submitted {
         Err("Listing is already submitted.".to_string())
     } else if listing.approved {
         Err("Listing is already approved.".to_string())
@@ -196,7 +198,7 @@ async fn remove(
     user: User,
     admin_user: Option<AdminUser>,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
-    match remove_listing(&mut db, id).await {
+    match remove_listing(&mut db, id, user, admin_user).await {
         Ok(_) => Ok(Flash::success(
             Redirect::to(uri!("/listing", index(id, Some(id)))),
             "Marked as removed".to_string(),
@@ -211,11 +213,18 @@ async fn remove(
     }
 }
 
-async fn remove_listing(db: &mut Connection<Db>, id: &str) -> Result<(), String> {
+async fn remove_listing(
+    db: &mut Connection<Db>,
+    id: &str,
+    user: User,
+    admin_user: Option<AdminUser>,
+) -> Result<(), String> {
     let listing = Listing::single_by_public_id(db, id)
         .await
         .map_err(|_| "failed to get listing")?;
-    if listing.removed {
+    if listing.user_id != user.id() && admin_user.is_none() {
+        Err("Listing belongs to a different user.".to_string())
+    } else if listing.removed {
         Err("Listing is already removed.".to_string())
     } else {
         Listing::mark_as_removed(db, id)

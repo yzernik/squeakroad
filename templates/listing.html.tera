@@ -58,7 +58,7 @@
     {% else %}
     <h5>Approved Listing</h5>
     {% endif %}
-    <form class="inline" action="remove_listing" method="post">
+    <form class="inline" action="/listing/{{ listing_display.listing.public_id }}/remove" method="post">
       <input type="hidden" name="_method" value="put" />
       <button class="small" type="submit">Remove Listing</button>
     </form>
