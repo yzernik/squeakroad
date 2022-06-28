@@ -10,6 +10,16 @@
     },
     "query": "UPDATE listings SET submitted = true WHERE public_id = ?"
   },
+  "091a2c22695d40516014a93a1a721d7ecbf23a9103295de371c6b29380aef341": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "UPDATE adminsettings SET fee_rate_basis_points = ?"
+  },
   "11e3096becb72f427c8d3911ef4327afd9516143806981e11f8e34d069c14472": {
     "describe": {
       "columns": [

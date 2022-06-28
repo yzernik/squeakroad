@@ -19,6 +19,7 @@ mod new_listing;
 mod posts;
 mod review_pending_listings;
 mod routes;
+mod update_fee_rate;
 mod update_listing_images;
 mod update_market_name;
 mod update_shipping_options;
