@@ -86,6 +86,9 @@ async fn create_listing(
     db: &mut Connection<Db>,
     user: User,
 ) -> Result<String, String> {
+    let admin_settings = AdminSettings::single(db, AdminSettings::get_default())
+        .await
+        .map_err(|_| "failed to update market name.")?;
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
@@ -112,6 +115,7 @@ async fn create_listing(
             description: listing_info.description,
             price_sat: listing_info.price_sat,
             quantity: listing_info.quantity,
+            fee_rate_basis_points: admin_settings.fee_rate_basis_points,
             submitted: false,
             reviewed: false,
             approved: false,

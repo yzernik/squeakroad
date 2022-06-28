@@ -27,6 +27,7 @@ pub struct Listing {
     pub description: String,
     pub price_sat: u64,
     pub quantity: u32,
+    pub fee_rate_basis_points: u32,
     pub submitted: bool,
     pub reviewed: bool,
     pub approved: bool,
@@ -147,6 +148,7 @@ impl Listing {
                 description: r.description,
                 price_sat: r.price_sat.try_into().unwrap(),
                 quantity: r.quantity.try_into().unwrap(),
+                fee_rate_basis_points: r.fee_rate_basis_points.try_into().unwrap(),
                 submitted: r.submitted,
                 reviewed: r.reviewed,
                 approved: r.approved,
@@ -170,13 +172,14 @@ impl Listing {
         println!("created_time_ms: {:?}", created_time_ms);
 
         let insert_result = sqlx::query!(
-            "INSERT INTO listings (public_id, user_id, title, description, price_sat, quantity, submitted, reviewed, approved, removed, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO listings (public_id, user_id, title, description, price_sat, quantity, fee_rate_basis_points, submitted, reviewed, approved, removed, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             listing.public_id,
             listing.user_id,
             listing.title,
             listing.description,
             price_sat,
             listing.quantity,
+            listing.fee_rate_basis_points,
             listing.submitted,
             listing.reviewed,
             listing.approved,
@@ -202,6 +205,7 @@ impl Listing {
                 description: r.description,
                 price_sat: r.price_sat.try_into().unwrap(),
                 quantity: r.quantity.try_into().unwrap(),
+                fee_rate_basis_points: r.fee_rate_basis_points.try_into().unwrap(),
                 submitted: r.submitted,
                 reviewed: r.reviewed,
                 approved: r.approved,
@@ -231,6 +235,7 @@ impl Listing {
                 description: r.description,
                 price_sat: r.price_sat.try_into().unwrap(),
                 quantity: r.quantity.try_into().unwrap(),
+                fee_rate_basis_points: r.fee_rate_basis_points.try_into().unwrap(),
                 submitted: r.submitted,
                 reviewed: r.reviewed,
                 approved: r.approved,
@@ -493,7 +498,7 @@ impl ListingCard {
         let listing_cards =
             sqlx::query!("
 select
- listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+ listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  listings
 LEFT JOIN
@@ -525,6 +530,7 @@ GROUP BY
                     description: r.description,
                     price_sat: r.price_sat.try_into().unwrap(),
                     quantity: r.quantity.try_into().unwrap(),
+                    fee_rate_basis_points: r.fee_rate_basis_points.try_into().unwrap(),
                     submitted: r.submitted,
                     reviewed: r.reviewed,
                     approved: r.approved,
@@ -562,7 +568,7 @@ GROUP BY
         let listing_cards =
             sqlx::query!("
 select
- listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+ listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  listings
 LEFT JOIN
@@ -596,6 +602,7 @@ GROUP BY
                     description: r.description,
                     price_sat: r.price_sat.try_into().unwrap(),
                     quantity: r.quantity.try_into().unwrap(),
+                    fee_rate_basis_points: r.fee_rate_basis_points.try_into().unwrap(),
                     submitted: r.submitted,
                     reviewed: r.reviewed,
                     approved: r.approved,
@@ -636,7 +643,7 @@ GROUP BY
         let listing_cards =
             sqlx::query!("
 select
- listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+ listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  listings
 LEFT JOIN
@@ -670,6 +677,7 @@ GROUP BY
                     description: r.description,
                     price_sat: r.price_sat.try_into().unwrap(),
                     quantity: r.quantity.try_into().unwrap(),
+                    fee_rate_basis_points: r.fee_rate_basis_points.try_into().unwrap(),
                     submitted: r.submitted,
                     reviewed: r.reviewed,
                     approved: r.approved,
@@ -710,7 +718,7 @@ GROUP BY
         let listing_cards =
             sqlx::query!("
 select
- listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+ listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  listings
 LEFT JOIN
@@ -746,6 +754,7 @@ GROUP BY
                     description: r.description,
                     price_sat: r.price_sat.try_into().unwrap(),
                     quantity: r.quantity.try_into().unwrap(),
+                    fee_rate_basis_points: r.fee_rate_basis_points.try_into().unwrap(),
                     submitted: r.submitted,
                     reviewed: r.reviewed,
                     approved: r.approved,
@@ -786,7 +795,7 @@ GROUP BY
         let listing_cards =
             sqlx::query!("
 select
- listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+ listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  listings
 LEFT JOIN
@@ -822,6 +831,7 @@ GROUP BY
                     description: r.description,
                     price_sat: r.price_sat.try_into().unwrap(),
                     quantity: r.quantity.try_into().unwrap(),
+                    fee_rate_basis_points: r.fee_rate_basis_points.try_into().unwrap(),
                     submitted: r.submitted,
                     reviewed: r.reviewed,
                     approved: r.approved,
@@ -862,7 +872,7 @@ GROUP BY
         let listing_cards =
             sqlx::query!("
 select
- listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+ listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  listings
 LEFT JOIN
@@ -898,6 +908,7 @@ GROUP BY
                     description: r.description,
                     price_sat: r.price_sat.try_into().unwrap(),
                     quantity: r.quantity.try_into().unwrap(),
+                    fee_rate_basis_points: r.fee_rate_basis_points.try_into().unwrap(),
                     submitted: r.submitted,
                     reviewed: r.reviewed,
                     approved: r.approved,
