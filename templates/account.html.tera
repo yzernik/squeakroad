@@ -15,6 +15,9 @@ Username: {{ user.email }}.
 <a href="my_pending_listings">My Pending Listings</a>
 
 <br>
+<a href="my_approved_listings">My Approved Listings</a>
+
+<br>
 <a href="my_rejected_listings">My Rejected Listings</a>
 
 <br>

@@ -45,7 +45,7 @@
       <input type="hidden" name="_method" value="put" />
       <button class="small" type="submit">Approve Listing</button>
     </form>
-    <form class="inline" action="/listing/approve" method="post">
+    <form class="inline" action="/listing/{{ listing_display.listing.public_id }}/reject" method="post">
       <input type="hidden" name="_method" value="put" />
       <button class="small" type="submit">Reject Listing</button>
     </form>
