@@ -11,6 +11,7 @@ mod db;
 mod listing;
 mod listings;
 mod models;
+mod my_pending_listings;
 mod my_unsubmitted_listings;
 mod new_listing;
 mod pending_listings;
