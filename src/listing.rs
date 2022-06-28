@@ -149,20 +149,6 @@ async fn approve_listing(db: &mut Connection<Db>, id: &str) -> Result<(), String
     }
 }
 
-// #[delete("/<id>")]
-// async fn delete(id: i32, mut db: Connection<Db>, user: User) -> Result<Flash<Redirect>, Template> {
-//     match Task::delete_with_id(id, &mut db).await {
-//         Ok(_) => Ok(Flash::success(Redirect::to("/"), "Listing was deleted.")),
-//         Err(e) => {
-//             error_!("DB deletion({}) error: {}", id, e);
-//             Err(Template::render(
-//                 "index",
-//                 Context::err(db, "Failed to delete task.", Some(user)).await,
-//             ))
-//         }
-//     }
-// }
-
 #[get("/<id>?<shipping_option_id>")]
 async fn index(
     flash: Option<FlashMessage<'_>>,
