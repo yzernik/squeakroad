@@ -560,7 +560,7 @@ ON
 WHERE
  listings.submitted
 AND
- NOT listings.approved
+ NOT listings.reviewed
 AND
  not listings.removed
 AND
