@@ -82,6 +82,7 @@ pub fn stage() -> AdHoc {
             .attach(crate::update_shipping_options::update_shipping_options_stage())
             .attach(crate::user::user_stage())
             .attach(crate::update_market_name::update_market_name_stage())
+            .attach(crate::update_fee_rate::update_fee_rate_stage())
             .attach(crate::review_pending_listings::review_pending_listings_stage())
             .attach(crate::account::account_stage())
             .attach(crate::my_unsubmitted_listings::my_unsubmitted_listings_stage())

@@ -1,0 +1,37 @@
+{% extends "base" %}
+{% block body %}
+
+{% if admin_settings %}
+Fee Rate: {{ admin_settings.fee_rate_basis_points / 100 }}%
+{% else %}
+Admin settings not found.
+{% endif %}
+
+<br>
+
+
+  <div class="container">
+    <p><!--Nothing to see here --></p>
+
+    <div class="row">
+      <h4>Update Fee Rate</h4>
+      <form action="/update_fee_rate/change" method="post">
+        <div class="ten columns">
+          <input type="text" placeholder="enter a new fee rate in basis points..."
+            name="fee_rate_basis_points" id="fee_rate_basis_points" value="" autofocus
+            class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" />
+          {% if flash %}
+            <small class="field-{{flash.0}}-msg">
+               {{ flash.1 }}
+            </small>
+          {% endif %}
+        </div>
+        <div class="two columns">
+          <input type="submit" value="Change Fee Rate">
+        </div>
+      </form>
+    </div>
+
+  </div>
+
+{% endblock body %}

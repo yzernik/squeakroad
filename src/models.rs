@@ -130,6 +130,11 @@ pub struct MarketNameInput {
     pub market_name: String,
 }
 
+#[derive(Debug, FromForm)]
+pub struct FeeRateInput {
+    pub fee_rate_basis_points: i32,
+}
+
 impl Listing {
     pub async fn all(db: &mut Connection<Db>) -> Result<Vec<Listing>, sqlx::Error> {
         let listings = sqlx::query!("select * from listings;")
@@ -1146,9 +1151,26 @@ impl AdminSettings {
     ) -> Result<(), sqlx::Error> {
         AdminSettings::insert_if_doesnt_exist(db, default_admin_settings).await?;
 
-        sqlx::query!("UPDATE adminsettings SET market_name = ?", new_market_name,)
+        sqlx::query!("UPDATE adminsettings SET market_name = ?", new_market_name)
             .execute(&mut **db)
             .await?;
+
+        Ok(())
+    }
+
+    pub async fn set_fee_rate(
+        db: &mut Connection<Db>,
+        new_fee_rate_basis_points: i32,
+        default_admin_settings: AdminSettings,
+    ) -> Result<(), sqlx::Error> {
+        AdminSettings::insert_if_doesnt_exist(db, default_admin_settings).await?;
+
+        sqlx::query!(
+            "UPDATE adminsettings SET fee_rate_basis_points = ?",
+            new_fee_rate_basis_points,
+        )
+        .execute(&mut **db)
+        .await?;
 
         Ok(())
     }
