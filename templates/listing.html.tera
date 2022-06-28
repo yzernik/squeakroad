@@ -81,6 +81,10 @@
 	  <p><b>Quantity</b>: {{ listing_display.listing.quantity }}</p>
 	  <p><b>User</b>: <a href="/user/{{listing_display.user.username}}">{{ listing_display.user.username }}</a></p>
 
+	  {% if admin_user or user and listing_display.listing.user_id == user.id %}
+	  <p><b>Fee Rate</b>: Market will collect a {{ listing_display.listing.fee_rate_basis_points / 100 }}% fee rate</p>
+	  {% endif %}
+
 	  <form action="" method="get">
 	    <label for="shipping_options">Choose a shipping option:</label>
 	    <select id="shipping_option_id" name="shipping_option_id">

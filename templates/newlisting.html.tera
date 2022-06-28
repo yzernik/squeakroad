@@ -10,6 +10,7 @@
       <h4>Create New Listing</h4>
       <form action="/new_listing" method="post">
         <div class="ten columns">
+	  <p>Market will collect a {{ admin_settings.fee_rate_basis_points / 100 }}% fee rate</p>
           <input type="text" placeholder="enter a listing title..."
             name="title" id="title" value="" autofocus
             class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" />
@@ -21,7 +22,7 @@
             class="u-full-width" />
           <input type="number" placeholder="enter the quantity of items..."
             name="quantity" id="quantity" value=""
-            class="u-full-width" />
+		 class="u-full-width" />
           {% if flash %}
             <small class="field-{{flash.0}}-msg">
                {{ flash.1 }}
