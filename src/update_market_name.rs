@@ -9,17 +9,11 @@ use rocket_auth::{AdminUser, User};
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
 
-// const DEFAULT_ADMIN_SETTINGS: AdminSettings = AdminSettings {
-//     id: None,
-//     market_name: "default market name",
-//     fee_rate_basis_points: 500,
-// };
-
 impl AdminSettings {
     pub fn get_default() -> AdminSettings {
         AdminSettings {
             id: None,
-            market_name: "default market name".to_string(),
+            market_name: "Squeakroad".to_string(),
             fee_rate_basis_points: 500,
         }
     }
