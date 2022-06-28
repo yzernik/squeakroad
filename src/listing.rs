@@ -137,14 +137,54 @@ async fn approve_listing(db: &mut Connection<Db>, id: &str) -> Result<(), String
         .map_err(|_| "failed to get listing")?;
     if !listing.submitted {
         Err("Listing is not submitted.".to_string())
-    } else if listing.approved {
-        Err("Listing is already approved.".to_string())
+    } else if listing.reviewed {
+        Err("Listing is already reviewed.".to_string())
     } else if listing.removed {
         Err("Listing is already removed.".to_string())
     } else {
         Listing::mark_as_approved(db, id)
             .await
-            .map_err(|_| "failed to update listing")?;
+            .map_err(|_| "failed to approve listing")?;
+        Ok(())
+    }
+}
+
+#[put("/<id>/reject")]
+async fn reject(
+    id: &str,
+    mut db: Connection<Db>,
+    user: User,
+    admin_user: AdminUser,
+) -> Result<Flash<Redirect>, Flash<Redirect>> {
+    match reject_listing(&mut db, id).await {
+        Ok(_) => Ok(Flash::success(
+            Redirect::to(uri!("/listing", index(id, Some(id)))),
+            "Marked as rejected".to_string(),
+        )),
+        Err(e) => {
+            error_!("Mark rejected({}) error: {}", id, e);
+            Err(Flash::error(
+                Redirect::to(uri!("/listing", index(id, Some(id)))),
+                e,
+            ))
+        }
+    }
+}
+
+async fn reject_listing(db: &mut Connection<Db>, id: &str) -> Result<(), String> {
+    let listing = Listing::single_by_public_id(db, id)
+        .await
+        .map_err(|_| "failed to get listing")?;
+    if !listing.submitted {
+        Err("Listing is not submitted.".to_string())
+    } else if listing.reviewed {
+        Err("Listing is already reviewed.".to_string())
+    } else if listing.removed {
+        Err("Listing is already removed.".to_string())
+    } else {
+        Listing::mark_as_rejected(db, id)
+            .await
+            .map_err(|_| "failed to reject listing")?;
         Ok(())
     }
 }
@@ -170,6 +210,6 @@ async fn index(
 
 pub fn listing_stage() -> AdHoc {
     AdHoc::on_ignite("Listing Stage", |rocket| async {
-        rocket.mount("/listing", routes![index, submit, approve])
+        rocket.mount("/listing", routes![index, submit, approve, reject])
     })
 }

@@ -434,6 +434,16 @@
     },
     "query": "UPDATE listingimages SET is_primary = false WHERE listing_id = ?"
   },
+  "5a24f9c5cf60ff7f2dc4ce2cf145931a81121bd7854c8b958625bd8ead17c0f8": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "UPDATE listings SET reviewed = true, approved = false WHERE public_id = ?"
+  },
   "605752b2a483360181b72529b1f3308c826930b42a8e4e9eba09599b46d53954": {
     "describe": {
       "columns": [],

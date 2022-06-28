@@ -266,6 +266,19 @@ impl Listing {
         .await?;
         Ok(())
     }
+
+    pub async fn mark_as_rejected(
+        db: &mut Connection<Db>,
+        public_id: &str,
+    ) -> Result<(), sqlx::Error> {
+        sqlx::query!(
+            "UPDATE listings SET reviewed = true, approved = false WHERE public_id = ?",
+            public_id,
+        )
+        .execute(&mut **db)
+        .await?;
+        Ok(())
+    }
 }
 
 impl ListingImage {
