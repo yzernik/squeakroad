@@ -619,9 +619,7 @@ INNER JOIN
 ON
  listings.user_id = users.id
 WHERE
- listings.submitted
-AND
- NOT listings.approved
+ not listings.submitted
 AND
  not listings.removed
 AND
@@ -702,6 +700,19 @@ impl ListingCardDisplay {
         db: &mut Connection<Db>,
     ) -> Result<Vec<ListingCardDisplay>, sqlx::Error> {
         let listing_cards = ListingCard::all_pending(db).await?;
+        let listing_card_displays = listing_cards
+            .iter()
+            .map(|card| ListingCardDisplay::listing_card_to_display(card))
+            .collect::<Vec<_>>();
+
+        Ok(listing_card_displays)
+    }
+
+    pub async fn all_unsubmitted_for_user(
+        db: &mut Connection<Db>,
+        user_id: i32,
+    ) -> Result<Vec<ListingCardDisplay>, sqlx::Error> {
+        let listing_cards = ListingCard::all_unsubmitted_for_user(db, user_id).await?;
         let listing_card_displays = listing_cards
             .iter()
             .map(|card| ListingCardDisplay::listing_card_to_display(card))

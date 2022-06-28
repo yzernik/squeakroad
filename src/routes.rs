@@ -84,5 +84,6 @@ pub fn stage() -> AdHoc {
             .attach(crate::update_market_name::update_market_name_stage())
             .attach(crate::pending_listings::pending_listings_stage())
             .attach(crate::account::account_stage())
+            .attach(crate::my_unsubmitted_listings::my_unsubmitted_listings_stage())
     })
 }
