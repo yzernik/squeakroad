@@ -141,7 +141,7 @@ pub struct FeeRateInput {
 pub struct Order {
     pub id: Option<i32>,
     pub public_id: String,
-    pub quantity: i32,
+    pub quantity: u32,
     pub user_id: i32,
     pub listing_id: i32,
     pub shipping_option_id: i32,
