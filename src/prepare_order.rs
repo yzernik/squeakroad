@@ -1,6 +1,7 @@
 use crate::db::Db;
-use crate::models::{AdminSettings, Listing, ListingDisplay, Order, ShippingOption};
+use crate::models::{AdminSettings, Listing, ListingDisplay, Order, OrderInfo, ShippingOption};
 use rocket::fairing::AdHoc;
+use rocket::form::Form;
 use rocket::request::FlashMessage;
 use rocket::response::Flash;
 use rocket::response::Redirect;
@@ -57,28 +58,52 @@ impl Context {
     }
 }
 
+#[post("/<id>/new", data = "<order_form>")]
+async fn new(
+    id: &str,
+    order_form: Form<OrderInfo>,
+    mut db: Connection<Db>,
+    user: User,
+    admin_user: Option<AdminUser>,
+) -> Result<Flash<Redirect>, Flash<Redirect>> {
+    let order_info = order_form.into_inner();
+
+    match create_order(id, order_info, &mut db, user.clone()).await {
+        Ok(order_id) => Ok(Flash::success(
+            Redirect::to(uri!("/prepare_order", index(id, Some(""), Some(1)))),
+            "Order successfully added.",
+        )),
+        Err(e) => {
+            error_!("DB insertion error: {}", e);
+            Err(Flash::error(
+                Redirect::to(uri!("/prepare_order", index(id, Some(""), Some(1)))),
+                e,
+            ))
+        }
+    }
+}
+
 async fn create_order(
-    quantity: u32,
     listing_id: &str,
-    shipping_option_id: &str,
-    shipping_instructions: &str,
+    order_info: OrderInfo,
     db: &mut Connection<Db>,
     user: User,
-    _admin_user: Option<AdminUser>,
 ) -> Result<(), String> {
     let listing = Listing::single_by_public_id(db, listing_id)
         .await
         .map_err(|_| "failed to get listing")?;
-    let shipping_option = ShippingOption::single_by_public_id(db, shipping_option_id)
+    let shipping_option = ShippingOption::single_by_public_id(db, &order_info.shipping_option_id)
         .await
         .map_err(|_| "failed to get shipping option.")?;
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
         .as_millis() as u64;
+    let shipping_instructions = order_info.shipping_instructions;
 
     let price_per_unit_with_shipping_sat: u64 = listing.price_sat + shipping_option.price_sat;
-    let amount_owed_sat: u64 = ((quantity as u64) * price_per_unit_with_shipping_sat).into();
+    let amount_owed_sat: u64 =
+        ((order_info.quantity as u64) * price_per_unit_with_shipping_sat).into();
     let market_fee_sat: u64 = (amount_owed_sat * (listing.fee_rate_basis_points as u64)) / 10000;
     let seller_credit_sat: u64 = amount_owed_sat - market_fee_sat;
 
@@ -94,7 +119,7 @@ async fn create_order(
         let order = Order {
             id: None,
             public_id: Uuid::new_v4().to_string(),
-            quantity: quantity,
+            quantity: order_info.quantity,
             user_id: user.id(),
             listing_id: listing.id.unwrap(),
             shipping_option_id: shipping_option.id.unwrap(),
@@ -140,6 +165,6 @@ async fn index(
 
 pub fn prepare_order_stage() -> AdHoc {
     AdHoc::on_ignite("Prepare Order Stage", |rocket| async {
-        rocket.mount("/prepare_order", routes![index])
+        rocket.mount("/prepare_order", routes![index, new])
     })
 }

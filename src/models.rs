@@ -153,6 +153,13 @@ pub struct Order {
     pub created_time_ms: u64,
 }
 
+#[derive(Debug, FromForm)]
+pub struct OrderInfo {
+    pub quantity: u32,
+    pub shipping_option_id: String,
+    pub shipping_instructions: String,
+}
+
 impl Listing {
     pub async fn all(db: &mut Connection<Db>) -> Result<Vec<Listing>, sqlx::Error> {
         let listings = sqlx::query!("select * from listings;")
