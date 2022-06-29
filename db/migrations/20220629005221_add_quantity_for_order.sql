@@ -1,0 +1,2 @@
+ALTER TABLE orders
+ADD COLUMN quantity INTEGER NOT NULL default 0;

@@ -136,6 +136,23 @@ pub struct FeeRateInput {
     pub fee_rate_basis_points: i32,
 }
 
+#[derive(Serialize, Debug, Clone)]
+#[serde(crate = "rocket::serde")]
+pub struct Order {
+    pub id: Option<i32>,
+    pub public_id: String,
+    pub quantity: i32,
+    pub user_id: i32,
+    pub listing_id: i32,
+    pub shipping_option_id: i32,
+    pub shipping_instructions: String,
+    pub amount_owed_sat: u64,
+    pub seller_credit_sat: u64,
+    pub paid: bool,
+    pub completed: bool,
+    pub created_time_ms: u64,
+}
+
 impl Listing {
     pub async fn all(db: &mut Connection<Db>) -> Result<Vec<Listing>, sqlx::Error> {
         let listings = sqlx::query!("select * from listings;")
@@ -1197,5 +1214,62 @@ impl AdminSettings {
         .await?;
 
         Ok(())
+    }
+}
+
+impl Order {
+    /// Returns the number of affected rows: 1.
+    pub async fn insert(order: Order, db: &mut Connection<Db>) -> Result<usize, sqlx::Error> {
+        let amount_owed_sat: i64 = order.amount_owed_sat.try_into().unwrap();
+        let seller_credit_sat: i64 = order.seller_credit_sat.try_into().unwrap();
+        let created_time_ms: i64 = order.created_time_ms.try_into().unwrap();
+
+        println!("inserting order: {:?}", order);
+
+        let insert_result = sqlx::query!(
+            "INSERT INTO orders (public_id, user_id, quantity, listing_id, shipping_option_id, shipping_instructions, amount_owed_sat, seller_credit_sat, paid, completed, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            order.public_id,
+            order.user_id,
+            order.quantity,
+            order.listing_id,
+            order.shipping_option_id,
+            order.shipping_instructions,
+            amount_owed_sat,
+            seller_credit_sat,
+            order.paid,
+            order.completed,
+            created_time_ms,
+        )
+            .execute(&mut **db)
+            .await?;
+
+        println!("insert_result: {:?}", insert_result);
+
+        Ok(insert_result.rows_affected() as _)
+    }
+
+    pub async fn single_by_public_id(
+        db: &mut Connection<Db>,
+        public_id: &str,
+    ) -> Result<Order, sqlx::Error> {
+        let order = sqlx::query!("select * from orders WHERE public_id = ?;", public_id)
+            .fetch_one(&mut **db)
+            .map_ok(|r| Order {
+                id: r.id.map(|n| n.try_into().unwrap()),
+                public_id: r.public_id,
+                quantity: r.quantity.try_into().unwrap(),
+                user_id: r.user_id.try_into().unwrap(),
+                listing_id: r.listing_id.try_into().unwrap(),
+                shipping_option_id: r.shipping_option_id.try_into().unwrap(),
+                shipping_instructions: r.shipping_instructions,
+                amount_owed_sat: r.amount_owed_sat.try_into().unwrap(),
+                seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
+                paid: r.paid,
+                completed: r.completed,
+                created_time_ms: r.created_time_ms.try_into().unwrap(),
+            })
+            .await?;
+
+        Ok(order)
     }
 }

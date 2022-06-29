@@ -17,6 +17,7 @@ mod my_rejected_listings;
 mod my_unsubmitted_listings;
 mod new_listing;
 mod posts;
+mod prepare_order;
 mod review_pending_listings;
 mod routes;
 mod update_fee_rate;
