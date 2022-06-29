@@ -1536,6 +1536,90 @@
     },
     "query": "select id, email from users WHERE email = ?;"
   },
+  "f44873e4e5056a773b2fa1b23b8d4fadc404561e555eeeddb75acdd3e0b213d3": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        },
+        {
+          "name": "listing_id",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "shipping_option_id",
+          "ordinal": 3,
+          "type_info": "Int64"
+        },
+        {
+          "name": "shipping_instructions",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "amount_owed_sat",
+          "ordinal": 5,
+          "type_info": "Int64"
+        },
+        {
+          "name": "seller_credit_sat",
+          "ordinal": 6,
+          "type_info": "Int64"
+        },
+        {
+          "name": "paid",
+          "ordinal": 7,
+          "type_info": "Bool"
+        },
+        {
+          "name": "completed",
+          "ordinal": 8,
+          "type_info": "Bool"
+        },
+        {
+          "name": "created_time_ms",
+          "ordinal": 9,
+          "type_info": "Int64"
+        },
+        {
+          "name": "public_id",
+          "ordinal": 10,
+          "type_info": "Text"
+        },
+        {
+          "name": "quantity",
+          "ordinal": 11,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "select * from orders WHERE id = ?;"
+  },
   "fce59254279c4cb6b59a568ae89329aeb318283dee83f03c94e92c11b4b5173f": {
     "describe": {
       "columns": [

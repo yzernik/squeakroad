@@ -70,7 +70,7 @@ async fn new(
 
     match create_order(id, order_info, &mut db, user.clone()).await {
         Ok(order_id) => Ok(Flash::success(
-            Redirect::to(uri!("/prepare_order", index(id, Some(""), Some(1)))),
+            Redirect::to(format!("/{}/{}", "order", order_id)),
             "Order successfully added.",
         )),
         Err(e) => {
@@ -88,7 +88,7 @@ async fn create_order(
     order_info: OrderInfo,
     db: &mut Connection<Db>,
     user: User,
-) -> Result<(), String> {
+) -> Result<String, String> {
     let listing = Listing::single_by_public_id(db, listing_id)
         .await
         .map_err(|_| "failed to get listing")?;
@@ -131,11 +131,19 @@ async fn create_order(
             created_time_ms: now,
         };
 
-        Order::insert(order, db)
-            .await
-            .map_err(|_| "failed to save order.")?;
-
-        Ok(())
+        match Order::insert(order, db).await {
+            Ok(order_id) => match Order::single(db, order_id).await {
+                Ok(new_order) => Ok(new_order.public_id.clone()),
+                Err(e) => {
+                    error_!("DB insertion error: {}", e);
+                    Err("New order could not be found after inserting.".to_string())
+                }
+            },
+            Err(e) => {
+                error_!("DB insertion error: {}", e);
+                Err("Order could not be inserted due an internal error.".to_string())
+            }
+        }
     }
 }
 
