@@ -19,6 +19,7 @@ use std::time::UNIX_EPOCH;
 struct Context {
     flash: Option<(String, String)>,
     order: Order,
+    listing: Listing,
     user: User,
     admin_user: Option<AdminUser>,
     admin_settings: Option<AdminSettings>,
@@ -35,6 +36,9 @@ impl Context {
         let order = Order::single_by_public_id(&mut db, order_id)
             .await
             .map_err(|_| "failed to get order.")?;
+        let listing = Listing::single(&mut db, order.id.unwrap())
+            .await
+            .map_err(|_| "failed to get listing display.")?;
         let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
             .await
             .map_err(|_| "failed to get admin settings.")?;
@@ -42,7 +46,8 @@ impl Context {
 
         Ok(Context {
             flash,
-            order: order,
+            order,
+            listing,
             user,
             admin_user,
             admin_settings: Some(admin_settings),

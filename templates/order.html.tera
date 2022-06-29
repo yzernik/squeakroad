@@ -14,6 +14,7 @@
     <h3>Order</h3>
 
     <p>Order id: {{ order.public_id }}</p>
+    <p>Listing id: {{ listing.public_id }}</p>
 
   </div>
 </div>
