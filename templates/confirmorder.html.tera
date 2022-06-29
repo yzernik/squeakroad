@@ -3,8 +3,9 @@
 
 {% if listing_display %}
 
-  <div class="full-width-container">
-    <p><!--Nothing to see here --></p>
+
+<div class="one-half column">
+  <div class="container">
 
     {% if flash %}
     <small class="field-{{flash.0}}-msg">
@@ -12,14 +13,27 @@
     </small>
     {% endif %}
 
-    <h3>Confirm Order</h3>
-    <p><b>Listing</b>: {{ listing_display.listing.title }}</p>
-    <p><b>Listing Price</b>: {{ listing_display.listing.price_sat }} sats</p>
-    <p><b>Shipping Option</b>: {{ selected_shipping_option.title }}</p>
-    <p><b>Shipping Option Price</b>: {{ selected_shipping_option.price_sat }} sats</p>
-    <p><b>Quantity</b>: {{ quantity }}</p>
+    <h3>Prepare Order</h3>
+
+    <p><a href="/listing/{{ listing_display.listing.public_id }}?shipping_option_id={{ selected_shipping_option.public_id }}">Back to Listing</a></p>
+
+    <p><b>Listing</b>: {{ listing_display.listing.title }} ({{ listing_display.listing.price_sat }} sats)</p>
+    <p><b>Shipping Option</b>: {{ selected_shipping_option.title }} ({{ selected_shipping_option.price_sat }} sats)</p>
+
+    <form action="" method="get">
+      <label for="choose_quantity">Choose quantity:</label>
+      <input type="hidden" id="shipping_option_id" name="shipping_option_id" value="{{ selected_shipping_option.public_id }}">
+      <input type="number" placeholder="enter the quantity of items..."
+             name="quantity" id="quantity" value="{{ quantity }}"
+	     class="u-full-width" />
+      <input type="submit" value="Update Quantity">
+    </form>
+
+    <p><b>Price per unit with shipping</b>: {{ listing_display.listing.price_sat }} sats + {{ selected_shipping_option.price_sat }} sats = {{ selected_shipping_option.price_sat + listing_display.listing.price_sat }} sats</p>
+    <p><b>Total price</b>: {{ quantity }} * {{ selected_shipping_option.price_sat + listing_display.listing.price_sat }} sats = <b>{{ quantity * (selected_shipping_option.price_sat + listing_display.listing.price_sat) }} sats</b></p>
 
   </div>
+</div>
 
 {% endif %}
 
