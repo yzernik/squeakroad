@@ -38,6 +38,7 @@ impl Context {
         let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
             .await
             .map_err(|_| "failed to get admin settings.")?;
+        println!("found order: {:?}", order);
 
         Ok(Context {
             flash,

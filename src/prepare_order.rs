@@ -71,7 +71,7 @@ async fn new(
     match create_order(id, order_info, &mut db, user.clone()).await {
         Ok(order_id) => Ok(Flash::success(
             Redirect::to(format!("/{}/{}", "order", order_id)),
-            "Order successfully added.",
+            "Order successfully created.",
         )),
         Err(e) => {
             error_!("DB insertion error: {}", e);

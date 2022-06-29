@@ -1,8 +1,6 @@
 {% extends "base" %}
 {% block body %}
 
-{% if listing_display %}
-
 
 <div class="one-half column">
   <div class="container">
@@ -20,6 +18,5 @@
   </div>
 </div>
 
-{% endif %}
 
 {% endblock body %}
