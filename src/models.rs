@@ -153,6 +153,13 @@ pub struct Order {
     pub created_time_ms: u64,
 }
 
+#[derive(Debug, FromForm)]
+pub struct OrderInfo {
+    pub quantity: u32,
+    pub shipping_option_id: String,
+    pub shipping_instructions: String,
+}
+
 impl Listing {
     pub async fn all(db: &mut Connection<Db>) -> Result<Vec<Listing>, sqlx::Error> {
         let listings = sqlx::query!("select * from listings;")
@@ -1218,8 +1225,8 @@ impl AdminSettings {
 }
 
 impl Order {
-    /// Returns the number of affected rows: 1.
-    pub async fn insert(order: Order, db: &mut Connection<Db>) -> Result<usize, sqlx::Error> {
+    /// Returns the id of the inserted row.
+    pub async fn insert(order: Order, db: &mut Connection<Db>) -> Result<i32, sqlx::Error> {
         let amount_owed_sat: i64 = order.amount_owed_sat.try_into().unwrap();
         let seller_credit_sat: i64 = order.seller_credit_sat.try_into().unwrap();
         let created_time_ms: i64 = order.created_time_ms.try_into().unwrap();
@@ -1245,7 +1252,29 @@ impl Order {
 
         println!("insert_result: {:?}", insert_result);
 
-        Ok(insert_result.rows_affected() as _)
+        Ok(insert_result.last_insert_rowid() as _)
+    }
+
+    pub async fn single(db: &mut Connection<Db>, id: i32) -> Result<Order, sqlx::Error> {
+        let order = sqlx::query!("select * from orders WHERE id = ?;", id)
+            .fetch_one(&mut **db)
+            .map_ok(|r| Order {
+                id: Some(r.id.try_into().unwrap()),
+                public_id: r.public_id,
+                quantity: r.quantity.try_into().unwrap(),
+                user_id: r.user_id.try_into().unwrap(),
+                listing_id: r.listing_id.try_into().unwrap(),
+                shipping_option_id: r.shipping_option_id.try_into().unwrap(),
+                shipping_instructions: r.shipping_instructions,
+                amount_owed_sat: r.amount_owed_sat.try_into().unwrap(),
+                seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
+                paid: r.paid,
+                completed: r.completed,
+                created_time_ms: r.created_time_ms.try_into().unwrap(),
+            })
+            .await?;
+
+        Ok(order)
     }
 
     pub async fn single_by_public_id(

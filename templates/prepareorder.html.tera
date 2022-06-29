@@ -32,6 +32,13 @@
     <p><b>Price per unit with shipping</b>: {{ listing_display.listing.price_sat }} sats + {{ selected_shipping_option.price_sat }} sats = {{ selected_shipping_option.price_sat + listing_display.listing.price_sat }} sats</p>
     <p><b>Total price</b>: {{ quantity }} * {{ selected_shipping_option.price_sat + listing_display.listing.price_sat }} sats = <b>{{ quantity * (selected_shipping_option.price_sat + listing_display.listing.price_sat) }} sats</b></p>
 
+    <form action="/prepare_order/{{ listing_display.listing.public_id }}/new" method="post">
+      <input type="hidden" id="quantity" name="quantity" value="{{ quantity }}">
+      <input type="hidden" id="shipping_option_id" name="shipping_option_id" value="{{ selected_shipping_option.public_id }}">
+      <input id="shipping_instructions" placeholder="enter shipping instructions ..." name="shipping_instructions" value="">
+      <input type="submit" value="Create Order">
+    </form>
+
   </div>
 </div>
 

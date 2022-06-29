@@ -1,0 +1,23 @@
+{% extends "base" %}
+{% block body %}
+
+
+<div class="one-half column">
+  <div class="container">
+
+    {% if flash %}
+    <small class="field-{{flash.0}}-msg">
+      {{ flash.1 }}
+    </small>
+    {% endif %}
+
+    <h3>Order</h3>
+
+    <p>Order id: {{ order.public_id }}</p>
+    <p>Listing id: {{ listing.public_id }}</p>
+
+  </div>
+</div>
+
+
+{% endblock body %}
