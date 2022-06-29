@@ -10,6 +10,8 @@ rocket = { git = "https://github.com/yzernik/Rocket", branch = "upgrade_sqlx_v_0
 serde_json = "1.0.59"
 base64 = "0.13.0"
 tonic_lnd = "0.3.0"
+figment = { version = "0.10", features = ["toml", "env"] }
+serde = "1.0.137"
 
 [dependencies.sqlx]
 version = "0.6.0"
