@@ -73,13 +73,13 @@ async fn index(
 
     let flash = flash.map(FlashMessage::into_inner);
     Template::render(
-        "confirmorder",
+        "prepareorder",
         Context::raw(db, id, sid, quantity, flash, user, admin_user).await,
     )
 }
 
-pub fn confirm_order_stage() -> AdHoc {
-    AdHoc::on_ignite("Confirm Order Stage", |rocket| async {
-        rocket.mount("/confirm_order", routes![index])
+pub fn prepare_order_stage() -> AdHoc {
+    AdHoc::on_ignite("Prepare Order Stage", |rocket| async {
+        rocket.mount("/prepare_order", routes![index])
     })
 }
