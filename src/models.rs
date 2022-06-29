@@ -146,7 +146,7 @@ pub struct Order {
     pub listing_id: i32,
     pub shipping_option_id: i32,
     pub shipping_instructions: String,
-    pub total_price_sat: u64,
+    pub amount_owed_sat: u64,
     pub seller_credit_sat: u64,
     pub paid: bool,
     pub completed: bool,
@@ -1220,21 +1220,21 @@ impl AdminSettings {
 impl Order {
     /// Returns the number of affected rows: 1.
     pub async fn insert(order: Order, db: &mut Connection<Db>) -> Result<usize, sqlx::Error> {
-        let total_price_sat: i64 = order.total_price_sat.try_into().unwrap();
+        let amount_owed_sat: i64 = order.amount_owed_sat.try_into().unwrap();
         let seller_credit_sat: i64 = order.seller_credit_sat.try_into().unwrap();
         let created_time_ms: i64 = order.created_time_ms.try_into().unwrap();
 
         println!("inserting order: {:?}", order);
 
         let insert_result = sqlx::query!(
-            "INSERT INTO orders (public_id, user_id, quantity, listing_id, shipping_option_id, shipping_instructions, total_price_sat, seller_credit_sat, paid, completed, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO orders (public_id, user_id, quantity, listing_id, shipping_option_id, shipping_instructions, amount_owed_sat, seller_credit_sat, paid, completed, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             order.public_id,
             order.user_id,
             order.quantity,
             order.listing_id,
             order.shipping_option_id,
             order.shipping_instructions,
-            total_price_sat,
+            amount_owed_sat,
             seller_credit_sat,
             order.paid,
             order.completed,
@@ -1262,7 +1262,7 @@ impl Order {
                 listing_id: r.listing_id.try_into().unwrap(),
                 shipping_option_id: r.shipping_option_id.try_into().unwrap(),
                 shipping_instructions: r.shipping_instructions,
-                total_price_sat: r.total_price_sat.try_into().unwrap(),
+                amount_owed_sat: r.amount_owed_sat.try_into().unwrap(),
                 seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
                 paid: r.paid,
                 completed: r.completed,
