@@ -141,6 +141,7 @@ pub struct FeeRateInput {
 pub struct Order {
     pub id: Option<i32>,
     pub public_id: String,
+    pub quantity: i32,
     pub user_id: i32,
     pub listing_id: i32,
     pub shipping_option_id: i32,
@@ -1226,9 +1227,10 @@ impl Order {
         println!("inserting order: {:?}", order);
 
         let insert_result = sqlx::query!(
-            "INSERT INTO orders (public_id, user_id, listing_id, shipping_option_id, shipping_instructions, total_price_sat, seller_credit_sat, paid, completed, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO orders (public_id, user_id, quantity, listing_id, shipping_option_id, shipping_instructions, total_price_sat, seller_credit_sat, paid, completed, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             order.public_id,
             order.user_id,
+            order.quantity,
             order.listing_id,
             order.shipping_option_id,
             order.shipping_instructions,
@@ -1255,6 +1257,7 @@ impl Order {
             .map_ok(|r| Order {
                 id: r.id.map(|n| n.try_into().unwrap()),
                 public_id: r.public_id,
+                quantity: r.quantity.try_into().unwrap(),
                 user_id: r.user_id.try_into().unwrap(),
                 listing_id: r.listing_id.try_into().unwrap(),
                 shipping_option_id: r.shipping_option_id.try_into().unwrap(),

@@ -1179,10 +1179,16 @@
           "name": "public_id",
           "ordinal": 10,
           "type_info": "Text"
+        },
+        {
+          "name": "quantity",
+          "ordinal": 11,
+          "type_info": "Int64"
         }
       ],
       "nullable": [
         true,
+        false,
         false,
         false,
         false,
@@ -1209,16 +1215,6 @@
       }
     },
     "query": "UPDATE listings SET reviewed = true, approved = true WHERE public_id = ?"
-  },
-  "b1c06dc3fe4b32204392464da1da40f30bbc8e38fa04af7757e7a075a901bd27": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 10
-      }
-    },
-    "query": "INSERT INTO orders (public_id, user_id, listing_id, shipping_option_id, shipping_instructions, total_price_sat, seller_credit_sat, paid, completed, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
   },
   "b26ae7c5b32514b2b055605b39373406f820c6534ec6583bb52b3c1ac00a6855": {
     "describe": {
@@ -1401,6 +1397,16 @@
       }
     },
     "query": "select * from adminsettings;"
+  },
+  "cc13aaf3ba74924533ba1514f092a0171b809aa4f11205ee82ffe4cc830c8fe1": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 11
+      }
+    },
+    "query": "INSERT INTO orders (public_id, user_id, quantity, listing_id, shipping_option_id, shipping_instructions, total_price_sat, seller_credit_sat, paid, completed, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
   },
   "cfa7d7cc21275c9db2ffc6d6c6fe7f1bfdce31858ababbde8407e1622cc63709": {
     "describe": {
