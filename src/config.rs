@@ -28,7 +28,7 @@ impl Default for Config {
 impl Config {
     pub fn get_config() -> Figment {
         Figment::from(Serialized::defaults(Config::default()))
-            .merge(Toml::file("Squeakroad.toml"))
+            .merge(Toml::file("config.toml"))
             .merge(Env::prefixed("SQUEAKROAD_"))
     }
 }
