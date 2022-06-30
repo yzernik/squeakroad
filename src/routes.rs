@@ -1,3 +1,4 @@
+use crate::config::Config;
 use crate::db::Db;
 use rocket::fairing::{self, AdHoc};
 use rocket::fs::{relative, FileServer};
@@ -6,6 +7,10 @@ use rocket_auth::Error::SqlxError;
 use rocket_auth::Users;
 use rocket_db_pools::{sqlx, Database};
 use rocket_dyn_templates::Template;
+use tonic_lnd::rpc::lightning_client::LightningClient;
+use tonic_lnd::tonic::codegen::InterceptedService;
+use tonic_lnd::tonic::transport::Channel;
+use tonic_lnd::MacaroonInterceptor;
 
 async fn run_migrations(rocket: Rocket<Build>) -> fairing::Result {
     match Db::fetch(&rocket) {
@@ -57,9 +62,38 @@ async fn create_admin_user(rocket: Rocket<Build>) -> fairing::Result {
     }
 }
 
-pub fn stage() -> AdHoc {
+async fn get_lnd_client(
+    lnd_address: String,
+    lnd_tls_cert_path: String,
+    lnd_macaroon_path: String,
+) -> Result<LightningClient<InterceptedService<Channel, MacaroonInterceptor>>, String> {
+    let client = tonic_lnd::connect(lnd_address, lnd_tls_cert_path, lnd_macaroon_path)
+        .await
+        .map_err(|_| "failed to get LND client.")?;
+    Ok(client)
+}
+
+pub fn stage(config: Config) -> AdHoc {
     AdHoc::on_ignite("SQLx Stage", |rocket| async {
         rocket
+            .attach(AdHoc::try_on_ignite("Manage config", |rocket| {
+                Box::pin(async move { Ok(rocket.manage(config.clone())) })
+            }))
+            // .attach(AdHoc::try_on_ignite("Manage LND client", |rocket| {
+            //     let cloned_config = config.clone();
+            //     Box::pin(async move {
+            //         match get_lnd_client(
+            //             config.lnd_host.to_string(),
+            //             config.lnd_tls_cert_path.to_string(),
+            //             config.lnd_macaroon_path.to_string(),
+            //         )
+            //         .await
+            //         {
+            //             Ok(lnd_client) => Ok(rocket.manage(lnd_client)),
+            //             Err(_) => Err(rocket),
+            //         }
+            //     })
+            // }))
             .attach(Db::init())
             .attach(AdHoc::try_on_ignite("SQLx Migrations", run_migrations))
             .attach(AdHoc::try_on_ignite(

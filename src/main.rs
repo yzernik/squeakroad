@@ -33,10 +33,12 @@ fn rocket() -> _ {
     let config_figment = config::Config::get_config();
     let config: config::Config = config_figment.extract().unwrap();
     println!("lnd_host: {:?}", config.lnd_host);
+    println!("lnd_cert_path: {:?}", config.lnd_tls_cert_path);
+    println!("lnd_macaroon_path: {:?}", config.lnd_macaroon_path);
 
     // let mut lnd_client = tonic_lnd::connect("", "", "")
     //     .await
     //     .expect("failed to connect");
 
-    rocket::build().attach(routes::stage())
+    rocket::build().attach(routes::stage(config))
 }
