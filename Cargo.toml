@@ -12,7 +12,6 @@ base64 = "0.13.0"
 tonic_lnd = "0.3.0"
 figment = { version = "0.10", features = ["toml", "env"] }
 serde = "1.0.137"
-tonic = "0.7.2"
 
 [dependencies.sqlx]
 version = "0.6.0"
