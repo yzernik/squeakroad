@@ -1,4 +1,6 @@
+use crate::config::Config;
 use crate::db::Db;
+use crate::lightning;
 use crate::models::{AdminSettings, Listing, ListingDisplay, Order, OrderInfo, ShippingOption};
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
@@ -7,6 +9,7 @@ use rocket::response::Flash;
 use rocket::response::Redirect;
 use rocket::serde::uuid::Uuid;
 use rocket::serde::Serialize;
+use rocket::State;
 use rocket_auth::AdminUser;
 use rocket_auth::User;
 use rocket_db_pools::Connection;
@@ -65,10 +68,20 @@ async fn new(
     mut db: Connection<Db>,
     user: User,
     admin_user: Option<AdminUser>,
+    config: &State<Config>,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
     let order_info = order_form.into_inner();
+    println!("config: {:?}", config);
 
-    match create_order(id, order_info, &mut db, user.clone()).await {
+    match create_order(
+        id,
+        order_info,
+        &mut db,
+        user.clone(),
+        config.inner().clone(),
+    )
+    .await
+    {
         Ok(order_id) => Ok(Flash::success(
             Redirect::to(format!("/{}/{}", "order", order_id)),
             "Order successfully created.",
@@ -88,7 +101,9 @@ async fn create_order(
     order_info: OrderInfo,
     db: &mut Connection<Db>,
     user: User,
+    config: Config,
 ) -> Result<String, String> {
+    println!("config: {:?}", config);
     let listing = Listing::single_by_public_id(db, listing_id)
         .await
         .map_err(|_| "failed to get listing")?;
@@ -130,6 +145,23 @@ async fn create_order(
             completed: false,
             created_time_ms: now,
         };
+
+        let mut lighting_client = lightning::get_lnd_client(
+            config.lnd_host.clone(),
+            config.lnd_port,
+            config.lnd_tls_cert_path.clone(),
+            config.lnd_macaroon_path.clone(),
+        )
+        .await
+        .expect("failed to get lightning client");
+        let info = lighting_client
+            // All calls require at least empty parameter
+            .get_info(tonic_lnd::rpc::GetInfoRequest {})
+            .await
+            .expect("failed to get info");
+        // We only print it here, note that in real-life code you may want to call `.into_inner()` on
+        // the response to get the message.
+        println!("{:#?}", info);
 
         match Order::insert(order, db).await {
             Ok(order_id) => match Order::single(db, order_id).await {
