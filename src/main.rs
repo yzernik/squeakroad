@@ -9,6 +9,7 @@ mod admin;
 mod auth;
 mod config;
 mod db;
+mod lightning;
 mod listing;
 mod listings;
 mod models;
