@@ -150,6 +150,8 @@ pub struct Order {
     pub seller_credit_sat: u64,
     pub paid: bool,
     pub completed: bool,
+    pub invoice_hash: String,
+    pub invoice_payment_request: String,
     pub created_time_ms: u64,
 }
 
@@ -1234,7 +1236,7 @@ impl Order {
         println!("inserting order: {:?}", order);
 
         let insert_result = sqlx::query!(
-            "INSERT INTO orders (public_id, user_id, quantity, listing_id, shipping_option_id, shipping_instructions, amount_owed_sat, seller_credit_sat, paid, completed, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO orders (public_id, user_id, quantity, listing_id, shipping_option_id, shipping_instructions, amount_owed_sat, seller_credit_sat, paid, completed, invoice_hash, invoice_payment_request, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             order.public_id,
             order.user_id,
             order.quantity,
@@ -1245,6 +1247,8 @@ impl Order {
             seller_credit_sat,
             order.paid,
             order.completed,
+            order.invoice_hash,
+            order.invoice_payment_request,
             created_time_ms,
         )
             .execute(&mut **db)
@@ -1270,6 +1274,8 @@ impl Order {
                 seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
                 paid: r.paid,
                 completed: r.completed,
+                invoice_hash: r.invoice_hash,
+                invoice_payment_request: r.invoice_payment_request,
                 created_time_ms: r.created_time_ms.try_into().unwrap(),
             })
             .await?;
@@ -1295,6 +1301,8 @@ impl Order {
                 seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
                 paid: r.paid,
                 completed: r.completed,
+                invoice_hash: r.invoice_hash,
+                invoice_payment_request: r.invoice_payment_request,
                 created_time_ms: r.created_time_ms.try_into().unwrap(),
             })
             .await?;

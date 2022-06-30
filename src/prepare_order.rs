@@ -1,4 +1,6 @@
+use crate::config::Config;
 use crate::db::Db;
+use crate::lightning;
 use crate::models::{AdminSettings, Listing, ListingDisplay, Order, OrderInfo, ShippingOption};
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
@@ -7,6 +9,7 @@ use rocket::response::Flash;
 use rocket::response::Redirect;
 use rocket::serde::uuid::Uuid;
 use rocket::serde::Serialize;
+use rocket::State;
 use rocket_auth::AdminUser;
 use rocket_auth::User;
 use rocket_db_pools::Connection;
@@ -65,10 +68,20 @@ async fn new(
     mut db: Connection<Db>,
     user: User,
     admin_user: Option<AdminUser>,
+    config: &State<Config>,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
     let order_info = order_form.into_inner();
+    println!("config: {:?}", config);
 
-    match create_order(id, order_info, &mut db, user.clone()).await {
+    match create_order(
+        id,
+        order_info,
+        &mut db,
+        user.clone(),
+        config.inner().clone(),
+    )
+    .await
+    {
         Ok(order_id) => Ok(Flash::success(
             Redirect::to(format!("/{}/{}", "order", order_id)),
             "Order successfully created.",
@@ -88,7 +101,9 @@ async fn create_order(
     order_info: OrderInfo,
     db: &mut Connection<Db>,
     user: User,
+    config: Config,
 ) -> Result<String, String> {
+    println!("config: {:?}", config);
     let listing = Listing::single_by_public_id(db, listing_id)
         .await
         .map_err(|_| "failed to get listing")?;
@@ -116,6 +131,27 @@ async fn create_order(
     } else if shipping_option.listing_id != listing.id.unwrap() {
         Err("Shipping option not associated with listing.".to_string())
     } else {
+        let mut lighting_client = lightning::get_lnd_client(
+            config.lnd_host.clone(),
+            config.lnd_port,
+            config.lnd_tls_cert_path.clone(),
+            config.lnd_macaroon_path.clone(),
+        )
+        .await
+        .expect("failed to get lightning client");
+        let invoice_resp = lighting_client
+            // All calls require at least empty parameter
+            .add_invoice(tonic_lnd::rpc::Invoice {
+                value_msat: (amount_owed_sat as i64) * 1000,
+                ..tonic_lnd::rpc::Invoice::default()
+            })
+            .await
+            .expect("failed to get new invoice");
+        // We only print it here, note that in real-life code you may want to call `.into_inner()` on
+        // the response to get the message.
+        println!("{:#?}", invoice_resp);
+        let invoice = invoice_resp.into_inner();
+
         let order = Order {
             id: None,
             public_id: Uuid::new_v4().to_string(),
@@ -128,6 +164,8 @@ async fn create_order(
             seller_credit_sat: seller_credit_sat,
             paid: false,
             completed: false,
+            invoice_hash: hex::encode(invoice.r_hash),
+            invoice_payment_request: invoice.payment_request,
             created_time_ms: now,
         };
 

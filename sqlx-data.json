@@ -1184,10 +1184,22 @@
           "name": "quantity",
           "ordinal": 11,
           "type_info": "Int64"
+        },
+        {
+          "name": "invoice_hash",
+          "ordinal": 12,
+          "type_info": "Text"
+        },
+        {
+          "name": "invoice_payment_request",
+          "ordinal": 13,
+          "type_info": "Text"
         }
       ],
       "nullable": [
         true,
+        false,
+        false,
         false,
         false,
         false,
@@ -1398,16 +1410,6 @@
     },
     "query": "select * from adminsettings;"
   },
-  "c3cd72178023fc98731f51742d35d49b9213659ea58b907d68900306162d3a7d": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 11
-      }
-    },
-    "query": "INSERT INTO orders (public_id, user_id, quantity, listing_id, shipping_option_id, shipping_instructions, amount_owed_sat, seller_credit_sat, paid, completed, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-  },
   "cfa7d7cc21275c9db2ffc6d6c6fe7f1bfdce31858ababbde8407e1622cc63709": {
     "describe": {
       "columns": [],
@@ -1417,6 +1419,16 @@
       }
     },
     "query": "DELETE FROM listingimages WHERE public_id = ?"
+  },
+  "e0de506146a8c9fd51ddad2fc8320aa19ec3a9ace641fbfc75ae184be91a5614": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 13
+      }
+    },
+    "query": "INSERT INTO orders (public_id, user_id, quantity, listing_id, shipping_option_id, shipping_instructions, amount_owed_sat, seller_credit_sat, paid, completed, invoice_hash, invoice_payment_request, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
   },
   "e706307d9941de70d4a03738669354505bfcdc2e4792fb9582cf3eaf597119cb": {
     "describe": {
@@ -1598,9 +1610,21 @@
           "name": "quantity",
           "ordinal": 11,
           "type_info": "Int64"
+        },
+        {
+          "name": "invoice_hash",
+          "ordinal": 12,
+          "type_info": "Text"
+        },
+        {
+          "name": "invoice_payment_request",
+          "ordinal": 13,
+          "type_info": "Text"
         }
       ],
       "nullable": [
+        false,
+        false,
         false,
         false,
         false,
