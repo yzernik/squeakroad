@@ -1,3 +1,4 @@
+use crate::config::Config;
 use crate::db::Db;
 use rocket::fairing::{self, AdHoc};
 use rocket::fs::{relative, FileServer};
@@ -57,9 +58,27 @@ async fn create_admin_user(rocket: Rocket<Build>) -> fairing::Result {
     }
 }
 
-pub fn stage() -> AdHoc {
+pub fn stage(config: Config) -> AdHoc {
     AdHoc::on_ignite("SQLx Stage", |rocket| async {
         rocket
+            .attach(AdHoc::try_on_ignite("Manage config", |rocket| {
+                Box::pin(async move { Ok(rocket.manage(config.clone())) })
+            }))
+            // .attach(AdHoc::try_on_ignite("Manage LND client", |rocket| {
+            //     let cloned_config = config.clone();
+            //     Box::pin(async move {
+            //         match get_lnd_client(
+            //             config.lnd_host.to_string(),
+            //             config.lnd_tls_cert_path.to_string(),
+            //             config.lnd_macaroon_path.to_string(),
+            //         )
+            //         .await
+            //         {
+            //             Ok(lnd_client) => Ok(rocket.manage(lnd_client)),
+            //             Err(_) => Err(rocket),
+            //         }
+            //     })
+            // }))
             .attach(Db::init())
             .attach(AdHoc::try_on_ignite("SQLx Migrations", run_migrations))
             .attach(AdHoc::try_on_ignite(

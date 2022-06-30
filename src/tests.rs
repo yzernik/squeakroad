@@ -1,3 +1,4 @@
+use crate::config::Config;
 use rocket::fairing::AdHoc;
 use rocket::http::Status;
 use rocket::local::blocking::Client;
@@ -70,5 +71,7 @@ fn test(base: &str, stage: AdHoc) {
 
 #[test]
 fn test_routes() {
-    test("/posts", crate::routes::stage())
+    let config_figment = Config::get_config();
+    let config: Config = config_figment.extract().unwrap();
+    test("/posts", crate::routes::stage(config))
 }

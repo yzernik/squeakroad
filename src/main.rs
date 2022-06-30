@@ -7,7 +7,9 @@ mod tests;
 mod account;
 mod admin;
 mod auth;
+mod config;
 mod db;
+mod lightning;
 mod listing;
 mod listings;
 mod models;
@@ -29,5 +31,16 @@ mod user;
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build().attach(routes::stage())
+    let config_figment = config::Config::get_config();
+    let config: config::Config = config_figment.extract().unwrap();
+    println!("lnd_host: {:?}", config.lnd_host);
+    println!("lnd_port: {:?}", config.lnd_port);
+    println!("lnd_tls_cert_path: {:?}", config.lnd_tls_cert_path);
+    println!("lnd_macaroon_path: {:?}", config.lnd_macaroon_path);
+
+    // let mut lnd_client = tonic_lnd::connect("", "", "")
+    //     .await
+    //     .expect("failed to connect");
+
+    rocket::build().attach(routes::stage(config))
 }
