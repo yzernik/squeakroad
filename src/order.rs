@@ -36,7 +36,7 @@ impl Context {
         let order = Order::single_by_public_id(&mut db, order_id)
             .await
             .map_err(|_| "failed to get order.")?;
-        let listing = Listing::single(&mut db, order.id.unwrap())
+        let listing = Listing::single(&mut db, order.listing_id)
             .await
             .map_err(|_| "failed to get listing display.")?;
         let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
@@ -66,7 +66,14 @@ async fn index(
     println!("looking for order...");
 
     let flash = flash.map(FlashMessage::into_inner);
-    Template::render("order", Context::raw(db, id, flash, user, admin_user).await)
+    let context = match Context::raw(db, id, flash, user, admin_user).await {
+        Ok(ctx) => ctx,
+        Err(e) => {
+            error!("{}", e);
+            panic!("failed to get context.")
+        }
+    };
+    Template::render("order", context)
 }
 
 pub fn order_stage() -> AdHoc {
