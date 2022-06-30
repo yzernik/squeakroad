@@ -1236,7 +1236,7 @@ impl Order {
         println!("inserting order: {:?}", order);
 
         let insert_result = sqlx::query!(
-            "INSERT INTO orders (public_id, user_id, quantity, listing_id, shipping_option_id, shipping_instructions, amount_owed_sat, seller_credit_sat, paid, completed, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO orders (public_id, user_id, quantity, listing_id, shipping_option_id, shipping_instructions, amount_owed_sat, seller_credit_sat, paid, completed, invoice_hash, invoice_payment_request, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             order.public_id,
             order.user_id,
             order.quantity,
@@ -1247,6 +1247,8 @@ impl Order {
             seller_credit_sat,
             order.paid,
             order.completed,
+            order.invoice_hash,
+            order.invoice_payment_request,
             created_time_ms,
         )
             .execute(&mut **db)

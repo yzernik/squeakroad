@@ -139,14 +139,18 @@ async fn create_order(
         )
         .await
         .expect("failed to get lightning client");
-        let info = lighting_client
+        let invoice_resp = lighting_client
             // All calls require at least empty parameter
-            .get_info(tonic_lnd::rpc::GetInfoRequest {})
+            .add_invoice(tonic_lnd::rpc::Invoice {
+                value_msat: (amount_owed_sat as i64) * 1000,
+                ..tonic_lnd::rpc::Invoice::default()
+            })
             .await
-            .expect("failed to get info");
+            .expect("failed to get new invoice");
         // We only print it here, note that in real-life code you may want to call `.into_inner()` on
         // the response to get the message.
-        println!("{:#?}", info);
+        println!("{:#?}", invoice_resp);
+        let invoice = invoice_resp.into_inner();
 
         let order = Order {
             id: None,
@@ -160,8 +164,8 @@ async fn create_order(
             seller_credit_sat: seller_credit_sat,
             paid: false,
             completed: false,
-            invoice_hash: "TODO".to_string(),
-            invoice_payment_request: "TODO".to_string(),
+            invoice_hash: hex::encode(invoice.r_hash),
+            invoice_payment_request: invoice.payment_request,
             created_time_ms: now,
         };
 
