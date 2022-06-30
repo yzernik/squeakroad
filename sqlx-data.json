@@ -1184,10 +1184,22 @@
           "name": "quantity",
           "ordinal": 11,
           "type_info": "Int64"
+        },
+        {
+          "name": "invoice_hash",
+          "ordinal": 12,
+          "type_info": "Text"
+        },
+        {
+          "name": "invoice_payment_request",
+          "ordinal": 13,
+          "type_info": "Text"
         }
       ],
       "nullable": [
         true,
+        false,
+        false,
         false,
         false,
         false,
@@ -1598,9 +1610,21 @@
           "name": "quantity",
           "ordinal": 11,
           "type_info": "Int64"
+        },
+        {
+          "name": "invoice_hash",
+          "ordinal": 12,
+          "type_info": "Text"
+        },
+        {
+          "name": "invoice_payment_request",
+          "ordinal": 13,
+          "type_info": "Text"
         }
       ],
       "nullable": [
+        false,
+        false,
         false,
         false,
         false,

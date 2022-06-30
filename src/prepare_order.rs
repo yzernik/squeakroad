@@ -131,21 +131,6 @@ async fn create_order(
     } else if shipping_option.listing_id != listing.id.unwrap() {
         Err("Shipping option not associated with listing.".to_string())
     } else {
-        let order = Order {
-            id: None,
-            public_id: Uuid::new_v4().to_string(),
-            quantity: order_info.quantity,
-            user_id: user.id(),
-            listing_id: listing.id.unwrap(),
-            shipping_option_id: shipping_option.id.unwrap(),
-            shipping_instructions: shipping_instructions.to_string(),
-            amount_owed_sat: amount_owed_sat,
-            seller_credit_sat: seller_credit_sat,
-            paid: false,
-            completed: false,
-            created_time_ms: now,
-        };
-
         let mut lighting_client = lightning::get_lnd_client(
             config.lnd_host.clone(),
             config.lnd_port,
@@ -162,6 +147,23 @@ async fn create_order(
         // We only print it here, note that in real-life code you may want to call `.into_inner()` on
         // the response to get the message.
         println!("{:#?}", info);
+
+        let order = Order {
+            id: None,
+            public_id: Uuid::new_v4().to_string(),
+            quantity: order_info.quantity,
+            user_id: user.id(),
+            listing_id: listing.id.unwrap(),
+            shipping_option_id: shipping_option.id.unwrap(),
+            shipping_instructions: shipping_instructions.to_string(),
+            amount_owed_sat: amount_owed_sat,
+            seller_credit_sat: seller_credit_sat,
+            paid: false,
+            completed: false,
+            invoice_hash: "TODO".to_string(),
+            invoice_payment_request: "TODO".to_string(),
+            created_time_ms: now,
+        };
 
         match Order::insert(order, db).await {
             Ok(order_id) => match Order::single(db, order_id).await {

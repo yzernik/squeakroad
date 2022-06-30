@@ -150,6 +150,8 @@ pub struct Order {
     pub seller_credit_sat: u64,
     pub paid: bool,
     pub completed: bool,
+    pub invoice_hash: String,
+    pub invoice_payment_request: String,
     pub created_time_ms: u64,
 }
 
@@ -1270,6 +1272,8 @@ impl Order {
                 seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
                 paid: r.paid,
                 completed: r.completed,
+                invoice_hash: r.invoice_hash,
+                invoice_payment_request: r.invoice_payment_request,
                 created_time_ms: r.created_time_ms.try_into().unwrap(),
             })
             .await?;
@@ -1295,6 +1299,8 @@ impl Order {
                 seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
                 paid: r.paid,
                 completed: r.completed,
+                invoice_hash: r.invoice_hash,
+                invoice_payment_request: r.invoice_payment_request,
                 created_time_ms: r.created_time_ms.try_into().unwrap(),
             })
             .await?;
