@@ -95,6 +95,9 @@ async fn submit_listing(db: &mut Connection<Db>, id: &str, user: User) -> Result
     let listing = Listing::single_by_public_id(db, id)
         .await
         .map_err(|_| "failed to get listing")?;
+    let shipping_options = ShippingOption::all_for_listing(db, listing.id.unwrap())
+        .await
+        .map_err(|_| "failed to get shipping options for listing")?;
     if listing.user_id != user.id() {
         Err("Listing belongs to a different user.".to_string())
     } else if listing.submitted {
@@ -103,6 +106,8 @@ async fn submit_listing(db: &mut Connection<Db>, id: &str, user: User) -> Result
         Err("Listing is already approved.".to_string())
     } else if listing.removed {
         Err("Listing is already removed.".to_string())
+    } else if shipping_options.len() == 0 {
+        Err("At least one shipping option required.".to_string())
     } else {
         Listing::mark_as_submitted(db, id)
             .await
