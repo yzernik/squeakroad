@@ -19,8 +19,8 @@ impl Default for Config {
             key: "default".into(),
             lnd_host: "localhost".into(),
             lnd_port: 10009,
-            lnd_tls_cert_path: "~/.lnd2/tls.cert".into(),
-            lnd_macaroon_path: "~/.lnd2/data/chain/bitcoin/testnet/admin.macaroon".into(),
+            lnd_tls_cert_path: "~/.lnd/tls.cert".into(),
+            lnd_macaroon_path: "~/.lnd/data/chain/bitcoin/testnet/admin.macaroon".into(),
         }
     }
 }
