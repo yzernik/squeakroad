@@ -1,5 +1,5 @@
 use crate::db::Db;
-use crate::models::{AdminSettings, Order};
+use crate::models::{AdminSettings, Order, OrderCard};
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::response::status::NotFound;
@@ -12,7 +12,7 @@ use rocket_dyn_templates::Template;
 #[serde(crate = "rocket::serde")]
 struct Context {
     flash: Option<(String, String)>,
-    orders: Vec<Order>,
+    order_cards: Vec<OrderCard>,
     user: User,
     admin_user: Option<AdminUser>,
     admin_settings: Option<AdminSettings>,
@@ -25,15 +25,16 @@ impl Context {
         user: User,
         admin_user: Option<AdminUser>,
     ) -> Result<Context, String> {
-        let orders = Order::all_unpaid_for_user(&mut db, user.id)
+        let order_cards = OrderCard::all_unpaid_for_user(&mut db, user.id)
             .await
             .map_err(|_| "failed to get unpaid orders.")?;
+        println!("order_cards: {:?}", order_cards);
         let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
             .await
             .map_err(|_| "failed to get admin settings.")?;
         Ok(Context {
             flash,
-            orders,
+            order_cards,
             user,
             admin_user,
             admin_settings: Some(admin_settings),

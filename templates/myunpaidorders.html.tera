@@ -12,13 +12,14 @@
 
       <div class="twelve columns">
         <ul>
-        {% for order in orders %}
+        {% for order_card in order_cards %}
 
         <li>
-	  <a href="/order/{{order.public_id}}">
-          <p>{{ order.listing_id }}</p>
-          <p>{{ order.amount_owed_sat }} sats</p>
+	  <a href="/order/{{order_card.order.public_id}}">
+          <p>{{ order_card.order.public_id }}</p>
           </a>
+          <p>{{ order_card.listing.title }}</p>
+          <p>{{ order_card.order.amount_owed_sat }} sats</p>
 	</li>
 
         {% endfor %}
