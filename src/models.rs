@@ -1337,6 +1337,34 @@ impl Order {
         Ok(order)
     }
 
+    pub async fn quantity_of_listing_sold(
+        db: &mut Connection<Db>,
+        listing_id: i32,
+    ) -> Result<u32, sqlx::Error> {
+        let sold_items = sqlx::query!(
+            "
+select
+ SUM(orders.quantity) as quantity_sold
+FROM
+ orders
+WHERE
+ listing_id = ?
+AND
+ completed
+GROUP BY
+ listing_id
+;",
+            listing_id,
+        )
+        .fetch_optional(&mut **db)
+        .await?;
+        let quantity_sold = match sold_items {
+            Some(r) => r.quantity_sold,
+            None => 0,
+        };
+        Ok(quantity_sold.try_into().unwrap())
+    }
+
     // pub async fn single_by_invoice_hash(
     //     db: &mut Connection<Db>,
     //     invoice_hash: &str,
