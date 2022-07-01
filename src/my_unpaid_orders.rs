@@ -28,7 +28,6 @@ impl Context {
         let order_cards = OrderCard::all_unpaid_for_user(&mut db, user.id)
             .await
             .map_err(|_| "failed to get unpaid orders.")?;
-        println!("order_cards: {:?}", order_cards);
         let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
             .await
             .map_err(|_| "failed to get admin settings.")?;

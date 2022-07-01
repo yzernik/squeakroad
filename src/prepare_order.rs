@@ -113,6 +113,10 @@ async fn create_order(
     let shipping_option = ShippingOption::single_by_public_id(db, &order_info.shipping_option_id)
         .await
         .map_err(|_| "failed to get shipping option.")?;
+    let quantity_sold = Order::quantity_of_listing_sold(db, listing.id.unwrap())
+        .await
+        .map_err(|_| "failed to get quantity sold.")?;
+    println!("quantity_sold: {:?}", quantity_sold);
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
@@ -124,6 +128,8 @@ async fn create_order(
         ((order_info.quantity as u64) * price_per_unit_with_shipping_sat).into();
     let market_fee_sat: u64 = (amount_owed_sat * (listing.fee_rate_basis_points as u64)) / 10000;
     let seller_credit_sat: u64 = amount_owed_sat - market_fee_sat;
+    let quantity_in_stock = listing.quantity - quantity_sold;
+    println!("quantity_in_stock: {:?}", quantity_in_stock);
 
     if shipping_instructions.is_empty() {
         Err("Shipping instructions cannot be empty.".to_string())
@@ -135,6 +141,8 @@ async fn create_order(
         Err("Shipping option not associated with listing.".to_string())
     } else if user.is_admin {
         Err("Admin user cannot create an order.".to_string())
+    } else if quantity_in_stock < order_info.quantity {
+        Err("Not enough items in stock.".to_string())
     } else {
         let mut lighting_client = lightning::get_lnd_client(
             config.lnd_host.clone(),

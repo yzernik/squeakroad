@@ -1,5 +1,5 @@
 use crate::db::Db;
-use crate::models::{AdminSettings, Listing, ListingDisplay, ShippingOption};
+use crate::models::{AdminSettings, Listing, ListingDisplay, Order, ShippingOption};
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::response::Flash;
@@ -16,6 +16,7 @@ struct Context {
     flash: Option<(String, String)>,
     listing_display: Option<ListingDisplay>,
     selected_shipping_option: Option<ShippingOption>,
+    quantity_in_stock: u32,
     user: Option<User>,
     admin_user: Option<AdminUser>,
     admin_settings: Option<AdminSettings>,
@@ -45,6 +46,10 @@ impl Context {
         let listing_display = ListingDisplay::single_by_public_id(&mut db, listing_id)
             .await
             .map_err(|_| "failed to get admin settings.")?;
+        let quantity_sold =
+            Order::quantity_of_listing_sold(&mut db, listing_display.listing.id.unwrap())
+                .await
+                .map_err(|_| "failed to get quantity sold.")?;
         let maybe_shipping_option = match shipping_option_id {
             Some(sid) => {
                 let shipping_option = ShippingOption::single_by_public_id(&mut db, sid).await;
@@ -55,11 +60,13 @@ impl Context {
         let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
             .await
             .map_err(|_| "failed to get admin settings.")?;
+        let quantity_in_stock = listing_display.listing.quantity - quantity_sold;
 
         Ok(Context {
             flash,
             listing_display: Some(listing_display),
             selected_shipping_option: maybe_shipping_option,
+            quantity_in_stock,
             user,
             admin_user,
             admin_settings: Some(admin_settings),

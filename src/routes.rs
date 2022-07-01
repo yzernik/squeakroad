@@ -1,5 +1,6 @@
 use crate::config::Config;
 use crate::db::Db;
+use crate::payment_processor;
 use rocket::fairing::{self, AdHoc};
 use rocket::fs::{relative, FileServer};
 use rocket::{Build, Rocket};
@@ -59,10 +60,12 @@ async fn create_admin_user(rocket: Rocket<Build>) -> fairing::Result {
 }
 
 pub fn stage(config: Config) -> AdHoc {
+    let config_clone = config.clone();
+
     AdHoc::on_ignite("SQLx Stage", |rocket| async {
         rocket
             .attach(AdHoc::try_on_ignite("Manage config", |rocket| {
-                Box::pin(async move { Ok(rocket.manage(config.clone())) })
+                Box::pin(async move { Ok(rocket.manage(config)) })
             }))
             // .attach(AdHoc::try_on_ignite("Manage LND client", |rocket| {
             //     let cloned_config = config.clone();
@@ -89,6 +92,54 @@ pub fn stage(config: Config) -> AdHoc {
                 "SQLx Create Admin User",
                 create_admin_user,
             ))
+            .attach(AdHoc::on_liftoff("DB polling", |rocket| {
+                // Copied from: https://stackoverflow.com/a/72457117/1639564
+                Box::pin(async move {
+                    let pool = match Db::fetch(&rocket) {
+                        Some(pool) => pool.0.clone(), // clone the wrapped pool
+                        None => panic!("failed to get db for background task."),
+                    };
+                    rocket::tokio::spawn(async move {
+                        let mut interval = rocket::tokio::time::interval(
+                            rocket::tokio::time::Duration::from_secs(10),
+                        );
+                        loop {
+                            if let Ok(mut conn) = pool.acquire().await {
+                                payment_processor::handle_received_payments(
+                                    config_clone.clone(),
+                                    conn,
+                                )
+                                .await;
+                                // println!("conn: {:?}", conn);
+                            }
+                            println!("Subscription failed. Trying again in {:?} seconds.", 10);
+                            interval.tick().await;
+                        }
+                    });
+
+                    // match Db::fetch(&rocket) {
+                    //     Some(db) => {
+                    //         // let conn = Db::fetch(&rocket);
+                    //         rocket::tokio::spawn(async move {
+                    //             let mut interval = rocket::tokio::time::interval(
+                    //                 rocket::tokio::time::Duration::from_secs(10),
+                    //             );
+                    //             loop {
+                    //                 interval.tick().await;
+                    //                 // do_sql_stuff(&conn).await;
+                    //                 println!("Do something here!!!");
+                    //                 payment_processor::handle_received_payments(
+                    //                     config_clone.clone(),
+                    //                     &**db,
+                    //                 )
+                    //                 .await;
+                    //             }
+                    //         });
+                    //     }
+                    //     None => panic!("failed to get db for background task."),
+                    // }
+                })
+            }))
             .attach(Template::fairing())
             .mount("/", FileServer::from(relative!("static")))
             .attach(crate::posts::posts_stage())

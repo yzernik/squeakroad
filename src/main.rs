@@ -22,6 +22,7 @@ mod my_unpaid_orders;
 mod my_unsubmitted_listings;
 mod new_listing;
 mod order;
+mod payment_processor;
 mod posts;
 mod prepare_order;
 mod review_pending_listings;

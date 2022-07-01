@@ -1,24 +1,12 @@
 use crate::config::Config;
-use tonic_lnd::rpc::lightning_client::LightningClient;
-use tonic_lnd::tonic::codegen::InterceptedService;
-use tonic_lnd::tonic::transport::Channel;
-use tonic_lnd::MacaroonInterceptor;
+use crate::db::Db;
+use crate::lightning::get_lnd_client;
+use crate::models::Order;
+use rocket_db_pools::Connection;
+use sqlx::pool::PoolConnection;
+use sqlx::Sqlite;
 
-pub async fn get_lnd_client(
-    lnd_host: String,
-    lnd_port: u32,
-    lnd_tls_cert_path: String,
-    lnd_macaroon_path: String,
-) -> Result<LightningClient<InterceptedService<Channel, MacaroonInterceptor>>, String> {
-    let lnd_address = format!("http://{}:{}", lnd_host, lnd_port);
-    println!("lnd_address: {:?}", lnd_address);
-    let client = tonic_lnd::connect(lnd_address, lnd_tls_cert_path, lnd_macaroon_path)
-        .await
-        .map_err(|_| "failed to get LND client.")?;
-    Ok(client)
-}
-
-pub async fn handle_received_payments(config: Config) -> Result<(), String> {
+pub async fn handle_received_payments(config: Config, mut conn: PoolConnection<Sqlite>) -> () {
     let mut lighting_client = get_lnd_client(
         config.lnd_host.clone(),
         config.lnd_port,
@@ -45,7 +33,12 @@ pub async fn handle_received_payments(config: Config) -> Result<(), String> {
     {
         println!("Received invoice: {:?}", invoice);
         let invoice_hash = hex::encode(invoice.r_hash);
-    }
+        println!("Invoice hash: {:?}", invoice_hash);
 
-    Ok(())
+        // let order = Order::single_by_invoice_hash(&mut conn, &invoice_hash)
+        //     .await
+        //     .expect("failed to make order query.");
+        // println!("Order: {:?}", order);
+        Order::update_order_on_paid(&mut conn, &invoice_hash).await;
+    }
 }

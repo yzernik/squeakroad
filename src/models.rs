@@ -6,7 +6,9 @@ use rocket::serde::{Deserialize, Serialize};
 use rocket_db_pools::{sqlx, Connection};
 use std::result::Result;
 extern crate base64;
+use sqlx::pool::PoolConnection;
 use sqlx::Acquire;
+use sqlx::Sqlite;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -1333,6 +1335,155 @@ impl Order {
             .await?;
 
         Ok(order)
+    }
+
+    pub async fn quantity_of_listing_sold(
+        db: &mut Connection<Db>,
+        listing_id: i32,
+    ) -> Result<u32, sqlx::Error> {
+        let sold_items = sqlx::query!(
+            "
+select
+ SUM(orders.quantity) as quantity_sold
+FROM
+ orders
+WHERE
+ listing_id = ?
+AND
+ completed
+GROUP BY
+ listing_id
+;",
+            listing_id,
+        )
+        .fetch_optional(&mut **db)
+        .await?;
+        let quantity_sold = match sold_items {
+            Some(r) => r.quantity_sold,
+            None => 0,
+        };
+        Ok(quantity_sold.try_into().unwrap())
+    }
+
+    // pub async fn single_by_invoice_hash(
+    //     db: &mut Connection<Db>,
+    //     invoice_hash: &str,
+    // ) -> Result<Option<Order>, sqlx::Error> {
+    //     let order = sqlx::query!("select * from orders WHERE invoice_hash = ?;", invoice_hash)
+    //         .fetch_optional(&mut **db)
+    //         // .map_ok(|maybe_r| {
+    //         //     maybe_r.map(|r| AdminSettings {
+    //         //         id: Some(r.id.try_into().unwrap()),
+    //         //         market_name: r.market_name,
+    //         //         fee_rate_basis_points: r.fee_rate_basis_points.try_into().unwrap(),
+    //         //     })
+    //         // })
+    //         .map_ok(|maybe_r| {
+    //             maybe_r.map(|r| Order {
+    //                 id: Some(r.id.try_into().unwrap()),
+    //                 public_id: r.public_id,
+    //                 quantity: r.quantity.try_into().unwrap(),
+    //                 user_id: r.user_id.try_into().unwrap(),
+    //                 listing_id: r.listing_id.try_into().unwrap(),
+    //                 shipping_option_id: r.shipping_option_id.try_into().unwrap(),
+    //                 shipping_instructions: r.shipping_instructions,
+    //                 amount_owed_sat: r.amount_owed_sat.try_into().unwrap(),
+    //                 seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
+    //                 paid: r.paid,
+    //                 completed: r.completed,
+    //                 invoice_hash: r.invoice_hash,
+    //                 invoice_payment_request: r.invoice_payment_request,
+    //                 created_time_ms: r.created_time_ms.try_into().unwrap(),
+    //             })
+    //         })
+    //         .await?;
+
+    //     Ok(order)
+    // }
+
+    pub async fn update_order_on_paid(
+        db: &mut PoolConnection<Sqlite>,
+        invoice_hash: &str,
+    ) -> Result<(), sqlx::Error> {
+        let mut tx = db.begin().await?;
+
+        let maybe_order =
+            sqlx::query!("select * from orders WHERE invoice_hash = ?;", invoice_hash)
+                .fetch_optional(&mut tx)
+                .await?;
+        println!("maybe_order: {:?}", maybe_order);
+
+        let maybe_order_2 =
+            sqlx::query!("select * from orders WHERE invoice_hash = ?;", invoice_hash)
+                .fetch_optional(&mut tx)
+                .await?;
+        println!("maybe_order_2: {:?}", maybe_order_2);
+
+        if let Some(order) = maybe_order {
+            println!("set order as paid here...");
+            sqlx::query!("UPDATE orders SET paid = true WHERE id = ?", order.id,)
+                .execute(&mut tx)
+                .await?;
+
+            let listing = sqlx::query!("select * from listings WHERE id = ?;", order.listing_id)
+                .fetch_one(&mut tx)
+                .await?;
+            println!("listing: {:?}", listing);
+
+            let sold_items = sqlx::query!(
+                "
+select
+ SUM(orders.quantity) as quantity_sold
+FROM
+ orders
+WHERE
+ listing_id = ?
+AND
+ completed
+GROUP BY
+ listing_id
+;",
+                order.listing_id,
+            )
+            .fetch_optional(&mut tx)
+            .await?;
+            println!("sold items: {:?}", sold_items);
+
+            let quantity_sold = match sold_items {
+                Some(r) => r.quantity_sold,
+                None => 0,
+            };
+            println!("quantity sold: {:?}", quantity_sold);
+            let quantity_in_stock = listing.quantity - quantity_sold;
+            if quantity_in_stock >= order.quantity {
+                println!("set order as completed here...");
+                sqlx::query!("UPDATE orders SET completed = true WHERE id = ?", order.id,)
+                    .execute(&mut tx)
+                    .await?;
+            }
+        }
+
+        // // Set all images for listing_id to not primary.
+        // sqlx::query!(
+        //     "UPDATE listingimages SET is_primary = false WHERE listing_id = ?",
+        //     listing_id
+        // )
+        // .execute(&mut tx)
+        // .await?;
+
+        // // Set image for listing_id and image_id to primary.
+        // let update_result = sqlx::query!(
+        //     "UPDATE listingimages SET is_primary = true WHERE listing_id = ? AND public_id = ?",
+        //     listing_id,
+        //     image_id,
+        // )
+        // .execute(&mut tx)
+        // .await?;
+
+        tx.commit().await?;
+
+        // Ok(update_result.rows_affected() as _)
+        Ok(())
     }
 }
 
