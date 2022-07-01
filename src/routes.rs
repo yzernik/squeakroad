@@ -1,5 +1,6 @@
 use crate::config::Config;
 use crate::db::Db;
+use crate::lightning;
 use rocket::fairing::{self, AdHoc};
 use rocket::fs::{relative, FileServer};
 use rocket::{Build, Rocket};
@@ -59,10 +60,12 @@ async fn create_admin_user(rocket: Rocket<Build>) -> fairing::Result {
 }
 
 pub fn stage(config: Config) -> AdHoc {
+    let config_clone = config.clone();
+
     AdHoc::on_ignite("SQLx Stage", |rocket| async {
         rocket
             .attach(AdHoc::try_on_ignite("Manage config", |rocket| {
-                Box::pin(async move { Ok(rocket.manage(config.clone())) })
+                Box::pin(async move { Ok(rocket.manage(config)) })
             }))
             // .attach(AdHoc::try_on_ignite("Manage LND client", |rocket| {
             //     let cloned_config = config.clone();
@@ -100,6 +103,7 @@ pub fn stage(config: Config) -> AdHoc {
                             interval.tick().await;
                             // do_sql_stuff(&conn).await;
                             println!("Do something here!!!");
+                            lightning::handle_received_payments(config_clone.clone()).await;
                         }
                     });
                 })
