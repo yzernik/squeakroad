@@ -550,6 +550,16 @@
     },
     "query": "DELETE FROM shippingoptions WHERE public_id = ?"
   },
+  "38b3eeb3b47922da31a5bf0acfce6b0f54a86913d84545a77114e44c0635198e": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "UPDATE orders SET completed = true WHERE id = ?"
+  },
   "3c289da9873097a11191dbedc5c78d86afd6a6d36771bfeb12f331abca6279cf": {
     "describe": {
       "columns": [],
@@ -939,6 +949,24 @@
       }
     },
     "query": "select * from shippingoptions WHERE listing_id = ? ORDER BY shippingoptions.price_sat ASC;"
+  },
+  "722ef18521ab0f973b25ff58f425c2c1f24414c04c32dcc8d2d2a7edadfeb542": {
+    "describe": {
+      "columns": [
+        {
+          "name": "quantity_sold",
+          "ordinal": 0,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\nselect\n SUM(orders.quantity) as quantity_sold\nFROM\n orders\nWHERE\n listing_id = ?\nAND\n completed\nGROUP BY\n listing_id\n;"
   },
   "770ec17e2277e313a56c78ecab71d0ee460922cac72efddf9869ca4194276572": {
     "describe": {
@@ -1571,6 +1599,16 @@
       }
     },
     "query": "select * from orders WHERE public_id = ?;"
+  },
+  "a76aff7e8cbbf6a0e21b33c90e75c148ca27abf78a3119d17eef507d18247d6d": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "UPDATE orders SET paid = true WHERE id = ?"
   },
   "a9034a1aca537f7b34c057a31a77d7076280ccdd34664b17f94fccb2a65d4e33": {
     "describe": {

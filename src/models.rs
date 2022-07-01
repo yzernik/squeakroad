@@ -1392,10 +1392,47 @@ impl Order {
         println!("maybe_order_2: {:?}", maybe_order_2);
 
         if let Some(order) = maybe_order {
+            println!("set order as paid here...");
+            sqlx::query!("UPDATE orders SET paid = true WHERE id = ?", order.id,)
+                .execute(&mut tx)
+                .await?;
+
             let listing = sqlx::query!("select * from listings WHERE id = ?;", order.listing_id)
                 .fetch_one(&mut tx)
                 .await?;
             println!("listing: {:?}", listing);
+
+            let sold_items = sqlx::query!(
+                "
+select
+ SUM(orders.quantity) as quantity_sold
+FROM
+ orders
+WHERE
+ listing_id = ?
+AND
+ completed
+GROUP BY
+ listing_id
+;",
+                order.listing_id,
+            )
+            .fetch_optional(&mut tx)
+            .await?;
+            println!("sold items: {:?}", sold_items);
+
+            let quantity_sold = match sold_items {
+                Some(r) => r.quantity_sold,
+                None => 0,
+            };
+            println!("quantity sold: {:?}", quantity_sold);
+            let quantity_in_stock = listing.quantity - quantity_sold;
+            if quantity_in_stock >= order.quantity {
+                println!("set order as completed here...");
+                sqlx::query!("UPDATE orders SET completed = true WHERE id = ?", order.id,)
+                    .execute(&mut tx)
+                    .await?;
+            }
         }
 
         // // Set all images for listing_id to not primary.
