@@ -1351,13 +1351,14 @@ AND
  order_user_id = ?
 GROUP BY
  orders.id
+ORDER BY orders.created_time_ms DESC
 ;",
             user_id,
         )
             .fetch(&mut **db)
             .map_ok(|r| {
                 let o = Order {
-                    id: Some(r.order_id.try_into().unwrap()),
+                    id: Some(r.order_id.unwrap().try_into().unwrap()),
                     public_id: r.order_public_id,
                     quantity: r.quantity.try_into().unwrap(),
                     user_id: r.order_user_id.try_into().unwrap(),
