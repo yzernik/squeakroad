@@ -1391,6 +1391,13 @@ impl Order {
                 .await?;
         println!("maybe_order_2: {:?}", maybe_order_2);
 
+        if let Some(order) = maybe_order {
+            let listing = sqlx::query!("select * from listings WHERE id = ?;", order.listing_id)
+                .fetch_one(&mut tx)
+                .await?;
+            println!("listing: {:?}", listing);
+        }
+
         // // Set all images for listing_id to not primary.
         // sqlx::query!(
         //     "UPDATE listingimages SET is_primary = false WHERE listing_id = ?",
