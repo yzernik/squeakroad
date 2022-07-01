@@ -1338,24 +1338,33 @@ impl Order {
     pub async fn single_by_invoice_hash(
         db: &mut Connection<Db>,
         invoice_hash: &str,
-    ) -> Result<Order, sqlx::Error> {
+    ) -> Result<Option<Order>, sqlx::Error> {
         let order = sqlx::query!("select * from orders WHERE invoice_hash = ?;", invoice_hash)
-            .fetch_one(&mut **db)
-            .map_ok(|r| Order {
-                id: Some(r.id.try_into().unwrap()),
-                public_id: r.public_id,
-                quantity: r.quantity.try_into().unwrap(),
-                user_id: r.user_id.try_into().unwrap(),
-                listing_id: r.listing_id.try_into().unwrap(),
-                shipping_option_id: r.shipping_option_id.try_into().unwrap(),
-                shipping_instructions: r.shipping_instructions,
-                amount_owed_sat: r.amount_owed_sat.try_into().unwrap(),
-                seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
-                paid: r.paid,
-                completed: r.completed,
-                invoice_hash: r.invoice_hash,
-                invoice_payment_request: r.invoice_payment_request,
-                created_time_ms: r.created_time_ms.try_into().unwrap(),
+            .fetch_optional(&mut **db)
+            // .map_ok(|maybe_r| {
+            //     maybe_r.map(|r| AdminSettings {
+            //         id: Some(r.id.try_into().unwrap()),
+            //         market_name: r.market_name,
+            //         fee_rate_basis_points: r.fee_rate_basis_points.try_into().unwrap(),
+            //     })
+            // })
+            .map_ok(|maybe_r| {
+                maybe_r.map(|r| Order {
+                    id: Some(r.id.try_into().unwrap()),
+                    public_id: r.public_id,
+                    quantity: r.quantity.try_into().unwrap(),
+                    user_id: r.user_id.try_into().unwrap(),
+                    listing_id: r.listing_id.try_into().unwrap(),
+                    shipping_option_id: r.shipping_option_id.try_into().unwrap(),
+                    shipping_instructions: r.shipping_instructions,
+                    amount_owed_sat: r.amount_owed_sat.try_into().unwrap(),
+                    seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
+                    paid: r.paid,
+                    completed: r.completed,
+                    invoice_hash: r.invoice_hash,
+                    invoice_payment_request: r.invoice_payment_request,
+                    created_time_ms: r.created_time_ms.try_into().unwrap(),
+                })
             })
             .await?;
 

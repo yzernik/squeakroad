@@ -1,7 +1,15 @@
 use crate::config::Config;
+use crate::db::Db;
 use crate::lightning::get_lnd_client;
+use crate::models::Order;
+use rocket_db_pools::Connection;
+use sqlx::pool::PoolConnection;
+use sqlx::Sqlite;
 
-pub async fn handle_received_payments(config: Config) -> Result<(), String> {
+pub async fn handle_received_payments(
+    config: Config,
+    mut conn: PoolConnection<Sqlite>,
+) -> Result<(), String> {
     let mut lighting_client = get_lnd_client(
         config.lnd_host.clone(),
         config.lnd_port,
@@ -30,9 +38,10 @@ pub async fn handle_received_payments(config: Config) -> Result<(), String> {
         let invoice_hash = hex::encode(invoice.r_hash);
         println!("Invoice hash: {:?}", invoice_hash);
 
-        // let listing_display = ListingDisplay::single_by_public_id(&mut db, listing_id)
+        // let order = Order::single_by_invoice_hash(&mut db, invoice_hash)
         //     .await
-        //     .map_err(|_| "failed to get admin settings.")?;
+        //     .expect("failed to make order query.");
+        // println!("Order: {:?}", order);
     }
 
     Ok(())
