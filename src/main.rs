@@ -14,6 +14,7 @@ mod listing;
 mod listings;
 mod models;
 mod my_approved_listings;
+mod my_paid_orders;
 mod my_pending_listings;
 mod my_rejected_listings;
 mod my_unpaid_orders;
