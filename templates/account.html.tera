@@ -24,5 +24,8 @@ Username: {{ user.email }}.
 <a href="my_paid_orders">My Paid Orders</a>
 
 <br>
+<a href="my_received_orders">My Received Orders</a>
+
+<br>
 
 {% endblock body %}
