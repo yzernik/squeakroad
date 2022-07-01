@@ -15,7 +15,11 @@
 
     <p>Order id: {{ order.public_id }}</p>
     <p>Listing id: {{ listing.public_id }}</p>
-    <p>Payment request: {{ order.invoice_payment_request }}</p>
+    <p>Payment request:
+      <pre>
+	{{ order.invoice_payment_request }}
+      </pre>
+    </p>
 
   </div>
 </div>
