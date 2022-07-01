@@ -141,7 +141,7 @@ async fn create_order(
         Err("Shipping option not associated with listing.".to_string())
     } else if user.is_admin {
         Err("Admin user cannot create an order.".to_string())
-    } else if quantity_in_stock <= order_info.quantity {
+    } else if quantity_in_stock < order_info.quantity {
         Err("Not enough items in stock.".to_string())
     } else {
         let mut lighting_client = lightning::get_lnd_client(
