@@ -4,25 +4,34 @@
 <h3>My Account</h3>
 
 Username: {{ user.email }}.
-
 <br>
-<a href="my_unsubmitted_listings">My Unsubmitted Listings</a>
 
-<br>
-<a href="my_pending_listings">My Pending Listings</a>
 
-<br>
-<a href="my_approved_listings">My Approved Listings</a>
+<div class="container">
+  <p><!--Nothing to see here --></p>
+  <div class="row">
+    <h5>Seller Info</h5>
+    <a href="my_received_orders">My Received Orders</a>
+    <br>
+    <a href="my_unsubmitted_listings">My Unsubmitted Listings</a>
+    <br>
+    <a href="my_pending_listings">My Pending Listings</a>
+    <br>
+    <a href="my_approved_listings">My Approved Listings</a>
+    <br>
+    <a href="my_rejected_listings">My Rejected Listings</a>
+  </div>
+</div>
 
-<br>
-<a href="my_rejected_listings">My Rejected Listings</a>
+<div class="container">
+  <p><!--Nothing to see here --></p>
+  <div class="row">
+    <h5>Buyer Info</h5>
+    <a href="my_unpaid_orders">My Unpaid Orders</a>
+    <br>
+    <a href="my_paid_orders">My Paid Orders</a>
+  </div>
+</div>
 
-<br>
-<a href="my_unpaid_orders">My Unpaid Orders</a>
-
-<br>
-<a href="my_paid_orders">My Paid Orders</a>
-
-<br>
 
 {% endblock body %}
