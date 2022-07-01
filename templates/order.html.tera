@@ -20,7 +20,7 @@
     <p>Quantity: {{ order.quantity }}</p>
     <p>Payment amount: {{ order.quantity }} x ({{ listing.price_sat }} + {{ shipping_option.price_sat }}) = {{ order.amount_owed_sat }} sats</p>
     <p>Shipping instructions: {{ order.shipping_instructions }}</p>
-    <p>Order status: {% if order.paid %}{% if order.completed %}Completed{% endif %}Paid but not completed (funds credited back to your account){% else %}Not paid{% endif %}</p>
+    <p>Order status: {% if order.paid %}{% if order.completed %}Completed{% else %}Paid but not completed (funds credited back to your account){% endif %}{% else %}Not paid{% endif %}</p>
     <p>Payment request:
       <pre>
 	{{ order.invoice_payment_request }}
