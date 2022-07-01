@@ -89,6 +89,21 @@ pub fn stage(config: Config) -> AdHoc {
                 "SQLx Create Admin User",
                 create_admin_user,
             ))
+            .attach(AdHoc::on_liftoff("DB polling", |rocket| {
+                Box::pin(async move {
+                    let conn = Db::fetch(&rocket);
+                    rocket::tokio::spawn(async move {
+                        let mut interval = rocket::tokio::time::interval(
+                            rocket::tokio::time::Duration::from_secs(10),
+                        );
+                        loop {
+                            interval.tick().await;
+                            // do_sql_stuff(&conn).await;
+                            println!("Do something here!!!");
+                        }
+                    });
+                })
+            }))
             .attach(Template::fairing())
             .mount("/", FileServer::from(relative!("static")))
             .attach(crate::posts::posts_stage())
