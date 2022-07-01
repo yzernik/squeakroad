@@ -1485,6 +1485,82 @@ GROUP BY
         // Ok(update_result.rows_affected() as _)
         Ok(())
     }
+
+    pub async fn amount_earned_sat(
+        db: &mut Connection<Db>,
+        user_id: i32,
+    ) -> Result<u64, sqlx::Error> {
+        let received_order_total_result = sqlx::query!(
+            "
+select
+ SUM(orders.seller_credit_sat) as total_amount_paid, listings.user_id as listing_user_id
+FROM
+ orders
+LEFT JOIN
+ listings
+ON
+ orders.listing_id = listings.id
+WHERE
+ listing_user_id = ?
+AND
+ completed
+GROUP BY
+ listing_user_id
+;",
+            user_id,
+        )
+        .fetch_optional(&mut **db)
+        .await?;
+        println!(
+            "received_order_total_result: {:?}",
+            received_order_total_result
+        );
+
+        let received_order_total = match received_order_total_result {
+            Some(r) => r.total_amount_paid,
+            None => 0,
+        };
+        println!("received_order_total: {:?}", received_order_total);
+
+        Ok(received_order_total.try_into().unwrap())
+    }
+
+    pub async fn amount_refunded_sat(
+        db: &mut Connection<Db>,
+        user_id: i32,
+    ) -> Result<u64, sqlx::Error> {
+        let refunded_order_total_result = sqlx::query!(
+            "
+select
+ SUM(orders.amount_owed_sat) as total_amount_refunded, orders.user_id as order_user_id
+FROM
+ orders
+WHERE
+ order_user_id = ?
+AND
+ paid
+AND
+ not completed
+GROUP BY
+ order_user_id
+;",
+            user_id,
+        )
+        .fetch_optional(&mut **db)
+        .await?;
+        println!(
+            "refunded_order_total_result: {:?}",
+            refunded_order_total_result
+        );
+
+        let refunded_order_total = match refunded_order_total_result {
+            Some(r) => r.total_amount_refunded,
+            None => 0,
+        };
+        println!("refunded_order_total: {:?}", refunded_order_total);
+
+        Ok(refunded_order_total.try_into().unwrap())
+    }
 }
 
 impl OrderCard {

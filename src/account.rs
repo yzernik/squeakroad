@@ -1,5 +1,5 @@
 use crate::db::Db;
-use crate::models::AdminSettings;
+use crate::models::{AdminSettings, Order};
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::serde::Serialize;
@@ -12,7 +12,9 @@ use rocket_dyn_templates::Template;
 #[serde(crate = "rocket::serde")]
 struct Context {
     flash: Option<(String, String)>,
-    user: Option<User>,
+    user: User,
+    amount_earned: u64,
+    amount_refunded: u64,
     admin_user: Option<AdminUser>,
     admin_settings: Option<AdminSettings>,
 }
@@ -21,15 +23,23 @@ impl Context {
     pub async fn raw(
         mut db: Connection<Db>,
         flash: Option<(String, String)>,
-        user: Option<User>,
+        user: User,
         admin_user: Option<AdminUser>,
     ) -> Result<Context, String> {
+        let amount_earned = Order::amount_earned_sat(&mut db, user.id())
+            .await
+            .map_err(|_| "failed to get amount earned.")?;
+        let amount_refunded = Order::amount_refunded_sat(&mut db, user.id())
+            .await
+            .map_err(|_| "failed to get amount refunded.")?;
         let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
             .await
             .map_err(|_| "failed to get admin settings.")?;
         Ok(Context {
             flash,
             user,
+            amount_earned,
+            amount_refunded,
             admin_user,
             admin_settings: Some(admin_settings),
         })
@@ -44,10 +54,7 @@ async fn index(
     admin_user: Option<AdminUser>,
 ) -> Template {
     let flash = flash.map(FlashMessage::into_inner);
-    Template::render(
-        "account",
-        Context::raw(db, flash, Some(user), admin_user).await,
-    )
+    Template::render("account", Context::raw(db, flash, user, admin_user).await)
 }
 
 pub fn account_stage() -> AdHoc {
