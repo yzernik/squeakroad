@@ -6,10 +6,7 @@ use rocket_db_pools::Connection;
 use sqlx::pool::PoolConnection;
 use sqlx::Sqlite;
 
-pub async fn handle_received_payments(
-    config: Config,
-    mut conn: PoolConnection<Sqlite>,
-) -> Result<(), String> {
+pub async fn handle_received_payments(config: Config, mut conn: PoolConnection<Sqlite>) -> () {
     let mut lighting_client = get_lnd_client(
         config.lnd_host.clone(),
         config.lnd_port,
@@ -43,6 +40,4 @@ pub async fn handle_received_payments(
             .expect("failed to make order query.");
         println!("Order: {:?}", order);
     }
-
-    Ok(())
 }
