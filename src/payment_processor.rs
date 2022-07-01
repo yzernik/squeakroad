@@ -38,10 +38,10 @@ pub async fn handle_received_payments(
         let invoice_hash = hex::encode(invoice.r_hash);
         println!("Invoice hash: {:?}", invoice_hash);
 
-        // let order = Order::single_by_invoice_hash(&mut db, invoice_hash)
-        //     .await
-        //     .expect("failed to make order query.");
-        // println!("Order: {:?}", order);
+        let order = Order::single_by_invoice_hash(&mut conn, &invoice_hash)
+            .await
+            .expect("failed to make order query.");
+        println!("Order: {:?}", order);
     }
 
     Ok(())

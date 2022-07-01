@@ -6,7 +6,9 @@ use rocket::serde::{Deserialize, Serialize};
 use rocket_db_pools::{sqlx, Connection};
 use std::result::Result;
 extern crate base64;
+use sqlx::pool::PoolConnection;
 use sqlx::Acquire;
+use sqlx::Sqlite;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -1336,7 +1338,7 @@ impl Order {
     }
 
     pub async fn single_by_invoice_hash(
-        db: &mut Connection<Db>,
+        db: &mut PoolConnection<Sqlite>,
         invoice_hash: &str,
     ) -> Result<Option<Order>, sqlx::Error> {
         let order = sqlx::query!("select * from orders WHERE invoice_hash = ?;", invoice_hash)
