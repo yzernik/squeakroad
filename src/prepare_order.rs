@@ -75,7 +75,7 @@ async fn new(
 
     match create_order(
         id,
-        order_info,
+        order_info.clone(),
         &mut db,
         user.clone(),
         config.inner().clone(),
@@ -89,7 +89,10 @@ async fn new(
         Err(e) => {
             error_!("DB insertion error: {}", e);
             Err(Flash::error(
-                Redirect::to(uri!("/prepare_order", index(id, Some(""), Some(1)))),
+                Redirect::to(uri!(
+                    "/prepare_order",
+                    index(id, Some(order_info.shipping_option_id), Some(1))
+                )),
                 e,
             ))
         }
@@ -130,6 +133,8 @@ async fn create_order(
         Err("Listing belongs to same user as buyer.".to_string())
     } else if shipping_option.listing_id != listing.id.unwrap() {
         Err("Shipping option not associated with listing.".to_string())
+    } else if user.is_admin {
+        Err("Admin user cannot create an order.".to_string())
     } else {
         let mut lighting_client = lightning::get_lnd_client(
             config.lnd_host.clone(),
