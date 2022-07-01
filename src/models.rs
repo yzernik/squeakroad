@@ -1696,7 +1696,7 @@ LEFT JOIN
 ON
  listings.user_id = users.id
 WHERE
- not orders.paid
+ orders.completed
 AND
  listing_user_id = ?
 GROUP BY
