@@ -1,6 +1,6 @@
 use crate::config::Config;
 use crate::db::Db;
-use crate::lightning;
+use crate::payment_processor;
 use rocket::fairing::{self, AdHoc};
 use rocket::fs::{relative, FileServer};
 use rocket::{Build, Rocket};
@@ -103,7 +103,7 @@ pub fn stage(config: Config) -> AdHoc {
                             interval.tick().await;
                             // do_sql_stuff(&conn).await;
                             println!("Do something here!!!");
-                            lightning::handle_received_payments(config_clone.clone()).await;
+                            payment_processor::handle_received_payments(config_clone.clone()).await;
                         }
                     });
                 })
