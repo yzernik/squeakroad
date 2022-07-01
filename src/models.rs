@@ -1309,4 +1309,41 @@ impl Order {
 
         Ok(order)
     }
+
+    pub async fn all_unpaid_for_user(
+        db: &mut Connection<Db>,
+        user_id: i32,
+    ) -> Result<Vec<Order>, sqlx::Error> {
+        let orders = sqlx::query!(
+            "
+select * from orders
+WHERE
+ user_id = ?
+AND
+ not paid
+;",
+            user_id,
+        )
+        .fetch(&mut **db)
+        .map_ok(|r| Order {
+            id: Some(r.id.try_into().unwrap()),
+            public_id: r.public_id,
+            quantity: r.quantity.try_into().unwrap(),
+            user_id: r.user_id.try_into().unwrap(),
+            listing_id: r.listing_id.try_into().unwrap(),
+            shipping_option_id: r.shipping_option_id.try_into().unwrap(),
+            shipping_instructions: r.shipping_instructions,
+            amount_owed_sat: r.amount_owed_sat.try_into().unwrap(),
+            seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
+            paid: r.paid,
+            completed: r.completed,
+            invoice_hash: r.invoice_hash,
+            invoice_payment_request: r.invoice_payment_request,
+            created_time_ms: r.created_time_ms.try_into().unwrap(),
+        })
+        .try_collect::<Vec<_>>()
+        .await?;
+
+        Ok(orders)
+    }
 }

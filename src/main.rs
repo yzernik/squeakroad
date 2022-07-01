@@ -16,6 +16,7 @@ mod models;
 mod my_approved_listings;
 mod my_pending_listings;
 mod my_rejected_listings;
+mod my_unpaid_orders;
 mod my_unsubmitted_listings;
 mod new_listing;
 mod order;
