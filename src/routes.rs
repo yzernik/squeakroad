@@ -108,6 +108,8 @@ pub fn stage(config: Config) -> AdHoc {
             .attach(crate::my_pending_listings::my_pending_listings_stage())
             .attach(crate::my_approved_listings::my_approved_listings_stage())
             .attach(crate::my_rejected_listings::my_rejected_listings_stage())
+            .attach(crate::my_unpaid_orders::my_unpaid_orders_stage())
+            .attach(crate::my_paid_orders::my_paid_orders_stage())
             .attach(crate::prepare_order::prepare_order_stage())
             .attach(crate::order::order_stage())
     })

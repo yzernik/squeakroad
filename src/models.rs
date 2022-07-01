@@ -162,6 +162,15 @@ pub struct OrderInfo {
     pub shipping_instructions: String,
 }
 
+#[derive(Serialize, Debug, Clone)]
+#[serde(crate = "rocket::serde")]
+pub struct OrderCard {
+    pub order: Order,
+    pub listing: Option<Listing>,
+    pub image: Option<ListingImage>,
+    pub user: Option<RocketAuthUser>,
+}
+
 impl Listing {
     pub async fn all(db: &mut Connection<Db>) -> Result<Vec<Listing>, sqlx::Error> {
         let listings = sqlx::query!("select * from listings;")
@@ -1308,5 +1317,189 @@ impl Order {
             .await?;
 
         Ok(order)
+    }
+}
+
+impl OrderCard {
+    pub async fn all_unpaid_for_user(
+        db: &mut Connection<Db>,
+        user_id: i32,
+    ) -> Result<Vec<OrderCard>, sqlx::Error> {
+        let orders = sqlx::query!(
+            "
+select
+ orders.id as order_id, orders.public_id as order_public_id, orders.user_id as order_user_id, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.completed, orders.invoice_hash, orders.invoice_payment_request, orders.created_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+from
+ orders
+LEFT JOIN
+ listings
+ON
+ orders.listing_id = listings.id
+LEFT JOIN
+ listingimages
+ON
+ listings.id = listingimages.listing_id
+AND
+ listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)
+LEFT JOIN
+ users
+ON
+ listings.user_id = users.id
+WHERE
+ not orders.paid
+AND
+ order_user_id = ?
+GROUP BY
+ orders.id
+ORDER BY orders.created_time_ms DESC
+;",
+            user_id,
+        )
+            .fetch(&mut **db)
+            .map_ok(|r| {
+                let o = Order {
+                    id: Some(r.order_id.unwrap().try_into().unwrap()),
+                    public_id: r.order_public_id,
+                    quantity: r.quantity.try_into().unwrap(),
+                    user_id: r.order_user_id.try_into().unwrap(),
+                    listing_id: r.order_listing_id.try_into().unwrap(),
+                    shipping_option_id: r.shipping_option_id.try_into().unwrap(),
+                    shipping_instructions: r.shipping_instructions,
+                    amount_owed_sat: r.amount_owed_sat.try_into().unwrap(),
+                    seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
+                    paid: r.paid,
+                    completed: r.completed,
+                    invoice_hash: r.invoice_hash,
+                    invoice_payment_request: r.invoice_payment_request,
+                    created_time_ms: r.created_time_ms.try_into().unwrap(),
+                };
+                let l = r.id.map(|listing_id| Listing {
+                    id: Some(listing_id.try_into().unwrap()),
+                    public_id: r.listing_public_id,
+                    user_id: r.listing_user_id.try_into().unwrap(),
+                    title: r.title,
+                    description: r.description,
+                    price_sat: r.price_sat.try_into().unwrap(),
+                    quantity: r.quantity.try_into().unwrap(),
+                    fee_rate_basis_points: r.fee_rate_basis_points.try_into().unwrap(),
+                    submitted: r.submitted,
+                    reviewed: r.reviewed,
+                    approved: r.approved,
+                    removed: r.removed,
+                    created_time_ms: r.listing_created_time_ms.try_into().unwrap(),
+                });
+                let i = r.image_id.map(|image_id| ListingImage {
+                    id: Some(image_id.try_into().unwrap()),
+                    public_id: r.image_public_id,
+                    listing_id: r.listing_id.try_into().unwrap(),
+                    image_data: r.image_data,
+                    is_primary: r.is_primary,
+                });
+                let u = r.rocket_auth_user_id.map(|rocket_auth_user_id| RocketAuthUser {
+                    id: Some(rocket_auth_user_id.try_into().unwrap()),
+                    username: r.rocket_auth_user_username.unwrap(),
+                });
+                OrderCard {
+                    order: o,
+                    listing: l,
+                    image: i,
+                    user: u,
+                }
+            })
+            .try_collect::<Vec<_>>()
+            .await?;
+
+        Ok(orders)
+    }
+
+    pub async fn all_paid_for_user(
+        db: &mut Connection<Db>,
+        user_id: i32,
+    ) -> Result<Vec<OrderCard>, sqlx::Error> {
+        let orders = sqlx::query!(
+            "
+select
+ orders.id as order_id, orders.public_id as order_public_id, orders.user_id as order_user_id, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.completed, orders.invoice_hash, orders.invoice_payment_request, orders.created_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+from
+ orders
+LEFT JOIN
+ listings
+ON
+ orders.listing_id = listings.id
+LEFT JOIN
+ listingimages
+ON
+ listings.id = listingimages.listing_id
+AND
+ listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)
+LEFT JOIN
+ users
+ON
+ listings.user_id = users.id
+WHERE
+ orders.paid
+AND
+ order_user_id = ?
+GROUP BY
+ orders.id
+ORDER BY orders.created_time_ms DESC
+;",
+            user_id,
+        )
+            .fetch(&mut **db)
+            .map_ok(|r| {
+                let o = Order {
+                    id: Some(r.order_id.unwrap().try_into().unwrap()),
+                    public_id: r.order_public_id,
+                    quantity: r.quantity.try_into().unwrap(),
+                    user_id: r.order_user_id.try_into().unwrap(),
+                    listing_id: r.order_listing_id.try_into().unwrap(),
+                    shipping_option_id: r.shipping_option_id.try_into().unwrap(),
+                    shipping_instructions: r.shipping_instructions,
+                    amount_owed_sat: r.amount_owed_sat.try_into().unwrap(),
+                    seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
+                    paid: r.paid,
+                    completed: r.completed,
+                    invoice_hash: r.invoice_hash,
+                    invoice_payment_request: r.invoice_payment_request,
+                    created_time_ms: r.created_time_ms.try_into().unwrap(),
+                };
+                let l = r.id.map(|listing_id| Listing {
+                    id: Some(listing_id.try_into().unwrap()),
+                    public_id: r.listing_public_id,
+                    user_id: r.listing_user_id.try_into().unwrap(),
+                    title: r.title,
+                    description: r.description,
+                    price_sat: r.price_sat.try_into().unwrap(),
+                    quantity: r.quantity.try_into().unwrap(),
+                    fee_rate_basis_points: r.fee_rate_basis_points.try_into().unwrap(),
+                    submitted: r.submitted,
+                    reviewed: r.reviewed,
+                    approved: r.approved,
+                    removed: r.removed,
+                    created_time_ms: r.listing_created_time_ms.try_into().unwrap(),
+                });
+                let i = r.image_id.map(|image_id| ListingImage {
+                    id: Some(image_id.try_into().unwrap()),
+                    public_id: r.image_public_id,
+                    listing_id: r.listing_id.try_into().unwrap(),
+                    image_data: r.image_data,
+                    is_primary: r.is_primary,
+                });
+                let u = r.rocket_auth_user_id.map(|rocket_auth_user_id| RocketAuthUser {
+                    id: Some(rocket_auth_user_id.try_into().unwrap()),
+                    username: r.rocket_auth_user_username.unwrap(),
+                });
+                OrderCard {
+                    order: o,
+                    listing: l,
+                    image: i,
+                    user: u,
+                }
+            })
+            .try_collect::<Vec<_>>()
+            .await?;
+
+        Ok(orders)
     }
 }
