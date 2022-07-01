@@ -68,137 +68,7 @@
     },
     "query": "UPDATE adminsettings SET fee_rate_basis_points = ?"
   },
-  "11e3096becb72f427c8d3911ef4327afd9516143806981e11f8e34d069c14472": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int64"
-        },
-        {
-          "name": "title",
-          "ordinal": 1,
-          "type_info": "Text"
-        },
-        {
-          "name": "text",
-          "ordinal": 2,
-          "type_info": "Text"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "SELECT id, title, text FROM posts WHERE id = ?"
-  },
-  "12986ccce72c654f36e323cea9271b54570be88f6105d39e7744cdcb456a6981": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "UPDATE listings SET removed = true WHERE public_id = ?"
-  },
-  "1a1634376a31188dcb88d3ea0fe135524e26d9df31d44c5804e2f0705ecc102d": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int64"
-        },
-        {
-          "name": "user_id",
-          "ordinal": 1,
-          "type_info": "Int64"
-        },
-        {
-          "name": "title",
-          "ordinal": 2,
-          "type_info": "Text"
-        },
-        {
-          "name": "description",
-          "ordinal": 3,
-          "type_info": "Text"
-        },
-        {
-          "name": "price_sat",
-          "ordinal": 4,
-          "type_info": "Int64"
-        },
-        {
-          "name": "submitted",
-          "ordinal": 5,
-          "type_info": "Bool"
-        },
-        {
-          "name": "approved",
-          "ordinal": 6,
-          "type_info": "Bool"
-        },
-        {
-          "name": "created_time_ms",
-          "ordinal": 7,
-          "type_info": "Int64"
-        },
-        {
-          "name": "public_id",
-          "ordinal": 8,
-          "type_info": "Text"
-        },
-        {
-          "name": "removed",
-          "ordinal": 9,
-          "type_info": "Bool"
-        },
-        {
-          "name": "quantity",
-          "ordinal": 10,
-          "type_info": "Int64"
-        },
-        {
-          "name": "reviewed",
-          "ordinal": 11,
-          "type_info": "Bool"
-        },
-        {
-          "name": "fee_rate_basis_points",
-          "ordinal": 12,
-          "type_info": "Int64"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Right": 0
-      }
-    },
-    "query": "select * from listings;"
-  },
-  "1d0be93e5d096df6dbc347c47d4af7a0456c06769f339333f13fa9ab1564dca9": {
+  "0b1647e874031d780d5efead213940849d8b7a8703e629d96ceea121562400f0": {
     "describe": {
       "columns": [
         {
@@ -406,7 +276,137 @@
         "Right": 1
       }
     },
-    "query": "\nselect\n orders.id as order_id, orders.public_id as order_public_id, orders.user_id as order_user_id, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.completed, orders.invoice_hash, orders.invoice_payment_request, orders.created_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username\nfrom\n orders\nLEFT JOIN\n listings\nON\n orders.listing_id = listings.id\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nLEFT JOIN\n users\nON\n listings.user_id = users.id\nWHERE\n not orders.paid\nAND\n listing_user_id = ?\nGROUP BY\n orders.id\nORDER BY orders.created_time_ms DESC\n;"
+    "query": "\nselect\n orders.id as order_id, orders.public_id as order_public_id, orders.user_id as order_user_id, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.completed, orders.invoice_hash, orders.invoice_payment_request, orders.created_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username\nfrom\n orders\nLEFT JOIN\n listings\nON\n orders.listing_id = listings.id\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nLEFT JOIN\n users\nON\n listings.user_id = users.id\nWHERE\n orders.completed\nAND\n listing_user_id = ?\nGROUP BY\n orders.id\nORDER BY orders.created_time_ms DESC\n;"
+  },
+  "11e3096becb72f427c8d3911ef4327afd9516143806981e11f8e34d069c14472": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "title",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "text",
+          "ordinal": 2,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT id, title, text FROM posts WHERE id = ?"
+  },
+  "12986ccce72c654f36e323cea9271b54570be88f6105d39e7744cdcb456a6981": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "UPDATE listings SET removed = true WHERE public_id = ?"
+  },
+  "1a1634376a31188dcb88d3ea0fe135524e26d9df31d44c5804e2f0705ecc102d": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        },
+        {
+          "name": "title",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "description",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "price_sat",
+          "ordinal": 4,
+          "type_info": "Int64"
+        },
+        {
+          "name": "submitted",
+          "ordinal": 5,
+          "type_info": "Bool"
+        },
+        {
+          "name": "approved",
+          "ordinal": 6,
+          "type_info": "Bool"
+        },
+        {
+          "name": "created_time_ms",
+          "ordinal": 7,
+          "type_info": "Int64"
+        },
+        {
+          "name": "public_id",
+          "ordinal": 8,
+          "type_info": "Text"
+        },
+        {
+          "name": "removed",
+          "ordinal": 9,
+          "type_info": "Bool"
+        },
+        {
+          "name": "quantity",
+          "ordinal": 10,
+          "type_info": "Int64"
+        },
+        {
+          "name": "reviewed",
+          "ordinal": 11,
+          "type_info": "Bool"
+        },
+        {
+          "name": "fee_rate_basis_points",
+          "ordinal": 12,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "select * from listings;"
   },
   "1d7d5dece61b411ab5f69b50756efa76728c39cdb2818bddd9be168c9a6fcdb4": {
     "describe": {
