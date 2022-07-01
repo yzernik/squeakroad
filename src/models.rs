@@ -155,7 +155,7 @@ pub struct Order {
     pub created_time_ms: u64,
 }
 
-#[derive(Debug, FromForm)]
+#[derive(Debug, FromForm, Clone)]
 pub struct OrderInfo {
     pub quantity: u32,
     pub shipping_option_id: String,
