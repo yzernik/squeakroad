@@ -14,8 +14,18 @@
     <h3>Order</h3>
 
     <p>Order id: {{ order.public_id }}</p>
-    <p>Listing id: {{ listing.public_id }}</p>
-    <p>Payment request: {{ order.invoice_payment_request }}</p>
+    <p>Listing: <a href="/listing/{{ listing.public_id }}">{{ listing.title }}</a> ({{ listing.price_sat }} sats)</p>
+    <p>Shipping option: {{ shipping_option.title }} ({{ shipping_option.price_sat }} sats)</p>
+    <p>Shipping option description: {{ shipping_option.description }}</p>
+    <p>Quantity: {{ order.quantity }}</p>
+    <p>Payment amount: {{ order.quantity }} x ({{ listing.price_sat }} + {{ shipping_option.price_sat }}) = {{ order.amount_owed_sat }} sats</p>
+    <p>Shipping instructions: {{ order.shipping_instructions }}</p>
+    <p>Order status: {% if order.paid %}{% if order.completed %}Completed{% endif %}Paid but not completed (funds credited back to your account){% else %}Not paid{% endif %}</p>
+    <p>Payment request:
+      <pre>
+	{{ order.invoice_payment_request }}
+      </pre>
+    </p>
 
   </div>
 </div>

@@ -20,6 +20,7 @@ struct Context {
     flash: Option<(String, String)>,
     order: Order,
     listing: Listing,
+    shipping_option: ShippingOption,
     user: User,
     admin_user: Option<AdminUser>,
     admin_settings: Option<AdminSettings>,
@@ -38,7 +39,10 @@ impl Context {
             .map_err(|_| "failed to get order.")?;
         let listing = Listing::single(&mut db, order.listing_id)
             .await
-            .map_err(|_| "failed to get listing display.")?;
+            .map_err(|_| "failed to get listing.")?;
+        let shipping_option = ShippingOption::single(&mut db, order.shipping_option_id)
+            .await
+            .map_err(|_| "failed to get shipping option.")?;
         let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
             .await
             .map_err(|_| "failed to get admin settings.")?;
@@ -48,6 +52,7 @@ impl Context {
             flash,
             order,
             listing,
+            shipping_option,
             user,
             admin_user,
             admin_settings: Some(admin_settings),

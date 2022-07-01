@@ -1118,6 +1118,22 @@ impl ShippingOption {
         Ok(shipping_options)
     }
 
+    pub async fn single(db: &mut Connection<Db>, id: i32) -> Result<ShippingOption, sqlx::Error> {
+        let shipping_option = sqlx::query!("select * from shippingoptions WHERE id = ?;", id)
+            .fetch_one(&mut **db)
+            .map_ok(|r| ShippingOption {
+                id: Some(r.id.try_into().unwrap()),
+                public_id: r.public_id,
+                listing_id: r.listing_id.try_into().unwrap(),
+                title: r.title,
+                description: r.description,
+                price_sat: r.price_sat.try_into().unwrap(),
+            })
+            .await?;
+
+        Ok(shipping_option)
+    }
+
     pub async fn single_by_public_id(
         db: &mut Connection<Db>,
         public_id: &str,
