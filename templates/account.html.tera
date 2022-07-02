@@ -9,11 +9,9 @@ Username: {{ user.email }}
 Account Balance: {{ account_info.account_balance_sat }} sats
 <br>
 
-Amount earned: {{ account_info.amount_earned_sat }} sats
+<a href="my_account_balance">Account Balance History</a>
 <br>
 
-Amount refunded: {{ account_info.amount_refunded_sat }} sats
-<br>
 
 <div class="container">
   <p><!--Nothing to see here --></p>

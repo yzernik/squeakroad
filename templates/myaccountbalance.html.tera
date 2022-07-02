@@ -1,0 +1,44 @@
+{% extends "base" %}
+{% block body %}
+
+<br>
+
+  <div class="container">
+    <p><!--Nothing to see here --></p>
+
+    <div class="row">
+
+      <h3>My Account Balance</h3>
+
+      <div class="twelve columns">
+
+	<p>Account Balance: {{ account_balance }}</p>
+
+	<table class="u-full-width">
+	  <thead>
+	    <tr>
+	      <th>Event time</th>
+	      <th>Amount change</th>
+	      <th>Event type</th>
+	      <th>Event id</th>
+	    </tr>
+	  </thead>
+
+          {% for account_balance_change in account_balance_changes %}
+	  <tbody>
+	    <tr>
+	      <td>{{ (account_balance_change.event_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}</td>
+	      <td>{{ account_balance_change.amount_change_sat }} sats</td>
+	      <td>{{ account_balance_change.event_type }}</td>
+	      <td><a href="{% if account_balance_change.event_type == "received_order" %}/order/{{ account_balance_change.event_id }}{% elif account_balance_change.event_type == "refunded_order" %}/order/{{ account_balance_change.event_id }}{% endif %}">{{ account_balance_change.event_id }}</a></td>
+	    </tr>
+	  </tbody>
+          {% endfor %}
+	</table>
+
+      </div>
+    </div>
+  </div>
+
+
+{% endblock body %}
