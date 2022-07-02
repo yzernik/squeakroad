@@ -193,32 +193,32 @@ pub struct AccountBalanceChange {
 }
 
 impl Listing {
-    pub async fn all(db: &mut Connection<Db>) -> Result<Vec<Listing>, sqlx::Error> {
-        let listings = sqlx::query!("select * from listings;")
-            .fetch(&mut **db)
-            .map_ok(|r| Listing {
-                id: Some(r.id.try_into().unwrap()),
-                public_id: r.public_id,
-                user_id: r.user_id.try_into().unwrap(),
-                title: r.title,
-                description: r.description,
-                price_sat: r.price_sat.try_into().unwrap(),
-                quantity: r.quantity.try_into().unwrap(),
-                fee_rate_basis_points: r.fee_rate_basis_points.try_into().unwrap(),
-                submitted: r.submitted,
-                reviewed: r.reviewed,
-                approved: r.approved,
-                removed: r.removed,
-                created_time_ms: r.created_time_ms.try_into().unwrap(),
-            })
-            .try_collect::<Vec<_>>()
-            .await?;
+    // pub async fn all(db: &mut Connection<Db>) -> Result<Vec<Listing>, sqlx::Error> {
+    //     let listings = sqlx::query!("select * from listings;")
+    //         .fetch(&mut **db)
+    //         .map_ok(|r| Listing {
+    //             id: Some(r.id.try_into().unwrap()),
+    //             public_id: r.public_id,
+    //             user_id: r.user_id.try_into().unwrap(),
+    //             title: r.title,
+    //             description: r.description,
+    //             price_sat: r.price_sat.try_into().unwrap(),
+    //             quantity: r.quantity.try_into().unwrap(),
+    //             fee_rate_basis_points: r.fee_rate_basis_points.try_into().unwrap(),
+    //             submitted: r.submitted,
+    //             reviewed: r.reviewed,
+    //             approved: r.approved,
+    //             removed: r.removed,
+    //             created_time_ms: r.created_time_ms.try_into().unwrap(),
+    //         })
+    //         .try_collect::<Vec<_>>()
+    //         .await?;
 
-        println!("{}", listings.len());
-        println!("{:?}", listings);
+    //     println!("{}", listings.len());
+    //     println!("{:?}", listings);
 
-        Ok(listings)
-    }
+    //     Ok(listings)
+    // }
 
     /// Returns the id of the inserted row.
     pub async fn insert(listing: Listing, db: &mut Connection<Db>) -> Result<i32, sqlx::Error> {
@@ -469,20 +469,20 @@ impl ListingImage {
 }
 
 impl RocketAuthUser {
-    pub async fn all(db: &mut Connection<Db>) -> Result<Vec<RocketAuthUser>, sqlx::Error> {
-        let rocket_auth_users = sqlx::query!("select * from users;")
-            .fetch(&mut **db)
-            .map_ok(|r| RocketAuthUser {
-                id: Some(r.id as i32),
-                username: r.email.unwrap(),
-            })
-            .try_collect::<Vec<_>>()
-            .await?;
+    // pub async fn all(db: &mut Connection<Db>) -> Result<Vec<RocketAuthUser>, sqlx::Error> {
+    //     let rocket_auth_users = sqlx::query!("select * from users;")
+    //         .fetch(&mut **db)
+    //         .map_ok(|r| RocketAuthUser {
+    //             id: Some(r.id as i32),
+    //             username: r.email.unwrap(),
+    //         })
+    //         .try_collect::<Vec<_>>()
+    //         .await?;
 
-        println!("{}", rocket_auth_users.len());
+    //     println!("{}", rocket_auth_users.len());
 
-        Ok(rocket_auth_users)
-    }
+    //     Ok(rocket_auth_users)
+    // }
 
     pub async fn single(db: &mut Connection<Db>, id: i32) -> Result<RocketAuthUser, sqlx::Error> {
         let rocket_auth_user = sqlx::query!("select id, email from users WHERE id = ?;", id)

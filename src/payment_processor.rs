@@ -37,6 +37,8 @@ pub async fn handle_received_payments(config: Config, mut conn: PoolConnection<S
         //     .await
         //     .expect("failed to make order query.");
         // println!("Order: {:?}", order);
-        Order::update_order_on_paid(&mut conn, &invoice_hash).await;
+        Order::update_order_on_paid(&mut conn, &invoice_hash)
+            .await
+            .expect("failed to update database with paid invoice.")
     }
 }
