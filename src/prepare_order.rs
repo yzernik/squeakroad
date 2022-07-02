@@ -1,3 +1,4 @@
+use crate::base::BaseContext;
 use crate::config::Config;
 use crate::db::Db;
 use crate::lightning;
@@ -20,13 +21,11 @@ use std::time::UNIX_EPOCH;
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
 struct Context {
+    base_context: BaseContext,
     flash: Option<(String, String)>,
     listing_display: Option<ListingDisplay>,
     selected_shipping_option: ShippingOption,
     quantity: i32,
-    user: User,
-    admin_user: Option<AdminUser>,
-    admin_settings: Option<AdminSettings>,
 }
 
 impl Context {
@@ -39,6 +38,9 @@ impl Context {
         user: User,
         admin_user: Option<AdminUser>,
     ) -> Result<Context, String> {
+        let base_context = BaseContext::raw(&mut db, Some(user.clone()), admin_user.clone())
+            .await
+            .map_err(|_| "failed to get base template.")?;
         let listing_display = ListingDisplay::single_by_public_id(&mut db, listing_id)
             .await
             .map_err(|_| "failed to get admin settings.")?;
@@ -50,13 +52,11 @@ impl Context {
             .map_err(|_| "failed to get admin settings.")?;
 
         Ok(Context {
+            base_context,
             flash,
             listing_display: Some(listing_display),
             selected_shipping_option: shipping_option,
             quantity: quantity,
-            user,
-            admin_user,
-            admin_settings: Some(admin_settings),
         })
     }
 }
