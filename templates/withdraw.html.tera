@@ -17,10 +17,10 @@
     <p>Account Balance: {{ account_balance_sat }} sats</p>
     <p><a href="/my_account_balance">View Account Balance</a></p>
 
-    <form action="/new_listing" method="post">
+    <form action="/withdraw/new" method="post">
       <div class="ten columns">
         <input type="text" placeholder="enter a listing title..."
-	       name="title" id="title" value="" autofocus
+	       name="invoice_payment_request" id="invoice_payment_request" value="" autofocus
 	       class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" />
       </div>
       <div class="two columns">

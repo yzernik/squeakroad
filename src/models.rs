@@ -204,6 +204,11 @@ pub struct Withdrawal {
     pub created_time_ms: u64,
 }
 
+#[derive(Debug, FromForm, Clone)]
+pub struct WithdrawalInfo {
+    pub invoice_payment_request: String,
+}
+
 impl Listing {
     // pub async fn all(db: &mut Connection<Db>) -> Result<Vec<Listing>, sqlx::Error> {
     //     let listings = sqlx::query!("select * from listings;")
