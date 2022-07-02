@@ -1,6 +1,6 @@
 use crate::base::BaseContext;
 use crate::db::Db;
-use crate::models::{AdminSettings, ListingCardDisplay};
+use crate::models::ListingCardDisplay;
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::response::status::NotFound;
@@ -30,9 +30,6 @@ impl Context {
         let listing_cards = ListingCardDisplay::all_rejected_for_user(&mut db, user.id)
             .await
             .map_err(|_| "failed to get rejected listings.")?;
-        let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
-            .await
-            .map_err(|_| "failed to get admin settings.")?;
         Ok(Context {
             base_context,
             flash,

@@ -1,6 +1,5 @@
 use crate::base::BaseContext;
 use crate::db::Db;
-use crate::models::AdminSettings;
 use crate::models::FileUploadForm;
 use crate::models::{Listing, ListingDisplay, ListingImage};
 use rocket::fairing::AdHoc;
@@ -37,10 +36,6 @@ impl Context {
         let listing_display = ListingDisplay::single_by_public_id(&mut db, listing_id)
             .await
             .map_err(|_| "failed to get listing display.")?;
-        let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
-            .await
-            .map_err(|_| "failed to get admin settings.")?;
-
         if listing_display.listing.user_id == user.id() {
             Ok(Context {
                 base_context,
