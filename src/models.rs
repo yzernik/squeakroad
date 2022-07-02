@@ -192,6 +192,18 @@ pub struct AccountBalanceChange {
     pub event_time_ms: u64,
 }
 
+#[derive(Serialize, Debug, Clone)]
+#[serde(crate = "rocket::serde")]
+pub struct Withdrawal {
+    pub id: Option<i32>,
+    pub public_id: String,
+    pub user_id: i32,
+    pub amount_sat: u64,
+    pub invoice_hash: String,
+    pub invoice_payment_request: String,
+    pub created_time_ms: u64,
+}
+
 impl Listing {
     // pub async fn all(db: &mut Connection<Db>) -> Result<Vec<Listing>, sqlx::Error> {
     //     let listings = sqlx::query!("select * from listings;")
@@ -1973,4 +1985,31 @@ AND
 
     //         Ok(account_balance)
     //     }
+}
+
+impl Withdrawal {
+    /// Returns the id of the inserted row.
+    pub async fn insert(
+        withdrawal: Withdrawal,
+        db: &mut Connection<Db>,
+    ) -> Result<i32, sqlx::Error> {
+        let amount_sat: i64 = withdrawal.amount_sat.try_into().unwrap();
+        let created_time_ms: i64 = withdrawal.created_time_ms.try_into().unwrap();
+
+        let insert_result = sqlx::query!(
+            "INSERT INTO withdrawals (public_id, user_id, amount_sat, invoice_hash, invoice_payment_request, created_time_ms) VALUES (?, ?, ?, ?, ?, ?)",
+            withdrawal.public_id,
+            withdrawal.user_id,
+            amount_sat,
+            withdrawal.invoice_hash,
+            withdrawal.invoice_payment_request,
+            created_time_ms,
+        )
+            .execute(&mut **db)
+            .await?;
+
+        println!("{:?}", insert_result);
+
+        Ok(insert_result.last_insert_rowid() as _)
+    }
 }
