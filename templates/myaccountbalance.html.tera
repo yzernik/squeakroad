@@ -11,7 +11,8 @@
       <h3>My Account Balance</h3>
 
       <div class="twelve columns">
-        <ul>
+
+	<p>Account Balance: {{ account_balance }}</p>
 
 	<table class="u-full-width">
 	  <thead>
@@ -35,7 +36,6 @@
           {% endfor %}
 	</table>
 
-        </ul>
       </div>
     </div>
   </div>

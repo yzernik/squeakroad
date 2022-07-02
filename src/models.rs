@@ -1926,4 +1926,51 @@ AND
 
         Ok(account_balance_changes)
     }
+
+    // TODO: Use when sqlx is fixed.
+    //     pub async fn account_balance(
+    //         db: &mut Connection<Db>,
+    //         user_id: i32,
+    //     ) -> Result<u64, sqlx::Error> {
+    //         let account_balance_result = sqlx::query!("
+    // SELECT SUM(data.amount_change_sat) as account_balance, data.user_id as user_id
+    // FROM
+    // (select listings.user_id as user_id, orders.seller_credit_sat as amount_change_sat, 'received_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
+    // from
+    //  orders
+    // LEFT JOIN
+    //  listings
+    // ON
+    //  orders.listing_id = listings.id
+    // WHERE
+    //  orders.paid
+    // AND
+    //  orders.completed
+    // AND
+    //  listings.user_id = ?
+    // UNION ALL
+    // select orders.user_id as user_id, orders.amount_owed_sat as amount_change_sat, 'refunded_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
+    // from
+    //  orders
+    // WHERE
+    //  orders.paid
+    // AND
+    //  not orders.completed
+    // AND
+    //  orders.user_id = ?
+    // ) data
+    // GROUP BY user_id
+    // ;",
+    //         user_id, user_id)
+    //         .fetch_optional(&mut **db)
+    //         .await?;
+
+    //         let account_balance = match account_balance_result {
+    //             Some(r) => r.account_balance,
+    //             None => 0,
+    //         };
+    //         println!("account_balance: {:?}", account_balance);
+
+    //         Ok(account_balance)
+    //     }
 }
