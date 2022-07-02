@@ -173,6 +173,12 @@ pub struct OrderCard {
     pub user: Option<RocketAuthUser>,
 }
 
+#[derive(Serialize, Debug, Clone)]
+#[serde(crate = "rocket::serde")]
+pub struct AccountInfo {
+    pub account_balance_sat: u64,
+}
+
 impl Listing {
     pub async fn all(db: &mut Connection<Db>) -> Result<Vec<Listing>, sqlx::Error> {
         let listings = sqlx::query!("select * from listings;")
@@ -1836,5 +1842,21 @@ ORDER BY orders.created_time_ms DESC
             .await?;
 
         Ok(orders)
+    }
+}
+
+impl AccountInfo {
+    pub async fn account_info_for_user(
+        db: &mut Connection<Db>,
+        user_id: i32,
+    ) -> Result<AccountInfo, sqlx::Error> {
+        let amount_earned = Order::amount_earned_sat(db, user_id).await?;
+        let amount_refunded = Order::amount_refunded_sat(db, user_id).await?;
+        let account_balance_sat = amount_earned + amount_refunded;
+        let account_info = AccountInfo {
+            account_balance_sat: account_balance_sat,
+        };
+
+        Ok(account_info)
     }
 }

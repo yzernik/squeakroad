@@ -6,10 +6,13 @@
 Username: {{ user.email }}
 <br>
 
-Amount earned: {{ amount_earned }}
+Account Balance: {{ account_info.account_balance_sat }} sats
 <br>
 
-Amount refunded: {{ amount_refunded }}
+Amount earned: {{ amount_earned }} sats
+<br>
+
+Amount refunded: {{ amount_refunded }} sats
 <br>
 
 <div class="container">

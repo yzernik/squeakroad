@@ -1,5 +1,5 @@
 use crate::db::Db;
-use crate::models::{AdminSettings, Order};
+use crate::models::{AccountInfo, AdminSettings, Order};
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::serde::Serialize;
@@ -16,6 +16,7 @@ struct Context {
     amount_earned: u64,
     amount_refunded: u64,
     admin_user: Option<AdminUser>,
+    account_info: AccountInfo,
     admin_settings: Option<AdminSettings>,
 }
 
@@ -32,6 +33,9 @@ impl Context {
         let amount_refunded = Order::amount_refunded_sat(&mut db, user.id())
             .await
             .map_err(|_| "failed to get amount refunded.")?;
+        let account_info = AccountInfo::account_info_for_user(&mut db, user.id())
+            .await
+            .map_err(|_| "failed to get account info.")?;
         let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
             .await
             .map_err(|_| "failed to get admin settings.")?;
@@ -40,6 +44,7 @@ impl Context {
             user,
             amount_earned,
             amount_refunded,
+            account_info,
             admin_user,
             admin_settings: Some(admin_settings),
         })
