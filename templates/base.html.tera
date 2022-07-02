@@ -57,7 +57,7 @@
             {% if admin_user %}
             <a class="navbar-brand" href="/admin">Admin</a>
             {% else %}
-            <a class="navbar-brand" href="/account">Account</a>
+            <a class="navbar-brand" href="/account">Account{% if account_info %} ({{ account_info.account_balance_sat }} sats){% endif %}</a>
             {% endif %}
             {% endif %}
             {% if not user %}

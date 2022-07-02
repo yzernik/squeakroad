@@ -1,5 +1,5 @@
 use crate::db::Db;
-use crate::models::{AdminSettings, ListingCardDisplay};
+use crate::models::{AccountInfo, AdminSettings, ListingCardDisplay};
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::response::status::NotFound;
@@ -23,6 +23,7 @@ use rocket_dyn_templates::Template;
 struct Context {
     flash: Option<(String, String)>,
     listing_cards: Vec<ListingCardDisplay>,
+    account_info: Option<AccountInfo>,
     user: Option<User>,
     admin_user: Option<AdminUser>,
     admin_settings: Option<AdminSettings>,
@@ -50,14 +51,24 @@ impl Context {
         let listing_cards = ListingCardDisplay::all_approved(&mut db)
             .await
             .map_err(|_| "failed to update market name.")?;
-
+        let account_info = match user {
+            Some(ref u) => Some(
+                AccountInfo::account_info_for_user(&mut db, u.id())
+                    .await
+                    .map_err(|_| "failed to get account info.")?,
+            ),
+            None => None,
+        };
         let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
             .await
             .map_err(|_| "failed to update market name.")?;
 
+        println!("account_info: {:?}", account_info);
+
         Ok(Context {
             flash,
             listing_cards: listing_cards,
+            account_info: account_info,
             user,
             admin_user,
             admin_settings: Some(admin_settings),
