@@ -2,7 +2,7 @@ use crate::base::BaseContext;
 use crate::config::Config;
 use crate::db::Db;
 use crate::lightning;
-use crate::models::{AdminSettings, Listing, ListingDisplay, Order, OrderInfo, ShippingOption};
+use crate::models::{Listing, ListingDisplay, Order, OrderInfo, ShippingOption};
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
 use rocket::request::FlashMessage;
@@ -47,10 +47,6 @@ impl Context {
         let shipping_option = ShippingOption::single_by_public_id(&mut db, shipping_option_id)
             .await
             .map_err(|_| "failed to get shipping option.")?;
-        let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
-            .await
-            .map_err(|_| "failed to get admin settings.")?;
-
         Ok(Context {
             base_context,
             flash,
@@ -67,7 +63,7 @@ async fn new(
     order_form: Form<OrderInfo>,
     mut db: Connection<Db>,
     user: User,
-    admin_user: Option<AdminUser>,
+    _admin_user: Option<AdminUser>,
     config: &State<Config>,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
     let order_info = order_form.into_inner();

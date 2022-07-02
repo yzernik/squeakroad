@@ -1,6 +1,6 @@
 use crate::base::BaseContext;
 use crate::db::Db;
-use crate::models::{AccountInfo, AdminSettings, Listing, ListingDisplay, Order, ShippingOption};
+use crate::models::{Listing, ListingDisplay, Order, ShippingOption};
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::response::Flash;
@@ -61,17 +61,6 @@ impl Context {
             }
             None => None,
         };
-        let account_info = match user {
-            Some(ref u) => Some(
-                AccountInfo::account_info_for_user(&mut db, u.id())
-                    .await
-                    .map_err(|_| "failed to get account info.")?,
-            ),
-            None => None,
-        };
-        let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
-            .await
-            .map_err(|_| "failed to get admin settings.")?;
         let quantity_in_stock = listing_display.listing.quantity - quantity_sold;
 
         Ok(Context {
@@ -91,7 +80,6 @@ async fn submit(
     id: &str,
     mut db: Connection<Db>,
     user: User,
-    admin_user: Option<AdminUser>,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
     println!("Handling submit endpoint for {:?}", id);
     //match Listing::mark_as_submitted(&mut db, id).await {
@@ -139,8 +127,8 @@ async fn submit_listing(db: &mut Connection<Db>, id: &str, user: User) -> Result
 async fn approve(
     id: &str,
     mut db: Connection<Db>,
-    user: User,
-    admin_user: AdminUser,
+    _user: User,
+    _admin_user: AdminUser,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
     match approve_listing(&mut db, id).await {
         Ok(_) => Ok(Flash::success(
@@ -179,8 +167,8 @@ async fn approve_listing(db: &mut Connection<Db>, id: &str) -> Result<(), String
 async fn reject(
     id: &str,
     mut db: Connection<Db>,
-    user: User,
-    admin_user: AdminUser,
+    _user: User,
+    _admin_user: AdminUser,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
     match reject_listing(&mut db, id).await {
         Ok(_) => Ok(Flash::success(

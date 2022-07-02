@@ -1,6 +1,6 @@
 use crate::base::BaseContext;
 use crate::db::Db;
-use crate::models::{AdminSettings, Listing, Order, ShippingOption};
+use crate::models::{Listing, Order, ShippingOption};
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::serde::Serialize;
@@ -40,11 +40,7 @@ impl Context {
         let shipping_option = ShippingOption::single(&mut db, order.shipping_option_id)
             .await
             .map_err(|_| "failed to get shipping option.")?;
-        let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
-            .await
-            .map_err(|_| "failed to get admin settings.")?;
         println!("found order: {:?}", order);
-
         Ok(Context {
             base_context,
             flash,

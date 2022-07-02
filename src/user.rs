@@ -1,6 +1,6 @@
 use crate::base::BaseContext;
 use crate::db::Db;
-use crate::models::{AdminSettings, ListingCardDisplay, RocketAuthUser};
+use crate::models::{ListingCardDisplay, RocketAuthUser};
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::serde::Serialize;
@@ -36,10 +36,6 @@ impl Context {
             ListingCardDisplay::all_approved_for_user(&mut db, visited_user.id.unwrap())
                 .await
                 .map_err(|_| "failed to get approved listings.")?;
-        let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
-            .await
-            .map_err(|_| "failed to get admin settings.")?;
-
         Ok(Context {
             base_context,
             flash,
