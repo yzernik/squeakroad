@@ -1880,7 +1880,8 @@ impl AccountInfo {
         db: &mut Connection<Db>,
         user_id: i32,
     ) -> Result<Vec<AccountBalanceChange>, sqlx::Error> {
-        let account_balance_changes = sqlx::query!("
+        // TODO: Order by event time in SQL query. When this is fixed: https://github.com/launchbadge/sqlx/issues/1350
+        let mut account_balance_changes = sqlx::query!("
 select listings.user_id as user_id, orders.seller_credit_sat as amount_change_sat, 'received_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
 from
  orders
@@ -1919,6 +1920,9 @@ AND
             .await?;
 
         println!("{:?}", account_balance_changes);
+
+        // Sort by event time
+        account_balance_changes.sort_by(|a, b| b.event_time_ms.cmp(&a.event_time_ms));
 
         Ok(account_balance_changes)
     }
