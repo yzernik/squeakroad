@@ -104,7 +104,7 @@ pub fn stage(config: Config) -> AdHoc {
                             rocket::tokio::time::Duration::from_secs(10),
                         );
                         loop {
-                            if let Ok(mut conn) = pool.acquire().await {
+                            if let Ok(conn) = pool.acquire().await {
                                 payment_processor::handle_received_payments(
                                     config_clone.clone(),
                                     conn,
