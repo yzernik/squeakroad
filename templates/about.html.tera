@@ -1,0 +1,12 @@
+{% extends "base" %}
+{% block body %}
+
+<h3>About</h3>
+
+Market Name: {{ admin_settings.market_name }}
+<br>
+
+Seller Fee rate: {{ admin_settings.fee_rate_basis_points / 100 }}% of each sale
+<br>
+
+{% endblock body %}

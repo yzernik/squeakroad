@@ -52,6 +52,7 @@
         <div class="container-fluid">
           <a class="navbar-brand" href="/">{{ base_context.admin_settings.market_name }}</a>
           <div>
+            <a class="navbar-brand" href="/about">About</a>
             {% if base_context.user %}
             Welcome, <a class="navbar-brand" href="/user/{{ base_context.user.email }}">{{ base_context.user.email }}</a>
             {% if base_context.admin_user %}
