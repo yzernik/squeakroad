@@ -3,9 +3,17 @@
 
 <h3>My Account</h3>
 
-Username: {{ user.email }}.
+Username: {{ user.email }}
 <br>
 
+Account Balance: {{ account_info.account_balance_sat }} sats
+<br>
+
+Amount earned: {{ account_info.amount_earned_sat }} sats
+<br>
+
+Amount refunded: {{ account_info.amount_refunded_sat }} sats
+<br>
 
 <div class="container">
   <p><!--Nothing to see here --></p>

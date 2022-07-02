@@ -1,3 +1,4 @@
+use crate::base::BaseContext;
 use crate::db::Db;
 use crate::models::AdminSettings;
 use crate::models::FileUploadForm;
@@ -17,31 +18,12 @@ use std::fs;
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
 struct Context {
+    base_context: BaseContext,
     flash: Option<(String, String)>,
     listing_display: Option<ListingDisplay>,
-    user: User,
-    admin_user: Option<AdminUser>,
-    admin_settings: Option<AdminSettings>,
 }
 
 impl Context {
-    pub async fn err<M: std::fmt::Display>(
-        _db: Connection<Db>,
-        _listing_id: &str,
-        msg: M,
-        user: User,
-        admin_user: Option<AdminUser>,
-    ) -> Context {
-        // TODO: get the listing display and put in context.
-        Context {
-            flash: Some(("error".into(), msg.to_string())),
-            listing_display: None,
-            user: user,
-            admin_user,
-            admin_settings: None,
-        }
-    }
-
     pub async fn raw(
         mut db: Connection<Db>,
         listing_id: &str,
@@ -49,6 +31,9 @@ impl Context {
         user: User,
         admin_user: Option<AdminUser>,
     ) -> Result<Context, String> {
+        let base_context = BaseContext::raw(&mut db, Some(user.clone()), admin_user.clone())
+            .await
+            .map_err(|_| "failed to get base template.")?;
         let listing_display = ListingDisplay::single_by_public_id(&mut db, listing_id)
             .await
             .map_err(|_| "failed to get listing display.")?;
@@ -58,11 +43,9 @@ impl Context {
 
         if listing_display.listing.user_id == user.id() {
             Ok(Context {
+                base_context,
                 flash,
                 listing_display: Some(listing_display),
-                user,
-                admin_user,
-                admin_settings: Some(admin_settings),
             })
         } else {
             error_!("Listing belongs to other user.");
@@ -149,7 +132,7 @@ async fn delete(
     mut db: Connection<Db>,
     user: User,
     admin_user: Option<AdminUser>,
-) -> Result<Flash<Redirect>, Template> {
+) -> Result<Flash<Redirect>, Flash<Redirect>> {
     match delete_image_with_public_id(id, image_id, &mut db, user.clone(), admin_user.clone()).await
     {
         Ok(_) => Ok(Flash::success(
@@ -158,9 +141,9 @@ async fn delete(
         )),
         Err(e) => {
             error_!("DB deletion({}) error: {}", id, e);
-            Err(Template::render(
-                "updatelistingimages",
-                Context::err(db, id, "Failed to delete listing image.", user, admin_user).await,
+            Err(Flash::error(
+                Redirect::to(uri!("/update_listing_images", index(id))),
+                "Failed to delete listing image.",
             ))
         }
     }
@@ -221,7 +204,7 @@ async fn set_primary(
     mut db: Connection<Db>,
     user: User,
     admin_user: Option<AdminUser>,
-) -> Result<Flash<Redirect>, Template> {
+) -> Result<Flash<Redirect>, Flash<Redirect>> {
     match mark_as_primary(id, image_id, &mut db, user.clone(), admin_user.clone()).await {
         Ok(_) => Ok(Flash::success(
             Redirect::to(uri!("/update_listing_images", index(id))),
@@ -229,9 +212,9 @@ async fn set_primary(
         )),
         Err(e) => {
             error_!("DB update({}) error: {}", id, e);
-            Err(Template::render(
-                "updatelistingimages",
-                Context::err(db, id, "Failed to mark image as primary.", user, admin_user).await,
+            Err(Flash::error(
+                Redirect::to(uri!("/update_listing_images", index(id))),
+                "Failed to mark image as primary.",
             ))
         }
     }

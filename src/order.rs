@@ -1,29 +1,23 @@
+use crate::base::BaseContext;
 use crate::db::Db;
-use crate::models::{AdminSettings, Listing, ListingDisplay, Order, OrderInfo, ShippingOption};
+use crate::models::{AdminSettings, Listing, Order, ShippingOption};
 use rocket::fairing::AdHoc;
-use rocket::form::Form;
 use rocket::request::FlashMessage;
-use rocket::response::Flash;
-use rocket::response::Redirect;
-use rocket::serde::uuid::Uuid;
 use rocket::serde::Serialize;
 use rocket_auth::AdminUser;
 use rocket_auth::User;
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
-use std::time::SystemTime;
-use std::time::UNIX_EPOCH;
 
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
 struct Context {
+    base_context: BaseContext,
     flash: Option<(String, String)>,
     order: Order,
     listing: Listing,
     shipping_option: ShippingOption,
     user: User,
-    admin_user: Option<AdminUser>,
-    admin_settings: Option<AdminSettings>,
 }
 
 impl Context {
@@ -34,6 +28,9 @@ impl Context {
         user: User,
         admin_user: Option<AdminUser>,
     ) -> Result<Context, String> {
+        let base_context = BaseContext::raw(&mut db, Some(user.clone()), admin_user.clone())
+            .await
+            .map_err(|_| "failed to get base template.")?;
         let order = Order::single_by_public_id(&mut db, order_id)
             .await
             .map_err(|_| "failed to get order.")?;
@@ -49,13 +46,12 @@ impl Context {
         println!("found order: {:?}", order);
 
         Ok(Context {
+            base_context,
             flash,
             order,
             listing,
             shipping_option,
             user,
-            admin_user,
-            admin_settings: Some(admin_settings),
         })
     }
 }

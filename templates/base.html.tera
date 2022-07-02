@@ -40,7 +40,7 @@
 
     </style>
 
-    <title>{{ admin_settings.market_name }} - Squeakroad</title>
+    <title>{{ base_context.admin_settings.market_name }} - Squeakroad</title>
 </head>
 
 <body>
@@ -50,17 +50,17 @@
 
       <nav class="navbar navbar-expand-lg navbar-dark bg-success">
         <div class="container-fluid">
-          <a class="navbar-brand" href="/">{{ admin_settings.market_name }}</a>
+          <a class="navbar-brand" href="/">{{ base_context.admin_settings.market_name }}</a>
           <div>
-            {% if user %}
-            Welcome, <a class="navbar-brand" href="/user/{{ user.email }}">{{ user.email }}</a>
-            {% if admin_user %}
+            {% if base_context.user %}
+            Welcome, <a class="navbar-brand" href="/user/{{ base_context.user.email }}">{{ base_context.user.email }}</a>
+            {% if base_context.admin_user %}
             <a class="navbar-brand" href="/admin">Admin</a>
             {% else %}
-            <a class="navbar-brand" href="/account">Account</a>
+            <a class="navbar-brand" href="/account">Account{% if base_context.account_info %} ({{ base_context.account_info.account_balance_sat }} sats){% endif %}</a>
             {% endif %}
             {% endif %}
-            {% if not user %}
+            {% if not base_context.user %}
             <a class="navbar-brand" href="/login">Login</a>
             <a class="navbar-brand" href="/signup">Sign up</a>
             {% else %}

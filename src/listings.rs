@@ -1,5 +1,6 @@
+use crate::base::BaseContext;
 use crate::db::Db;
-use crate::models::{AdminSettings, ListingCardDisplay};
+use crate::models::ListingCardDisplay;
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::response::status::NotFound;
@@ -21,11 +22,9 @@ use rocket_dyn_templates::Template;
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
 struct Context {
+    base_context: BaseContext,
     flash: Option<(String, String)>,
     listing_cards: Vec<ListingCardDisplay>,
-    user: Option<User>,
-    admin_user: Option<AdminUser>,
-    admin_settings: Option<AdminSettings>,
 }
 
 impl Context {
@@ -47,20 +46,16 @@ impl Context {
         user: Option<User>,
         admin_user: Option<AdminUser>,
     ) -> Result<Context, String> {
+        let base_context = BaseContext::raw(&mut db, user.clone(), admin_user.clone())
+            .await
+            .map_err(|_| "failed to get base template.")?;
         let listing_cards = ListingCardDisplay::all_approved(&mut db)
             .await
             .map_err(|_| "failed to update market name.")?;
-
-        let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
-            .await
-            .map_err(|_| "failed to update market name.")?;
-
         Ok(Context {
+            base_context,
             flash,
-            listing_cards: listing_cards,
-            user,
-            admin_user,
-            admin_settings: Some(admin_settings),
+            listing_cards,
         })
     }
 }

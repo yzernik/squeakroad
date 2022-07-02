@@ -278,6 +278,30 @@
     },
     "query": "\nselect\n orders.id as order_id, orders.public_id as order_public_id, orders.user_id as order_user_id, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.completed, orders.invoice_hash, orders.invoice_payment_request, orders.created_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username\nfrom\n orders\nLEFT JOIN\n listings\nON\n orders.listing_id = listings.id\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nLEFT JOIN\n users\nON\n listings.user_id = users.id\nWHERE\n orders.completed\nAND\n listing_user_id = ?\nGROUP BY\n orders.id\nORDER BY orders.created_time_ms DESC\n;"
   },
+  "0b8f479b0b98846aebf34419364a5384cfb815c55987cdc0bcf5dc369dbfa9b2": {
+    "describe": {
+      "columns": [
+        {
+          "name": "total_amount_paid",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "listing_user_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\nselect\n SUM(orders.seller_credit_sat) as total_amount_paid, listings.user_id as listing_user_id\nFROM\n orders\nLEFT JOIN\n listings\nON\n orders.listing_id = listings.id\nWHERE\n listing_user_id = ?\nAND\n completed\nGROUP BY\n listing_user_id\n;"
+  },
   "11e3096becb72f427c8d3911ef4327afd9516143806981e11f8e34d069c14472": {
     "describe": {
       "columns": [
@@ -1829,6 +1853,30 @@
       }
     },
     "query": "UPDATE listings SET reviewed = true, approved = true WHERE public_id = ?"
+  },
+  "af31bcef6daf6ddbbe6e79454db8be80aea90d823594e2e0e36d1a89888affae": {
+    "describe": {
+      "columns": [
+        {
+          "name": "total_amount_refunded",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "order_user_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\nselect\n SUM(orders.amount_owed_sat) as total_amount_refunded, orders.user_id as order_user_id\nFROM\n orders\nWHERE\n order_user_id = ?\nAND\n paid\nAND\n not completed\nGROUP BY\n order_user_id\n;"
   },
   "b26ae7c5b32514b2b055605b39373406f820c6534ec6583bb52b3c1ac00a6855": {
     "describe": {

@@ -1,3 +1,4 @@
+use crate::base::BaseContext;
 use crate::db::Db;
 use crate::models::AdminSettings;
 use crate::models::{InitialListingInfo, Listing};
@@ -15,27 +16,29 @@ use std::time::{SystemTime, UNIX_EPOCH};
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
 struct Context {
+    base_context: BaseContext,
     flash: Option<(String, String)>,
-    user: Option<User>,
-    admin_user: Option<AdminUser>,
-    admin_settings: Option<AdminSettings>,
+    admin_settings: AdminSettings,
 }
 
 impl Context {
+    // TODO: use redirect and remove the "err" function.
     pub async fn err<M: std::fmt::Display>(
         mut db: Connection<Db>,
         msg: M,
         user: Option<User>,
         admin_user: Option<AdminUser>,
     ) -> Result<Context, String> {
+        let base_context = BaseContext::raw(&mut db, user.clone(), admin_user.clone())
+            .await
+            .map_err(|_| "failed to get base template.")?;
         let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
             .await
             .map_err(|_| "failed to update market name.")?;
         Ok(Context {
+            base_context,
             flash: Some(("error".into(), msg.to_string())),
-            user,
-            admin_user,
-            admin_settings: Some(admin_settings),
+            admin_settings,
         })
     }
 
@@ -45,14 +48,16 @@ impl Context {
         user: Option<User>,
         admin_user: Option<AdminUser>,
     ) -> Result<Context, String> {
+        let base_context = BaseContext::raw(&mut db, user.clone(), admin_user.clone())
+            .await
+            .map_err(|_| "failed to get base template.")?;
         let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
             .await
             .map_err(|_| "failed to update market name.")?;
         Ok(Context {
+            base_context,
             flash,
-            user,
-            admin_user,
-            admin_settings: Some(admin_settings),
+            admin_settings,
         })
     }
 }

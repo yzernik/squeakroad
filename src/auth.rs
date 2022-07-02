@@ -1,3 +1,4 @@
+use crate::base::BaseContext;
 use crate::db::Db;
 use crate::models::AdminSettings;
 use rocket::fairing::AdHoc;
@@ -17,19 +18,21 @@ fn not_authorized() -> Redirect {
 }
 
 #[get("/login")]
-async fn get_login(mut db: Connection<Db>, user: Option<User>) -> Result<Template, Error> {
-    let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default()).await?;
+async fn get_login(mut db: Connection<Db>, user: Option<User>) -> Result<Template, String> {
+    let base_context = BaseContext::raw(&mut db, user.clone(), None)
+        .await
+        .map_err(|_| "failed to get base template.")?;
     Ok(Template::render(
         "login",
-        json!({"admin_settings": admin_settings, "user": user}),
+        json!({ "base_context": base_context }),
     ))
 }
 
 #[post("/login", data = "<form>")]
-async fn post_login(auth: Auth<'_>, form: Form<Login>) -> Result<Redirect, Error> {
-    let result = auth.login(&form).await;
+async fn post_login(auth: Auth<'_>, form: Form<Login>) -> Result<Redirect, String> {
+    let result = auth.login(&form).await.map_err(|_| "failed to login.")?;
     println!("login attempt: {:?}", result);
-    result?;
+    // result?;
     Ok(Redirect::to("/"))
 }
 

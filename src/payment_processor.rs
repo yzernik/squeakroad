@@ -1,8 +1,6 @@
 use crate::config::Config;
-use crate::db::Db;
 use crate::lightning::get_lnd_client;
 use crate::models::Order;
-use rocket_db_pools::Connection;
 use sqlx::pool::PoolConnection;
 use sqlx::Sqlite;
 

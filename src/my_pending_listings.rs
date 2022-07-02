@@ -1,5 +1,6 @@
+use crate::base::BaseContext;
 use crate::db::Db;
-use crate::models::{AdminSettings, ListingCardDisplay};
+use crate::models::{AccountInfo, AdminSettings, ListingCardDisplay};
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::response::status::NotFound;
@@ -11,11 +12,9 @@ use rocket_dyn_templates::Template;
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
 struct Context {
+    base_context: BaseContext,
     flash: Option<(String, String)>,
     listing_cards: Vec<ListingCardDisplay>,
-    user: User,
-    admin_user: Option<AdminUser>,
-    admin_settings: Option<AdminSettings>,
 }
 
 impl Context {
@@ -25,18 +24,22 @@ impl Context {
         user: User,
         admin_user: Option<AdminUser>,
     ) -> Result<Context, String> {
+        let base_context = BaseContext::raw(&mut db, Some(user.clone()), admin_user.clone())
+            .await
+            .map_err(|_| "failed to get base template.")?;
         let listing_cards = ListingCardDisplay::all_pending_for_user(&mut db, user.id)
             .await
             .map_err(|_| "failed to get pending listings.")?;
+        let account_info = AccountInfo::account_info_for_user(&mut db, user.id())
+            .await
+            .map_err(|_| "failed to get account info.")?;
         let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
             .await
             .map_err(|_| "failed to get admin settings.")?;
         Ok(Context {
+            base_context,
             flash,
-            listing_cards: listing_cards,
-            user,
-            admin_user,
-            admin_settings: Some(admin_settings),
+            listing_cards,
         })
     }
 }

@@ -1,5 +1,5 @@
+use crate::base::BaseContext;
 use crate::db::Db;
-use crate::models::AdminSettings;
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::serde::Serialize;
@@ -11,10 +11,10 @@ use rocket_dyn_templates::Template;
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
 struct Context {
+    base_context: BaseContext,
     flash: Option<(String, String)>,
     user: Option<User>,
     admin_user: Option<AdminUser>,
-    admin_settings: Option<AdminSettings>,
 }
 
 impl Context {
@@ -24,14 +24,14 @@ impl Context {
         user: Option<User>,
         admin_user: Option<AdminUser>,
     ) -> Result<Context, String> {
-        let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
+        let base_context = BaseContext::raw(&mut db, user.clone(), admin_user.clone())
             .await
-            .map_err(|_| "failed to get admin settings.")?;
+            .map_err(|_| "failed to get base template.")?;
         Ok(Context {
+            base_context,
             flash,
             user,
             admin_user,
-            admin_settings: Some(admin_settings),
         })
     }
 }

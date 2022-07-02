@@ -1,3 +1,4 @@
+use crate::base::BaseContext;
 use crate::db::Db;
 use crate::models::{AdminSettings, Listing, ListingDisplay, ShippingOption, ShippingOptionInfo};
 use rocket::fairing::AdHoc;
@@ -13,31 +14,12 @@ use rocket_dyn_templates::Template;
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
 struct Context {
+    base_context: BaseContext,
     flash: Option<(String, String)>,
     listing_display: Option<ListingDisplay>,
-    user: User,
-    admin_user: Option<AdminUser>,
-    admin_settings: Option<AdminSettings>,
 }
 
 impl Context {
-    pub async fn err<M: std::fmt::Display>(
-        _db: Connection<Db>,
-        _listing_id: &str,
-        msg: M,
-        user: User,
-        admin_user: Option<AdminUser>,
-    ) -> Context {
-        // TODO: get the listing display and put in context.
-        Context {
-            flash: Some(("error".into(), msg.to_string())),
-            listing_display: None,
-            user: user,
-            admin_user,
-            admin_settings: None,
-        }
-    }
-
     pub async fn raw(
         mut db: Connection<Db>,
         listing_id: &str,
@@ -45,6 +27,9 @@ impl Context {
         user: User,
         admin_user: Option<AdminUser>,
     ) -> Result<Context, String> {
+        let base_context = BaseContext::raw(&mut db, Some(user.clone()), admin_user.clone())
+            .await
+            .map_err(|_| "failed to get base template.")?;
         let listing_display = ListingDisplay::single_by_public_id(&mut db, listing_id)
             .await
             .map_err(|_| "failed to get listing display.")?;
@@ -55,20 +40,16 @@ impl Context {
         if listing_display.listing.user_id == user.id() {
             println!("{:?}", listing_display.shipping_options);
             Ok(Context {
+                base_context,
                 flash,
                 listing_display: Some(listing_display),
-                user,
-                admin_user,
-                admin_settings: Some(admin_settings),
             })
         } else {
             error_!("Listing belongs to other user.");
             Ok(Context {
+                base_context,
                 flash: Some(("error".into(), "Listing belongs to other user.".into())),
                 listing_display: None,
-                user: user,
-                admin_user: admin_user,
-                admin_settings: Some(admin_settings),
             })
         }
     }
@@ -159,7 +140,7 @@ async fn delete(
     mut db: Connection<Db>,
     user: User,
     admin_user: Option<AdminUser>,
-) -> Result<Flash<Redirect>, Template> {
+) -> Result<Flash<Redirect>, Flash<Redirect>> {
     match delete_shipping_option(
         id,
         shipping_option_id,
@@ -175,16 +156,9 @@ async fn delete(
         )),
         Err(e) => {
             error_!("DB deletion({}) error: {}", id, e);
-            Err(Template::render(
-                "updateshippingoptions",
-                Context::err(
-                    db,
-                    id,
-                    "Failed to delete shipping option.",
-                    user,
-                    admin_user,
-                )
-                .await,
+            Err(Flash::error(
+                Redirect::to(uri!("/update_shipping_options", index(id))),
+                "Failed to delete shipping option.",
             ))
         }
     }
