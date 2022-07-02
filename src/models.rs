@@ -182,6 +182,16 @@ pub struct AccountInfo {
     pub account_balance_sat: u64,
 }
 
+#[derive(Serialize, Debug, Clone)]
+#[serde(crate = "rocket::serde")]
+pub struct AccountBalanceChange {
+    pub user_id: String,
+    pub amount_change_sat: u64,
+    pub event_type: String,
+    pub event_id: String,
+    pub event_time_ms: u64,
+}
+
 impl Listing {
     pub async fn all(db: &mut Connection<Db>) -> Result<Vec<Listing>, sqlx::Error> {
         let listings = sqlx::query!("select * from listings;")
@@ -1864,5 +1874,38 @@ impl AccountInfo {
         };
 
         Ok(account_info)
+    }
+
+    pub async fn all_account_balance_changes(
+        db: &mut Connection<Db>,
+        user_id: i32,
+    ) -> Result<Vec<AccountBalanceChange>, sqlx::Error> {
+        let account_balance_changes = sqlx::query!("
+select listings.user_id as user_id, orders.seller_credit_sat as amount_change_sat, 'received_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
+from
+ orders
+LEFT JOIN
+ listings
+ON
+ orders.listing_id = listings.id
+WHERE
+ listings.user_id = ?
+;",
+        user_id)
+            .fetch(&mut **db)
+            .map_ok(|r| AccountBalanceChange {
+                user_id: r.user_id.to_string(),
+                amount_change_sat: r.amount_change_sat.try_into().unwrap(),
+                event_type: r.event_type,
+                event_id: r.event_id,
+                event_time_ms: r.event_time_ms.try_into().unwrap(),
+
+            })
+            .try_collect::<Vec<_>>()
+            .await?;
+
+        println!("{:?}", account_balance_changes);
+
+        Ok(account_balance_changes)
     }
 }
