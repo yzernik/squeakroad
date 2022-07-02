@@ -35,6 +35,7 @@ mod update_listing_images;
 mod update_market_name;
 mod update_shipping_options;
 mod user;
+mod withdraw;
 
 #[launch]
 fn rocket() -> _ {

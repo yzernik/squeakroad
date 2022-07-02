@@ -4,8 +4,11 @@
 {% if listing_display %}
 
 
-<div class="one-half column">
-  <div class="container">
+<div class="container">
+  <p><!--Nothing to see here --></p>
+
+  <div class="row">
+
 
     {% if flash %}
     <small class="field-{{flash.0}}-msg">

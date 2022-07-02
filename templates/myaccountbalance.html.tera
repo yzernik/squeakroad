@@ -12,7 +12,7 @@
 
       <div class="twelve columns">
 
-	<p>Account Balance: {{ account_balance }}</p>
+	<p>Account Balance: {{ account_balance_sat }}</p>
 
 	<table class="u-full-width">
 	  <thead>

@@ -166,5 +166,6 @@ pub fn stage(config: Config) -> AdHoc {
             .attach(crate::my_account_balance::my_account_balance_stage())
             .attach(crate::prepare_order::prepare_order_stage())
             .attach(crate::order::order_stage())
+            .attach(crate::withdraw::withdraw_stage())
     })
 }

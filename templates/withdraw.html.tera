@@ -1,0 +1,35 @@
+{% extends "base" %}
+{% block body %}
+
+<div class="container">
+  <p><!--Nothing to see here --></p>
+
+  <div class="row">
+
+    {% if flash %}
+    <small class="field-{{flash.0}}-msg">
+      {{ flash.1 }}
+    </small>
+    {% endif %}
+
+    <h3>Withdraw</h3>
+
+    <p>Account Balance: {{ account_balance_sat }} sats</p>
+    <p><a href="/my_account_balance">View Account Balance</a></p>
+
+    <form action="/new_listing" method="post">
+      <div class="ten columns">
+        <input type="text" placeholder="enter a listing title..."
+	       name="title" id="title" value="" autofocus
+	       class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" />
+      </div>
+      <div class="two columns">
+        <input type="submit" value="withdraw funds">
+      </div>
+    </form>
+
+  </div>
+</div>
+
+
+{% endblock body %}

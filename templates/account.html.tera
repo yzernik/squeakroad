@@ -12,6 +12,9 @@ Account Balance: {{ account_info.account_balance_sat }} sats
 <a href="my_account_balance">Account Balance History</a>
 <br>
 
+<a href="withdraw">Withdraw Funds</a>
+<br>
+
 
 <div class="container">
   <p><!--Nothing to see here --></p>
