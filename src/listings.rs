@@ -68,7 +68,7 @@ impl Context {
         Ok(Context {
             flash,
             listing_cards: listing_cards,
-            account_info: account_info,
+            account_info,
             user,
             admin_user,
             admin_settings: Some(admin_settings),

@@ -1,5 +1,5 @@
 use crate::db::Db;
-use crate::models::{AdminSettings, Order, OrderCard};
+use crate::models::{AccountInfo, AdminSettings, Order, OrderCard};
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::response::status::NotFound;
@@ -14,6 +14,7 @@ struct Context {
     flash: Option<(String, String)>,
     order_cards: Vec<OrderCard>,
     user: User,
+    account_info: AccountInfo,
     admin_user: Option<AdminUser>,
     admin_settings: Option<AdminSettings>,
 }
@@ -28,6 +29,9 @@ impl Context {
         let order_cards = OrderCard::all_paid_for_user(&mut db, user.id)
             .await
             .map_err(|_| "failed to get paid orders.")?;
+        let account_info = AccountInfo::account_info_for_user(&mut db, user.id())
+            .await
+            .map_err(|_| "failed to get account info.")?;
         let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
             .await
             .map_err(|_| "failed to get admin settings.")?;
@@ -35,6 +39,7 @@ impl Context {
             flash,
             order_cards,
             user,
+            account_info,
             admin_user,
             admin_settings: Some(admin_settings),
         })

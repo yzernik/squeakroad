@@ -1,5 +1,5 @@
 use crate::db::Db;
-use crate::models::{AdminSettings, ListingCardDisplay};
+use crate::models::{AccountInfo, AdminSettings, ListingCardDisplay};
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::response::status::NotFound;
@@ -14,6 +14,7 @@ struct Context {
     flash: Option<(String, String)>,
     listing_cards: Vec<ListingCardDisplay>,
     user: User,
+    account_info: AccountInfo,
     admin_user: Option<AdminUser>,
     admin_settings: Option<AdminSettings>,
 }
@@ -28,6 +29,9 @@ impl Context {
         let listing_cards = ListingCardDisplay::all_pending_for_user(&mut db, user.id)
             .await
             .map_err(|_| "failed to get pending listings.")?;
+        let account_info = AccountInfo::account_info_for_user(&mut db, user.id())
+            .await
+            .map_err(|_| "failed to get account info.")?;
         let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
             .await
             .map_err(|_| "failed to get admin settings.")?;
@@ -35,6 +39,7 @@ impl Context {
             flash,
             listing_cards: listing_cards,
             user,
+            account_info,
             admin_user,
             admin_settings: Some(admin_settings),
         })

@@ -1,5 +1,5 @@
 use crate::db::Db;
-use crate::models::{AdminSettings, Listing, ListingDisplay, Order, ShippingOption};
+use crate::models::{AccountInfo, AdminSettings, Listing, ListingDisplay, Order, ShippingOption};
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::response::Flash;
@@ -18,6 +18,7 @@ struct Context {
     selected_shipping_option: Option<ShippingOption>,
     quantity_in_stock: u32,
     user: Option<User>,
+    account_info: Option<AccountInfo>,
     admin_user: Option<AdminUser>,
     admin_settings: Option<AdminSettings>,
 }
@@ -57,6 +58,14 @@ impl Context {
             }
             None => None,
         };
+        let account_info = match user {
+            Some(ref u) => Some(
+                AccountInfo::account_info_for_user(&mut db, u.id())
+                    .await
+                    .map_err(|_| "failed to get account info.")?,
+            ),
+            None => None,
+        };
         let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
             .await
             .map_err(|_| "failed to get admin settings.")?;
@@ -68,6 +77,7 @@ impl Context {
             selected_shipping_option: maybe_shipping_option,
             quantity_in_stock,
             user,
+            account_info,
             admin_user,
             admin_settings: Some(admin_settings),
         })
