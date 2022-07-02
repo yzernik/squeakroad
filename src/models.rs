@@ -1889,9 +1889,23 @@ LEFT JOIN
 ON
  orders.listing_id = listings.id
 WHERE
+ orders.paid
+AND
+ orders.completed
+AND
  listings.user_id = ?
+UNION ALL
+select orders.user_id as user_id, orders.amount_owed_sat as amount_change_sat, 'refunded_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
+from
+ orders
+WHERE
+ orders.paid
+AND
+ not orders.completed
+AND
+ orders.user_id = ?
 ;",
-        user_id)
+        user_id, user_id)
             .fetch(&mut **db)
             .map_ok(|r| AccountBalanceChange {
                 user_id: r.user_id.to_string(),
