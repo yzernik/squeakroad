@@ -1,3 +1,4 @@
+use crate::base::BaseContext;
 use crate::db::Db;
 use crate::models::{AdminSettings, MarketNameInput};
 use rocket::fairing::AdHoc;
@@ -22,42 +23,28 @@ impl AdminSettings {
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
 struct Context {
+    base_context: BaseContext,
     flash: Option<(String, String)>,
-    user: User,
-    admin_user: Option<AdminUser>,
-    admin_settings: Option<AdminSettings>,
+    admin_settings: AdminSettings,
 }
 
 impl Context {
-    pub async fn err<M: std::fmt::Display>(
-        _db: Connection<Db>,
-        msg: M,
-        user: User,
-        admin_user: Option<AdminUser>,
-    ) -> Context {
-        // TODO: get the listing display and put in context.
-        Context {
-            flash: Some(("error".into(), msg.to_string())),
-            user: user,
-            admin_user,
-            admin_settings: None,
-        }
-    }
-
     pub async fn raw(
         mut db: Connection<Db>,
         flash: Option<(String, String)>,
         user: User,
         admin_user: Option<AdminUser>,
     ) -> Result<Context, String> {
+        let base_context = BaseContext::raw(&mut db, Some(user.clone()), admin_user.clone())
+            .await
+            .map_err(|_| "failed to get base template.")?;
         let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
             .await
             .map_err(|_| "failed to get admin settings.")?;
         Ok(Context {
+            base_context,
             flash,
-            user,
-            admin_user,
-            admin_settings: Some(admin_settings),
+            admin_settings,
         })
     }
 }
