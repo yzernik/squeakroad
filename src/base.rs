@@ -4,7 +4,6 @@ use rocket::serde::Serialize;
 use rocket_auth::AdminUser;
 use rocket_auth::User;
 use rocket_db_pools::Connection;
-use rocket_dyn_templates::Template;
 
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]

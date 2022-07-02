@@ -1,19 +1,13 @@
 use crate::base::BaseContext;
 use crate::db::Db;
-use crate::models::{AdminSettings, Listing, ListingDisplay, Order, OrderInfo, ShippingOption};
+use crate::models::{AdminSettings, Listing, Order, ShippingOption};
 use rocket::fairing::AdHoc;
-use rocket::form::Form;
 use rocket::request::FlashMessage;
-use rocket::response::Flash;
-use rocket::response::Redirect;
-use rocket::serde::uuid::Uuid;
 use rocket::serde::Serialize;
 use rocket_auth::AdminUser;
 use rocket_auth::User;
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
-use std::time::SystemTime;
-use std::time::UNIX_EPOCH;
 
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]

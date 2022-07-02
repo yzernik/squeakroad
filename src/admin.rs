@@ -1,6 +1,5 @@
 use crate::base::BaseContext;
 use crate::db::Db;
-use crate::models::AdminSettings;
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::serde::Serialize;

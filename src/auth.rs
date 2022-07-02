@@ -29,14 +29,7 @@ async fn get_login(mut db: Connection<Db>, user: Option<User>) -> Result<Templat
 }
 
 #[post("/login", data = "<form>")]
-async fn post_login(
-    mut db: Connection<Db>,
-    auth: Auth<'_>,
-    form: Form<Login>,
-) -> Result<Redirect, String> {
-    let base_context = BaseContext::raw(&mut db, None, None)
-        .await
-        .map_err(|_| "failed to get base template.")?;
+async fn post_login(auth: Auth<'_>, form: Form<Login>) -> Result<Redirect, String> {
     let result = auth.login(&form).await.map_err(|_| "failed to login.")?;
     println!("login attempt: {:?}", result);
     // result?;
