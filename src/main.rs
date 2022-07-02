@@ -4,6 +4,7 @@ extern crate rocket;
 #[cfg(test)]
 mod tests;
 
+mod about;
 mod account;
 mod admin;
 mod auth;
