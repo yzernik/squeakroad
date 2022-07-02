@@ -9,10 +9,10 @@ use rocket_dyn_templates::Template;
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
 pub struct BaseContext {
-    pub user: Option<User>,
-    pub account_info: Option<AccountInfo>,
-    pub admin_user: Option<AdminUser>,
-    pub admin_settings: Option<AdminSettings>,
+    user: Option<User>,
+    account_info: Option<AccountInfo>,
+    admin_user: Option<AdminUser>,
+    admin_settings: Option<AdminSettings>,
 }
 
 impl BaseContext {

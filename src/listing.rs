@@ -19,6 +19,8 @@ struct Context {
     listing_display: Option<ListingDisplay>,
     selected_shipping_option: Option<ShippingOption>,
     quantity_in_stock: u32,
+    user: Option<User>,
+    admin_user: Option<AdminUser>,
 }
 
 impl Context {
@@ -78,6 +80,8 @@ impl Context {
             listing_display: Some(listing_display),
             selected_shipping_option: maybe_shipping_option,
             quantity_in_stock,
+            user,
+            admin_user,
         })
     }
 }

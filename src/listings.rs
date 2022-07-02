@@ -52,8 +52,6 @@ impl Context {
         let listing_cards = ListingCardDisplay::all_approved(&mut db)
             .await
             .map_err(|_| "failed to update market name.")?;
-        println!("base_context: {:?}", base_context);
-        println!("base_context.user: {:?}", base_context.user);
         Ok(Context {
             base_context,
             flash,
