@@ -2,7 +2,7 @@ use crate::base::BaseContext;
 use crate::config::Config;
 use crate::db::Db;
 use crate::lightning;
-use crate::models::{Listing, ListingDisplay, Order, OrderInfo, ShippingOption};
+use crate::models::{AccountInfo, Listing, ListingDisplay, Order, OrderInfo, ShippingOption};
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
 use rocket::request::FlashMessage;
@@ -23,6 +23,7 @@ use std::time::UNIX_EPOCH;
 struct Context {
     base_context: BaseContext,
     flash: Option<(String, String)>,
+    account_balance_sat: u64,
 }
 
 impl Context {
@@ -35,9 +36,17 @@ impl Context {
         let base_context = BaseContext::raw(&mut db, Some(user.clone()), admin_user.clone())
             .await
             .map_err(|_| "failed to get base template.")?;
+        let account_balance_changes = AccountInfo::all_account_balance_changes(&mut db, user.id)
+            .await
+            .map_err(|_| "failed to get account balance changes.")?;
+        let account_balance_sat = account_balance_changes
+            .iter()
+            .map(|c| c.amount_change_sat)
+            .sum();
         Ok(Context {
             base_context,
             flash,
+            account_balance_sat,
         })
     }
 }
