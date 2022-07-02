@@ -13,8 +13,6 @@ use rocket_dyn_templates::Template;
 struct Context {
     flash: Option<(String, String)>,
     user: User,
-    amount_earned: u64,
-    amount_refunded: u64,
     admin_user: Option<AdminUser>,
     account_info: AccountInfo,
     admin_settings: Option<AdminSettings>,
@@ -27,12 +25,6 @@ impl Context {
         user: User,
         admin_user: Option<AdminUser>,
     ) -> Result<Context, String> {
-        let amount_earned = Order::amount_earned_sat(&mut db, user.id())
-            .await
-            .map_err(|_| "failed to get amount earned.")?;
-        let amount_refunded = Order::amount_refunded_sat(&mut db, user.id())
-            .await
-            .map_err(|_| "failed to get amount refunded.")?;
         let account_info = AccountInfo::account_info_for_user(&mut db, user.id())
             .await
             .map_err(|_| "failed to get account info.")?;
@@ -42,8 +34,6 @@ impl Context {
         Ok(Context {
             flash,
             user,
-            amount_earned,
-            amount_refunded,
             account_info,
             admin_user,
             admin_settings: Some(admin_settings),

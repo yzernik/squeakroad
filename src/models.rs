@@ -176,6 +176,9 @@ pub struct OrderCard {
 #[derive(Serialize, Debug, Clone)]
 #[serde(crate = "rocket::serde")]
 pub struct AccountInfo {
+    pub amount_earned_sat: u64,
+    pub amount_refunded_sat: u64,
+    pub amount_withdrawn_sat: u64,
     pub account_balance_sat: u64,
 }
 
@@ -1854,6 +1857,9 @@ impl AccountInfo {
         let amount_refunded = Order::amount_refunded_sat(db, user_id).await?;
         let account_balance_sat = amount_earned + amount_refunded;
         let account_info = AccountInfo {
+            amount_earned_sat: amount_earned,
+            amount_refunded_sat: amount_refunded,
+            amount_withdrawn_sat: 0, // TODO.
             account_balance_sat: account_balance_sat,
         };
 
