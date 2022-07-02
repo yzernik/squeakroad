@@ -7,6 +7,7 @@ mod tests;
 mod account;
 mod admin;
 mod auth;
+mod base;
 mod config;
 mod db;
 mod lightning;
