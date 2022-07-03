@@ -36,13 +36,10 @@ impl Context {
         let base_context = BaseContext::raw(&mut db, Some(user.clone()), admin_user.clone())
             .await
             .map_err(|_| "failed to get base template.")?;
-        let account_balance_changes = AccountInfo::all_account_balance_changes(&mut db, user.id)
+        let account_info = AccountInfo::account_info_for_user(&mut db, user.id)
             .await
-            .map_err(|_| "failed to get account balance changes.")?;
-        let account_balance_sat = account_balance_changes
-            .iter()
-            .map(|c| c.amount_change_sat)
-            .sum();
+            .map_err(|_| "failed to get account info.")?;
+        let account_balance_sat = account_info.account_balance_sat;
         Ok(Context {
             base_context,
             flash,
@@ -116,14 +113,10 @@ async fn withdraw(
         let decoded_pay_req = decoded_pay_req_resp.into_inner();
         let amount_sat: u64 = decoded_pay_req.num_satoshis.try_into().unwrap();
 
-        let account_balance_changes = AccountInfo::all_account_balance_changes(db, user.id)
+        let account_info = AccountInfo::account_info_for_user(db, user.id)
             .await
-            .map_err(|_| "failed to get account balance changes.")?;
-        let account_balance_sat: i64 = account_balance_changes
-            .iter()
-            .map(|c| c.amount_change_sat)
-            .sum();
-        let account_balance_sat_u64: u64 = account_balance_sat.try_into().unwrap();
+            .map_err(|_| "failed to get account info.")?;
+        let account_balance_sat_u64: u64 = account_info.account_balance_sat.try_into().unwrap();
 
         if amount_sat > account_balance_sat_u64 {
             Err("Insufficient funds in account.".to_string())
