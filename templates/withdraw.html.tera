@@ -14,7 +14,7 @@
 
     <h3>Withdraw</h3>
 
-    <p>Account Balance: {{ account_balance_sat }} sats</p>
+    <p><b>Account Balance</b>: {{ account_balance_sat }} sats</p>
     <p><a href="/my_account_balance">View Account Balance</a></p>
 
     <form action="/withdraw/new" method="post">

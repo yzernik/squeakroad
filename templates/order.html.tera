@@ -16,15 +16,17 @@
 
     <h3>Order</h3>
 
-    <p>Order id: {{ order.public_id }}</p>
-    <p>Listing: <a href="/listing/{{ listing.public_id }}">{{ listing.title }}</a> ({{ listing.price_sat }} sats)</p>
-    <p>Shipping option: {{ shipping_option.title }} ({{ shipping_option.price_sat }} sats)</p>
-    <p>Shipping option description: {{ shipping_option.description }}</p>
-    <p>Quantity: {{ order.quantity }}</p>
-    <p>Payment amount: {{ order.quantity }} x ({{ listing.price_sat }} + {{ shipping_option.price_sat }}) = {{ order.amount_owed_sat }} sats</p>
-    <p>Shipping instructions: {{ order.shipping_instructions }}</p>
-    <p>Order status: {% if order.paid %}{% if order.completed %}Completed{% else %}Paid but not completed (funds credited back to your account){% endif %}{% else %}Not paid{% endif %}</p>
-    <p>Payment request:
+    <p><b>Order id</b>: {{ order.public_id }}</p>
+    <p><b>Listing</b>: <a href="/listing/{{ listing.public_id }}">{{ listing.title }}</a> ({{ listing.price_sat }} sats)</p>
+    <p><b>Shipping option</b>: {{ shipping_option.title }} ({{ shipping_option.price_sat }} sats)</p>
+    <p><b>Shipping option description</b>: {{ shipping_option.description }}</p>
+    <p><b>Quantity</b>: {{ order.quantity }}</p>
+    <p><b>Payment amount</b>: {{ order.quantity }} x ({{ listing.price_sat }} + {{ shipping_option.price_sat }}) = {{ order.amount_owed_sat }} sats</p>
+    {% if order.user_id == user.id or listing.user_id == user.id or admin_user %}
+    <p><b>Shipping instructions</b>: {{ order.shipping_instructions }}</p>
+    {% endif %}
+    <p><b>Order status</b>: {% if order.paid %}{% if order.completed %}Completed{% else %}Paid but not completed (funds credited back to buyer account){% endif %}{% else %}Not paid{% endif %}</p>
+    <p><b>Payment request</b>:
       <pre>
 	{{ order.invoice_payment_request }}
       </pre>
