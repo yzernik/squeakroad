@@ -2,7 +2,7 @@ use crate::base::BaseContext;
 use crate::config::Config;
 use crate::db::Db;
 use crate::lightning;
-use crate::models::{AccountInfo, Listing, ListingDisplay, ShippingOption, WithdrawalInfo};
+use crate::models::{AccountInfo, Withdrawal, WithdrawalInfo};
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
 use rocket::request::FlashMessage;
@@ -70,7 +70,7 @@ async fn new(
     )
     .await
     {
-        Ok(withdrawal_id) => Ok(Flash::success(
+        Ok(_) => Ok(Flash::success(
             Redirect::to("/my_account_balance"),
             "Funds successfully withdrawn.",
         )),
@@ -103,9 +103,8 @@ async fn withdraw(
         .await
         .expect("failed to get lightning client");
         let decoded_pay_req_resp = lighting_client
-            // All calls require at least empty parameter
             .decode_pay_req(tonic_lnd::rpc::PayReqString {
-                pay_req: withdrawal_info.invoice_payment_request,
+                pay_req: withdrawal_info.invoice_payment_request.clone(),
                 ..tonic_lnd::rpc::PayReqString::default()
             })
             .await
@@ -130,7 +129,35 @@ async fn withdraw(
         } else if user.is_admin {
             Err("Admin user cannot withdraw funds.".to_string())
         } else {
-            Ok("Fooo".to_string())
+            let send_payment_resp = lighting_client
+                .send_payment_sync(tonic_lnd::rpc::SendRequest {
+                    payment_request: withdrawal_info.invoice_payment_request.clone(),
+                    ..tonic_lnd::rpc::SendRequest::default()
+                })
+                .await
+                .map_err(|e| format!("failed to send payment: {:?}", e))?;
+            let send_response = send_payment_resp.into_inner();
+            let now = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_millis() as u64;
+            let withdrawal = Withdrawal {
+                id: None,
+                public_id: Uuid::new_v4().to_string(),
+                user_id: user.id(),
+                amount_sat: amount_sat,
+                invoice_hash: hex::encode(send_response.payment_hash),
+                invoice_payment_request: withdrawal_info.invoice_payment_request,
+                created_time_ms: now,
+            };
+
+            match Withdrawal::insert(withdrawal, db).await {
+                Ok(_) => Ok("Inserted.".to_string()),
+                Err(e) => {
+                    error_!("DB insertion error: {}", e);
+                    Err("Order could not be inserted due an internal error.".to_string())
+                }
+            }
         }
 
         // let order = Order {

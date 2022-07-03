@@ -1449,12 +1449,6 @@ GROUP BY
                 .await?;
         println!("maybe_order: {:?}", maybe_order);
 
-        let maybe_order_2 =
-            sqlx::query!("select * from orders WHERE invoice_hash = ?;", invoice_hash)
-                .fetch_optional(&mut tx)
-                .await?;
-        println!("maybe_order_2: {:?}", maybe_order_2);
-
         if let Some(order) = maybe_order {
             println!("set order as paid here...");
             sqlx::query!("UPDATE orders SET paid = true WHERE id = ?", order.id,)
