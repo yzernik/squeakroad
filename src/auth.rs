@@ -37,11 +37,13 @@ async fn post_login(auth: Auth<'_>, form: Form<Login>) -> Result<Redirect, Strin
 }
 
 #[get("/signup")]
-async fn get_signup(mut db: Connection<Db>, user: Option<User>) -> Result<Template, Error> {
-    let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default()).await?;
+async fn get_signup(mut db: Connection<Db>, user: Option<User>) -> Result<Template, String> {
+    let base_context = BaseContext::raw(&mut db, user.clone(), None)
+        .await
+        .map_err(|_| "failed to get base template.")?;
     Ok(Template::render(
         "signup",
-        json!({ "admin_settings": admin_settings, "user": user }),
+        json!({ "base_context": base_context }),
     ))
 }
 
