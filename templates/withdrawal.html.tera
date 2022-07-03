@@ -16,9 +16,9 @@
 
     <h3>Withdrawal</h3>
 
-    <p>Withdrawal id: {{ withdrawal.public_id }}</p>
-    <p>Invoice hash: {{ withdrawal.invoice_hash }} sats</p>
-    <p>Amount: {{ withdrawal.amount_sat }} sats</p>
+    <p><b>Withdrawal id</b>: {{ withdrawal.public_id }}</p>
+    <p><b>Invoice hash</b>: {{ withdrawal.invoice_hash }} sats</p>
+    <p><b>Amount</b>: {{ withdrawal.amount_sat }} sats</p>
 
   </div>
 </div>

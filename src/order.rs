@@ -18,6 +18,7 @@ struct Context {
     listing: Listing,
     shipping_option: ShippingOption,
     user: User,
+    admin_user: Option<AdminUser>,
 }
 
 impl Context {
@@ -48,6 +49,7 @@ impl Context {
             listing,
             shipping_option,
             user,
+            admin_user,
         })
     }
 }
