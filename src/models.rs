@@ -176,20 +176,34 @@ pub struct OrderCard {
 #[derive(Serialize, Debug, Clone)]
 #[serde(crate = "rocket::serde")]
 pub struct AccountInfo {
-    pub amount_earned_sat: u64,
-    pub amount_refunded_sat: u64,
-    pub amount_withdrawn_sat: u64,
-    pub account_balance_sat: u64,
+    pub account_balance_sat: i64,
 }
 
 #[derive(Serialize, Debug, Clone)]
 #[serde(crate = "rocket::serde")]
 pub struct AccountBalanceChange {
     pub user_id: String,
-    pub amount_change_sat: u64,
+    pub amount_change_sat: i64,
     pub event_type: String,
     pub event_id: String,
     pub event_time_ms: u64,
+}
+
+#[derive(Serialize, Debug, Clone)]
+#[serde(crate = "rocket::serde")]
+pub struct Withdrawal {
+    pub id: Option<i32>,
+    pub public_id: String,
+    pub user_id: i32,
+    pub amount_sat: u64,
+    pub invoice_hash: String,
+    pub invoice_payment_request: String,
+    pub created_time_ms: u64,
+}
+
+#[derive(Debug, FromForm, Clone)]
+pub struct WithdrawalInfo {
+    pub invoice_payment_request: String,
 }
 
 impl Listing {
@@ -1432,12 +1446,6 @@ GROUP BY
                 .await?;
         println!("maybe_order: {:?}", maybe_order);
 
-        let maybe_order_2 =
-            sqlx::query!("select * from orders WHERE invoice_hash = ?;", invoice_hash)
-                .fetch_optional(&mut tx)
-                .await?;
-        println!("maybe_order_2: {:?}", maybe_order_2);
-
         if let Some(order) = maybe_order {
             println!("set order as paid here...");
             sqlx::query!("UPDATE orders SET paid = true WHERE id = ?", order.id,)
@@ -1863,17 +1871,14 @@ impl AccountInfo {
         db: &mut Connection<Db>,
         user_id: i32,
     ) -> Result<AccountInfo, sqlx::Error> {
-        let amount_earned = Order::amount_earned_sat(db, user_id).await?;
-        let amount_refunded = Order::amount_refunded_sat(db, user_id).await?;
-        let account_balance_sat = amount_earned + amount_refunded;
-        let account_info = AccountInfo {
-            amount_earned_sat: amount_earned,
-            amount_refunded_sat: amount_refunded,
-            amount_withdrawn_sat: 0, // TODO.
+        let account_balance_changes = AccountInfo::all_account_balance_changes(db, user_id).await?;
+        let account_balance_sat: i64 = account_balance_changes
+            .iter()
+            .map(|c| c.amount_change_sat)
+            .sum();
+        Ok(AccountInfo {
             account_balance_sat: account_balance_sat,
-        };
-
-        Ok(account_info)
+        })
     }
 
     pub async fn all_account_balance_changes(
@@ -1905,17 +1910,23 @@ AND
  not orders.completed
 AND
  orders.user_id = ?
+UNION ALL
+select withdrawals.user_id as user_id, (0 - withdrawals.amount_sat) as amount_change_sat, 'withdrawal' as event_type, withdrawals.public_id as event_id, withdrawals.created_time_ms as event_time_ms
+from
+ withdrawals
+WHERE
+ withdrawals.user_id = ?
 ;",
-        user_id, user_id)
+        user_id, user_id, user_id)
             .fetch(&mut **db)
             .map_ok(|r| AccountBalanceChange {
-                user_id: r.user_id.to_string(),
-                amount_change_sat: r.amount_change_sat.try_into().unwrap(),
-                event_type: r.event_type,
-                event_id: r.event_id,
-                event_time_ms: r.event_time_ms.try_into().unwrap(),
-
-            })
+                    user_id: r.user_id.to_string(),
+                    amount_change_sat: r.amount_change_sat.try_into().unwrap(),
+                    event_type: r.event_type,
+                    event_id: r.event_id,
+                    event_time_ms: r.event_time_ms.try_into().unwrap(),
+                }
+            )
             .try_collect::<Vec<_>>()
             .await?;
 
@@ -1973,4 +1984,51 @@ AND
 
     //         Ok(account_balance)
     //     }
+}
+
+impl Withdrawal {
+    /// Returns the id of the inserted row.
+    pub async fn insert(
+        withdrawal: Withdrawal,
+        db: &mut Connection<Db>,
+    ) -> Result<i32, sqlx::Error> {
+        let amount_sat: i64 = withdrawal.amount_sat.try_into().unwrap();
+        let created_time_ms: i64 = withdrawal.created_time_ms.try_into().unwrap();
+
+        let insert_result = sqlx::query!(
+            "INSERT INTO withdrawals (public_id, user_id, amount_sat, invoice_hash, invoice_payment_request, created_time_ms) VALUES (?, ?, ?, ?, ?, ?)",
+            withdrawal.public_id,
+            withdrawal.user_id,
+            amount_sat,
+            withdrawal.invoice_hash,
+            withdrawal.invoice_payment_request,
+            created_time_ms,
+        )
+            .execute(&mut **db)
+            .await?;
+
+        println!("{:?}", insert_result);
+
+        Ok(insert_result.last_insert_rowid() as _)
+    }
+
+    pub async fn single_by_public_id(
+        db: &mut Connection<Db>,
+        public_id: &str,
+    ) -> Result<Withdrawal, sqlx::Error> {
+        let withdrawal = sqlx::query!("select * from withdrawals WHERE public_id = ?;", public_id)
+            .fetch_one(&mut **db)
+            .map_ok(|r| Withdrawal {
+                id: Some(r.id.try_into().unwrap()),
+                public_id: r.public_id,
+                user_id: r.user_id.try_into().unwrap(),
+                amount_sat: r.amount_sat.try_into().unwrap(),
+                invoice_hash: r.invoice_hash,
+                invoice_payment_request: r.invoice_payment_request,
+                created_time_ms: r.created_time_ms.try_into().unwrap(),
+            })
+            .await?;
+
+        Ok(withdrawal)
+    }
 }

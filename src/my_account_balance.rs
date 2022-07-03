@@ -14,7 +14,7 @@ use rocket_dyn_templates::Template;
 struct Context {
     base_context: BaseContext,
     flash: Option<(String, String)>,
-    account_balance_sat: u64,
+    account_balance_sat: i64,
     account_balance_changes: Vec<AccountBalanceChange>,
 }
 
@@ -31,12 +31,10 @@ impl Context {
         let account_balance_changes = AccountInfo::all_account_balance_changes(&mut db, user.id)
             .await
             .map_err(|_| "failed to get account balance changes.")?;
-        println!("account balance changes: {:?}", account_balance_changes);
-        let account_balance_sat = account_balance_changes
-            .iter()
-            .map(|c| c.amount_change_sat)
-            .sum();
-        println!("account balance sat: {:?}", account_balance_sat);
+        let account_info = AccountInfo::account_info_for_user(&mut db, user.id)
+            .await
+            .map_err(|_| "failed to get account info.")?;
+        let account_balance_sat = account_info.account_balance_sat;
         Ok(Context {
             base_context,
             flash,
