@@ -166,6 +166,7 @@ async fn create_order(
             public_id: Uuid::new_v4().to_string(),
             quantity: order_info.quantity,
             user_id: user.id(),
+            seller_user_id: listing.user_id,
             listing_id: listing.id.unwrap(),
             shipping_option_id: shipping_option.id.unwrap(),
             shipping_instructions: shipping_instructions.to_string(),
