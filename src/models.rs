@@ -176,9 +176,6 @@ pub struct OrderCard {
 #[derive(Serialize, Debug, Clone)]
 #[serde(crate = "rocket::serde")]
 pub struct AccountInfo {
-    pub amount_earned_sat: u64,
-    pub amount_refunded_sat: u64,
-    pub amount_withdrawn_sat: u64,
     pub account_balance_sat: i64,
 }
 
@@ -1874,17 +1871,14 @@ impl AccountInfo {
         db: &mut Connection<Db>,
         user_id: i32,
     ) -> Result<AccountInfo, sqlx::Error> {
-        let amount_earned = Order::amount_earned_sat(db, user_id).await?;
-        let amount_refunded = Order::amount_refunded_sat(db, user_id).await?;
-        let account_balance_sat = amount_earned + amount_refunded;
-        let account_info = AccountInfo {
-            amount_earned_sat: amount_earned,
-            amount_refunded_sat: amount_refunded,
-            amount_withdrawn_sat: 0, // TODO.
-            account_balance_sat: account_balance_sat as i64,
-        };
-
-        Ok(account_info)
+        let account_balance_changes = AccountInfo::all_account_balance_changes(db, user_id).await?;
+        let account_balance_sat: i64 = account_balance_changes
+            .iter()
+            .map(|c| c.amount_change_sat)
+            .sum();
+        Ok(AccountInfo {
+            account_balance_sat: account_balance_sat,
+        })
     }
 
     pub async fn all_account_balance_changes(
