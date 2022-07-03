@@ -1,13 +1,11 @@
 use crate::base::BaseContext;
 use crate::db::Db;
-use crate::models::AdminSettings;
 use rocket::fairing::AdHoc;
 use rocket::{form::*, get, post, response::Redirect, routes};
 use rocket_auth::{Auth, Error, Login, Signup, User};
 use rocket_db_pools::{sqlx, Connection};
 use rocket_dyn_templates::Template;
 use serde_json::json;
-use sqlx::query_as;
 use std::result::Result;
 
 pub type MyResult<T, E = rocket::response::Debug<sqlx::Error>> = std::result::Result<T, E>;
@@ -66,36 +64,28 @@ async fn logout(auth: Auth<'_>, mut db: Connection<Db>) -> Result<Template, Stri
     ))
 }
 
-#[get("/delete")]
-async fn delete_auth(auth: Auth<'_>) -> Result<Template, Error> {
-    auth.delete().await?;
-    Ok(Template::render("deleted", json!({})))
-}
+// #[get("/delete")]
+// async fn delete_auth(auth: Auth<'_>) -> Result<Template, Error> {
+//     auth.delete().await?;
+//     Ok(Template::render("deleted", json!({})))
+// }
 
-#[get("/show_all_users")]
-async fn show_all_users(mut db: Connection<Db>, user: Option<User>) -> Result<Template, Error> {
-    let users: Vec<User> = query_as("select * from users;").fetch_all(&mut *db).await?;
-    let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default()).await?;
-    println!("{:?}", users);
-    Ok(Template::render(
-        "users",
-        json!({"users": users, "user": user, "admin_settings": admin_settings}),
-    ))
-}
+// #[get("/show_all_users")]
+// async fn show_all_users(mut db: Connection<Db>, user: Option<User>) -> Result<Template, Error> {
+//     let users: Vec<User> = query_as("select * from users;").fetch_all(&mut *db).await?;
+//     let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default()).await?;
+//     println!("{:?}", users);
+//     Ok(Template::render(
+//         "users",
+//         json!({"users": users, "user": user, "admin_settings": admin_settings}),
+//     ))
+// }
 
 pub fn auth_stage() -> AdHoc {
     AdHoc::on_ignite("Auth Stage", |rocket| async {
         rocket.register("/", catchers![not_authorized]).mount(
             "/",
-            routes![
-                get_login,
-                post_signup,
-                get_signup,
-                post_login,
-                logout,
-                delete_auth,
-                show_all_users,
-            ],
+            routes![get_login, post_signup, get_signup, post_login, logout,],
         )
     })
 }
