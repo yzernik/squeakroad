@@ -39,6 +39,8 @@ Account Balance: {{ account_info.account_balance_sat }} sats
     <a href="my_unpaid_orders">My Unpaid Orders</a>
     <br>
     <a href="my_completed_orders">My Completed Orders</a>
+    <br>
+    <a href="my_refunded_orders">My Refunded Orders</a>
   </div>
 </div>
 
