@@ -179,14 +179,14 @@ pub struct AccountInfo {
     pub amount_earned_sat: u64,
     pub amount_refunded_sat: u64,
     pub amount_withdrawn_sat: u64,
-    pub account_balance_sat: u64,
+    pub account_balance_sat: i64,
 }
 
 #[derive(Serialize, Debug, Clone)]
 #[serde(crate = "rocket::serde")]
 pub struct AccountBalanceChange {
     pub user_id: String,
-    pub amount_change_sat: u64,
+    pub amount_change_sat: i64,
     pub event_type: String,
     pub event_id: String,
     pub event_time_ms: u64,
@@ -1881,7 +1881,7 @@ impl AccountInfo {
             amount_earned_sat: amount_earned,
             amount_refunded_sat: amount_refunded,
             amount_withdrawn_sat: 0, // TODO.
-            account_balance_sat: account_balance_sat,
+            account_balance_sat: account_balance_sat as i64,
         };
 
         Ok(account_info)
@@ -1916,17 +1916,23 @@ AND
  not orders.completed
 AND
  orders.user_id = ?
+UNION ALL
+select withdrawals.user_id as user_id, (0 - withdrawals.amount_sat) as amount_change_sat, 'withdrawal' as event_type, withdrawals.public_id as event_id, withdrawals.created_time_ms as event_time_ms
+from
+ withdrawals
+WHERE
+ withdrawals.user_id = ?
 ;",
-        user_id, user_id)
+        user_id, user_id, user_id)
             .fetch(&mut **db)
             .map_ok(|r| AccountBalanceChange {
-                user_id: r.user_id.to_string(),
-                amount_change_sat: r.amount_change_sat.try_into().unwrap(),
-                event_type: r.event_type,
-                event_id: r.event_id,
-                event_time_ms: r.event_time_ms.try_into().unwrap(),
-
-            })
+                    user_id: r.user_id.to_string(),
+                    amount_change_sat: r.amount_change_sat.try_into().unwrap(),
+                    event_type: r.event_type,
+                    event_id: r.event_id,
+                    event_time_ms: r.event_time_ms.try_into().unwrap(),
+                }
+            )
             .try_collect::<Vec<_>>()
             .await?;
 

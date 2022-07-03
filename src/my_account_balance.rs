@@ -14,7 +14,7 @@ use rocket_dyn_templates::Template;
 struct Context {
     base_context: BaseContext,
     flash: Option<(String, String)>,
-    account_balance_sat: u64,
+    account_balance_sat: i64,
     account_balance_changes: Vec<AccountBalanceChange>,
 }
 

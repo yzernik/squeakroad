@@ -23,7 +23,7 @@ use std::time::UNIX_EPOCH;
 struct Context {
     base_context: BaseContext,
     flash: Option<(String, String)>,
-    account_balance_sat: u64,
+    account_balance_sat: i64,
 }
 
 impl Context {
@@ -119,12 +119,13 @@ async fn withdraw(
         let account_balance_changes = AccountInfo::all_account_balance_changes(db, user.id)
             .await
             .map_err(|_| "failed to get account balance changes.")?;
-        let account_balance_sat: u64 = account_balance_changes
+        let account_balance_sat: i64 = account_balance_changes
             .iter()
             .map(|c| c.amount_change_sat)
             .sum();
+        let account_balance_sat_u64: u64 = account_balance_sat.try_into().unwrap();
 
-        if amount_sat > account_balance_sat {
+        if amount_sat > account_balance_sat_u64 {
             Err("Insufficient funds in account.".to_string())
         } else if user.is_admin {
             Err("Admin user cannot withdraw funds.".to_string())
