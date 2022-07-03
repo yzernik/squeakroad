@@ -1988,19 +1988,15 @@ impl AccountInfo {
     ) -> Result<Vec<AccountBalanceChange>, sqlx::Error> {
         // TODO: Order by event time in SQL query. When this is fixed: https://github.com/launchbadge/sqlx/issues/1350
         let mut account_balance_changes = sqlx::query!("
-select listings.user_id as user_id, orders.seller_credit_sat as amount_change_sat, 'received_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
+select orders.seller_user_id as user_id, orders.seller_credit_sat as amount_change_sat, 'received_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
 from
  orders
-LEFT JOIN
- listings
-ON
- orders.listing_id = listings.id
 WHERE
  orders.paid
 AND
  orders.completed
 AND
- listings.user_id = ?
+ orders.seller_user_id = ?
 UNION ALL
 select orders.user_id as user_id, orders.amount_owed_sat as amount_change_sat, 'refunded_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
 from
