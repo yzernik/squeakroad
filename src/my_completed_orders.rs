@@ -27,9 +27,9 @@ impl Context {
         let base_context = BaseContext::raw(&mut db, Some(user.clone()), admin_user.clone())
             .await
             .map_err(|_| "failed to get base template.")?;
-        let order_cards = OrderCard::all_paid_for_user(&mut db, user.id)
+        let order_cards = OrderCard::all_completed_for_user(&mut db, user.id)
             .await
-            .map_err(|_| "failed to get paid orders.")?;
+            .map_err(|_| "failed to get completed orders.")?;
         Ok(Context {
             base_context,
             flash,
@@ -47,14 +47,14 @@ async fn index(
 ) -> Result<Template, NotFound<String>> {
     let flash = flash.map(FlashMessage::into_inner);
     Ok(Template::render(
-        "mypaidorders",
+        "mycompletedorders",
         Context::raw(flash, db, user, admin_user).await,
     ))
 }
 
-pub fn my_paid_orders_stage() -> AdHoc {
-    AdHoc::on_ignite("My Paid Orders Stage", |rocket| async {
-        rocket.mount("/my_paid_orders", routes![index])
+pub fn my_completed_orders_stage() -> AdHoc {
+    AdHoc::on_ignite("My Completed Orders Stage", |rocket| async {
+        rocket.mount("/my_completed_orders", routes![index])
         // .mount("/listing", routes![new])
     })
 }
