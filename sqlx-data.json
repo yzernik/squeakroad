@@ -1174,6 +1174,60 @@
     },
     "query": "select * from listings WHERE id = ?;"
   },
+  "9dd7bf9e971edc81b99d1d329acfddeda496abc66d282a60e07058102b149ff2": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "public_id",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "amount_sat",
+          "ordinal": 3,
+          "type_info": "Int64"
+        },
+        {
+          "name": "created_time_ms",
+          "ordinal": 4,
+          "type_info": "Int64"
+        },
+        {
+          "name": "invoice_hash",
+          "ordinal": 5,
+          "type_info": "Text"
+        },
+        {
+          "name": "invoice_payment_request",
+          "ordinal": 6,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "select * from withdrawals WHERE public_id = ?;"
+  },
   "9e14312c15d36689877f8149adc275e6d1a8b3d33875ac3476a922bbf2d8ac89": {
     "describe": {
       "columns": [

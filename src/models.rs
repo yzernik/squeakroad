@@ -2011,4 +2011,24 @@ impl Withdrawal {
 
         Ok(insert_result.last_insert_rowid() as _)
     }
+
+    pub async fn single_by_public_id(
+        db: &mut Connection<Db>,
+        public_id: &str,
+    ) -> Result<Withdrawal, sqlx::Error> {
+        let withdrawal = sqlx::query!("select * from withdrawals WHERE public_id = ?;", public_id)
+            .fetch_one(&mut **db)
+            .map_ok(|r| Withdrawal {
+                id: Some(r.id.try_into().unwrap()),
+                public_id: r.public_id,
+                user_id: r.user_id.try_into().unwrap(),
+                amount_sat: r.amount_sat.try_into().unwrap(),
+                invoice_hash: r.invoice_hash,
+                invoice_payment_request: r.invoice_payment_request,
+                created_time_ms: r.created_time_ms.try_into().unwrap(),
+            })
+            .await?;
+
+        Ok(withdrawal)
+    }
 }
