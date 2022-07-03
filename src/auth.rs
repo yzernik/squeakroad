@@ -53,12 +53,14 @@ async fn post_signup(auth: Auth<'_>, form: Form<Signup>) -> Result<Redirect, Err
 }
 
 #[get("/logout")]
-async fn logout(auth: Auth<'_>, mut db: Connection<Db>) -> Result<Template, Error> {
-    auth.logout().await?;
-    let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default()).await?;
+async fn logout(auth: Auth<'_>, mut db: Connection<Db>) -> Result<Template, String> {
+    auth.logout().await.map_err(|_| "failed to logout.")?;
+    let base_context = BaseContext::raw(&mut db, None, None)
+        .await
+        .map_err(|_| "failed to get base template.")?;
     Ok(Template::render(
         "logout",
-        json!({ "admin_settings": admin_settings }),
+        json!({ "base_context": base_context }),
     ))
 }
 
