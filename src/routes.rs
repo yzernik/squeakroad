@@ -146,6 +146,7 @@ pub fn stage(config: Config) -> AdHoc {
             .attach(crate::posts::posts_stage())
             .attach(crate::auth::auth_stage())
             .attach(crate::admin::admin_stage())
+            .attach(crate::market_liabilities::market_liabilities_stage())
             .attach(crate::listings::listings_stage())
             .attach(crate::listing::listing_stage())
             .attach(crate::new_listing::new_listing_stage())

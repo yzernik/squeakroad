@@ -183,7 +183,7 @@ pub struct AccountInfo {
 #[derive(Serialize, Debug, Clone)]
 #[serde(crate = "rocket::serde")]
 pub struct AccountBalanceChange {
-    pub user_id: String,
+    pub username: String,
     pub amount_change_sat: i64,
     pub event_type: String,
     pub event_id: String,
@@ -1972,7 +1972,8 @@ impl AccountInfo {
         db: &mut Connection<Db>,
         user_id: i32,
     ) -> Result<AccountInfo, sqlx::Error> {
-        let account_balance_changes = AccountInfo::all_account_balance_changes(db, user_id).await?;
+        let account_balance_changes =
+            AccountInfo::all_account_balance_changes_for_user(db, user_id).await?;
         let account_balance_sat: i64 = account_balance_changes
             .iter()
             .map(|c| c.amount_change_sat)
@@ -1982,13 +1983,23 @@ impl AccountInfo {
         })
     }
 
-    pub async fn all_account_balance_changes(
+    pub async fn total_market_liabilities_sat(db: &mut Connection<Db>) -> Result<i64, sqlx::Error> {
+        let account_balance_changes = AccountInfo::all_account_balance_changes(db).await?;
+        let market_liabilities_sat: i64 = account_balance_changes
+            .iter()
+            .map(|c| c.amount_change_sat)
+            .sum();
+        Ok(market_liabilities_sat)
+    }
+
+    pub async fn all_account_balance_changes_for_user(
         db: &mut Connection<Db>,
         user_id: i32,
     ) -> Result<Vec<AccountBalanceChange>, sqlx::Error> {
         // TODO: Order by event time in SQL query. When this is fixed: https://github.com/launchbadge/sqlx/issues/1350
         let mut account_balance_changes = sqlx::query!("
-select orders.seller_user_id as user_id, orders.seller_credit_sat as amount_change_sat, 'received_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
+SELECT * FROM
+(select orders.seller_user_id as user_id, orders.seller_credit_sat as amount_change_sat, 'received_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
 from
  orders
 WHERE
@@ -2012,12 +2023,66 @@ select withdrawals.user_id as user_id, (0 - withdrawals.amount_sat) as amount_ch
 from
  withdrawals
 WHERE
- withdrawals.user_id = ?
+ withdrawals.user_id = ?)
+LEFT JOIN
+ users
+ON
+ user_id = users.id
 ;",
         user_id, user_id, user_id)
             .fetch(&mut **db)
             .map_ok(|r| AccountBalanceChange {
-                    user_id: r.user_id.to_string(),
+                    username: r.email.unwrap().to_string(),
+                    amount_change_sat: r.amount_change_sat.try_into().unwrap(),
+                    event_type: r.event_type,
+                    event_id: r.event_id,
+                    event_time_ms: r.event_time_ms.try_into().unwrap(),
+                }
+            )
+            .try_collect::<Vec<_>>()
+            .await?;
+
+        println!("{:?}", account_balance_changes);
+
+        // Sort by event time
+        account_balance_changes.sort_by(|a, b| b.event_time_ms.cmp(&a.event_time_ms));
+
+        Ok(account_balance_changes)
+    }
+
+    pub async fn all_account_balance_changes(
+        db: &mut Connection<Db>,
+    ) -> Result<Vec<AccountBalanceChange>, sqlx::Error> {
+        // TODO: Order by event time in SQL query. When this is fixed: https://github.com/launchbadge/sqlx/issues/1350
+        let mut account_balance_changes = sqlx::query!("
+SELECT * FROM
+(select orders.seller_user_id as user_id, orders.seller_credit_sat as amount_change_sat, 'received_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
+from
+ orders
+WHERE
+ orders.paid
+AND
+ orders.completed
+UNION ALL
+select orders.buyer_user_id as user_id, orders.amount_owed_sat as amount_change_sat, 'refunded_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
+from
+ orders
+WHERE
+ orders.paid
+AND
+ not orders.completed
+UNION ALL
+select withdrawals.user_id as user_id, (0 - withdrawals.amount_sat) as amount_change_sat, 'withdrawal' as event_type, withdrawals.public_id as event_id, withdrawals.created_time_ms as event_time_ms
+from
+ withdrawals)
+LEFT JOIN
+ users
+ON
+ user_id = users.id
+;")
+            .fetch(&mut **db)
+            .map_ok(|r| AccountBalanceChange {
+                    username: r.email.unwrap().to_string(),
                     amount_change_sat: r.amount_change_sat.try_into().unwrap(),
                     event_type: r.event_type,
                     event_id: r.event_id,

@@ -14,7 +14,7 @@ use rocket_dyn_templates::Template;
 struct Context {
     base_context: BaseContext,
     flash: Option<(String, String)>,
-    account_balance_sat: i64,
+    total_market_liabilities_sat: i64,
     account_balance_changes: Vec<AccountBalanceChange>,
 }
 
@@ -28,18 +28,16 @@ impl Context {
         let base_context = BaseContext::raw(&mut db, Some(user.clone()), admin_user.clone())
             .await
             .map_err(|_| "failed to get base template.")?;
-        let account_balance_changes =
-            AccountInfo::all_account_balance_changes_for_user(&mut db, user.id)
-                .await
-                .map_err(|_| "failed to get account balance changes.")?;
-        let account_info = AccountInfo::account_info_for_user(&mut db, user.id)
+        let account_balance_changes = AccountInfo::all_account_balance_changes(&mut db)
             .await
-            .map_err(|_| "failed to get account info.")?;
-        let account_balance_sat = account_info.account_balance_sat;
+            .map_err(|_| "failed to get account balance changes.")?;
+        let total_market_liabilities_sat = AccountInfo::total_market_liabilities_sat(&mut db)
+            .await
+            .map_err(|_| "failed to get total market liabilies.")?;
         Ok(Context {
             base_context,
             flash,
-            account_balance_sat,
+            total_market_liabilities_sat,
             account_balance_changes,
         })
     }
@@ -54,14 +52,14 @@ async fn index(
 ) -> Result<Template, NotFound<String>> {
     let flash = flash.map(FlashMessage::into_inner);
     Ok(Template::render(
-        "myaccountbalance",
+        "marketliabilities",
         Context::raw(flash, db, user, admin_user).await,
     ))
 }
 
-pub fn my_account_balance_stage() -> AdHoc {
-    AdHoc::on_ignite("My Account Balance Stage", |rocket| async {
-        rocket.mount("/my_account_balance", routes![index])
+pub fn market_liabilities_stage() -> AdHoc {
+    AdHoc::on_ignite("Market Liabilies Stage", |rocket| async {
+        rocket.mount("/market_liabilities", routes![index])
         // .mount("/listing", routes![new])
     })
 }
