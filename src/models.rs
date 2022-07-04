@@ -178,6 +178,7 @@ pub struct OrderCard {
 #[serde(crate = "rocket::serde")]
 pub struct AccountInfo {
     pub account_balance_sat: i64,
+    pub num_unread_messages: u32,
 }
 
 #[derive(Serialize, Debug, Clone)]
@@ -205,6 +206,31 @@ pub struct Withdrawal {
 #[derive(Debug, FromForm, Clone)]
 pub struct WithdrawalInfo {
     pub invoice_payment_request: String,
+}
+
+#[derive(Serialize, Debug, Clone)]
+#[serde(crate = "rocket::serde")]
+pub struct OrderMessage {
+    pub id: Option<i32>,
+    pub public_id: String,
+    pub order_id: i32,
+    pub author_id: i32,
+    pub recipient_id: i32,
+    pub text: String,
+    pub viewed: bool,
+    pub created_time_ms: u64,
+}
+
+#[derive(Debug, FromForm, Clone)]
+pub struct OrderMessageInput {
+    pub text: String,
+}
+
+#[derive(Serialize, Debug, Clone)]
+#[serde(crate = "rocket::serde")]
+pub struct OrderMessageCard {
+    pub order_message: OrderMessage,
+    pub order_public_id: Option<String>,
 }
 
 impl Listing {
@@ -1978,8 +2004,11 @@ impl AccountInfo {
             .iter()
             .map(|c| c.amount_change_sat)
             .sum();
+        let unread_messages = OrderMessage::all_unread_for_recipient(db, user_id).await?;
+        let num_unread_messages = unread_messages.len();
         Ok(AccountInfo {
             account_balance_sat: account_balance_sat,
+            num_unread_messages: num_unread_messages.try_into().unwrap(),
         })
     }
 
@@ -2192,5 +2221,164 @@ impl Withdrawal {
             .await?;
 
         Ok(withdrawal)
+    }
+}
+
+impl OrderMessage {
+    /// Returns the id of the inserted row.
+    pub async fn insert(
+        order_message: OrderMessage,
+        db: &mut Connection<Db>,
+    ) -> Result<i32, sqlx::Error> {
+        let created_time_ms: i64 = order_message.created_time_ms.try_into().unwrap();
+
+        let insert_result = sqlx::query!(
+            "INSERT INTO ordermessages (public_id, order_id, author_id, recipient_id, text, viewed, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            order_message.public_id,
+            order_message.order_id,
+            order_message.author_id,
+            order_message.recipient_id,
+            order_message.text,
+            order_message.viewed,
+            created_time_ms,
+        )
+            .execute(&mut **db)
+            .await?;
+
+        println!("{:?}", insert_result);
+
+        Ok(insert_result.last_insert_rowid() as _)
+    }
+
+    pub async fn single_by_public_id(
+        db: &mut Connection<Db>,
+        public_id: &str,
+    ) -> Result<OrderMessage, sqlx::Error> {
+        let order_message = sqlx::query!(
+            "select * from ordermessages WHERE public_id = ?;",
+            public_id
+        )
+        .fetch_one(&mut **db)
+        .map_ok(|r| OrderMessage {
+            id: Some(r.id.try_into().unwrap()),
+            public_id: r.public_id,
+            order_id: r.order_id.try_into().unwrap(),
+            author_id: r.author_id.try_into().unwrap(),
+            recipient_id: r.recipient_id.try_into().unwrap(),
+            text: r.text,
+            viewed: r.viewed,
+            created_time_ms: r.created_time_ms.try_into().unwrap(),
+        })
+        .await?;
+
+        Ok(order_message)
+    }
+
+    pub async fn all_for_order(
+        db: &mut Connection<Db>,
+        order_id: i32,
+    ) -> Result<Vec<OrderMessage>, sqlx::Error> {
+        let order_messages = sqlx::query!(
+            "select * from ordermessages WHERE order_id = ? ORDER BY ordermessages.created_time_ms ASC;",
+            order_id,
+        )
+        .fetch(&mut **db)
+        .map_ok(|r| OrderMessage {
+            id: r.id.map(|n| n.try_into().unwrap()),
+            public_id: r.public_id,
+            order_id: r.order_id.try_into().unwrap(),
+            author_id: r.author_id.try_into().unwrap(),
+            recipient_id: r.recipient_id.try_into().unwrap(),
+            text: r.text,
+            viewed: r.viewed,
+            created_time_ms: r.created_time_ms.try_into().unwrap(),
+        })
+        .try_collect::<Vec<_>>()
+        .await?;
+
+        Ok(order_messages)
+    }
+
+    pub async fn all_unread_for_recipient(
+        db: &mut Connection<Db>,
+        user_id: i32,
+    ) -> Result<Vec<OrderMessageCard>, sqlx::Error> {
+        let order_messages = sqlx::query!(
+            "
+select ordermessages.id, ordermessages.public_id, ordermessages.order_id, ordermessages.author_id, ordermessages.recipient_id, ordermessages.text, ordermessages.viewed, ordermessages.created_time_ms, orders.public_id as order_public_id
+FROM
+ ordermessages
+LEFT JOIN
+ orders
+ON
+ ordermessages.order_id = orders.id
+WHERE
+ not viewed
+AND
+ recipient_id = ?
+ORDER BY ordermessages.created_time_ms ASC;",
+            user_id,
+        )
+        .fetch(&mut **db)
+        .map_ok(|r|  {
+            let om = OrderMessage {
+                id: r.id.map(|n| n.try_into().unwrap()),
+                public_id: r.public_id,
+                order_id: r.order_id.try_into().unwrap(),
+                author_id: r.author_id.try_into().unwrap(),
+                recipient_id: r.recipient_id.try_into().unwrap(),
+                text: r.text,
+                viewed: r.viewed,
+                created_time_ms: r.created_time_ms.try_into().unwrap(),
+            };
+            let opid = r.order_public_id.try_into().unwrap();
+            OrderMessageCard {
+                order_message: om,
+                order_public_id: opid,
+            }
+        })
+        .try_collect::<Vec<_>>()
+        .await?;
+
+        Ok(order_messages)
+    }
+
+    pub async fn number_for_order_for_user_since_ms(
+        db: &mut Connection<Db>,
+        order_id: i32,
+        user_id: i32,
+        start_time_ms: u64,
+    ) -> Result<u32, sqlx::Error> {
+        let start_time_ms_i64: i64 = start_time_ms.try_into().unwrap();
+
+        let message_count = sqlx::query!(
+            "
+select count(id) as message_count from ordermessages
+WHERE
+ order_id = ?
+AND
+ author_id = ?
+AND
+ created_time_ms > ?
+ORDER BY ordermessages.created_time_ms ASC;",
+            order_id,
+            user_id,
+            start_time_ms_i64,
+        )
+        .fetch_one(&mut **db)
+        .map_ok(|r| r.message_count)
+        .await?;
+
+        Ok(message_count.try_into().unwrap())
+    }
+
+    pub async fn mark_as_read(db: &mut Connection<Db>, public_id: &str) -> Result<(), sqlx::Error> {
+        sqlx::query!(
+            "UPDATE ordermessages SET viewed = true WHERE public_id = ?",
+            public_id,
+        )
+        .execute(&mut **db)
+        .await?;
+        Ok(())
     }
 }

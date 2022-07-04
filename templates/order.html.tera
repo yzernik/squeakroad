@@ -6,37 +6,86 @@
   <p><!--Nothing to see here --></p>
 
   <div class="row">
+    <div class="one-half column">
+
+      <div class="row">
+
+	{% if flash %}
+	<small class="field-{{flash.0}}-msg">
+	  {{ flash.1 }}
+	</small>
+	{% endif %}
+
+	<h3>Order</h3>
+
+	<p><b>Order id</b>: {{ order.public_id }}</p>
+	<p><b>Listing</b>: <a href="/listing/{{ listing.public_id }}">{{ listing.title }}</a> ({{ listing.price_sat }} sats)</p>
+	<p><b>Shipping option</b>: {{ shipping_option.title }} ({{ shipping_option.price_sat }} sats)</p>
+	<p><b>Shipping option description</b>: {{ shipping_option.description }}</p>
+	<p><b>Quantity</b>: {{ order.quantity }}</p>
+	<p><b>Payment amount</b>: {{ order.quantity }} x ({{ listing.price_sat }} sats + {{ shipping_option.price_sat }} sats) = {{ order.amount_owed_sat }} sats</p>
+	<p><b>Market fee amount</b>: {{ listing.fee_rate_basis_points / 10000 }} x {{ order.amount_owed_sat }} sats = {{ order.amount_owed_sat - order.seller_credit_sat }} sats</p>
+	<p><b>Seller credit amount</b>: {{ order.amount_owed_sat }} sats - {{ order.amount_owed_sat - order.seller_credit_sat }} sats = {{ order.seller_credit_sat }} sats</p>
+	{% if order.buyer_user_id == user.id or order.seller_user_id == user.id or admin_user %}
+	<p><b>Shipping instructions</b>: {{ order.shipping_instructions }}</p>
+	{% endif %}
+	<p><b>Order status</b>: {% if order.paid %}{% if order.completed %}Completed{% else %}Paid but not completed (funds credited back to buyer account){% endif %}{% else %}Not paid{% endif %}</p>
+	{% if order.buyer_user_id == user.id and not order.paid %}
+	<p><b>Payment request</b>:
+	  <pre>
+	    {{ order.invoice_payment_request }}
+	  </pre>
+	</p>
+	{% endif %}
+
+      </div>
 
 
-    {% if flash %}
-    <small class="field-{{flash.0}}-msg">
-      {{ flash.1 }}
-    </small>
-    {% endif %}
+      {% if order.buyer_user_id == user.id or order.seller_user_id == user.id or admin_user %}
+      <div class="row">
 
-    <h3>Order</h3>
+	<h4>Messages</h4>
+	<form action="/order/{{ order.public_id }}/new_message" method="post">
+	  <div class="ten columns">
+            <input type="text" placeholder="enter a new message..."
+		   name="text" id="text" value=""
+		   class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" />
+            {% if flash %}
+            <small class="field-{{flash.0}}-msg">
+              {{ flash.1 }}
+            </small>
+            {% endif %}
+	  </div>
+	  <div class="two columns">
+            <input type="submit" value="add message">
+	  </div>
+	</form>
 
-    <p><b>Order id</b>: {{ order.public_id }}</p>
-    <p><b>Listing</b>: <a href="/listing/{{ listing.public_id }}">{{ listing.title }}</a> ({{ listing.price_sat }} sats)</p>
-    <p><b>Shipping option</b>: {{ shipping_option.title }} ({{ shipping_option.price_sat }} sats)</p>
-    <p><b>Shipping option description</b>: {{ shipping_option.description }}</p>
-    <p><b>Quantity</b>: {{ order.quantity }}</p>
-    <p><b>Payment amount</b>: {{ order.quantity }} x ({{ listing.price_sat }} sats + {{ shipping_option.price_sat }} sats) = {{ order.amount_owed_sat }} sats</p>
-    <p><b>Market fee amount</b>: {{ listing.fee_rate_basis_points / 10000 }} x {{ order.amount_owed_sat }} sats = {{ order.amount_owed_sat - order.seller_credit_sat }} sats</p>
-    <p><b>Seller credit amount</b>: {{ order.amount_owed_sat }} sats - {{ order.amount_owed_sat - order.seller_credit_sat }} sats = {{ order.seller_credit_sat }} sats</p>
-    {% if order.buyer_user_id == user.id or order.seller_user_id == user.id or admin_user %}
-    <p><b>Shipping instructions</b>: {{ order.shipping_instructions }}</p>
-    {% endif %}
-    <p><b>Order status</b>: {% if order.paid %}{% if order.completed %}Completed{% else %}Paid but not completed (funds credited back to buyer account){% endif %}{% else %}Not paid{% endif %}</p>
-    {% if order.buyer_user_id == user.id and not order.paid %}
-    <p><b>Payment request</b>:
-      <pre>
-	{{ order.invoice_payment_request }}
-      </pre>
-    </p>
-    {% endif %}
+	<ul>
+	  {% for order_message in order_messages %}
+	  <li>
+	    <br>
+            {% if order_message.author_id != user.id and not order_message.viewed %}
+	    <span><b>Unread</b></span>
+	    <form class="inline" action="/order/{{ order.public_id }}/message/{{ order_message.public_id }}/mark_read" method="post">
+              <input type="hidden" name="_method" value="put" />
+              <button class="link" type="submit">Mark as read</button>
+	    </form>
+	    {% endif %}
+	    <p><b>{% if order_message.author_id == order.seller_user_id %}Seller{% else %}Buyer{% endif %}</b>: {{ order_message.text }}</p>
+            <p>{{ (order_message.created_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}</p>
+	  </li>
+	  {% endfor %}
+	</ul>
 
+      </div>
+      {% endif %}
+
+
+    </div>
   </div>
+
+
 </div>
 
 

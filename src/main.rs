@@ -24,6 +24,7 @@ mod my_received_orders;
 mod my_refunded_orders;
 mod my_rejected_listings;
 mod my_unpaid_orders;
+mod my_unread_messages;
 mod my_unsubmitted_listings;
 mod new_listing;
 mod order;

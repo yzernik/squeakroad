@@ -1440,6 +1440,66 @@
     },
     "query": "DELETE FROM posts WHERE id = ?"
   },
+  "7a21312c763886061de64702fdaef47c97aa700b692e48cf9583282e5d13abcf": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "public_id",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "order_id",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "author_id",
+          "ordinal": 3,
+          "type_info": "Int64"
+        },
+        {
+          "name": "recipient_id",
+          "ordinal": 4,
+          "type_info": "Int64"
+        },
+        {
+          "name": "text",
+          "ordinal": 5,
+          "type_info": "Text"
+        },
+        {
+          "name": "viewed",
+          "ordinal": 6,
+          "type_info": "Bool"
+        },
+        {
+          "name": "created_time_ms",
+          "ordinal": 7,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "select * from ordermessages WHERE order_id = ? ORDER BY ordermessages.created_time_ms ASC;"
+  },
   "83f994a3f0b310e4faa8b4fb7e800ff508988f5edd5cb60ad635d71e1b398865": {
     "describe": {
       "columns": [],
@@ -2188,6 +2248,24 @@
     },
     "query": "INSERT INTO withdrawals (public_id, user_id, amount_sat, invoice_hash, invoice_payment_request, created_time_ms) VALUES (?, ?, ?, ?, ?, ?)"
   },
+  "adfcb2ec6919530a081168c8ed33d6bb3abac97897220b8dff8d39f54e636388": {
+    "describe": {
+      "columns": [
+        {
+          "name": "message_count",
+          "ordinal": 0,
+          "type_info": "Int"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 3
+      }
+    },
+    "query": "\nselect count(id) as message_count from ordermessages\nWHERE\n order_id = ?\nAND\n author_id = ?\nAND\n created_time_ms > ?\nORDER BY ordermessages.created_time_ms ASC;"
+  },
   "b26ae7c5b32514b2b055605b39373406f820c6534ec6583bb52b3c1ac00a6855": {
     "describe": {
       "columns": [],
@@ -2207,6 +2285,66 @@
       }
     },
     "query": "UPDATE listingimages SET is_primary = true WHERE listing_id = ? AND public_id = ?"
+  },
+  "b66bcebc1d9510bd2ebaa27e8cdc42af1602b8d019ab56c047b42d9ae185c463": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "public_id",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "order_id",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "author_id",
+          "ordinal": 3,
+          "type_info": "Int64"
+        },
+        {
+          "name": "recipient_id",
+          "ordinal": 4,
+          "type_info": "Int64"
+        },
+        {
+          "name": "text",
+          "ordinal": 5,
+          "type_info": "Text"
+        },
+        {
+          "name": "viewed",
+          "ordinal": 6,
+          "type_info": "Bool"
+        },
+        {
+          "name": "created_time_ms",
+          "ordinal": 7,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "select * from ordermessages WHERE public_id = ?;"
   },
   "bbefb4b6f1b18856c4fd308dbe010cfa552bc88cc482d2c5fa7e64d6400baf72": {
     "describe": {
@@ -2369,6 +2507,72 @@
       }
     },
     "query": "select * from adminsettings;"
+  },
+  "bfca3fa8de9e783de7f8feea112f089cd1b6efc28f60af12bef1ddace6409b4d": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "public_id",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "order_id",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "author_id",
+          "ordinal": 3,
+          "type_info": "Int64"
+        },
+        {
+          "name": "recipient_id",
+          "ordinal": 4,
+          "type_info": "Int64"
+        },
+        {
+          "name": "text",
+          "ordinal": 5,
+          "type_info": "Text"
+        },
+        {
+          "name": "viewed",
+          "ordinal": 6,
+          "type_info": "Bool"
+        },
+        {
+          "name": "created_time_ms",
+          "ordinal": 7,
+          "type_info": "Int64"
+        },
+        {
+          "name": "order_public_id",
+          "ordinal": 8,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\nselect ordermessages.id, ordermessages.public_id, ordermessages.order_id, ordermessages.author_id, ordermessages.recipient_id, ordermessages.text, ordermessages.viewed, ordermessages.created_time_ms, orders.public_id as order_public_id\nFROM\n ordermessages\nLEFT JOIN\n orders\nON\n ordermessages.order_id = orders.id\nWHERE\n not viewed\nAND\n recipient_id = ?\nORDER BY ordermessages.created_time_ms ASC;"
   },
   "c89f5ddd913f518701d8490cf778cb57d7d7f30cdf8f1c5c3373add48245862b": {
     "describe": {
@@ -2606,6 +2810,16 @@
     },
     "query": "\nselect\n orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.completed, orders.invoice_hash, orders.invoice_payment_request, orders.created_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username\nfrom\n orders\nLEFT JOIN\n listings\nON\n orders.listing_id = listings.id\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nLEFT JOIN\n users\nON\n listings.user_id = users.id\nWHERE\n orders.completed\nAND\n order_buyer_user_id = ?\nGROUP BY\n orders.id\nORDER BY orders.created_time_ms DESC\n;"
   },
+  "e1725cd45fe93f160628b8042fcf9f878c1abc743fae77aeedc45cc93f04b8f5": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "UPDATE ordermessages SET viewed = true WHERE public_id = ?"
+  },
   "e706307d9941de70d4a03738669354505bfcdc2e4792fb9582cf3eaf597119cb": {
     "describe": {
       "columns": [],
@@ -2825,6 +3039,16 @@
       }
     },
     "query": "select * from orders WHERE id = ?;"
+  },
+  "f5127628572d53da457711312ccf45744ccc0d1a1a51e0013fc1bdab71c8866b": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 7
+      }
+    },
+    "query": "INSERT INTO ordermessages (public_id, order_id, author_id, recipient_id, text, viewed, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?)"
   },
   "fce59254279c4cb6b59a568ae89329aeb318283dee83f03c94e92c11b4b5173f": {
     "describe": {

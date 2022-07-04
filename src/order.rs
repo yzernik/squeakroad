@@ -1,13 +1,19 @@
 use crate::base::BaseContext;
 use crate::db::Db;
-use crate::models::{Listing, Order, ShippingOption};
+use crate::models::{Listing, Order, OrderMessage, OrderMessageInput, ShippingOption};
 use rocket::fairing::AdHoc;
+use rocket::form::Form;
 use rocket::request::FlashMessage;
+use rocket::response::Flash;
+use rocket::response::Redirect;
+use rocket::serde::uuid::Uuid;
 use rocket::serde::Serialize;
 use rocket_auth::AdminUser;
 use rocket_auth::User;
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
+use std::time::SystemTime;
+use std::time::UNIX_EPOCH;
 
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -17,6 +23,7 @@ struct Context {
     order: Order,
     listing: Listing,
     shipping_option: ShippingOption,
+    order_messages: Vec<OrderMessage>,
     user: User,
     admin_user: Option<AdminUser>,
 }
@@ -41,6 +48,9 @@ impl Context {
         let shipping_option = ShippingOption::single(&mut db, order.shipping_option_id)
             .await
             .map_err(|_| "failed to get shipping option.")?;
+        let order_messages = OrderMessage::all_for_order(&mut db, order.id.unwrap())
+            .await
+            .map_err(|_| "failed to get order messages.")?;
         println!("found order: {:?}", order);
         Ok(Context {
             base_context,
@@ -48,9 +58,153 @@ impl Context {
             order,
             listing,
             shipping_option,
+            order_messages,
             user,
             admin_user,
         })
+    }
+}
+
+#[post("/<id>/new_message", data = "<order_message_form>")]
+async fn new_message(
+    id: &str,
+    order_message_form: Form<OrderMessageInput>,
+    mut db: Connection<Db>,
+    user: User,
+    _admin_user: Option<AdminUser>,
+) -> Result<Flash<Redirect>, Flash<Redirect>> {
+    let order_message_info = order_message_form.into_inner();
+
+    println!("order_message_info: {:?}", order_message_info);
+
+    match create_order_message(id, order_message_info, &mut db, user.clone()).await {
+        Ok(_) => Ok(Flash::success(
+            Redirect::to(format!("/{}/{}", "order", id)),
+            "Order Message Successfully Sent.",
+        )),
+        Err(e) => {
+            error_!("DB insertion error: {}", e);
+            Err(Flash::error(
+                Redirect::to(format!("/{}/{}", "order", id)),
+                e,
+            ))
+        }
+    }
+}
+
+async fn create_order_message(
+    order_id: &str,
+    order_message_info: OrderMessageInput,
+    db: &mut Connection<Db>,
+    user: User,
+) -> Result<(), String> {
+    let now = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_millis() as u64;
+    let order = Order::single_by_public_id(db, order_id)
+        .await
+        .map_err(|_| "failed to get order")?;
+    let one_day_in_ms = 24 * 60 * 60 * 1000;
+    let recent_order_message_count = OrderMessage::number_for_order_for_user_since_ms(
+        db,
+        order.id.unwrap(),
+        user.id(),
+        now - one_day_in_ms,
+    )
+    .await
+    .map_err(|_| "failed to get number of recent messages.")?;
+
+    if user.id() != order.seller_user_id && user.id() != order.buyer_user_id {
+        Err("User is not the seller or the buyer.".to_string())
+    } else if recent_order_message_count >= 5 {
+        Err("More than 5 message in a single day not allowed.".to_string())
+    } else if order_message_info.text.is_empty() {
+        Err("Message text cannot be empty.".to_string())
+    } else if order_message_info.text.len() > 1024 {
+        Err("Message text is too long.".to_string())
+    } else {
+        let recipient_id = if user.id() == order.seller_user_id {
+            order.buyer_user_id
+        } else {
+            order.seller_user_id
+        };
+        let order_message = OrderMessage {
+            id: None,
+            public_id: Uuid::new_v4().to_string(),
+            order_id: order.id.unwrap(),
+            author_id: user.id(),
+            recipient_id: recipient_id,
+            text: order_message_info.text,
+            viewed: false,
+            created_time_ms: now,
+        };
+        match OrderMessage::insert(order_message, db).await {
+            Ok(_) => Ok(()),
+            Err(e) => {
+                error_!("DB insertion error: {}", e);
+                Err("Order Message could not be inserted due an internal error.".to_string())
+            }
+        }
+    }
+}
+
+#[put("/<id>/message/<order_message_id>/mark_read")]
+async fn set_message_read(
+    id: &str,
+    order_message_id: &str,
+    mut db: Connection<Db>,
+    user: User,
+    admin_user: Option<AdminUser>,
+) -> Result<Flash<Redirect>, Flash<Redirect>> {
+    match mark_message_as_read(
+        id,
+        order_message_id,
+        &mut db,
+        user.clone(),
+        admin_user.clone(),
+    )
+    .await
+    {
+        Ok(_) => Ok(Flash::success(
+            Redirect::to(format!("/{}/{}", "order", id)),
+            "Message marked as read.",
+        )),
+        Err(e) => {
+            error_!("DB update({}) error: {}", id, e);
+            Err(Flash::error(
+                Redirect::to(format!("/{}/{}", "order", id)),
+                "Failed to mark message as read.",
+            ))
+        }
+    }
+}
+
+async fn mark_message_as_read(
+    order_id: &str,
+    order_message_id: &str,
+    db: &mut Connection<Db>,
+    user: User,
+    _admin_user: Option<AdminUser>,
+) -> Result<(), String> {
+    let order = Order::single_by_public_id(db, order_id)
+        .await
+        .map_err(|_| "failed to get order.")?;
+    let order_message = OrderMessage::single_by_public_id(db, order_message_id)
+        .await
+        .map_err(|_| "failed to get order message.")?;
+
+    if order_message.order_id != order.id.unwrap() {
+        Err("Invalid order message id given.".to_string())
+    } else if order_message.recipient_id != user.id() {
+        Err("User is not the message recipient.".to_string())
+    } else {
+        match OrderMessage::mark_as_read(&mut *db, order_message_id).await {
+            Ok(_) => Ok(()),
+            Err(_) => Err("failed to mark image as primary.".to_string()),
+        }
+        // println!("Set message as read: {:?}", order_message_id);
+        // Ok(())
     }
 }
 
@@ -77,6 +231,6 @@ async fn index(
 
 pub fn order_stage() -> AdHoc {
     AdHoc::on_ignite("Order Stage", |rocket| async {
-        rocket.mount("/order", routes![index])
+        rocket.mount("/order", routes![index, new_message, set_message_read])
     })
 }
