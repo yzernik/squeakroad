@@ -6,6 +6,9 @@
 Username: {{ user.email }}.
 
 <br>
+<a href="market_liabilities">Show market liabilities</a>
+
+<br>
 <a href="show_all_users">Show all users</a>
 
 <br>

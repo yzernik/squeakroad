@@ -48,12 +48,12 @@ async fn index(
     flash: Option<FlashMessage<'_>>,
     db: Connection<Db>,
     user: User,
-    admin_user: Option<AdminUser>,
+    admin_user: AdminUser,
 ) -> Result<Template, NotFound<String>> {
     let flash = flash.map(FlashMessage::into_inner);
     Ok(Template::render(
         "marketliabilities",
-        Context::raw(flash, db, user, admin_user).await,
+        Context::raw(flash, db, user, Some(admin_user)).await,
     ))
 }
 
