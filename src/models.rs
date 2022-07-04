@@ -1494,16 +1494,10 @@ GROUP BY
         println!("maybe_order: {:?}", maybe_order);
 
         if let Some(order) = maybe_order {
-            println!("set order as paid here...");
-            sqlx::query!("UPDATE orders SET paid = true WHERE id = ?", order.id,)
-                .execute(&mut tx)
-                .await?;
-
             let listing = sqlx::query!("select * from listings WHERE id = ?;", order.listing_id)
                 .fetch_one(&mut tx)
                 .await?;
             println!("listing: {:?}", listing);
-
             let sold_items = sqlx::query!(
                 "
 select
@@ -1529,17 +1523,17 @@ GROUP BY
             };
             println!("quantity sold: {:?}", quantity_sold);
             let quantity_in_stock = listing.quantity - quantity_sold;
-            if quantity_in_stock >= order.quantity {
-                println!("set order as completed here...");
-                sqlx::query!(
-                    "UPDATE orders SET completed = true, payment_time_ms = ? WHERE id = ?",
-                    time_now_ms_i64,
-                    order.id,
-                )
-                .execute(&mut tx)
-                .await?;
-            }
-            println!("finished set order as completed here.");
+            let order_success = quantity_in_stock >= order.quantity;
+            println!("set order as paid (and maybe completed) here...");
+            sqlx::query!(
+                "UPDATE orders SET paid = true, completed = ?, payment_time_ms = ? WHERE id = ?",
+                order_success,
+                time_now_ms_i64,
+                order.id,
+            )
+            .execute(&mut tx)
+            .await?;
+            println!("finished set order as paid here.");
         }
 
         tx.commit().await?;

@@ -370,16 +370,6 @@
     },
     "query": "UPDATE listings SET removed = true WHERE public_id = ?"
   },
-  "1a698b34f4d8d2b059dfa16ad930a4191248b80016e3b7686c116a9955c48213": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 2
-      }
-    },
-    "query": "UPDATE orders SET completed = true, payment_time_ms = ? WHERE id = ?"
-  },
   "1d7d5dece61b411ab5f69b50756efa76728c39cdb2818bddd9be168c9a6fcdb4": {
     "describe": {
       "columns": [
@@ -521,6 +511,16 @@
       }
     },
     "query": "DELETE FROM shippingoptions WHERE public_id = ?"
+  },
+  "2a3c22c624389c8ad18fcea2d7bd2057660d621ef578fca8ed2a54d6e070e24d": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 3
+      }
+    },
+    "query": "UPDATE orders SET paid = true, completed = ?, payment_time_ms = ? WHERE id = ?"
   },
   "3c289da9873097a11191dbedc5c78d86afd6a6d36771bfeb12f331abca6279cf": {
     "describe": {
@@ -2059,16 +2059,6 @@
       }
     },
     "query": "select * from orders WHERE public_id = ?;"
-  },
-  "a76aff7e8cbbf6a0e21b33c90e75c148ca27abf78a3119d17eef507d18247d6d": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "UPDATE orders SET paid = true WHERE id = ?"
   },
   "abcdf76f53e7051c7ad6ab182c21340c6ada5167dcbbbc94d130c4b23a4f3ea6": {
     "describe": {
