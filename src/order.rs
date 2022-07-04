@@ -71,7 +71,7 @@ async fn new_message(
     order_message_form: Form<OrderMessageInput>,
     mut db: Connection<Db>,
     user: User,
-    admin_user: Option<AdminUser>,
+    _admin_user: Option<AdminUser>,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
     let order_message_info = order_message_form.into_inner();
 
@@ -199,24 +199,12 @@ async fn mark_message_as_read(
     } else if order_message.recipient_id != user.id() {
         Err("User is not the message recipient.".to_string())
     } else {
-        // match ListingImage::mark_image_as_primary_by_public_id(
-        //     &mut *db,
-        //     listing.id.unwrap(),
-        //     image_id,
-        // )
-        // .await
-        // {
-        //     Ok(num_marked) => {
-        //         if num_marked > 0 {
-        //             Ok(())
-        //         } else {
-        //             Err("No images marked as primary.".to_string())
-        //         }
-        //     }
-        //     Err(_) => Err("failed to mark image as primary.".to_string()),
-        // }
-        println!("Set message as read: {:?}", order_message_id);
-        Ok(())
+        match OrderMessage::mark_as_read(&mut *db, order_message_id).await {
+            Ok(_) => Ok(()),
+            Err(_) => Err("failed to mark image as primary.".to_string()),
+        }
+        // println!("Set message as read: {:?}", order_message_id);
+        // Ok(())
     }
 }
 

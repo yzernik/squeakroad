@@ -2316,4 +2316,14 @@ ORDER BY ordermessages.created_time_ms ASC;",
 
         Ok(message_count.try_into().unwrap())
     }
+
+    pub async fn mark_as_read(db: &mut Connection<Db>, public_id: &str) -> Result<(), sqlx::Error> {
+        sqlx::query!(
+            "UPDATE ordermessages SET viewed = true WHERE public_id = ?",
+            public_id,
+        )
+        .execute(&mut **db)
+        .await?;
+        Ok(())
+    }
 }
