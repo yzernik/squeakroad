@@ -1983,6 +1983,15 @@ impl AccountInfo {
         })
     }
 
+    pub async fn total_market_liabilities_sat(db: &mut Connection<Db>) -> Result<i64, sqlx::Error> {
+        let account_balance_changes = AccountInfo::all_account_balance_changes(db).await?;
+        let market_liabilities_sat: i64 = account_balance_changes
+            .iter()
+            .map(|c| c.amount_change_sat)
+            .sum();
+        Ok(market_liabilities_sat)
+    }
+
     pub async fn all_account_balance_changes_for_user(
         db: &mut Connection<Db>,
         user_id: i32,

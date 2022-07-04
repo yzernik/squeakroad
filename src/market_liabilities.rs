@@ -14,7 +14,7 @@ use rocket_dyn_templates::Template;
 struct Context {
     base_context: BaseContext,
     flash: Option<(String, String)>,
-    account_balance_sat: i64,
+    total_market_liabilities_sat: i64,
     account_balance_changes: Vec<AccountBalanceChange>,
 }
 
@@ -31,11 +31,13 @@ impl Context {
         let account_balance_changes = AccountInfo::all_account_balance_changes(&mut db)
             .await
             .map_err(|_| "failed to get account balance changes.")?;
-        let account_balance_sat = 0;
+        let total_market_liabilities_sat = AccountInfo::total_market_liabilities_sat(&mut db)
+            .await
+            .map_err(|_| "failed to get total market liabilies.")?;
         Ok(Context {
             base_context,
             flash,
-            account_balance_sat,
+            total_market_liabilities_sat,
             account_balance_changes,
         })
     }
