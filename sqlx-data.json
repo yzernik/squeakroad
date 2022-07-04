@@ -68,7 +68,41 @@
     },
     "query": "UPDATE adminsettings SET fee_rate_basis_points = ?"
   },
-  "0a85aa4c2ffce9a5f63af6adb686436b96ab6d48a35e24795841493558e07c81": {
+  "0b8f479b0b98846aebf34419364a5384cfb815c55987cdc0bcf5dc369dbfa9b2": {
+    "describe": {
+      "columns": [
+        {
+          "name": "total_amount_paid",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "listing_user_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\nselect\n SUM(orders.seller_credit_sat) as total_amount_paid, listings.user_id as listing_user_id\nFROM\n orders\nLEFT JOIN\n listings\nON\n orders.listing_id = listings.id\nWHERE\n listing_user_id = ?\nAND\n completed\nGROUP BY\n listing_user_id\n;"
+  },
+  "0d786c64fe05c4a9a098dd6945101e087304b79ca03163413c859e8e93f341ac": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "UPDATE orders SET acked = true WHERE id = ?"
+  },
+  "0f00447ae5443e98c7343164214f8324c84cd9dd3aaed698c7641e62ec6a6ebe": {
     "describe": {
       "columns": [
         {
@@ -127,123 +161,129 @@
           "type_info": "Bool"
         },
         {
-          "name": "invoice_hash",
+          "name": "acked",
           "ordinal": 11,
-          "type_info": "Text"
+          "type_info": "Bool"
         },
         {
-          "name": "invoice_payment_request",
+          "name": "invoice_hash",
           "ordinal": 12,
           "type_info": "Text"
         },
         {
-          "name": "created_time_ms",
+          "name": "invoice_payment_request",
           "ordinal": 13,
-          "type_info": "Int64"
+          "type_info": "Text"
         },
         {
-          "name": "id",
+          "name": "created_time_ms",
           "ordinal": 14,
           "type_info": "Int64"
         },
         {
-          "name": "listing_public_id",
+          "name": "id",
           "ordinal": 15,
+          "type_info": "Int64"
+        },
+        {
+          "name": "listing_public_id",
+          "ordinal": 16,
           "type_info": "Text"
         },
         {
           "name": "listing_user_id",
-          "ordinal": 16,
+          "ordinal": 17,
           "type_info": "Int64"
         },
         {
           "name": "title",
-          "ordinal": 17,
-          "type_info": "Text"
-        },
-        {
-          "name": "description",
           "ordinal": 18,
           "type_info": "Text"
         },
         {
-          "name": "price_sat",
+          "name": "description",
           "ordinal": 19,
-          "type_info": "Int64"
+          "type_info": "Text"
         },
         {
-          "name": "quantity",
+          "name": "price_sat",
           "ordinal": 20,
           "type_info": "Int64"
         },
         {
-          "name": "fee_rate_basis_points",
+          "name": "quantity",
           "ordinal": 21,
           "type_info": "Int64"
         },
         {
-          "name": "submitted",
+          "name": "fee_rate_basis_points",
           "ordinal": 22,
-          "type_info": "Bool"
+          "type_info": "Int64"
         },
         {
-          "name": "reviewed",
+          "name": "submitted",
           "ordinal": 23,
           "type_info": "Bool"
         },
         {
-          "name": "approved",
+          "name": "reviewed",
           "ordinal": 24,
           "type_info": "Bool"
         },
         {
-          "name": "removed",
+          "name": "approved",
           "ordinal": 25,
           "type_info": "Bool"
         },
         {
-          "name": "listing_created_time_ms",
+          "name": "removed",
           "ordinal": 26,
-          "type_info": "Int64"
+          "type_info": "Bool"
         },
         {
-          "name": "image_id",
+          "name": "listing_created_time_ms",
           "ordinal": 27,
           "type_info": "Int64"
         },
         {
-          "name": "image_public_id",
+          "name": "image_id",
           "ordinal": 28,
+          "type_info": "Int64"
+        },
+        {
+          "name": "image_public_id",
+          "ordinal": 29,
           "type_info": "Text"
         },
         {
           "name": "listing_id",
-          "ordinal": 29,
+          "ordinal": 30,
           "type_info": "Int64"
         },
         {
           "name": "image_data",
-          "ordinal": 30,
+          "ordinal": 31,
           "type_info": "Blob"
         },
         {
           "name": "is_primary",
-          "ordinal": 31,
+          "ordinal": 32,
           "type_info": "Bool"
         },
         {
           "name": "rocket_auth_user_id",
-          "ordinal": 32,
+          "ordinal": 33,
           "type_info": "Int64"
         },
         {
           "name": "rocket_auth_user_username",
-          "ordinal": 33,
+          "ordinal": 34,
           "type_info": "Text"
         }
       ],
       "nullable": [
         true,
+        false,
         false,
         false,
         false,
@@ -282,31 +322,7 @@
         "Right": 1
       }
     },
-    "query": "\nselect\n orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.completed, orders.invoice_hash, orders.invoice_payment_request, orders.created_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username\nfrom\n orders\nLEFT JOIN\n listings\nON\n orders.listing_id = listings.id\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nLEFT JOIN\n users\nON\n listings.user_id = users.id\nWHERE\n not orders.paid\nAND\n order_buyer_user_id = ?\nGROUP BY\n orders.id\nORDER BY orders.created_time_ms DESC\n;"
-  },
-  "0b8f479b0b98846aebf34419364a5384cfb815c55987cdc0bcf5dc369dbfa9b2": {
-    "describe": {
-      "columns": [
-        {
-          "name": "total_amount_paid",
-          "ordinal": 0,
-          "type_info": "Int64"
-        },
-        {
-          "name": "listing_user_id",
-          "ordinal": 1,
-          "type_info": "Int64"
-        }
-      ],
-      "nullable": [
-        false,
-        false
-      ],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "\nselect\n SUM(orders.seller_credit_sat) as total_amount_paid, listings.user_id as listing_user_id\nFROM\n orders\nLEFT JOIN\n listings\nON\n orders.listing_id = listings.id\nWHERE\n listing_user_id = ?\nAND\n completed\nGROUP BY\n listing_user_id\n;"
+    "query": "\nselect\n orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.completed, orders.acked, orders.invoice_hash, orders.invoice_payment_request, orders.created_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username\nfrom\n orders\nLEFT JOIN\n listings\nON\n orders.listing_id = listings.id\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nLEFT JOIN\n users\nON\n listings.user_id = users.id\nWHERE\n not orders.paid\nAND\n order_buyer_user_id = ?\nGROUP BY\n orders.id\nORDER BY orders.created_time_ms DESC\n;"
   },
   "11e3096becb72f427c8d3911ef4327afd9516143806981e11f8e34d069c14472": {
     "describe": {
@@ -490,222 +506,6 @@
     },
     "query": "DELETE FROM shippingoptions WHERE public_id = ?"
   },
-  "3668184588ca134504032f03ee71e8ebf9169b2d967c9352e7a63ac1705efa1c": {
-    "describe": {
-      "columns": [
-        {
-          "name": "order_id",
-          "ordinal": 0,
-          "type_info": "Int64"
-        },
-        {
-          "name": "order_public_id",
-          "ordinal": 1,
-          "type_info": "Text"
-        },
-        {
-          "name": "order_buyer_user_id",
-          "ordinal": 2,
-          "type_info": "Int64"
-        },
-        {
-          "name": "order_seller_user_id",
-          "ordinal": 3,
-          "type_info": "Int64"
-        },
-        {
-          "name": "order_listing_id",
-          "ordinal": 4,
-          "type_info": "Int64"
-        },
-        {
-          "name": "shipping_option_id",
-          "ordinal": 5,
-          "type_info": "Int64"
-        },
-        {
-          "name": "shipping_instructions",
-          "ordinal": 6,
-          "type_info": "Text"
-        },
-        {
-          "name": "amount_owed_sat",
-          "ordinal": 7,
-          "type_info": "Int64"
-        },
-        {
-          "name": "seller_credit_sat",
-          "ordinal": 8,
-          "type_info": "Int64"
-        },
-        {
-          "name": "paid",
-          "ordinal": 9,
-          "type_info": "Bool"
-        },
-        {
-          "name": "completed",
-          "ordinal": 10,
-          "type_info": "Bool"
-        },
-        {
-          "name": "invoice_hash",
-          "ordinal": 11,
-          "type_info": "Text"
-        },
-        {
-          "name": "invoice_payment_request",
-          "ordinal": 12,
-          "type_info": "Text"
-        },
-        {
-          "name": "created_time_ms",
-          "ordinal": 13,
-          "type_info": "Int64"
-        },
-        {
-          "name": "id",
-          "ordinal": 14,
-          "type_info": "Int64"
-        },
-        {
-          "name": "listing_public_id",
-          "ordinal": 15,
-          "type_info": "Text"
-        },
-        {
-          "name": "listing_user_id",
-          "ordinal": 16,
-          "type_info": "Int64"
-        },
-        {
-          "name": "title",
-          "ordinal": 17,
-          "type_info": "Text"
-        },
-        {
-          "name": "description",
-          "ordinal": 18,
-          "type_info": "Text"
-        },
-        {
-          "name": "price_sat",
-          "ordinal": 19,
-          "type_info": "Int64"
-        },
-        {
-          "name": "quantity",
-          "ordinal": 20,
-          "type_info": "Int64"
-        },
-        {
-          "name": "fee_rate_basis_points",
-          "ordinal": 21,
-          "type_info": "Int64"
-        },
-        {
-          "name": "submitted",
-          "ordinal": 22,
-          "type_info": "Bool"
-        },
-        {
-          "name": "reviewed",
-          "ordinal": 23,
-          "type_info": "Bool"
-        },
-        {
-          "name": "approved",
-          "ordinal": 24,
-          "type_info": "Bool"
-        },
-        {
-          "name": "removed",
-          "ordinal": 25,
-          "type_info": "Bool"
-        },
-        {
-          "name": "listing_created_time_ms",
-          "ordinal": 26,
-          "type_info": "Int64"
-        },
-        {
-          "name": "image_id",
-          "ordinal": 27,
-          "type_info": "Int64"
-        },
-        {
-          "name": "image_public_id",
-          "ordinal": 28,
-          "type_info": "Text"
-        },
-        {
-          "name": "listing_id",
-          "ordinal": 29,
-          "type_info": "Int64"
-        },
-        {
-          "name": "image_data",
-          "ordinal": 30,
-          "type_info": "Blob"
-        },
-        {
-          "name": "is_primary",
-          "ordinal": 31,
-          "type_info": "Bool"
-        },
-        {
-          "name": "rocket_auth_user_id",
-          "ordinal": 32,
-          "type_info": "Int64"
-        },
-        {
-          "name": "rocket_auth_user_username",
-          "ordinal": 33,
-          "type_info": "Text"
-        }
-      ],
-      "nullable": [
-        true,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        true,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        true,
-        false,
-        false,
-        false,
-        false,
-        true,
-        true
-      ],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "\nselect\n orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.completed, orders.invoice_hash, orders.invoice_payment_request, orders.created_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username\nfrom\n orders\nLEFT JOIN\n listings\nON\n orders.listing_id = listings.id\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nLEFT JOIN\n users\nON\n listings.user_id = users.id\nWHERE\n orders.completed\nAND\n listing_user_id = ?\nGROUP BY\n orders.id\nORDER BY orders.created_time_ms DESC\n;"
-  },
   "38b3eeb3b47922da31a5bf0acfce6b0f54a86913d84545a77114e44c0635198e": {
     "describe": {
       "columns": [],
@@ -788,6 +588,228 @@
     },
     "query": "UPDATE listingimages SET is_primary = false WHERE listing_id = ?"
   },
+  "58d4c195ebda6d4e6170f859cf9f442c376f7f3e7e363ae41d22d9e39074e8eb": {
+    "describe": {
+      "columns": [
+        {
+          "name": "order_id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "order_public_id",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "order_buyer_user_id",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "order_seller_user_id",
+          "ordinal": 3,
+          "type_info": "Int64"
+        },
+        {
+          "name": "order_listing_id",
+          "ordinal": 4,
+          "type_info": "Int64"
+        },
+        {
+          "name": "shipping_option_id",
+          "ordinal": 5,
+          "type_info": "Int64"
+        },
+        {
+          "name": "shipping_instructions",
+          "ordinal": 6,
+          "type_info": "Text"
+        },
+        {
+          "name": "amount_owed_sat",
+          "ordinal": 7,
+          "type_info": "Int64"
+        },
+        {
+          "name": "seller_credit_sat",
+          "ordinal": 8,
+          "type_info": "Int64"
+        },
+        {
+          "name": "paid",
+          "ordinal": 9,
+          "type_info": "Bool"
+        },
+        {
+          "name": "completed",
+          "ordinal": 10,
+          "type_info": "Bool"
+        },
+        {
+          "name": "acked",
+          "ordinal": 11,
+          "type_info": "Bool"
+        },
+        {
+          "name": "invoice_hash",
+          "ordinal": 12,
+          "type_info": "Text"
+        },
+        {
+          "name": "invoice_payment_request",
+          "ordinal": 13,
+          "type_info": "Text"
+        },
+        {
+          "name": "created_time_ms",
+          "ordinal": 14,
+          "type_info": "Int64"
+        },
+        {
+          "name": "id",
+          "ordinal": 15,
+          "type_info": "Int64"
+        },
+        {
+          "name": "listing_public_id",
+          "ordinal": 16,
+          "type_info": "Text"
+        },
+        {
+          "name": "listing_user_id",
+          "ordinal": 17,
+          "type_info": "Int64"
+        },
+        {
+          "name": "title",
+          "ordinal": 18,
+          "type_info": "Text"
+        },
+        {
+          "name": "description",
+          "ordinal": 19,
+          "type_info": "Text"
+        },
+        {
+          "name": "price_sat",
+          "ordinal": 20,
+          "type_info": "Int64"
+        },
+        {
+          "name": "quantity",
+          "ordinal": 21,
+          "type_info": "Int64"
+        },
+        {
+          "name": "fee_rate_basis_points",
+          "ordinal": 22,
+          "type_info": "Int64"
+        },
+        {
+          "name": "submitted",
+          "ordinal": 23,
+          "type_info": "Bool"
+        },
+        {
+          "name": "reviewed",
+          "ordinal": 24,
+          "type_info": "Bool"
+        },
+        {
+          "name": "approved",
+          "ordinal": 25,
+          "type_info": "Bool"
+        },
+        {
+          "name": "removed",
+          "ordinal": 26,
+          "type_info": "Bool"
+        },
+        {
+          "name": "listing_created_time_ms",
+          "ordinal": 27,
+          "type_info": "Int64"
+        },
+        {
+          "name": "image_id",
+          "ordinal": 28,
+          "type_info": "Int64"
+        },
+        {
+          "name": "image_public_id",
+          "ordinal": 29,
+          "type_info": "Text"
+        },
+        {
+          "name": "listing_id",
+          "ordinal": 30,
+          "type_info": "Int64"
+        },
+        {
+          "name": "image_data",
+          "ordinal": 31,
+          "type_info": "Blob"
+        },
+        {
+          "name": "is_primary",
+          "ordinal": 32,
+          "type_info": "Bool"
+        },
+        {
+          "name": "rocket_auth_user_id",
+          "ordinal": 33,
+          "type_info": "Int64"
+        },
+        {
+          "name": "rocket_auth_user_username",
+          "ordinal": 34,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\nselect\n orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.completed, orders.acked, orders.invoice_hash, orders.invoice_payment_request, orders.created_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username\nfrom\n orders\nLEFT JOIN\n listings\nON\n orders.listing_id = listings.id\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nLEFT JOIN\n users\nON\n listings.user_id = users.id\nWHERE\n orders.paid\nAND\n not orders.completed\nAND\n order_buyer_user_id = ?\nGROUP BY\n orders.id\nORDER BY orders.created_time_ms DESC\n;"
+  },
   "5a24f9c5cf60ff7f2dc4ce2cf145931a81121bd7854c8b958625bd8ead17c0f8": {
     "describe": {
       "columns": [],
@@ -797,6 +819,228 @@
       }
     },
     "query": "UPDATE listings SET reviewed = true, approved = false WHERE public_id = ?"
+  },
+  "5be609b6c161eebef412a59ad06e2454c4928f4a45f462e840b22574e22a331d": {
+    "describe": {
+      "columns": [
+        {
+          "name": "order_id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "order_public_id",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "order_buyer_user_id",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "order_seller_user_id",
+          "ordinal": 3,
+          "type_info": "Int64"
+        },
+        {
+          "name": "order_listing_id",
+          "ordinal": 4,
+          "type_info": "Int64"
+        },
+        {
+          "name": "shipping_option_id",
+          "ordinal": 5,
+          "type_info": "Int64"
+        },
+        {
+          "name": "shipping_instructions",
+          "ordinal": 6,
+          "type_info": "Text"
+        },
+        {
+          "name": "amount_owed_sat",
+          "ordinal": 7,
+          "type_info": "Int64"
+        },
+        {
+          "name": "seller_credit_sat",
+          "ordinal": 8,
+          "type_info": "Int64"
+        },
+        {
+          "name": "paid",
+          "ordinal": 9,
+          "type_info": "Bool"
+        },
+        {
+          "name": "completed",
+          "ordinal": 10,
+          "type_info": "Bool"
+        },
+        {
+          "name": "acked",
+          "ordinal": 11,
+          "type_info": "Bool"
+        },
+        {
+          "name": "invoice_hash",
+          "ordinal": 12,
+          "type_info": "Text"
+        },
+        {
+          "name": "invoice_payment_request",
+          "ordinal": 13,
+          "type_info": "Text"
+        },
+        {
+          "name": "created_time_ms",
+          "ordinal": 14,
+          "type_info": "Int64"
+        },
+        {
+          "name": "id",
+          "ordinal": 15,
+          "type_info": "Int64"
+        },
+        {
+          "name": "listing_public_id",
+          "ordinal": 16,
+          "type_info": "Text"
+        },
+        {
+          "name": "listing_user_id",
+          "ordinal": 17,
+          "type_info": "Int64"
+        },
+        {
+          "name": "title",
+          "ordinal": 18,
+          "type_info": "Text"
+        },
+        {
+          "name": "description",
+          "ordinal": 19,
+          "type_info": "Text"
+        },
+        {
+          "name": "price_sat",
+          "ordinal": 20,
+          "type_info": "Int64"
+        },
+        {
+          "name": "quantity",
+          "ordinal": 21,
+          "type_info": "Int64"
+        },
+        {
+          "name": "fee_rate_basis_points",
+          "ordinal": 22,
+          "type_info": "Int64"
+        },
+        {
+          "name": "submitted",
+          "ordinal": 23,
+          "type_info": "Bool"
+        },
+        {
+          "name": "reviewed",
+          "ordinal": 24,
+          "type_info": "Bool"
+        },
+        {
+          "name": "approved",
+          "ordinal": 25,
+          "type_info": "Bool"
+        },
+        {
+          "name": "removed",
+          "ordinal": 26,
+          "type_info": "Bool"
+        },
+        {
+          "name": "listing_created_time_ms",
+          "ordinal": 27,
+          "type_info": "Int64"
+        },
+        {
+          "name": "image_id",
+          "ordinal": 28,
+          "type_info": "Int64"
+        },
+        {
+          "name": "image_public_id",
+          "ordinal": 29,
+          "type_info": "Text"
+        },
+        {
+          "name": "listing_id",
+          "ordinal": 30,
+          "type_info": "Int64"
+        },
+        {
+          "name": "image_data",
+          "ordinal": 31,
+          "type_info": "Blob"
+        },
+        {
+          "name": "is_primary",
+          "ordinal": 32,
+          "type_info": "Bool"
+        },
+        {
+          "name": "rocket_auth_user_id",
+          "ordinal": 33,
+          "type_info": "Int64"
+        },
+        {
+          "name": "rocket_auth_user_username",
+          "ordinal": 34,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\nselect\n orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.completed, orders.acked, orders.invoice_hash, orders.invoice_payment_request, orders.created_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username\nfrom\n orders\nLEFT JOIN\n listings\nON\n orders.listing_id = listings.id\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nLEFT JOIN\n users\nON\n listings.user_id = users.id\nWHERE\n orders.completed\nAND\n order_buyer_user_id = ?\nGROUP BY\n orders.id\nORDER BY orders.created_time_ms DESC\n;"
   },
   "5c1752e735c6763ca3bd408e16957e5a007b0a13d44d31888cbc61a447d6d6d0": {
     "describe": {
@@ -1015,222 +1259,6 @@
       }
     },
     "query": "DELETE FROM posts"
-  },
-  "668e8781d40f2a535b672ca719b048d524b3af22cfeda4ac6b689698b03c7a19": {
-    "describe": {
-      "columns": [
-        {
-          "name": "order_id",
-          "ordinal": 0,
-          "type_info": "Int64"
-        },
-        {
-          "name": "order_public_id",
-          "ordinal": 1,
-          "type_info": "Text"
-        },
-        {
-          "name": "order_buyer_user_id",
-          "ordinal": 2,
-          "type_info": "Int64"
-        },
-        {
-          "name": "order_seller_user_id",
-          "ordinal": 3,
-          "type_info": "Int64"
-        },
-        {
-          "name": "order_listing_id",
-          "ordinal": 4,
-          "type_info": "Int64"
-        },
-        {
-          "name": "shipping_option_id",
-          "ordinal": 5,
-          "type_info": "Int64"
-        },
-        {
-          "name": "shipping_instructions",
-          "ordinal": 6,
-          "type_info": "Text"
-        },
-        {
-          "name": "amount_owed_sat",
-          "ordinal": 7,
-          "type_info": "Int64"
-        },
-        {
-          "name": "seller_credit_sat",
-          "ordinal": 8,
-          "type_info": "Int64"
-        },
-        {
-          "name": "paid",
-          "ordinal": 9,
-          "type_info": "Bool"
-        },
-        {
-          "name": "completed",
-          "ordinal": 10,
-          "type_info": "Bool"
-        },
-        {
-          "name": "invoice_hash",
-          "ordinal": 11,
-          "type_info": "Text"
-        },
-        {
-          "name": "invoice_payment_request",
-          "ordinal": 12,
-          "type_info": "Text"
-        },
-        {
-          "name": "created_time_ms",
-          "ordinal": 13,
-          "type_info": "Int64"
-        },
-        {
-          "name": "id",
-          "ordinal": 14,
-          "type_info": "Int64"
-        },
-        {
-          "name": "listing_public_id",
-          "ordinal": 15,
-          "type_info": "Text"
-        },
-        {
-          "name": "listing_user_id",
-          "ordinal": 16,
-          "type_info": "Int64"
-        },
-        {
-          "name": "title",
-          "ordinal": 17,
-          "type_info": "Text"
-        },
-        {
-          "name": "description",
-          "ordinal": 18,
-          "type_info": "Text"
-        },
-        {
-          "name": "price_sat",
-          "ordinal": 19,
-          "type_info": "Int64"
-        },
-        {
-          "name": "quantity",
-          "ordinal": 20,
-          "type_info": "Int64"
-        },
-        {
-          "name": "fee_rate_basis_points",
-          "ordinal": 21,
-          "type_info": "Int64"
-        },
-        {
-          "name": "submitted",
-          "ordinal": 22,
-          "type_info": "Bool"
-        },
-        {
-          "name": "reviewed",
-          "ordinal": 23,
-          "type_info": "Bool"
-        },
-        {
-          "name": "approved",
-          "ordinal": 24,
-          "type_info": "Bool"
-        },
-        {
-          "name": "removed",
-          "ordinal": 25,
-          "type_info": "Bool"
-        },
-        {
-          "name": "listing_created_time_ms",
-          "ordinal": 26,
-          "type_info": "Int64"
-        },
-        {
-          "name": "image_id",
-          "ordinal": 27,
-          "type_info": "Int64"
-        },
-        {
-          "name": "image_public_id",
-          "ordinal": 28,
-          "type_info": "Text"
-        },
-        {
-          "name": "listing_id",
-          "ordinal": 29,
-          "type_info": "Int64"
-        },
-        {
-          "name": "image_data",
-          "ordinal": 30,
-          "type_info": "Blob"
-        },
-        {
-          "name": "is_primary",
-          "ordinal": 31,
-          "type_info": "Bool"
-        },
-        {
-          "name": "rocket_auth_user_id",
-          "ordinal": 32,
-          "type_info": "Int64"
-        },
-        {
-          "name": "rocket_auth_user_username",
-          "ordinal": 33,
-          "type_info": "Text"
-        }
-      ],
-      "nullable": [
-        true,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        true,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        true,
-        false,
-        false,
-        false,
-        false,
-        true,
-        true
-      ],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "\nselect\n orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.completed, orders.invoice_hash, orders.invoice_payment_request, orders.created_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username\nfrom\n orders\nLEFT JOIN\n listings\nON\n orders.listing_id = listings.id\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nLEFT JOIN\n users\nON\n listings.user_id = users.id\nWHERE\n orders.paid\nAND\n not orders.completed\nAND\n order_buyer_user_id = ?\nGROUP BY\n orders.id\nORDER BY orders.created_time_ms DESC\n;"
   },
   "68591fb844d695fb8300064185bdc45edaca71de788d9c09d6f217d1e6c708a6": {
     "describe": {
@@ -2091,9 +2119,15 @@
           "name": "seller_user_id",
           "ordinal": 14,
           "type_info": "Int64"
+        },
+        {
+          "name": "acked",
+          "ordinal": 15,
+          "type_info": "Bool"
         }
       ],
       "nullable": [
+        false,
         false,
         false,
         false,
@@ -2193,10 +2227,16 @@
           "name": "seller_user_id",
           "ordinal": 14,
           "type_info": "Int64"
+        },
+        {
+          "name": "acked",
+          "ordinal": 15,
+          "type_info": "Bool"
         }
       ],
       "nullable": [
         true,
+        false,
         false,
         false,
         false,
@@ -2574,16 +2614,6 @@
     },
     "query": "\nselect ordermessages.id, ordermessages.public_id, ordermessages.order_id, ordermessages.author_id, ordermessages.recipient_id, ordermessages.text, ordermessages.viewed, ordermessages.created_time_ms, orders.public_id as order_public_id\nFROM\n ordermessages\nLEFT JOIN\n orders\nON\n ordermessages.order_id = orders.id\nWHERE\n not viewed\nAND\n recipient_id = ?\nORDER BY ordermessages.created_time_ms ASC;"
   },
-  "c89f5ddd913f518701d8490cf778cb57d7d7f30cdf8f1c5c3373add48245862b": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 14
-      }
-    },
-    "query": "INSERT INTO orders (public_id, buyer_user_id, seller_user_id, quantity, listing_id, shipping_option_id, shipping_instructions, amount_owed_sat, seller_credit_sat, paid, completed, invoice_hash, invoice_payment_request, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-  },
   "cfa7d7cc21275c9db2ffc6d6c6fe7f1bfdce31858ababbde8407e1622cc63709": {
     "describe": {
       "columns": [],
@@ -2594,7 +2624,37 @@
     },
     "query": "DELETE FROM listingimages WHERE public_id = ?"
   },
-  "d0a42289ebc9758b3ba8aa2f86557eb6eb34ebc6d95e56677500e391cbf115cc": {
+  "e1725cd45fe93f160628b8042fcf9f878c1abc743fae77aeedc45cc93f04b8f5": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "UPDATE ordermessages SET viewed = true WHERE public_id = ?"
+  },
+  "e3652ea53a121c85b6eec9c2effd0b9fca3948c66c173047a69cb39a6df600d3": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 15
+      }
+    },
+    "query": "INSERT INTO orders (public_id, buyer_user_id, seller_user_id, quantity, listing_id, shipping_option_id, shipping_instructions, amount_owed_sat, seller_credit_sat, paid, completed, acked, invoice_hash, invoice_payment_request, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+  },
+  "e706307d9941de70d4a03738669354505bfcdc2e4792fb9582cf3eaf597119cb": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 12
+      }
+    },
+    "query": "INSERT INTO listings (public_id, user_id, title, description, price_sat, quantity, fee_rate_basis_points, submitted, reviewed, approved, removed, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+  },
+  "e7f43d23f74f7c16c8081e99569a135063ce63924248a2c2876884a14c3208ec": {
     "describe": {
       "columns": [
         {
@@ -2653,123 +2713,129 @@
           "type_info": "Bool"
         },
         {
-          "name": "invoice_hash",
+          "name": "acked",
           "ordinal": 11,
-          "type_info": "Text"
+          "type_info": "Bool"
         },
         {
-          "name": "invoice_payment_request",
+          "name": "invoice_hash",
           "ordinal": 12,
           "type_info": "Text"
         },
         {
-          "name": "created_time_ms",
+          "name": "invoice_payment_request",
           "ordinal": 13,
-          "type_info": "Int64"
+          "type_info": "Text"
         },
         {
-          "name": "id",
+          "name": "created_time_ms",
           "ordinal": 14,
           "type_info": "Int64"
         },
         {
-          "name": "listing_public_id",
+          "name": "id",
           "ordinal": 15,
+          "type_info": "Int64"
+        },
+        {
+          "name": "listing_public_id",
+          "ordinal": 16,
           "type_info": "Text"
         },
         {
           "name": "listing_user_id",
-          "ordinal": 16,
+          "ordinal": 17,
           "type_info": "Int64"
         },
         {
           "name": "title",
-          "ordinal": 17,
-          "type_info": "Text"
-        },
-        {
-          "name": "description",
           "ordinal": 18,
           "type_info": "Text"
         },
         {
-          "name": "price_sat",
+          "name": "description",
           "ordinal": 19,
-          "type_info": "Int64"
+          "type_info": "Text"
         },
         {
-          "name": "quantity",
+          "name": "price_sat",
           "ordinal": 20,
           "type_info": "Int64"
         },
         {
-          "name": "fee_rate_basis_points",
+          "name": "quantity",
           "ordinal": 21,
           "type_info": "Int64"
         },
         {
-          "name": "submitted",
+          "name": "fee_rate_basis_points",
           "ordinal": 22,
-          "type_info": "Bool"
+          "type_info": "Int64"
         },
         {
-          "name": "reviewed",
+          "name": "submitted",
           "ordinal": 23,
           "type_info": "Bool"
         },
         {
-          "name": "approved",
+          "name": "reviewed",
           "ordinal": 24,
           "type_info": "Bool"
         },
         {
-          "name": "removed",
+          "name": "approved",
           "ordinal": 25,
           "type_info": "Bool"
         },
         {
-          "name": "listing_created_time_ms",
+          "name": "removed",
           "ordinal": 26,
-          "type_info": "Int64"
+          "type_info": "Bool"
         },
         {
-          "name": "image_id",
+          "name": "listing_created_time_ms",
           "ordinal": 27,
           "type_info": "Int64"
         },
         {
-          "name": "image_public_id",
+          "name": "image_id",
           "ordinal": 28,
+          "type_info": "Int64"
+        },
+        {
+          "name": "image_public_id",
+          "ordinal": 29,
           "type_info": "Text"
         },
         {
           "name": "listing_id",
-          "ordinal": 29,
+          "ordinal": 30,
           "type_info": "Int64"
         },
         {
           "name": "image_data",
-          "ordinal": 30,
+          "ordinal": 31,
           "type_info": "Blob"
         },
         {
           "name": "is_primary",
-          "ordinal": 31,
+          "ordinal": 32,
           "type_info": "Bool"
         },
         {
           "name": "rocket_auth_user_id",
-          "ordinal": 32,
+          "ordinal": 33,
           "type_info": "Int64"
         },
         {
           "name": "rocket_auth_user_username",
-          "ordinal": 33,
+          "ordinal": 34,
           "type_info": "Text"
         }
       ],
       "nullable": [
         true,
+        false,
         false,
         false,
         false,
@@ -2808,27 +2874,7 @@
         "Right": 1
       }
     },
-    "query": "\nselect\n orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.completed, orders.invoice_hash, orders.invoice_payment_request, orders.created_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username\nfrom\n orders\nLEFT JOIN\n listings\nON\n orders.listing_id = listings.id\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nLEFT JOIN\n users\nON\n listings.user_id = users.id\nWHERE\n orders.completed\nAND\n order_buyer_user_id = ?\nGROUP BY\n orders.id\nORDER BY orders.created_time_ms DESC\n;"
-  },
-  "e1725cd45fe93f160628b8042fcf9f878c1abc743fae77aeedc45cc93f04b8f5": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "UPDATE ordermessages SET viewed = true WHERE public_id = ?"
-  },
-  "e706307d9941de70d4a03738669354505bfcdc2e4792fb9582cf3eaf597119cb": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 12
-      }
-    },
-    "query": "INSERT INTO listings (public_id, user_id, title, description, price_sat, quantity, fee_rate_basis_points, submitted, reviewed, approved, removed, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    "query": "\nselect\n orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.completed, orders.acked, orders.invoice_hash, orders.invoice_payment_request, orders.created_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username\nfrom\n orders\nLEFT JOIN\n listings\nON\n orders.listing_id = listings.id\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nLEFT JOIN\n users\nON\n listings.user_id = users.id\nWHERE\n orders.completed\nAND\n listing_user_id = ?\nGROUP BY\n orders.id\nORDER BY orders.created_time_ms DESC\n;"
   },
   "e94cd0fbe6f4a8d90120733fb88081da00668901ed37ba6ca200f82dc2331aaa": {
     "describe": {
@@ -3015,9 +3061,15 @@
           "name": "seller_user_id",
           "ordinal": 14,
           "type_info": "Int64"
+        },
+        {
+          "name": "acked",
+          "ordinal": 15,
+          "type_info": "Bool"
         }
       ],
       "nullable": [
+        false,
         false,
         false,
         false,
@@ -3181,5 +3233,227 @@
       }
     },
     "query": "\nselect\n listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username\nfrom\n listings\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nINNER JOIN\n users\nON\n listings.user_id = users.id\nWHERE\n listings.submitted\nAND\n not listings.reviewed\nAND\n not listings.removed\nAND\n listings.quantity > 0\nAND\n users.id = ?\nGROUP BY\n listings.id\n;"
+  },
+  "fdf19e84da58dc51bdd4ade5d454aae00ad2ede1670f464435be04000bc0e2e6": {
+    "describe": {
+      "columns": [
+        {
+          "name": "order_id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "order_public_id",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "order_buyer_user_id",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "order_seller_user_id",
+          "ordinal": 3,
+          "type_info": "Int64"
+        },
+        {
+          "name": "order_listing_id",
+          "ordinal": 4,
+          "type_info": "Int64"
+        },
+        {
+          "name": "shipping_option_id",
+          "ordinal": 5,
+          "type_info": "Int64"
+        },
+        {
+          "name": "shipping_instructions",
+          "ordinal": 6,
+          "type_info": "Text"
+        },
+        {
+          "name": "amount_owed_sat",
+          "ordinal": 7,
+          "type_info": "Int64"
+        },
+        {
+          "name": "seller_credit_sat",
+          "ordinal": 8,
+          "type_info": "Int64"
+        },
+        {
+          "name": "paid",
+          "ordinal": 9,
+          "type_info": "Bool"
+        },
+        {
+          "name": "completed",
+          "ordinal": 10,
+          "type_info": "Bool"
+        },
+        {
+          "name": "acked",
+          "ordinal": 11,
+          "type_info": "Bool"
+        },
+        {
+          "name": "invoice_hash",
+          "ordinal": 12,
+          "type_info": "Text"
+        },
+        {
+          "name": "invoice_payment_request",
+          "ordinal": 13,
+          "type_info": "Text"
+        },
+        {
+          "name": "created_time_ms",
+          "ordinal": 14,
+          "type_info": "Int64"
+        },
+        {
+          "name": "id",
+          "ordinal": 15,
+          "type_info": "Int64"
+        },
+        {
+          "name": "listing_public_id",
+          "ordinal": 16,
+          "type_info": "Text"
+        },
+        {
+          "name": "listing_user_id",
+          "ordinal": 17,
+          "type_info": "Int64"
+        },
+        {
+          "name": "title",
+          "ordinal": 18,
+          "type_info": "Text"
+        },
+        {
+          "name": "description",
+          "ordinal": 19,
+          "type_info": "Text"
+        },
+        {
+          "name": "price_sat",
+          "ordinal": 20,
+          "type_info": "Int64"
+        },
+        {
+          "name": "quantity",
+          "ordinal": 21,
+          "type_info": "Int64"
+        },
+        {
+          "name": "fee_rate_basis_points",
+          "ordinal": 22,
+          "type_info": "Int64"
+        },
+        {
+          "name": "submitted",
+          "ordinal": 23,
+          "type_info": "Bool"
+        },
+        {
+          "name": "reviewed",
+          "ordinal": 24,
+          "type_info": "Bool"
+        },
+        {
+          "name": "approved",
+          "ordinal": 25,
+          "type_info": "Bool"
+        },
+        {
+          "name": "removed",
+          "ordinal": 26,
+          "type_info": "Bool"
+        },
+        {
+          "name": "listing_created_time_ms",
+          "ordinal": 27,
+          "type_info": "Int64"
+        },
+        {
+          "name": "image_id",
+          "ordinal": 28,
+          "type_info": "Int64"
+        },
+        {
+          "name": "image_public_id",
+          "ordinal": 29,
+          "type_info": "Text"
+        },
+        {
+          "name": "listing_id",
+          "ordinal": 30,
+          "type_info": "Int64"
+        },
+        {
+          "name": "image_data",
+          "ordinal": 31,
+          "type_info": "Blob"
+        },
+        {
+          "name": "is_primary",
+          "ordinal": 32,
+          "type_info": "Bool"
+        },
+        {
+          "name": "rocket_auth_user_id",
+          "ordinal": 33,
+          "type_info": "Int64"
+        },
+        {
+          "name": "rocket_auth_user_username",
+          "ordinal": 34,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\nselect\n orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.completed, orders.acked, orders.invoice_hash, orders.invoice_payment_request, orders.created_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username\nfrom\n orders\nLEFT JOIN\n listings\nON\n orders.listing_id = listings.id\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nLEFT JOIN\n users\nON\n listings.user_id = users.id\nWHERE\n orders.completed\nAND\n not orders.acked\nAND\n listing_user_id = ?\nGROUP BY\n orders.id\nORDER BY orders.created_time_ms DESC\n;"
   }
 }

@@ -1,0 +1,33 @@
+{% extends "base" %}
+{% block body %}
+
+<br>
+
+  <div class="container">
+    <p><!--Nothing to see here --></p>
+
+    <div class="row">
+
+      <h3>My Unacknowledged Orders</h3>
+
+      <div class="twelve columns">
+        <ul>
+        {% for order_card in order_cards %}
+
+        <li>
+	  <a href="/order/{{order_card.order.public_id}}">
+          <p>{{ order_card.order.public_id }}</p>
+          </a>
+          <p>{{ order_card.listing.title }}</p>
+          <p>{{ order_card.order.amount_owed_sat }} sats</p>
+          <p>{{ (order_card.order.created_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}</p>
+	</li>
+
+        {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+
+{% endblock body %}

@@ -22,6 +22,8 @@
     <h5>Seller Info</h5>
     <a href="my_received_orders">My Received Orders</a>
     <br>
+    <a href="my_unacked_orders">My Unacknowledged Orders</a>
+    <br>
     <a href="/new_listing">Add New Listing</a>
     <br>
     <a href="my_unsubmitted_listings">My Unsubmitted Listings</a>

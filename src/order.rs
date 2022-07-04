@@ -27,7 +27,7 @@ struct Context {
     shipping_option: ShippingOption,
     order_messages: Vec<OrderMessage>,
     seller_user: RocketAuthUser,
-    user: User,
+    user: Option<User>,
     admin_user: Option<AdminUser>,
 }
 
@@ -36,10 +36,10 @@ impl Context {
         mut db: Connection<Db>,
         order_id: &str,
         flash: Option<(String, String)>,
-        user: User,
+        user: Option<User>,
         admin_user: Option<AdminUser>,
     ) -> Result<Context, String> {
-        let base_context = BaseContext::raw(&mut db, Some(user.clone()), admin_user.clone())
+        let base_context = BaseContext::raw(&mut db, user.clone(), admin_user.clone())
             .await
             .map_err(|_| "failed to get base template.")?;
         let order = Order::single_by_public_id(&mut db, order_id)
@@ -215,16 +215,56 @@ async fn mark_message_as_read(
     }
 }
 
+#[put("/<id>/ack")]
+async fn ack(
+    id: &str,
+    mut db: Connection<Db>,
+    user: User,
+    admin_user: Option<AdminUser>,
+) -> Result<Flash<Redirect>, Flash<Redirect>> {
+    match mark_order_as_acked(id, &mut db, user.clone(), admin_user.clone()).await {
+        Ok(_) => Ok(Flash::success(
+            Redirect::to(format!("/{}/{}", "order", id)),
+            "Order marked as acked.",
+        )),
+        Err(e) => {
+            error_!("DB update({}) error: {}", id, e);
+            Err(Flash::error(
+                Redirect::to(format!("/{}/{}", "order", id)),
+                "Failed to mark order as acked.",
+            ))
+        }
+    }
+}
+
+async fn mark_order_as_acked(
+    order_id: &str,
+    db: &mut Connection<Db>,
+    user: User,
+    _admin_user: Option<AdminUser>,
+) -> Result<(), String> {
+    let order = Order::single_by_public_id(db, order_id)
+        .await
+        .map_err(|_| "failed to get order.")?;
+
+    if order.seller_user_id != user.id() {
+        Err("User is not the order seller.".to_string())
+    } else {
+        match Order::mark_as_acked(&mut *db, order.id.unwrap()).await {
+            Ok(_) => Ok(()),
+            Err(_) => Err("failed to mark order as acked.".to_string()),
+        }
+    }
+}
+
 #[get("/<id>")]
 async fn index(
     flash: Option<FlashMessage<'_>>,
     id: &str,
     db: Connection<Db>,
-    user: User,
+    user: Option<User>,
     admin_user: Option<AdminUser>,
 ) -> Template {
-    println!("looking for order...");
-
     let flash = flash.map(FlashMessage::into_inner);
     let context = match Context::raw(db, id, flash, user, admin_user).await {
         Ok(ctx) => ctx,
@@ -238,6 +278,6 @@ async fn index(
 
 pub fn order_stage() -> AdHoc {
     AdHoc::on_ignite("Order Stage", |rocket| async {
-        rocket.mount("/order", routes![index, new_message, set_message_read])
+        rocket.mount("/order", routes![index, new_message, set_message_read, ack])
     })
 }
