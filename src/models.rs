@@ -2036,6 +2036,51 @@ WHERE
         Ok(account_balance_changes)
     }
 
+    pub async fn all_account_balance_changes(
+        db: &mut Connection<Db>,
+    ) -> Result<Vec<AccountBalanceChange>, sqlx::Error> {
+        // TODO: Order by event time in SQL query. When this is fixed: https://github.com/launchbadge/sqlx/issues/1350
+        let mut account_balance_changes = sqlx::query!("
+select orders.seller_user_id as user_id, orders.seller_credit_sat as amount_change_sat, 'received_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
+from
+ orders
+WHERE
+ orders.paid
+AND
+ orders.completed
+UNION ALL
+select orders.buyer_user_id as user_id, orders.amount_owed_sat as amount_change_sat, 'refunded_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
+from
+ orders
+WHERE
+ orders.paid
+AND
+ not orders.completed
+UNION ALL
+select withdrawals.user_id as user_id, (0 - withdrawals.amount_sat) as amount_change_sat, 'withdrawal' as event_type, withdrawals.public_id as event_id, withdrawals.created_time_ms as event_time_ms
+from
+ withdrawals
+;")
+            .fetch(&mut **db)
+            .map_ok(|r| AccountBalanceChange {
+                    user_id: r.user_id.to_string(),
+                    amount_change_sat: r.amount_change_sat.try_into().unwrap(),
+                    event_type: r.event_type,
+                    event_id: r.event_id,
+                    event_time_ms: r.event_time_ms.try_into().unwrap(),
+                }
+            )
+            .try_collect::<Vec<_>>()
+            .await?;
+
+        println!("{:?}", account_balance_changes);
+
+        // Sort by event time
+        account_balance_changes.sort_by(|a, b| b.event_time_ms.cmp(&a.event_time_ms));
+
+        Ok(account_balance_changes)
+    }
+
     // TODO: Use when sqlx is fixed.
     //     pub async fn account_balance(
     //         db: &mut Connection<Db>,
