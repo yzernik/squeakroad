@@ -20,6 +20,7 @@
 
 	<p><b>Order id</b>: {{ order.public_id }}</p>
 	<p><b>Listing</b>: <a href="/listing/{{ listing.public_id }}">{{ listing.title }}</a> ({{ listing.price_sat }} sats)</p>
+	<p><b>Seller</b>: <a href="/user/{{ seller_user.username }}">{{ seller_user.username }}</a></p>
 	<p><b>Shipping option</b>: {{ shipping_option.title }} ({{ shipping_option.price_sat }} sats)</p>
 	<p><b>Shipping option description</b>: {{ shipping_option.description }}</p>
 	<p><b>Quantity</b>: {{ order.quantity }}</p>
@@ -57,7 +58,7 @@
             {% endif %}
 	  </div>
 	  <div class="two columns">
-            <input type="submit" value="add message">
+            <input type="submit" value="send message">
 	  </div>
 	</form>
 

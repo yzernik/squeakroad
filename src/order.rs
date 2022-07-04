@@ -1,6 +1,8 @@
 use crate::base::BaseContext;
 use crate::db::Db;
-use crate::models::{Listing, Order, OrderMessage, OrderMessageInput, ShippingOption};
+use crate::models::{
+    Listing, Order, OrderMessage, OrderMessageInput, RocketAuthUser, ShippingOption,
+};
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
 use rocket::request::FlashMessage;
@@ -24,6 +26,7 @@ struct Context {
     listing: Listing,
     shipping_option: ShippingOption,
     order_messages: Vec<OrderMessage>,
+    seller_user: RocketAuthUser,
     user: User,
     admin_user: Option<AdminUser>,
 }
@@ -51,6 +54,9 @@ impl Context {
         let order_messages = OrderMessage::all_for_order(&mut db, order.id.unwrap())
             .await
             .map_err(|_| "failed to get order messages.")?;
+        let seller_user = RocketAuthUser::single(&mut db, listing.user_id)
+            .await
+            .map_err(|_| "failed to get order messages.")?;
         println!("found order: {:?}", order);
         Ok(Context {
             base_context,
@@ -59,6 +65,7 @@ impl Context {
             listing,
             shipping_option,
             order_messages,
+            seller_user,
             user,
             admin_user,
         })
