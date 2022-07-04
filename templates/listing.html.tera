@@ -78,7 +78,7 @@
 	<div class="container">
 	  <h3>{{ listing_display.listing.title }}</h3>
 	  <p><b>Price</b>: {{ listing_display.listing.price_sat }} sats</p>
-	  <p><b>User</b>: <a href="/user/{{listing_display.user.username}}">{{ listing_display.user.username }}</a></p>
+	  <p><b>Seller</b>: <a href="/user/{{listing_display.user.username}}">{{ listing_display.user.username }}</a></p>
 	  <p><b>Quantity in stock</b>: {{ quantity_in_stock }}</p>
 
 	  {% if admin_user or user and listing_display.listing.user_id == user.id %}
