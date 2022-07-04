@@ -109,6 +109,8 @@ async fn create_listing(
         Err("Description length is too long.".to_string())
     } else if listing_info.quantity <= 0 {
         Err("Quantity must be a positive number.".to_string())
+    } else if listing_info.price_sat <= 0 {
+        Err("Price must be a positive number.".to_string())
     } else if user.is_admin {
         Err("Admin user cannot create a listing.".to_string())
     } else {
