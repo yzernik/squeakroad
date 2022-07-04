@@ -1,6 +1,6 @@
 use crate::base::BaseContext;
 use crate::db::Db;
-use crate::models::OrderMessage;
+use crate::models::{OrderMessage, OrderMessageCard};
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::response::status::NotFound;
@@ -14,7 +14,7 @@ use rocket_dyn_templates::Template;
 struct Context {
     base_context: BaseContext,
     flash: Option<(String, String)>,
-    order_messages: Vec<OrderMessage>,
+    order_message_cards: Vec<OrderMessageCard>,
 }
 
 impl Context {
@@ -27,13 +27,13 @@ impl Context {
         let base_context = BaseContext::raw(&mut db, Some(user.clone()), admin_user.clone())
             .await
             .map_err(|_| "failed to get base template.")?;
-        let order_messages = OrderMessage::all_unread_for_recipient(&mut db, user.id)
+        let order_message_cards = OrderMessage::all_unread_for_recipient(&mut db, user.id)
             .await
             .map_err(|_| "failed to get unread messages.")?;
         Ok(Context {
             base_context,
             flash,
-            order_messages,
+            order_message_cards,
         })
     }
 }

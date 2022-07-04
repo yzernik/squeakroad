@@ -225,6 +225,13 @@ pub struct OrderMessageInput {
     pub text: String,
 }
 
+#[derive(Serialize, Debug, Clone)]
+#[serde(crate = "rocket::serde")]
+pub struct OrderMessageCard {
+    pub order_message: OrderMessage,
+    pub order_public_id: Option<String>,
+}
+
 impl Listing {
     // pub async fn all(db: &mut Connection<Db>) -> Result<Vec<Listing>, sqlx::Error> {
     //     let listings = sqlx::query!("select * from listings;")
@@ -2291,10 +2298,16 @@ impl OrderMessage {
     pub async fn all_unread_for_recipient(
         db: &mut Connection<Db>,
         user_id: i32,
-    ) -> Result<Vec<OrderMessage>, sqlx::Error> {
+    ) -> Result<Vec<OrderMessageCard>, sqlx::Error> {
         let order_messages = sqlx::query!(
             "
-select * from ordermessages
+select ordermessages.id, ordermessages.public_id, ordermessages.order_id, ordermessages.author_id, ordermessages.recipient_id, ordermessages.text, ordermessages.viewed, ordermessages.created_time_ms, orders.public_id as order_public_id
+FROM
+ ordermessages
+LEFT JOIN
+ orders
+ON
+ ordermessages.order_id = orders.id
 WHERE
  not viewed
 AND
@@ -2303,15 +2316,22 @@ ORDER BY ordermessages.created_time_ms ASC;",
             user_id,
         )
         .fetch(&mut **db)
-        .map_ok(|r| OrderMessage {
-            id: r.id.map(|n| n.try_into().unwrap()),
-            public_id: r.public_id,
-            order_id: r.order_id.try_into().unwrap(),
-            author_id: r.author_id.try_into().unwrap(),
-            recipient_id: r.recipient_id.try_into().unwrap(),
-            text: r.text,
-            viewed: r.viewed,
-            created_time_ms: r.created_time_ms.try_into().unwrap(),
+        .map_ok(|r|  {
+            let om = OrderMessage {
+                id: r.id.map(|n| n.try_into().unwrap()),
+                public_id: r.public_id,
+                order_id: r.order_id.try_into().unwrap(),
+                author_id: r.author_id.try_into().unwrap(),
+                recipient_id: r.recipient_id.try_into().unwrap(),
+                text: r.text,
+                viewed: r.viewed,
+                created_time_ms: r.created_time_ms.try_into().unwrap(),
+            };
+            let opid = r.order_public_id.try_into().unwrap();
+            OrderMessageCard {
+                order_message: om,
+                order_public_id: opid,
+            }
         })
         .try_collect::<Vec<_>>()
         .await?;

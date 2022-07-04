@@ -12,11 +12,11 @@
 
       <div class="twelve columns">
         <ul>
-        {% for order_message in order_messages %}
+        {% for order_message_card in order_message_cards %}
 
         <li>
-	  <a href="/order/{{order_message.order_id}}">
-          <p>{{ order_message.order_id }}</p>
+	  <a href="/order/{{order_message_card.order_public_id}}">
+          <p>Message for order ID: {{ order_message_card.order_public_id }}</p>
           </a>
 	</li>
 
