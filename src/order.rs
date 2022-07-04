@@ -215,6 +215,41 @@ async fn mark_message_as_read(
     }
 }
 
+#[put("/<id>/ack")]
+async fn ack(
+    id: &str,
+    mut db: Connection<Db>,
+    user: User,
+    admin_user: Option<AdminUser>,
+) -> Result<Flash<Redirect>, Flash<Redirect>> {
+    // match mark_message_as_read(
+    //     id,
+    //     &mut db,
+    //     user.clone(),
+    //     admin_user.clone(),
+    // )
+    // .await
+    // {
+    //     Ok(_) => Ok(Flash::success(
+    //         Redirect::to(format!("/{}/{}", "order", id)),
+    //         "Message marked as read.",
+    //     )),
+    //     Err(e) => {
+    //         error_!("DB update({}) error: {}", id, e);
+    //         Err(Flash::error(
+    //             Redirect::to(format!("/{}/{}", "order", id)),
+    //             "Failed to mark message as read.",
+    //         ))
+    //     }
+    // }
+
+    println!("Ack order: {:?}", id);
+    Ok(Flash::success(
+        Redirect::to(format!("/{}/{}", "order", id)),
+        "Order acked",
+    ))
+}
+
 #[get("/<id>")]
 async fn index(
     flash: Option<FlashMessage<'_>>,
@@ -236,6 +271,6 @@ async fn index(
 
 pub fn order_stage() -> AdHoc {
     AdHoc::on_ignite("Order Stage", |rocket| async {
-        rocket.mount("/order", routes![index, new_message, set_message_read])
+        rocket.mount("/order", routes![index, new_message, set_message_read, ack])
     })
 }
