@@ -22,26 +22,6 @@ struct Context {
 }
 
 impl Context {
-    // TODO: use redirect and remove the "err" function.
-    pub async fn err<M: std::fmt::Display>(
-        mut db: Connection<Db>,
-        msg: M,
-        user: Option<User>,
-        admin_user: Option<AdminUser>,
-    ) -> Result<Context, String> {
-        let base_context = BaseContext::raw(&mut db, user.clone(), admin_user.clone())
-            .await
-            .map_err(|_| "failed to get base template.")?;
-        let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
-            .await
-            .map_err(|_| "failed to update market name.")?;
-        Ok(Context {
-            base_context,
-            flash: Some(("error".into(), msg.to_string())),
-            admin_settings,
-        })
-    }
-
     pub async fn raw(
         flash: Option<(String, String)>,
         mut db: Connection<Db>,
@@ -68,7 +48,7 @@ async fn new(
     mut db: Connection<Db>,
     user: User,
     admin_user: Option<AdminUser>,
-) -> Result<Flash<Redirect>, Template> {
+) -> Result<Flash<Redirect>, Flash<Redirect>> {
     let listing_info = listing_form.into_inner();
 
     match create_listing(listing_info, &mut db, user.clone()).await {
@@ -78,9 +58,9 @@ async fn new(
         )),
         Err(e) => {
             error_!("DB insertion error: {}", e);
-            Err(Template::render(
-                "newlisting",
-                Context::err(db, e, Some(user), admin_user).await,
+            Err(Flash::error(
+                Redirect::to(uri!("/new_listing", index())),
+                "Failed to add new listing.",
             ))
         }
     }
@@ -144,34 +124,6 @@ async fn create_listing(
         }
     }
 }
-
-// #[put("/<id>")]
-// async fn toggle(id: i32, mut db: Connection<Db>, user: User) -> Result<Redirect, Template> {
-//     match Task::toggle_with_id(id, &mut db).await {
-//         Ok(_) => Ok(Redirect::to("/")),
-//         Err(e) => {
-//             error_!("DB toggle({}) error: {}", id, e);
-//             Err(Template::render(
-//                 "index",
-//                 Context::err(db, "Failed to toggle task.", Some(user)).await,
-//             ))
-//         }
-//     }
-// }
-
-// #[delete("/<id>")]
-// async fn delete(id: i32, mut db: Connection<Db>, user: User) -> Result<Flash<Redirect>, Template> {
-//     match Task::delete_with_id(id, &mut db).await {
-//         Ok(_) => Ok(Flash::success(Redirect::to("/"), "Listing was deleted.")),
-//         Err(e) => {
-//             error_!("DB deletion({}) error: {}", id, e);
-//             Err(Template::render(
-//                 "index",
-//                 Context::err(db, "Failed to delete task.", Some(user)).await,
-//             ))
-//         }
-//     }
-// }
 
 #[get("/")]
 async fn index(
