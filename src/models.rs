@@ -2287,4 +2287,33 @@ impl OrderMessage {
 
         Ok(order_messages)
     }
+
+    pub async fn number_for_order_for_user_since_ms(
+        db: &mut Connection<Db>,
+        order_id: i32,
+        user_id: i32,
+        start_time_ms: u64,
+    ) -> Result<u32, sqlx::Error> {
+        let start_time_ms_i64: i64 = start_time_ms.try_into().unwrap();
+
+        let message_count = sqlx::query!(
+            "
+select count(id) as message_count from ordermessages
+WHERE
+ order_id = ?
+AND
+ author_id = ?
+AND
+ created_time_ms > ?
+ORDER BY ordermessages.created_time_ms ASC;",
+            order_id,
+            user_id,
+            start_time_ms_i64,
+        )
+        .fetch_one(&mut **db)
+        .map_ok(|r| r.message_count)
+        .await?;
+
+        Ok(message_count.try_into().unwrap())
+    }
 }

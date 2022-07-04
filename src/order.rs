@@ -98,20 +98,27 @@ async fn create_order_message(
     db: &mut Connection<Db>,
     user: User,
 ) -> Result<(), String> {
-    let order = Order::single_by_public_id(db, order_id)
-        .await
-        .map_err(|_| "failed to get order")?;
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
         .as_millis() as u64;
-
-    println!("user.id(): {:?}", user.id());
-    println!("order.seller_user_id: {:?}", order.seller_user_id);
-    println!("order.buyer_user_id: {:?}", order.buyer_user_id);
+    let order = Order::single_by_public_id(db, order_id)
+        .await
+        .map_err(|_| "failed to get order")?;
+    let one_day_in_ms = 24 * 60 * 60 * 1000;
+    let recent_order_message_count = OrderMessage::number_for_order_for_user_since_ms(
+        db,
+        order.id.unwrap(),
+        user.id(),
+        now - one_day_in_ms,
+    )
+    .await
+    .map_err(|_| "failed to get number of recent messages.")?;
 
     if user.id() != order.seller_user_id && user.id() != order.buyer_user_id {
         Err("User is not the seller or the buyer.".to_string())
+    } else if recent_order_message_count >= 5 {
+        Err("More than 5 message in a single day not allowed.".to_string())
     } else if order_message_info.text.is_empty() {
         Err("Message text cannot be empty.".to_string())
     } else if order_message_info.text.len() > 1024 {
