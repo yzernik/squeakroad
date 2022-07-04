@@ -8,9 +8,7 @@
   <div class="row">
     <div class="one-half column">
 
-      
       <div class="row">
-
 
 	{% if flash %}
 	<small class="field-{{flash.0}}-msg">
