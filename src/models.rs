@@ -1759,7 +1759,7 @@ AND
  order_buyer_user_id = ?
 GROUP BY
  orders.id
-ORDER BY orders.created_time_ms DESC
+ORDER BY orders.payment_time_ms DESC
 ;",
             user_id,
         )
@@ -1853,7 +1853,7 @@ AND
  order_buyer_user_id = ?
 GROUP BY
  orders.id
-ORDER BY orders.created_time_ms DESC
+ORDER BY orders.payment_time_ms DESC
 ;",
             user_id,
         )
@@ -1947,7 +1947,7 @@ AND
  listing_user_id = ?
 GROUP BY
  orders.id
-ORDER BY orders.created_time_ms DESC
+ORDER BY orders.payment_time_ms DESC
 ;",
             user_id,
         )
@@ -2043,7 +2043,7 @@ AND
  listing_user_id = ?
 GROUP BY
  orders.id
-ORDER BY orders.created_time_ms DESC
+ORDER BY orders.payment_time_ms DESC
 ;",
             user_id,
         )
