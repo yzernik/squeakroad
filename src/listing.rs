@@ -16,7 +16,7 @@ use rocket_dyn_templates::Template;
 struct Context {
     base_context: BaseContext,
     flash: Option<(String, String)>,
-    listing_display: Option<ListingDisplay>,
+    listing_display: ListingDisplay,
     selected_shipping_option: Option<ShippingOption>,
     quantity_in_stock: u32,
     user: Option<User>,
@@ -50,28 +50,36 @@ impl Context {
         let listing_display = ListingDisplay::single_by_public_id(&mut db, listing_id)
             .await
             .map_err(|_| "failed to get admin settings.")?;
-        let quantity_sold =
-            Order::quantity_of_listing_sold(&mut db, listing_display.listing.id.unwrap())
-                .await
-                .map_err(|_| "failed to get quantity sold.")?;
-        let maybe_shipping_option = match shipping_option_id {
-            Some(sid) => {
-                let shipping_option = ShippingOption::single_by_public_id(&mut db, sid).await;
-                shipping_option.ok()
-            }
-            None => None,
-        };
-        let quantity_in_stock = listing_display.listing.quantity - quantity_sold;
+        // Do not show listing if listing is not approved (unless user is seller or admin).
+        if !(listing_display.listing.approved
+            || user.as_ref().map(|u| u.id()) == Some(listing_display.listing.user_id)
+            || admin_user.is_some())
+        {
+            Err("Listing is not approved.".to_string())
+        } else {
+            let quantity_sold =
+                Order::quantity_of_listing_sold(&mut db, listing_display.listing.id.unwrap())
+                    .await
+                    .map_err(|_| "failed to get quantity sold.")?;
+            let maybe_shipping_option = match shipping_option_id {
+                Some(sid) => {
+                    let shipping_option = ShippingOption::single_by_public_id(&mut db, sid).await;
+                    shipping_option.ok()
+                }
+                None => None,
+            };
+            let quantity_in_stock = listing_display.listing.quantity - quantity_sold;
 
-        Ok(Context {
-            base_context,
-            flash,
-            listing_display: Some(listing_display),
-            selected_shipping_option: maybe_shipping_option,
-            quantity_in_stock,
-            user,
-            admin_user,
-        })
+            Ok(Context {
+                base_context,
+                flash,
+                listing_display,
+                selected_shipping_option: maybe_shipping_option,
+                quantity_in_stock,
+                user,
+                admin_user,
+            })
+        }
     }
 }
 
