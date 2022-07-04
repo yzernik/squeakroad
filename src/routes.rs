@@ -105,11 +105,17 @@ pub fn stage(config: Config) -> AdHoc {
                         );
                         loop {
                             if let Ok(conn) = pool.acquire().await {
-                                payment_processor::handle_received_payments(
+                                match payment_processor::handle_received_payments(
                                     config_clone.clone(),
                                     conn,
                                 )
-                                .await;
+                                .await
+                                {
+                                    Ok(_) => println!(
+                                        "payment processor task `completed` (shouldn't happen)."
+                                    ),
+                                    Err(_) => println!("payment processor task failed"),
+                                }
                                 // println!("conn: {:?}", conn);
                             }
                             println!("Subscription failed. Trying again in {:?} seconds.", 10);
