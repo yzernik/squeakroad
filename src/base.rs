@@ -30,7 +30,7 @@ impl BaseContext {
             None => None,
         };
         let admin_info = match admin_user {
-            Some(ref u) => Some(
+            Some(_) => Some(
                 AdminInfo::admin_info(db)
                     .await
                     .map_err(|_| "failed to get admin info.")?,
