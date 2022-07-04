@@ -1,16 +1,19 @@
 use crate::base::BaseContext;
 use crate::db::Db;
-use crate::models::{Listing, Order, OrderMessageInput, ShippingOption};
+use crate::models::{Listing, Order, OrderMessage, OrderMessageInput, ShippingOption};
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
 use rocket::request::FlashMessage;
 use rocket::response::Flash;
 use rocket::response::Redirect;
+use rocket::serde::uuid::Uuid;
 use rocket::serde::Serialize;
 use rocket_auth::AdminUser;
 use rocket_auth::User;
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
+use std::time::SystemTime;
+use std::time::UNIX_EPOCH;
 
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -64,29 +67,74 @@ async fn new_message(
     mut db: Connection<Db>,
     user: User,
     admin_user: Option<AdminUser>,
-) -> Result<Flash<Redirect>, Template> {
+) -> Result<Flash<Redirect>, Flash<Redirect>> {
     let order_message_info = order_message_form.into_inner();
 
     println!("order_message_info: {:?}", order_message_info);
 
-    // match create_listing(listing_info, &mut db, user.clone()).await {
-    //     Ok(listing_id) => Ok(Flash::success(
-    //         Redirect::to(format!("/{}/{}", "listing", listing_id)),
-    //         "Listing successfully added.",
-    //     )),
-    //     Err(e) => {
-    //         error_!("DB insertion error: {}", e);
-    //         Err(Template::render(
-    //             "newlisting",
-    //             Context::err(db, e, Some(user), admin_user).await,
-    //         ))
-    //     }
-    // }
+    match create_order_message(id, order_message_info, &mut db, user.clone()).await {
+        Ok(_) => Ok(Flash::success(
+            Redirect::to(format!("/{}/{}", "order", id)),
+            "Order Message Successfully Sent.",
+        )),
+        Err(e) => {
+            error_!("DB insertion error: {}", e);
+            Err(Flash::error(
+                Redirect::to(format!("/{}/{}", "order", id)),
+                e,
+            ))
+        }
+    }
+}
 
-    Ok(Flash::success(
-        Redirect::to(format!("/{}/{}", "order", id)),
-        "Order Message Successfully Sent.",
-    ))
+async fn create_order_message(
+    order_id: &str,
+    order_message_info: OrderMessageInput,
+    db: &mut Connection<Db>,
+    user: User,
+) -> Result<(), String> {
+    let order = Order::single_by_public_id(db, order_id)
+        .await
+        .map_err(|_| "failed to get order")?;
+    let now = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_millis() as u64;
+
+    println!("user.id(): {:?}", user.id());
+    println!("order.seller_user_id: {:?}", order.seller_user_id);
+    println!("order.buyer_user_id: {:?}", order.buyer_user_id);
+
+    if user.id() != order.seller_user_id && user.id() != order.buyer_user_id {
+        Err("User is not the seller or the buyer.".to_string())
+    } else if order_message_info.text.is_empty() {
+        Err("Message text cannot be empty.".to_string())
+    } else if order_message_info.text.len() > 1024 {
+        Err("Message text is too long.".to_string())
+    } else {
+        let recipient_id = if user.id() == order.seller_user_id {
+            order.buyer_user_id
+        } else {
+            order.seller_user_id
+        };
+        let order_message = OrderMessage {
+            id: None,
+            public_id: Uuid::new_v4().to_string(),
+            order_id: user.id(),
+            author_id: user.id(),
+            recipient_id: recipient_id,
+            text: order_message_info.text,
+            viewed: false,
+            created_time_ms: now,
+        };
+        match OrderMessage::insert(order_message, db).await {
+            Ok(_) => Ok(()),
+            Err(e) => {
+                error_!("DB insertion error: {}", e);
+                Err("Order Message could not be inserted due an internal error.".to_string())
+            }
+        }
+    }
 }
 
 #[get("/<id>")]
