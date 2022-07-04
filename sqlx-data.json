@@ -1440,6 +1440,66 @@
     },
     "query": "DELETE FROM posts WHERE id = ?"
   },
+  "7a21312c763886061de64702fdaef47c97aa700b692e48cf9583282e5d13abcf": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "public_id",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "order_id",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "author_id",
+          "ordinal": 3,
+          "type_info": "Int64"
+        },
+        {
+          "name": "recipient_id",
+          "ordinal": 4,
+          "type_info": "Int64"
+        },
+        {
+          "name": "text",
+          "ordinal": 5,
+          "type_info": "Text"
+        },
+        {
+          "name": "viewed",
+          "ordinal": 6,
+          "type_info": "Bool"
+        },
+        {
+          "name": "created_time_ms",
+          "ordinal": 7,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "select * from ordermessages WHERE order_id = ? ORDER BY ordermessages.created_time_ms ASC;"
+  },
   "83f994a3f0b310e4faa8b4fb7e800ff508988f5edd5cb60ad635d71e1b398865": {
     "describe": {
       "columns": [],
@@ -1461,7 +1521,7 @@
         {
           "name": "amount_change_sat",
           "ordinal": 1,
-          "type_info": "Int64"
+          "type_info": "Int"
         },
         {
           "name": "event_type",

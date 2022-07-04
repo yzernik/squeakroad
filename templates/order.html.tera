@@ -54,9 +54,19 @@
         {% endif %}
       </div>
       <div class="two columns">
-        <input type="submit" value="add listing">
+        <input type="submit" value="add message">
       </div>
     </form>
+
+    <ul>
+      {% for order_message in order_messages %}
+      <li>
+        <h6>Message - {{ (order_message.created_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}</h6>
+	<p><b>{% if order_message.author_id == order.seller_user_id %}Seller{% else %}Buyer{% endif %}</b>: {{ order_message.text }}</p>
+      </li>
+      {% endfor %}
+    </ul>
+
   </div>
 
 

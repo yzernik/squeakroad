@@ -23,6 +23,7 @@ struct Context {
     order: Order,
     listing: Listing,
     shipping_option: ShippingOption,
+    order_messages: Vec<OrderMessage>,
     user: User,
     admin_user: Option<AdminUser>,
 }
@@ -47,6 +48,9 @@ impl Context {
         let shipping_option = ShippingOption::single(&mut db, order.shipping_option_id)
             .await
             .map_err(|_| "failed to get shipping option.")?;
+        let order_messages = OrderMessage::all_for_order(&mut db, order.id.unwrap())
+            .await
+            .map_err(|_| "failed to get order messages.")?;
         println!("found order: {:?}", order);
         Ok(Context {
             base_context,
@@ -54,6 +58,7 @@ impl Context {
             order,
             listing,
             shipping_option,
+            order_messages,
             user,
             admin_user,
         })
@@ -120,7 +125,7 @@ async fn create_order_message(
         let order_message = OrderMessage {
             id: None,
             public_id: Uuid::new_v4().to_string(),
-            order_id: user.id(),
+            order_id: order.id.unwrap(),
             author_id: user.id(),
             recipient_id: recipient_id,
             text: order_message_info.text,
