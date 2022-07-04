@@ -16,7 +16,7 @@ use rocket_dyn_templates::Template;
 struct Context {
     base_context: BaseContext,
     flash: Option<(String, String)>,
-    listing_display: Option<ListingDisplay>,
+    listing_display: ListingDisplay,
     selected_shipping_option: Option<ShippingOption>,
     quantity_in_stock: u32,
     user: Option<User>,
@@ -66,7 +66,7 @@ impl Context {
         Ok(Context {
             base_context,
             flash,
-            listing_display: Some(listing_display),
+            listing_display,
             selected_shipping_option: maybe_shipping_option,
             quantity_in_stock,
             user,
