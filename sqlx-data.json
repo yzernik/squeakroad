@@ -3493,5 +3493,23 @@
       }
     },
     "query": "\nselect\n listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username\nfrom\n listings\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nINNER JOIN\n users\nON\n listings.user_id = users.id\nWHERE\n listings.submitted\nAND\n not listings.reviewed\nAND\n not listings.removed\nAND\n listings.quantity > 0\nAND\n users.id = ?\nGROUP BY\n listings.id\n;"
+  },
+  "fd259d3f6df1cc10ef3a0874ac1da595c1cee9fab81b486c52fd5700c71180c3": {
+    "describe": {
+      "columns": [
+        {
+          "name": "invoice_hash",
+          "ordinal": 0,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "\nSELECT\n invoice_hash\nFROM\n orders\nWHERE\n payment_time_ms = (SELECT MAX(payment_time_ms) FROM orders)\nLIMIT 1\n;"
   }
 }

@@ -1624,6 +1624,28 @@ GROUP BY
 
         Ok(refunded_order_total.try_into().unwrap())
     }
+
+    // TODO: implement this.
+    pub async fn most_recent_paid_order(
+        db: &mut PoolConnection<Sqlite>,
+    ) -> Result<Option<String>, sqlx::Error> {
+        let latest_paid_order_invoice_hash = sqlx::query!(
+            "
+SELECT
+ invoice_hash
+FROM
+ orders
+WHERE
+ payment_time_ms = (SELECT MAX(payment_time_ms) FROM orders)
+LIMIT 1
+;"
+        )
+        .fetch_optional(&mut **db)
+        .map_ok(|maybe_r| maybe_r.map(|r| r.invoice_hash))
+        .await?;
+
+        Ok(latest_paid_order_invoice_hash)
+    }
 }
 
 impl OrderCard {
@@ -2100,37 +2122,6 @@ ORDER BY orders.payment_time_ms DESC
 
         Ok(orders)
     }
-
-    // TODO: implement this.
-    //     pub async fn most_recent_paid_order(db: &mut Connection<Db>) -> Result<Order, sqlx::Error> {
-    //         let order = sqlx::query!(
-    //             "
-    // select MAX(id) from orders
-    //  WHERE paid = true;"
-    //         )
-    //         .fetch_one(&mut **db)
-    //         .map_ok(|r| Order {
-    //             id: r.id.map(|n| n.try_into().unwrap()),
-    //             public_id: r.public_id,
-    //             quantity: r.quantity.try_into().unwrap(),
-    //             buyer_user_id: r.buyer_user_id.try_into().unwrap(),
-    //             seller_user_id: r.seller_user_id.try_into().unwrap(),
-    //             listing_id: r.listing_id.try_into().unwrap(),
-    //             shipping_option_id: r.shipping_option_id.try_into().unwrap(),
-    //             shipping_instructions: r.shipping_instructions,
-    //             amount_owed_sat: r.amount_owed_sat.try_into().unwrap(),
-    //             seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
-    //             paid: r.paid,
-    //             completed: r.completed,
-    //             acked: r.acked,
-    //             invoice_hash: r.invoice_hash,
-    //             invoice_payment_request: r.invoice_payment_request,
-    //             created_time_ms: r.created_time_ms.try_into().unwrap(),
-    //         })
-    //         .await?;
-
-    //         Ok(order)
-    //     }
 }
 
 impl AccountInfo {
