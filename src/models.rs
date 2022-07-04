@@ -207,6 +207,24 @@ pub struct WithdrawalInfo {
     pub invoice_payment_request: String,
 }
 
+#[derive(Serialize, Debug, Clone)]
+#[serde(crate = "rocket::serde")]
+pub struct OrderMessage {
+    pub id: Option<i32>,
+    pub public_id: String,
+    pub order_id: i32,
+    pub author_id: i32,
+    pub recipient_id: i32,
+    pub text: String,
+    pub viewed: bool,
+    pub created_time_ms: u64,
+}
+
+#[derive(Debug, FromForm, Clone)]
+pub struct OrderMessageInput {
+    pub text: String,
+}
+
 impl Listing {
     // pub async fn all(db: &mut Connection<Db>) -> Result<Vec<Listing>, sqlx::Error> {
     //     let listings = sqlx::query!("select * from listings;")
@@ -2192,5 +2210,56 @@ impl Withdrawal {
             .await?;
 
         Ok(withdrawal)
+    }
+}
+
+impl OrderMessage {
+    /// Returns the id of the inserted row.
+    pub async fn insert(
+        order_message: OrderMessage,
+        db: &mut Connection<Db>,
+    ) -> Result<i32, sqlx::Error> {
+        let created_time_ms: i64 = order_message.created_time_ms.try_into().unwrap();
+
+        let insert_result = sqlx::query!(
+            "INSERT INTO ordermessages (public_id, order_id, author_id, recipient_id, text, viewed, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            order_message.public_id,
+            order_message.order_id,
+            order_message.author_id,
+            order_message.recipient_id,
+            order_message.text,
+            order_message.viewed,
+            created_time_ms,
+        )
+            .execute(&mut **db)
+            .await?;
+
+        println!("{:?}", insert_result);
+
+        Ok(insert_result.last_insert_rowid() as _)
+    }
+
+    pub async fn single_by_public_id(
+        db: &mut Connection<Db>,
+        public_id: &str,
+    ) -> Result<OrderMessage, sqlx::Error> {
+        let order_message = sqlx::query!(
+            "select * from ordermessages WHERE public_id = ?;",
+            public_id
+        )
+        .fetch_one(&mut **db)
+        .map_ok(|r| OrderMessage {
+            id: Some(r.id.try_into().unwrap()),
+            public_id: r.public_id,
+            order_id: r.order_id.try_into().unwrap(),
+            author_id: r.author_id.try_into().unwrap(),
+            recipient_id: r.recipient_id.try_into().unwrap(),
+            text: r.text,
+            viewed: r.viewed,
+            created_time_ms: r.created_time_ms.try_into().unwrap(),
+        })
+        .await?;
+
+        Ok(order_message)
     }
 }

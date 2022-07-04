@@ -37,6 +37,29 @@
     {% endif %}
 
   </div>
+
+
+  <div class="row">
+
+    <h4>Messages</h4>
+    <form action="/order/{{ order.public_id }}/new_message" method="post">
+      <div class="ten columns">
+        <input type="text" placeholder="enter a new message..."
+               name="text" id="text" value="" autofocus
+               class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" />
+        {% if flash %}
+        <small class="field-{{flash.0}}-msg">
+          {{ flash.1 }}
+        </small>
+        {% endif %}
+      </div>
+      <div class="two columns">
+        <input type="submit" value="add listing">
+      </div>
+    </form>
+  </div>
+
+
 </div>
 
 

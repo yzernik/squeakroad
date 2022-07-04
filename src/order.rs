@@ -1,8 +1,11 @@
 use crate::base::BaseContext;
 use crate::db::Db;
-use crate::models::{Listing, Order, ShippingOption};
+use crate::models::{Listing, Order, OrderMessageInput, ShippingOption};
 use rocket::fairing::AdHoc;
+use rocket::form::Form;
 use rocket::request::FlashMessage;
+use rocket::response::Flash;
+use rocket::response::Redirect;
 use rocket::serde::Serialize;
 use rocket_auth::AdminUser;
 use rocket_auth::User;
@@ -54,6 +57,38 @@ impl Context {
     }
 }
 
+#[post("/<id>/new_message", data = "<order_message_form>")]
+async fn new_message(
+    id: &str,
+    order_message_form: Form<OrderMessageInput>,
+    mut db: Connection<Db>,
+    user: User,
+    admin_user: Option<AdminUser>,
+) -> Result<Flash<Redirect>, Template> {
+    let order_message_info = order_message_form.into_inner();
+
+    println!("order_message_info: {:?}", order_message_info);
+
+    // match create_listing(listing_info, &mut db, user.clone()).await {
+    //     Ok(listing_id) => Ok(Flash::success(
+    //         Redirect::to(format!("/{}/{}", "listing", listing_id)),
+    //         "Listing successfully added.",
+    //     )),
+    //     Err(e) => {
+    //         error_!("DB insertion error: {}", e);
+    //         Err(Template::render(
+    //             "newlisting",
+    //             Context::err(db, e, Some(user), admin_user).await,
+    //         ))
+    //     }
+    // }
+
+    Ok(Flash::success(
+        Redirect::to(format!("/{}/{}", "order", id)),
+        "Order Message Successfully Sent.",
+    ))
+}
+
 #[get("/<id>")]
 async fn index(
     flash: Option<FlashMessage<'_>>,
@@ -77,6 +112,6 @@ async fn index(
 
 pub fn order_stage() -> AdHoc {
     AdHoc::on_ignite("Order Stage", |rocket| async {
-        rocket.mount("/order", routes![index])
+        rocket.mount("/order", routes![index, new_message])
     })
 }
