@@ -180,6 +180,7 @@ pub struct OrderCard {
 pub struct AccountInfo {
     pub account_balance_sat: i64,
     pub num_unread_messages: u32,
+    pub num_unacked_orders: u32,
 }
 
 #[derive(Serialize, Debug, Clone)]
@@ -2104,9 +2105,12 @@ impl AccountInfo {
             .sum();
         let unread_messages = OrderMessage::all_unread_for_recipient(db, user_id).await?;
         let num_unread_messages = unread_messages.len();
+        let unacked_orders = OrderCard::all_unacked_for_user(db, user_id).await?;
+        let num_unacked_orders = unacked_orders.len();
         Ok(AccountInfo {
             account_balance_sat: account_balance_sat,
             num_unread_messages: num_unread_messages.try_into().unwrap(),
+            num_unacked_orders: num_unacked_orders.try_into().unwrap(),
         })
     }
 
