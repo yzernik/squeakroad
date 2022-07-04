@@ -16,11 +16,8 @@
 
         <li>
 	  <a href="/order/{{order_card.order.public_id}}">
-          <p>{{ order_card.order.public_id }}</p>
+          <p>{{ order_card.listing.title }} ({{ order_card.listing.price_sat }} sats)</p>
           </a>
-          <p>{{ order_card.listing.title }}</p>
-          <p>{{ order_card.order.amount_owed_sat }} sats</p>
-          <p>{{ (order_card.order.created_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}</p>
 	</li>
 
         {% endfor %}
