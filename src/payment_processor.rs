@@ -3,6 +3,8 @@ use crate::lightning::get_lnd_client;
 use crate::models::Order;
 use sqlx::pool::PoolConnection;
 use sqlx::Sqlite;
+use std::time::SystemTime;
+use std::time::UNIX_EPOCH;
 
 pub async fn handle_received_payments(
     config: Config,
@@ -17,9 +19,27 @@ pub async fn handle_received_payments(
     .await
     .map_err(|_| "failed to get lightning client.")?;
 
+    // Get latest paid invoice if exists.
+    let latest_paid_order = Order::most_recent_paid_order(&mut conn)
+        .await
+        .map_err(|_| "failed to latest paid order.")?;
+
+    let settle_index: u64 = if let Some(latest_invoice_hash) = latest_paid_order {
+        let latest_paid_order_invoice = lighting_client
+            .lookup_invoice(tonic_lnd::rpc::PaymentHash {
+                r_hash: hex::decode(latest_invoice_hash).unwrap(),
+                ..Default::default()
+            })
+            .await
+            .map_err(|_| "Failed to lookup invoice.")?;
+        latest_paid_order_invoice.into_inner().settle_index
+    } else {
+        0
+    };
+
     println!("Starting subscribe invoices...");
     let invoice_subscription = tonic_lnd::rpc::InvoiceSubscription {
-        settle_index: 0,
+        settle_index: settle_index,
         ..Default::default()
     };
     let update_stream_resp = lighting_client
@@ -31,8 +51,12 @@ pub async fn handle_received_payments(
         println!("Received invoice: {:?}", invoice);
         let invoice_hash = hex::encode(invoice.r_hash);
         println!("Invoice hash: {:?}", invoice_hash);
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_millis() as u64;
 
-        Order::update_order_on_paid(&mut conn, &invoice_hash)
+        Order::update_order_on_paid(&mut conn, &invoice_hash, now)
             .await
             .map_err(|_| "failed to update database with paid invoice.")?;
     }

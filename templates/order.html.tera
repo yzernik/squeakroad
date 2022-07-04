@@ -31,6 +31,7 @@
 	<h3>Order</h3>
 
 	<p><b>Order id</b>: {{ order.public_id }}</p>
+        <p><b>Order time</b>: {{ (order.created_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}</p>
 	<p><b>Listing</b>: <a href="/listing/{{ listing.public_id }}">{{ listing.title }}</a> ({{ listing.price_sat }} sats)</p>
 	<p><b>Seller</b>: <a href="/user/{{ seller_user.username }}">{{ seller_user.username }}</a></p>
 	<p><b>Shipping option</b>: {{ shipping_option.title }} ({{ shipping_option.price_sat }} sats)</p>
@@ -45,6 +46,9 @@
 	{% endif %}
 	{% endif %}
 	<p><b>Order status</b>: {% if order.paid %}{% if order.completed %}Completed{% else %}Paid but not completed (funds credited back to buyer account){% endif %}{% else %}Not paid{% endif %}</p>
+	{% if order.paid %}
+        <p><b>Payment time</b>: {{ (order.payment_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}</p>
+	{% endif %}
 	{% if user %}
 	{% if user and order.buyer_user_id == user.id and not order.paid %}
 	<p><b>Payment request</b>:

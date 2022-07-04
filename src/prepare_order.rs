@@ -184,6 +184,7 @@ async fn create_order(
             invoice_hash: hex::encode(invoice.r_hash),
             invoice_payment_request: invoice.payment_request,
             created_time_ms: now,
+            payment_time_ms: 0,
         };
 
         match Order::insert(order, db).await {
