@@ -149,6 +149,77 @@ async fn create_order_message(
     }
 }
 
+#[put("/<id>/message/<order_message_id>/mark_read")]
+async fn set_message_read(
+    id: &str,
+    order_message_id: &str,
+    mut db: Connection<Db>,
+    user: User,
+    admin_user: Option<AdminUser>,
+) -> Result<Flash<Redirect>, Flash<Redirect>> {
+    match mark_message_as_read(
+        id,
+        order_message_id,
+        &mut db,
+        user.clone(),
+        admin_user.clone(),
+    )
+    .await
+    {
+        Ok(_) => Ok(Flash::success(
+            Redirect::to(format!("/{}/{}", "order", id)),
+            "Message marked as read.",
+        )),
+        Err(e) => {
+            error_!("DB update({}) error: {}", id, e);
+            Err(Flash::error(
+                Redirect::to(format!("/{}/{}", "order", id)),
+                "Failed to mark message as read.",
+            ))
+        }
+    }
+}
+
+async fn mark_message_as_read(
+    order_id: &str,
+    order_message_id: &str,
+    db: &mut Connection<Db>,
+    user: User,
+    _admin_user: Option<AdminUser>,
+) -> Result<(), String> {
+    let order = Order::single_by_public_id(db, order_id)
+        .await
+        .map_err(|_| "failed to get order.")?;
+    let order_message = OrderMessage::single_by_public_id(db, order_message_id)
+        .await
+        .map_err(|_| "failed to get order message.")?;
+
+    if order_message.order_id != order.id.unwrap() {
+        Err("Invalid order message id given.".to_string())
+    } else if order_message.recipient_id != user.id() {
+        Err("User is not the message recipient.".to_string())
+    } else {
+        // match ListingImage::mark_image_as_primary_by_public_id(
+        //     &mut *db,
+        //     listing.id.unwrap(),
+        //     image_id,
+        // )
+        // .await
+        // {
+        //     Ok(num_marked) => {
+        //         if num_marked > 0 {
+        //             Ok(())
+        //         } else {
+        //             Err("No images marked as primary.".to_string())
+        //         }
+        //     }
+        //     Err(_) => Err("failed to mark image as primary.".to_string()),
+        // }
+        println!("Set message as read: {:?}", order_message_id);
+        Ok(())
+    }
+}
+
 #[get("/<id>")]
 async fn index(
     flash: Option<FlashMessage<'_>>,
@@ -172,6 +243,6 @@ async fn index(
 
 pub fn order_stage() -> AdHoc {
     AdHoc::on_ignite("Order Stage", |rocket| async {
-        rocket.mount("/order", routes![index, new_message])
+        rocket.mount("/order", routes![index, new_message, set_message_read])
     })
 }

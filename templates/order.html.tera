@@ -67,7 +67,7 @@
 	    <br>
             {% if order_message.author_id != user.id and not order_message.viewed %}
 	    <span><b>Unread</b></span>
-	    <form class="inline" action="/order/{{ order.public_id }}/message/{{ order_message.public_id }}/mark_read}}" method="post">
+	    <form class="inline" action="/order/{{ order.public_id }}/message/{{ order_message.public_id }}/mark_read" method="post">
               <input type="hidden" name="_method" value="put" />
               <button class="link" type="submit">Mark as read</button>
 	    </form>
