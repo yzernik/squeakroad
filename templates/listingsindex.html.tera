@@ -23,10 +23,8 @@
 	    <img src="/images/default_listing.png" style="width:256px;height:256px;" />
             {% endif %}
 	    </p>
-
           <p>{{ card.listing.title }} ({{ card.listing.price_sat }} sats)</p>
           </a>
-
 	</li>
 
         {% endfor %}
