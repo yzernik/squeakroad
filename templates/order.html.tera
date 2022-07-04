@@ -24,16 +24,17 @@
     <p><b>Payment amount</b>: {{ order.quantity }} x ({{ listing.price_sat }} sats + {{ shipping_option.price_sat }} sats) = {{ order.amount_owed_sat }} sats</p>
     <p><b>Market fee amount</b>: {{ listing.fee_rate_basis_points / 10000 }} x {{ order.amount_owed_sat }} sats = {{ order.amount_owed_sat - order.seller_credit_sat }} sats</p>
     <p><b>Seller credit amount</b>: {{ order.amount_owed_sat }} sats - {{ order.amount_owed_sat - order.seller_credit_sat }} sats = {{ order.seller_credit_sat }} sats</p>
-    {% if order.buyer_user_id == user.id or listing.user_id == user.id or admin_user %}
+    {% if order.buyer_user_id == user.id or order.seller_user_id == user.id or admin_user %}
     <p><b>Shipping instructions</b>: {{ order.shipping_instructions }}</p>
     {% endif %}
     <p><b>Order status</b>: {% if order.paid %}{% if order.completed %}Completed{% else %}Paid but not completed (funds credited back to buyer account){% endif %}{% else %}Not paid{% endif %}</p>
+    {% if order.buyer_user_id == user.id and not order.paid %}
     <p><b>Payment request</b>:
       <pre>
 	{{ order.invoice_payment_request }}
       </pre>
     </p>
-
+    {% endif %}
 
   </div>
 </div>
