@@ -19,7 +19,7 @@
 
     <form action="/withdraw/new" method="post">
       <div class="ten columns">
-        <input type="text" placeholder="enter a listing title..."
+        <input type="text" placeholder="enter a lightning invoice payment request..."
 	       name="invoice_payment_request" id="invoice_payment_request" value="" autofocus
 	       class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" />
       </div>
