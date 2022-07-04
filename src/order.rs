@@ -222,32 +222,39 @@ async fn ack(
     user: User,
     admin_user: Option<AdminUser>,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
-    // match mark_message_as_read(
-    //     id,
-    //     &mut db,
-    //     user.clone(),
-    //     admin_user.clone(),
-    // )
-    // .await
-    // {
-    //     Ok(_) => Ok(Flash::success(
-    //         Redirect::to(format!("/{}/{}", "order", id)),
-    //         "Message marked as read.",
-    //     )),
-    //     Err(e) => {
-    //         error_!("DB update({}) error: {}", id, e);
-    //         Err(Flash::error(
-    //             Redirect::to(format!("/{}/{}", "order", id)),
-    //             "Failed to mark message as read.",
-    //         ))
-    //     }
-    // }
+    match mark_order_as_acked(id, &mut db, user.clone(), admin_user.clone()).await {
+        Ok(_) => Ok(Flash::success(
+            Redirect::to(format!("/{}/{}", "order", id)),
+            "Order marked as acked.",
+        )),
+        Err(e) => {
+            error_!("DB update({}) error: {}", id, e);
+            Err(Flash::error(
+                Redirect::to(format!("/{}/{}", "order", id)),
+                "Failed to mark order as acked.",
+            ))
+        }
+    }
+}
 
-    println!("Ack order: {:?}", id);
-    Ok(Flash::success(
-        Redirect::to(format!("/{}/{}", "order", id)),
-        "Order acked",
-    ))
+async fn mark_order_as_acked(
+    order_id: &str,
+    db: &mut Connection<Db>,
+    user: User,
+    _admin_user: Option<AdminUser>,
+) -> Result<(), String> {
+    let order = Order::single_by_public_id(db, order_id)
+        .await
+        .map_err(|_| "failed to get order.")?;
+
+    if order.seller_user_id != user.id() {
+        Err("User is not the order seller.".to_string())
+    } else {
+        match Order::mark_as_acked(&mut *db, order.id.unwrap()).await {
+            Ok(_) => Ok(()),
+            Err(_) => Err("failed to mark order as acked.".to_string()),
+        }
+    }
 }
 
 #[get("/<id>")]

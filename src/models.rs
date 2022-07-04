@@ -1553,6 +1553,13 @@ GROUP BY
         Ok(())
     }
 
+    pub async fn mark_as_acked(db: &mut Connection<Db>, id: i32) -> Result<(), sqlx::Error> {
+        sqlx::query!("UPDATE orders SET acked = true WHERE id = ?", id,)
+            .execute(&mut **db)
+            .await?;
+        Ok(())
+    }
+
     pub async fn amount_earned_sat(
         db: &mut Connection<Db>,
         user_id: i32,

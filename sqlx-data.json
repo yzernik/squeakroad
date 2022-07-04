@@ -92,6 +92,16 @@
     },
     "query": "\nselect\n SUM(orders.seller_credit_sat) as total_amount_paid, listings.user_id as listing_user_id\nFROM\n orders\nLEFT JOIN\n listings\nON\n orders.listing_id = listings.id\nWHERE\n listing_user_id = ?\nAND\n completed\nGROUP BY\n listing_user_id\n;"
   },
+  "0d786c64fe05c4a9a098dd6945101e087304b79ca03163413c859e8e93f341ac": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "UPDATE orders SET acked = true WHERE id = ?"
+  },
   "0f00447ae5443e98c7343164214f8324c84cd9dd3aaed698c7641e62ec6a6ebe": {
     "describe": {
       "columns": [
