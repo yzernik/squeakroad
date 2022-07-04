@@ -116,34 +116,11 @@ pub fn stage(config: Config) -> AdHoc {
                                     ),
                                     Err(_) => println!("payment processor task failed"),
                                 }
-                                // println!("conn: {:?}", conn);
                             }
                             println!("Subscription failed. Trying again in {:?} seconds.", 10);
                             interval.tick().await;
                         }
                     });
-
-                    // match Db::fetch(&rocket) {
-                    //     Some(db) => {
-                    //         // let conn = Db::fetch(&rocket);
-                    //         rocket::tokio::spawn(async move {
-                    //             let mut interval = rocket::tokio::time::interval(
-                    //                 rocket::tokio::time::Duration::from_secs(10),
-                    //             );
-                    //             loop {
-                    //                 interval.tick().await;
-                    //                 // do_sql_stuff(&conn).await;
-                    //                 println!("Do something here!!!");
-                    //                 payment_processor::handle_received_payments(
-                    //                     config_clone.clone(),
-                    //                     &**db,
-                    //                 )
-                    //                 .await;
-                    //             }
-                    //         });
-                    //     }
-                    //     None => panic!("failed to get db for background task."),
-                    // }
                 })
             }))
             .attach(Template::fairing())
