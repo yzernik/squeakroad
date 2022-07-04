@@ -8,6 +8,9 @@
 
     <div class="row">
 
+      <h5><a href="/new_listing">Add New Listing</a></h5>
+      <br>
+
       <div class="twelve columns">
         <ul>
         {% for card in listing_cards %}
