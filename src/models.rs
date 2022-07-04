@@ -153,6 +153,7 @@ pub struct Order {
     pub seller_credit_sat: u64,
     pub paid: bool,
     pub completed: bool,
+    pub acked: bool,
     pub invoice_hash: String,
     pub invoice_payment_request: String,
     pub created_time_ms: u64,
@@ -1329,7 +1330,7 @@ impl Order {
         println!("inserting order: {:?}", order);
 
         let insert_result = sqlx::query!(
-            "INSERT INTO orders (public_id, buyer_user_id, seller_user_id, quantity, listing_id, shipping_option_id, shipping_instructions, amount_owed_sat, seller_credit_sat, paid, completed, invoice_hash, invoice_payment_request, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO orders (public_id, buyer_user_id, seller_user_id, quantity, listing_id, shipping_option_id, shipping_instructions, amount_owed_sat, seller_credit_sat, paid, completed, acked, invoice_hash, invoice_payment_request, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             order.public_id,
             order.buyer_user_id,
             order.seller_user_id,
@@ -1341,6 +1342,7 @@ impl Order {
             seller_credit_sat,
             order.paid,
             order.completed,
+            order.acked,
             order.invoice_hash,
             order.invoice_payment_request,
             created_time_ms,
@@ -1369,6 +1371,7 @@ impl Order {
                 seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
                 paid: r.paid,
                 completed: r.completed,
+                acked: r.acked,
                 invoice_hash: r.invoice_hash,
                 invoice_payment_request: r.invoice_payment_request,
                 created_time_ms: r.created_time_ms.try_into().unwrap(),
@@ -1397,6 +1400,7 @@ impl Order {
                 seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
                 paid: r.paid,
                 completed: r.completed,
+                acked: r.acked,
                 invoice_hash: r.invoice_hash,
                 invoice_payment_request: r.invoice_payment_request,
                 created_time_ms: r.created_time_ms.try_into().unwrap(),
@@ -1634,7 +1638,7 @@ impl OrderCard {
         let orders = sqlx::query!(
             "
 select
- orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.completed, orders.invoice_hash, orders.invoice_payment_request, orders.created_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+ orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.completed, orders.acked, orders.invoice_hash, orders.invoice_payment_request, orders.created_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  orders
 LEFT JOIN
@@ -1676,6 +1680,7 @@ ORDER BY orders.created_time_ms DESC
                     seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
                     paid: r.paid,
                     completed: r.completed,
+                    acked: r.acked,
                     invoice_hash: r.invoice_hash,
                     invoice_payment_request: r.invoice_payment_request,
                     created_time_ms: r.created_time_ms.try_into().unwrap(),
@@ -1726,7 +1731,7 @@ ORDER BY orders.created_time_ms DESC
         let orders = sqlx::query!(
             "
 select
- orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.completed, orders.invoice_hash, orders.invoice_payment_request, orders.created_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+ orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.completed, orders.acked, orders.invoice_hash, orders.invoice_payment_request, orders.created_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  orders
 LEFT JOIN
@@ -1770,6 +1775,7 @@ ORDER BY orders.created_time_ms DESC
                     seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
                     paid: r.paid,
                     completed: r.completed,
+                    acked: r.acked,
                     invoice_hash: r.invoice_hash,
                     invoice_payment_request: r.invoice_payment_request,
                     created_time_ms: r.created_time_ms.try_into().unwrap(),
@@ -1820,7 +1826,7 @@ ORDER BY orders.created_time_ms DESC
         let orders = sqlx::query!(
             "
 select
- orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.completed, orders.invoice_hash, orders.invoice_payment_request, orders.created_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+ orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.completed, orders.acked, orders.invoice_hash, orders.invoice_payment_request, orders.created_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  orders
 LEFT JOIN
@@ -1862,6 +1868,7 @@ ORDER BY orders.created_time_ms DESC
                     seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
                     paid: r.paid,
                     completed: r.completed,
+                    acked: r.acked,
                     invoice_hash: r.invoice_hash,
                     invoice_payment_request: r.invoice_payment_request,
                     created_time_ms: r.created_time_ms.try_into().unwrap(),
@@ -1913,7 +1920,7 @@ ORDER BY orders.created_time_ms DESC
         let orders = sqlx::query!(
             "
 select
- orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.completed, orders.invoice_hash, orders.invoice_payment_request, orders.created_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+ orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.completed, orders.acked, orders.invoice_hash, orders.invoice_payment_request, orders.created_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  orders
 LEFT JOIN
@@ -1955,6 +1962,7 @@ ORDER BY orders.created_time_ms DESC
                     seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
                     paid: r.paid,
                     completed: r.completed,
+                    acked: r.acked,
                     invoice_hash: r.invoice_hash,
                     invoice_payment_request: r.invoice_payment_request,
                     created_time_ms: r.created_time_ms.try_into().unwrap(),
