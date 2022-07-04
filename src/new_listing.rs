@@ -47,7 +47,6 @@ async fn new(
     listing_form: Form<InitialListingInfo>,
     mut db: Connection<Db>,
     user: User,
-    admin_user: Option<AdminUser>,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
     let listing_info = listing_form.into_inner();
 
