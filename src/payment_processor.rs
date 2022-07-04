@@ -4,7 +4,10 @@ use crate::models::Order;
 use sqlx::pool::PoolConnection;
 use sqlx::Sqlite;
 
-pub async fn handle_received_payments(config: Config, mut conn: PoolConnection<Sqlite>) -> () {
+pub async fn handle_received_payments(
+    config: Config,
+    mut conn: PoolConnection<Sqlite>,
+) -> Result<(), String> {
     let mut lighting_client = get_lnd_client(
         config.lnd_host.clone(),
         config.lnd_port,
@@ -12,33 +15,26 @@ pub async fn handle_received_payments(config: Config, mut conn: PoolConnection<S
         config.lnd_macaroon_path.clone(),
     )
     .await
-    .expect("failed to get lightning client");
+    .map_err(|_| "failed to get lightning client.")?;
 
     println!("Starting subscribe invoices...");
     let invoice_subscription = tonic_lnd::rpc::InvoiceSubscription {
         settle_index: 0,
         ..Default::default()
     };
-    let mut update_stream = lighting_client
+    let update_stream_resp = lighting_client
         .subscribe_invoices(invoice_subscription)
         .await
-        .expect("Failed to call subscribe invoices")
-        .into_inner();
-    while let Some(invoice) = update_stream
-        .message()
-        .await
-        .expect("failed to receive update")
-    {
+        .map_err(|_| "Failed to call subscribe invoices.")?;
+    let mut update_stream = update_stream_resp.into_inner();
+    while let Ok(Some(invoice)) = update_stream.message().await {
         println!("Received invoice: {:?}", invoice);
         let invoice_hash = hex::encode(invoice.r_hash);
         println!("Invoice hash: {:?}", invoice_hash);
 
-        // let order = Order::single_by_invoice_hash(&mut conn, &invoice_hash)
-        //     .await
-        //     .expect("failed to make order query.");
-        // println!("Order: {:?}", order);
         Order::update_order_on_paid(&mut conn, &invoice_hash)
             .await
-            .expect("failed to update database with paid invoice.")
+            .map_err(|_| "failed to update database with paid invoice.")?;
     }
+    Ok(())
 }
