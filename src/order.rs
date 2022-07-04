@@ -27,7 +27,7 @@ struct Context {
     shipping_option: ShippingOption,
     order_messages: Vec<OrderMessage>,
     seller_user: RocketAuthUser,
-    user: User,
+    user: Option<User>,
     admin_user: Option<AdminUser>,
 }
 
@@ -36,10 +36,10 @@ impl Context {
         mut db: Connection<Db>,
         order_id: &str,
         flash: Option<(String, String)>,
-        user: User,
+        user: Option<User>,
         admin_user: Option<AdminUser>,
     ) -> Result<Context, String> {
-        let base_context = BaseContext::raw(&mut db, Some(user.clone()), admin_user.clone())
+        let base_context = BaseContext::raw(&mut db, user.clone(), admin_user.clone())
             .await
             .map_err(|_| "failed to get base template.")?;
         let order = Order::single_by_public_id(&mut db, order_id)
@@ -220,11 +220,9 @@ async fn index(
     flash: Option<FlashMessage<'_>>,
     id: &str,
     db: Connection<Db>,
-    user: User,
+    user: Option<User>,
     admin_user: Option<AdminUser>,
 ) -> Template {
-    println!("looking for order...");
-
     let flash = flash.map(FlashMessage::into_inner);
     let context = match Context::raw(db, id, flash, user, admin_user).await {
         Ok(ctx) => ctx,

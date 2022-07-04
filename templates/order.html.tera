@@ -5,6 +5,16 @@
 <div class="container">
   <p><!--Nothing to see here --></p>
 
+  {% if order.seller_user_id == user.id and not order.acked %}
+  <div class="container">
+    <span><b>Unacknowledged</b></span>
+    <form class="inline" action="/order/{{ order.public_id }}/ack" method="post">
+      <input type="hidden" name="_method" value="put" />
+      <button class="link" type="submit">Ack</button>
+    </form>
+  </div>
+  {% endif %}
+
   <div class="row">
     <div class="one-half column">
 
