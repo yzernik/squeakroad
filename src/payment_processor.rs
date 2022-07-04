@@ -3,6 +3,8 @@ use crate::lightning::get_lnd_client;
 use crate::models::Order;
 use sqlx::pool::PoolConnection;
 use sqlx::Sqlite;
+use std::time::SystemTime;
+use std::time::UNIX_EPOCH;
 
 pub async fn handle_received_payments(
     config: Config,
@@ -31,8 +33,12 @@ pub async fn handle_received_payments(
         println!("Received invoice: {:?}", invoice);
         let invoice_hash = hex::encode(invoice.r_hash);
         println!("Invoice hash: {:?}", invoice_hash);
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_millis() as u64;
 
-        Order::update_order_on_paid(&mut conn, &invoice_hash)
+        Order::update_order_on_paid(&mut conn, &invoice_hash, now)
             .await
             .map_err(|_| "failed to update database with paid invoice.")?;
     }
