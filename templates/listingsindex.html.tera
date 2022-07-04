@@ -24,14 +24,8 @@
             {% endif %}
 	    </p>
 
-          <p>{{ card.listing.title }}</p>
-          <p>{{ card.listing.price_sat }} sats</p>
-
+          <p>{{ card.listing.title }} ({{ card.listing.price_sat }} sats)</p>
           </a>
-	  <a href="/user/{{card.user.username}}">
-            <p>{{ card.user.username }}</p>
-          </a>
-
 
 	</li>
 
