@@ -137,6 +137,8 @@ async fn create_order(
         Err("Shipping instructions length is too long.".to_string())
     } else if listing.user_id == user.id() {
         Err("Listing belongs to same user as buyer.".to_string())
+    } else if !listing.approved {
+        Err("Listing has not been approved by admin.".to_string())
     } else if shipping_option.listing_id != listing.id.unwrap() {
         Err("Shipping option not associated with listing.".to_string())
     } else if user.is_admin {
