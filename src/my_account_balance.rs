@@ -28,9 +28,10 @@ impl Context {
         let base_context = BaseContext::raw(&mut db, Some(user.clone()), admin_user.clone())
             .await
             .map_err(|_| "failed to get base template.")?;
-        let account_balance_changes = AccountInfo::all_account_balance_changes(&mut db, user.id)
-            .await
-            .map_err(|_| "failed to get account balance changes.")?;
+        let account_balance_changes =
+            AccountInfo::all_account_balance_changes_for_user(&mut db, user.id)
+                .await
+                .map_err(|_| "failed to get account balance changes.")?;
         let account_info = AccountInfo::account_info_for_user(&mut db, user.id)
             .await
             .map_err(|_| "failed to get account info.")?;

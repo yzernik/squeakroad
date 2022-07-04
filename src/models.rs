@@ -1972,7 +1972,8 @@ impl AccountInfo {
         db: &mut Connection<Db>,
         user_id: i32,
     ) -> Result<AccountInfo, sqlx::Error> {
-        let account_balance_changes = AccountInfo::all_account_balance_changes(db, user_id).await?;
+        let account_balance_changes =
+            AccountInfo::all_account_balance_changes_for_user(db, user_id).await?;
         let account_balance_sat: i64 = account_balance_changes
             .iter()
             .map(|c| c.amount_change_sat)
@@ -1982,7 +1983,7 @@ impl AccountInfo {
         })
     }
 
-    pub async fn all_account_balance_changes(
+    pub async fn all_account_balance_changes_for_user(
         db: &mut Connection<Db>,
         user_id: i32,
     ) -> Result<Vec<AccountBalanceChange>, sqlx::Error> {
