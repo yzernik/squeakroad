@@ -183,6 +183,12 @@ pub struct AccountInfo {
 
 #[derive(Serialize, Debug, Clone)]
 #[serde(crate = "rocket::serde")]
+pub struct AdminInfo {
+    pub num_pending_listings: u32,
+}
+
+#[derive(Serialize, Debug, Clone)]
+#[serde(crate = "rocket::serde")]
 pub struct AccountBalanceChange {
     pub username: String,
     pub amount_change_sat: i64,
@@ -2380,5 +2386,15 @@ ORDER BY ordermessages.created_time_ms ASC;",
         .execute(&mut **db)
         .await?;
         Ok(())
+    }
+}
+
+impl AdminInfo {
+    pub async fn admin_info(db: &mut Connection<Db>) -> Result<AdminInfo, sqlx::Error> {
+        let pending_listings = ListingCard::all_pending(db).await?;
+        let num_pending_listings = pending_listings.len();
+        Ok(AdminInfo {
+            num_pending_listings: num_pending_listings.try_into().unwrap(),
+        })
     }
 }

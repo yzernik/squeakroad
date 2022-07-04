@@ -55,6 +55,7 @@
             <a class="navbar-brand" href="/about">About</a>
             {% if base_context.user %}
             {% if base_context.admin_user %}
+            <a class="navbar-brand" href="/review_pending_listings">Pending Listings{% if base_context.admin_info %} ({{ base_context.admin_info.num_pending_listings }}){% endif %}</a>
             <a class="navbar-brand" href="/admin">Admin</a>
             {% else %}
             Welcome, <a class="navbar-brand" href="/user/{{ base_context.user.email }}">{{ base_context.user.email }}</a>

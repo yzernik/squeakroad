@@ -1,5 +1,5 @@
 use crate::db::Db;
-use crate::models::{AccountInfo, AdminSettings};
+use crate::models::{AccountInfo, AdminInfo, AdminSettings};
 use rocket::serde::Serialize;
 use rocket_auth::AdminUser;
 use rocket_auth::User;
@@ -11,6 +11,7 @@ pub struct BaseContext {
     user: Option<User>,
     account_info: Option<AccountInfo>,
     admin_user: Option<AdminUser>,
+    admin_info: Option<AdminInfo>,
     admin_settings: Option<AdminSettings>,
 }
 
@@ -28,6 +29,14 @@ impl BaseContext {
             ),
             None => None,
         };
+        let admin_info = match admin_user {
+            Some(ref u) => Some(
+                AdminInfo::admin_info(db)
+                    .await
+                    .map_err(|_| "failed to get admin info.")?,
+            ),
+            None => None,
+        };
         let admin_settings = AdminSettings::single(db, AdminSettings::get_default())
             .await
             .map_err(|_| "failed to get admin settings.")?;
@@ -35,6 +44,7 @@ impl BaseContext {
             user,
             account_info,
             admin_user,
+            admin_info,
             admin_settings: Some(admin_settings),
         })
     }
