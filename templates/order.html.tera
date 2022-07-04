@@ -28,12 +28,13 @@
     <p><b>Shipping instructions</b>: {{ order.shipping_instructions }}</p>
     {% endif %}
     <p><b>Order status</b>: {% if order.paid %}{% if order.completed %}Completed{% else %}Paid but not completed (funds credited back to buyer account){% endif %}{% else %}Not paid{% endif %}</p>
+    {% if order.buyer_user_id == user.id and not order.paid %}
     <p><b>Payment request</b>:
       <pre>
 	{{ order.invoice_payment_request }}
       </pre>
     </p>
-
+    {% endif %}
 
   </div>
 </div>
