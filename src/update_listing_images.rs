@@ -142,20 +142,6 @@ async fn delete(
             ))
         }
     }
-
-    // match ListingImage::delete_with_id(image_id, &mut db).await {
-    //     Ok(_) => Ok(Flash::success(
-    //         Redirect::to(uri!("/update_listing_images", index(id))),
-    //         "Listing image was deleted.",
-    //     )),
-    //     Err(e) => {
-    //         error_!("DB deletion({}) error: {}", id, e);
-    //         Err(Template::render(
-    //             "updatelistingimages",
-    //             Context::err(db, id, "Failed to delete listing image.", user, admin_user).await,
-    //         ))
-    //     }
-    // }
 }
 
 async fn delete_image_with_public_id(
