@@ -58,7 +58,7 @@
             {% endif %}
 	  </div>
 	  <div class="two columns">
-            <input type="submit" value="add message">
+            <input type="submit" value="send message">
 	  </div>
 	</form>
 
