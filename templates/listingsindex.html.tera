@@ -8,8 +8,6 @@
 
     <div class="row">
 
-      <p><a href="/new_listing">Add new listing</a></p>
-
       <div class="twelve columns">
         <ul>
         {% for card in listing_cards %}
