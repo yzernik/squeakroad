@@ -58,6 +58,66 @@
     },
     "query": "UPDATE listings SET submitted = true WHERE public_id = ?"
   },
+  "070995473d585294fa76922ff799216909993c1eaa65542b74e7a488d76ba6a0": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "public_id",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "order_id",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "author_id",
+          "ordinal": 3,
+          "type_info": "Int64"
+        },
+        {
+          "name": "recipient_id",
+          "ordinal": 4,
+          "type_info": "Int64"
+        },
+        {
+          "name": "text",
+          "ordinal": 5,
+          "type_info": "Text"
+        },
+        {
+          "name": "viewed",
+          "ordinal": 6,
+          "type_info": "Bool"
+        },
+        {
+          "name": "created_time_ms",
+          "ordinal": 7,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\nselect * from ordermessages\nWHERE\n not viewed\nAND\n recipient_id = ?\nORDER BY ordermessages.created_time_ms ASC;"
+  },
   "091a2c22695d40516014a93a1a721d7ecbf23a9103295de371c6b29380aef341": {
     "describe": {
       "columns": [],

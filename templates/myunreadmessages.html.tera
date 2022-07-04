@@ -1,0 +1,30 @@
+{% extends "base" %}
+{% block body %}
+
+<br>
+
+  <div class="container">
+    <p><!--Nothing to see here --></p>
+
+    <div class="row">
+
+      <h3>My Unread Messages</h3>
+
+      <div class="twelve columns">
+        <ul>
+        {% for order_message in order_messages %}
+
+        <li>
+	  <a href="/order/{{order_message.order_id}}">
+          <p>{{ order_message.order_id }}</p>
+          </a>
+	</li>
+
+        {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+
+{% endblock body %}

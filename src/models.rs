@@ -2288,6 +2288,37 @@ impl OrderMessage {
         Ok(order_messages)
     }
 
+    pub async fn all_unread_for_recipient(
+        db: &mut Connection<Db>,
+        user_id: i32,
+    ) -> Result<Vec<OrderMessage>, sqlx::Error> {
+        let order_messages = sqlx::query!(
+            "
+select * from ordermessages
+WHERE
+ not viewed
+AND
+ recipient_id = ?
+ORDER BY ordermessages.created_time_ms ASC;",
+            user_id,
+        )
+        .fetch(&mut **db)
+        .map_ok(|r| OrderMessage {
+            id: r.id.map(|n| n.try_into().unwrap()),
+            public_id: r.public_id,
+            order_id: r.order_id.try_into().unwrap(),
+            author_id: r.author_id.try_into().unwrap(),
+            recipient_id: r.recipient_id.try_into().unwrap(),
+            text: r.text,
+            viewed: r.viewed,
+            created_time_ms: r.created_time_ms.try_into().unwrap(),
+        })
+        .try_collect::<Vec<_>>()
+        .await?;
+
+        Ok(order_messages)
+    }
+
     pub async fn number_for_order_for_user_since_ms(
         db: &mut Connection<Db>,
         order_id: i32,
