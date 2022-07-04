@@ -122,7 +122,11 @@ async fn create_order(
     let price_per_unit_with_shipping_sat: u64 = listing.price_sat + shipping_option.price_sat;
     let amount_owed_sat: u64 =
         ((order_info.quantity as u64) * price_per_unit_with_shipping_sat).into();
-    let market_fee_sat: u64 = (amount_owed_sat * (listing.fee_rate_basis_points as u64)) / 10000;
+    // let market_fee_sat: u64 = (amount_owed_sat * (listing.fee_rate_basis_points as u64)) / 10000;
+    let market_fee_sat: u64 = divide_round_up(
+        amount_owed_sat * (listing.fee_rate_basis_points as u64),
+        10000,
+    );
     let seller_credit_sat: u64 = amount_owed_sat - market_fee_sat;
     let quantity_in_stock = listing.quantity - quantity_sold;
     println!("quantity_in_stock: {:?}", quantity_in_stock);
@@ -193,6 +197,10 @@ async fn create_order(
             }
         }
     }
+}
+
+fn divide_round_up(dividend: u64, divisor: u64) -> u64 {
+    (dividend + divisor - 1) / divisor
 }
 
 #[get("/<id>?<shipping_option_id>&<quantity>")]
