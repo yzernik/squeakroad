@@ -41,8 +41,8 @@ pub struct Listing {
 pub struct InitialListingInfo {
     pub title: String,
     pub description: String,
-    pub price_sat: u64,
-    pub quantity: u32,
+    pub price_sat: Option<u64>,
+    pub quantity: Option<u32>,
 }
 
 #[derive(FromForm)]
