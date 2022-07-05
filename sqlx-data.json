@@ -296,30 +296,6 @@
     },
     "query": "UPDATE adminsettings SET fee_rate_basis_points = ?"
   },
-  "0b8f479b0b98846aebf34419364a5384cfb815c55987cdc0bcf5dc369dbfa9b2": {
-    "describe": {
-      "columns": [
-        {
-          "name": "total_amount_paid",
-          "ordinal": 0,
-          "type_info": "Int64"
-        },
-        {
-          "name": "listing_user_id",
-          "ordinal": 1,
-          "type_info": "Int64"
-        }
-      ],
-      "nullable": [
-        false,
-        false
-      ],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "\nselect\n SUM(orders.seller_credit_sat) as total_amount_paid, listings.user_id as listing_user_id\nFROM\n orders\nLEFT JOIN\n listings\nON\n orders.listing_id = listings.id\nWHERE\n listing_user_id = ?\nAND\n completed\nGROUP BY\n listing_user_id\n;"
-  },
   "0d786c64fe05c4a9a098dd6945101e087304b79ca03163413c859e8e93f341ac": {
     "describe": {
       "columns": [],
@@ -559,30 +535,6 @@
       }
     },
     "query": "SELECT id FROM posts"
-  },
-  "4d317a0b1f941ab0a2b07dc4765b2bce0da938b9811a76ea9fe4ef0a48b89c95": {
-    "describe": {
-      "columns": [
-        {
-          "name": "total_amount_refunded",
-          "ordinal": 0,
-          "type_info": "Int64"
-        },
-        {
-          "name": "order_buyer_user_id",
-          "ordinal": 1,
-          "type_info": "Int64"
-        }
-      ],
-      "nullable": [
-        false,
-        false
-      ],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "\nselect\n SUM(orders.amount_owed_sat) as total_amount_refunded, orders.buyer_user_id as order_buyer_user_id\nFROM\n orders\nWHERE\n order_buyer_user_id = ?\nAND\n paid\nAND\n not completed\nGROUP BY\n order_buyer_user_id\n;"
   },
   "501eb603b5ab9e467ecb0b5211b67740d1455a34904bbe5ba45bdb0975f18b50": {
     "describe": {
