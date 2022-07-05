@@ -3230,6 +3230,16 @@
     },
     "query": "DELETE FROM listingimages WHERE public_id = ?"
   },
+  "d071f19567ccc606eee005bce9d3f889ef1c49df909432195006bd7c3d9197fa": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 4
+      }
+    },
+    "query": "\n        UPDATE\n         orders\n        SET\n         reviewed = true,\n         review_rating = ?,\n         review_text = ?,\n         review_time_ms = ?\n        WHERE\n         public_id = ?\n        ;"
+  },
   "e1725cd45fe93f160628b8042fcf9f878c1abc743fae77aeedc45cc93f04b8f5": {
     "describe": {
       "columns": [],

@@ -1343,6 +1343,42 @@ impl Order {
         Ok(insert_result.last_insert_rowid() as _)
     }
 
+    /// Sets a new review for a given order.
+    ///
+    /// Sets the "review_time_ms" field to current time if this is the first review.
+    /// Otherwise, keeps the existing value for "review_time_ms"
+    pub async fn set_order_review(
+        db: &mut Connection<Db>,
+        public_id: &str,
+        review_rating: u32,
+        review_text: &str,
+        review_time_ms: u64,
+    ) -> Result<(), sqlx::Error> {
+        let review_time_ms_i64: i64 = review_time_ms.try_into().unwrap();
+
+        sqlx::query!(
+            "
+        UPDATE
+         orders
+        SET
+         reviewed = true,
+         review_rating = ?,
+         review_text = ?,
+         review_time_ms = ?
+        WHERE
+         public_id = ?
+        ;",
+            review_rating,
+            review_text,
+            review_time_ms_i64,
+            public_id,
+        )
+        .execute(&mut **db)
+        .await?;
+
+        Ok(())
+    }
+
     pub async fn single(db: &mut Connection<Db>, id: i32) -> Result<Order, sqlx::Error> {
         let order = sqlx::query!("select * from orders WHERE id = ?;", id)
             .fetch_one(&mut **db)
