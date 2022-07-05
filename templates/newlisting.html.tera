@@ -19,7 +19,7 @@
           <textarea placeholder="item description..."
 		    name="description" id="description" value=""
 		    class="u-full-width" /></textarea>
-	  <label for="title">Enter the price of each item</label>
+	  <label for="title">Enter the price of each item in sats</label>
           <input type="number" placeholder="item price in sats..."
             name="price_sat" id="price_sat" value=""
             class="u-full-width" />

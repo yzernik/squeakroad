@@ -15,6 +15,7 @@
 
       <form action="/update_listing_images/{{ listing_display.listing.public_id }}/add_image" method="post" enctype="multipart/form-data">
         <div class="ten columns">
+	  <label for="file">Select an image file to upload</label>
           <input type="file" placeholder="upload a file..."
             name="file" id="file" value="" autofocus
             class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" />
