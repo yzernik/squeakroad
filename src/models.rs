@@ -253,33 +253,6 @@ pub struct ReviewInput {
 }
 
 impl Listing {
-    // pub async fn all(db: &mut Connection<Db>) -> Result<Vec<Listing>, sqlx::Error> {
-    //     let listings = sqlx::query!("select * from listings;")
-    //         .fetch(&mut **db)
-    //         .map_ok(|r| Listing {
-    //             id: Some(r.id.try_into().unwrap()),
-    //             public_id: r.public_id,
-    //             user_id: r.user_id.try_into().unwrap(),
-    //             title: r.title,
-    //             description: r.description,
-    //             price_sat: r.price_sat.try_into().unwrap(),
-    //             quantity: r.quantity.try_into().unwrap(),
-    //             fee_rate_basis_points: r.fee_rate_basis_points.try_into().unwrap(),
-    //             submitted: r.submitted,
-    //             reviewed: r.reviewed,
-    //             approved: r.approved,
-    //             removed: r.removed,
-    //             created_time_ms: r.created_time_ms.try_into().unwrap(),
-    //         })
-    //         .try_collect::<Vec<_>>()
-    //         .await?;
-
-    //     println!("{}", listings.len());
-    //     println!("{:?}", listings);
-
-    //     Ok(listings)
-    // }
-
     /// Returns the id of the inserted row.
     pub async fn insert(listing: Listing, db: &mut Connection<Db>) -> Result<i32, sqlx::Error> {
         let price_sat: i64 = listing.price_sat.try_into().unwrap();
