@@ -57,10 +57,7 @@ async fn new(
         )),
         Err(e) => {
             error_!("DB insertion error: {}", e);
-            Err(Flash::error(
-                Redirect::to(uri!("/new_listing", index())),
-                "Failed to add new listing.",
-            ))
+            Err(Flash::error(Redirect::to(uri!("/new_listing", index())), e))
         }
     }
 }
