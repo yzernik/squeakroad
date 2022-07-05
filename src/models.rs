@@ -1685,6 +1685,22 @@ GROUP BY
         Ok(weighted_total.try_into().unwrap())
     }
 
+    pub async fn weighted_average_rating_for_user(
+        db: &mut Connection<Db>,
+        user_id: i32,
+    ) -> Result<f32, sqlx::Error> {
+        let amount_sold_with_reviews_sat =
+            Order::amount_sold_with_reviews_sat_for_user(db, user_id).await?;
+        let weighted_total_of_ratings =
+            Order::weighted_sum_of_ratings_for_user(db, user_id).await?;
+        let weighted_average_rating = if amount_sold_with_reviews_sat == 0 {
+            0.0
+        } else {
+            (weighted_total_of_ratings as f32) / (amount_sold_with_reviews_sat as f32)
+        };
+        Ok(weighted_average_rating)
+    }
+
     // TODO: implement this.
     pub async fn most_recent_paid_order(
         db: &mut PoolConnection<Sqlite>,
