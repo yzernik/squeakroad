@@ -1,0 +1,40 @@
+{% extends "base" %}
+{% block body %}
+
+<br>
+
+  <div class="container">
+    <p><!--Nothing to see here --></p>
+
+    <div class="row">
+
+      <h3>Top Sellers</h3>
+
+      <div class="twelve columns">
+
+	<table class="u-full-width">
+	  <thead>
+	    <tr>
+	      <th>User</th>
+	      <th>Total Amount Sold</th>
+	      <th>Rating</th>
+	    </tr>
+	  </thead>
+
+          {% for seller_info in seller_infos %}
+	  <tbody>
+	    <tr>
+	      <td><a href="/user/{{ seller_info.username }}">{{ seller_info.username }}</a></td>
+	      <td>{{ seller_info.total_amount_sold_sat }} sats</td>
+	      <td>{{ seller_info.weighted_average_rating | round(method="ceil", precision=2) }} <a href="/seller_rating/{{ seller_info.username }}">(See rating)</a></td>
+	    </tr>
+	  </tbody>
+          {% endfor %}
+	</table>
+
+      </div>
+    </div>
+  </div>
+
+
+{% endblock body %}

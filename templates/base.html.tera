@@ -53,6 +53,7 @@
           <a class="navbar-brand" href="/">{{ base_context.admin_settings.market_name }}</a>
           <div>
             <a class="navbar-brand" href="/about">About</a>
+            <a class="navbar-brand" href="/top_sellers">Top Sellers</a>
             {% if base_context.user %}
             {% if base_context.admin_user %}
             <a class="navbar-brand" href="/review_pending_listings">Pending Listings{% if base_context.admin_info %} ({{ base_context.admin_info.num_pending_listings }}){% endif %}</a>

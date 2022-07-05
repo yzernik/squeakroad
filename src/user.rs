@@ -37,10 +37,10 @@ impl Context {
             ListingCardDisplay::all_approved_for_user(&mut db, visited_user.id.unwrap())
                 .await
                 .map_err(|_| "failed to get approved listings.")?;
-        let weighted_average_rating =
-            Order::weighted_average_rating_for_user(&mut db, visited_user.id.unwrap())
-                .await
-                .map_err(|_| "failed to get weighted average rating for user.")?;
+        let seller_info = Order::seller_info_for_user(&mut db, visited_user.id.unwrap())
+            .await
+            .map_err(|_| "failed to get weighted average rating for user.")?;
+        let weighted_average_rating = seller_info.weighted_average_rating;
         Ok(Context {
             base_context,
             flash,
