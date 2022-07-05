@@ -6,4 +6,7 @@ clean:
 test:
 	cargo test
 
-.PHONY: all clean test
+lint:
+	cargo clippy
+
+.PHONY: all clean test lint

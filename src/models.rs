@@ -2158,7 +2158,7 @@ ON
         user_id, user_id, user_id)
             .fetch(&mut **db)
             .map_ok(|r| AccountBalanceChange {
-                    username: r.email.unwrap().to_string(),
+                    username: r.email.unwrap(),
                     amount_change_sat: r.amount_change_sat.try_into().unwrap(),
                     event_type: r.event_type,
                     event_id: r.event_id,
@@ -2208,7 +2208,7 @@ ON
 ;")
             .fetch(&mut **db)
             .map_ok(|r| AccountBalanceChange {
-                    username: r.email.unwrap().to_string(),
+                    username: r.email.unwrap(),
                     amount_change_sat: r.amount_change_sat.try_into().unwrap(),
                     event_type: r.event_type,
                     event_id: r.event_id,

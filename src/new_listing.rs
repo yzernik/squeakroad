@@ -86,9 +86,9 @@ async fn create_listing(
         Err("Title length is too long.".to_string())
     } else if listing_info.description.len() > 4096 {
         Err("Description length is too long.".to_string())
-    } else if listing_info.quantity <= 0 {
+    } else if listing_info.quantity == 0 {
         Err("Quantity must be a positive number.".to_string())
-    } else if listing_info.price_sat <= 0 {
+    } else if listing_info.price_sat == 0 {
         Err("Price must be a positive number.".to_string())
     } else if user.is_admin {
         Err("Admin user cannot create a listing.".to_string())
@@ -110,7 +110,7 @@ async fn create_listing(
         };
         match Listing::insert(listing, db).await {
             Ok(listing_id) => match Listing::single(db, listing_id).await {
-                Ok(new_listing) => Ok(new_listing.public_id.clone()),
+                Ok(new_listing) => Ok(new_listing.public_id),
                 Err(e) => {
                     error_!("DB insertion error: {}", e);
                     Err("New listing could not be found after inserting.".to_string())

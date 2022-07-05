@@ -189,7 +189,7 @@ async fn create_order(
 
         match Order::insert(order, db).await {
             Ok(order_id) => match Order::single(db, order_id).await {
-                Ok(new_order) => Ok(new_order.public_id.clone()),
+                Ok(new_order) => Ok(new_order.public_id),
                 Err(e) => {
                     error_!("DB insertion error: {}", e);
                     Err("New order could not be found after inserting.".to_string())
