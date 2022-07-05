@@ -252,6 +252,14 @@ pub struct ReviewInput {
     pub review_text: String,
 }
 
+#[derive(Serialize, Debug, Clone)]
+#[serde(crate = "rocket::serde")]
+pub struct SellerInfo {
+    pub username: String,
+    pub total_amount_sold_sat: u64,
+    pub weighted_average_rating: f32,
+}
+
 impl Listing {
     /// Returns the id of the inserted row.
     pub async fn insert(listing: Listing, db: &mut Connection<Db>) -> Result<i32, sqlx::Error> {
@@ -1645,11 +1653,11 @@ GROUP BY
     pub async fn weighted_average_rating_for_user(
         db: &mut Connection<Db>,
         user_id: i32,
-    ) -> Result<f32, sqlx::Error> {
+    ) -> Result<Option<SellerInfo>, sqlx::Error> {
         let weighted_average_result = sqlx::query!(
             "
     select
-     SUM(orders.amount_owed_sat * orders.review_rating * 1000) / SUM(orders.amount_owed_sat) as weighted_average, orders.seller_user_id
+     SUM(orders.amount_owed_sat * orders.review_rating * 1000) / SUM(orders.amount_owed_sat) as weighted_average, SUM(orders.amount_owed_sat) as total_amount_sold, orders.seller_user_id
     FROM
      orders
     WHERE
@@ -1667,15 +1675,19 @@ GROUP BY
         .await?;
         println!("weighted_average_result: {:?}", weighted_average_result);
 
-        let weighted_average = match weighted_average_result {
-            Some(r) => r.weighted_average,
-            None => 0,
+        let seller_info = match weighted_average_result {
+            Some(r) => Some(SellerInfo {
+                username: "".to_string(), // TODO: need to join with users table.
+                total_amount_sold_sat: 0, // TODO
+                weighted_average_rating: (r.weighted_average as f32) / 1000.0,
+            }),
+            None => None,
         };
-        println!("weighted_average: {:?}", weighted_average);
+        println!("weighted_info: {:?}", seller_info);
 
-        let ret = (weighted_average as f32) / 1000.0;
+        // let ret = (weighted_average as f32) / 1000.0;
 
-        Ok(ret)
+        Ok(seller_info)
     }
 
     // TODO: implement this.
