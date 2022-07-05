@@ -1066,7 +1066,7 @@ impl ListingCardDisplay {
         let listing_cards = ListingCard::all_approved(db).await?;
         let listing_card_displays = listing_cards
             .iter()
-            .map(|card| ListingCardDisplay::listing_card_to_display(card))
+            .map(ListingCardDisplay::listing_card_to_display)
             .collect::<Vec<_>>();
 
         Ok(listing_card_displays)
@@ -1078,7 +1078,7 @@ impl ListingCardDisplay {
         let listing_cards = ListingCard::all_pending(db).await?;
         let listing_card_displays = listing_cards
             .iter()
-            .map(|card| ListingCardDisplay::listing_card_to_display(card))
+            .map(ListingCardDisplay::listing_card_to_display)
             .collect::<Vec<_>>();
 
         Ok(listing_card_displays)
@@ -1091,7 +1091,7 @@ impl ListingCardDisplay {
         let listing_cards = ListingCard::all_unsubmitted_for_user(db, user_id).await?;
         let listing_card_displays = listing_cards
             .iter()
-            .map(|card| ListingCardDisplay::listing_card_to_display(card))
+            .map(ListingCardDisplay::listing_card_to_display)
             .collect::<Vec<_>>();
 
         Ok(listing_card_displays)
@@ -1104,7 +1104,7 @@ impl ListingCardDisplay {
         let listing_cards = ListingCard::all_pending_for_user(db, user_id).await?;
         let listing_card_displays = listing_cards
             .iter()
-            .map(|card| ListingCardDisplay::listing_card_to_display(card))
+            .map(ListingCardDisplay::listing_card_to_display)
             .collect::<Vec<_>>();
 
         Ok(listing_card_displays)
@@ -1117,7 +1117,7 @@ impl ListingCardDisplay {
         let listing_cards = ListingCard::all_rejected_for_user(db, user_id).await?;
         let listing_card_displays = listing_cards
             .iter()
-            .map(|card| ListingCardDisplay::listing_card_to_display(card))
+            .map(ListingCardDisplay::listing_card_to_display)
             .collect::<Vec<_>>();
 
         Ok(listing_card_displays)
@@ -1130,7 +1130,7 @@ impl ListingCardDisplay {
         let listing_cards = ListingCard::all_approved_for_user(db, user_id).await?;
         let listing_card_displays = listing_cards
             .iter()
-            .map(|card| ListingCardDisplay::listing_card_to_display(card))
+            .map(ListingCardDisplay::listing_card_to_display)
             .collect::<Vec<_>>();
 
         Ok(listing_card_displays)
