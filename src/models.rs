@@ -1696,8 +1696,23 @@ ON
             "
 SELECT weighted_average, total_amount_sold_sat, users.email
 FROM
+ users
+LEFT JOIN
     (select
-     SUM(orders.amount_owed_sat * orders.review_rating * 1000) / SUM(orders.amount_owed_sat) as weighted_average, SUM(orders.amount_owed_sat) as total_amount_sold_sat, orders.seller_user_id as seller_user_id
+     SUM(orders.amount_owed_sat) as total_amount_sold_sat, orders.seller_user_id as completed_seller_user_id
+    FROM
+     orders
+    WHERE
+     orders.completed
+    AND
+     completed
+    GROUP BY
+     orders.seller_user_id) as seller_infos
+ON
+ users.id = seller_infos.completed_seller_user_id
+LEFT JOIN
+    (select
+     SUM(orders.amount_owed_sat * orders.review_rating * 1000) / SUM(orders.amount_owed_sat) as weighted_average, orders.seller_user_id as reviewed_seller_user_id
     FROM
      orders
     WHERE
@@ -1706,21 +1721,21 @@ FROM
      completed
     GROUP BY
      orders.seller_user_id) as seller_infos
-LEFT JOIN
- users
 ON
- seller_infos.seller_user_id = users.id
+ users.id = seller_infos.reviewed_seller_user_id
 WHERE
  total_amount_sold_sat > 0
 ORDER BY
  total_amount_sold_sat DESC
     ;")
             .fetch(&mut **db)
-            .map_ok(|r| SellerInfo {
+            .map_ok(|r| {
+                println!("r: {:?}", r);
+                SellerInfo {
                 username: r.email.unwrap(),
                 total_amount_sold_sat: r.total_amount_sold_sat.unwrap().try_into().unwrap(),
-                weighted_average_rating: (r.weighted_average.unwrap() as f32) / 1000.0,
-            })
+                weighted_average_rating: (r.weighted_average.unwrap_or(0) as f32) / 1000.0,
+            }})
             .try_collect::<Vec<_>>()
             .await?;
         println!("seller_infos: {:?}", seller_infos);

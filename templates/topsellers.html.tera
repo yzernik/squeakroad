@@ -26,7 +26,7 @@
 	    <tr>
 	      <td><a href="/user/{{ seller_info.username }}">{{ seller_info.username }}</td>
 	      <td>{{ seller_info.total_amount_sold_sat }} sats</td>
-	      <td>{{ seller_info.weighted_average_rating }}</td>
+	      <td>{{ seller_info.weighted_average_rating | round(method="ceil", precision=2) }}</td>
 	    </tr>
 	  </tbody>
           {% endfor %}
