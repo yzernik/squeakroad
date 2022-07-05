@@ -38,11 +38,11 @@ impl Context {
         let received_orders = OrderCard::all_received_for_user(&mut db, visited_user.id.unwrap())
             .await
             .map_err(|_| "failed to get received orders for user.")?;
-        let amount_sold_sat = Order::amount_sold_sat(&mut db, visited_user.id.unwrap())
+        let amount_sold_sat = Order::amount_sold_sat_for_user(&mut db, visited_user.id.unwrap())
             .await
             .map_err(|_| "failed to get amount sold for user.")?;
         let amount_sold_with_reviews_sat =
-            Order::amount_sold_with_reviews_sat(&mut db, visited_user.id.unwrap())
+            Order::amount_sold_with_reviews_sat_for_user(&mut db, visited_user.id.unwrap())
                 .await
                 .map_err(|_| "failed to get amount sold with reviews for user.")?;
         Ok(Context {

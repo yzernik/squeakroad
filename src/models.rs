@@ -1585,7 +1585,7 @@ GROUP BY
         Ok(())
     }
 
-    pub async fn amount_sold_sat(
+    pub async fn amount_sold_sat_for_user(
         db: &mut Connection<Db>,
         user_id: i32,
     ) -> Result<u64, sqlx::Error> {
@@ -1617,7 +1617,7 @@ GROUP BY
         Ok(total_amount_sold.try_into().unwrap())
     }
 
-    pub async fn amount_sold_with_reviews_sat(
+    pub async fn amount_sold_with_reviews_sat_for_user(
         db: &mut Connection<Db>,
         user_id: i32,
     ) -> Result<u64, sqlx::Error> {
@@ -1650,6 +1650,40 @@ GROUP BY
 
         Ok(total_amount_sold.try_into().unwrap())
     }
+
+    // pub async fn weighted_sum_of_ratings_for_user(
+    //     db: &mut Connection<Db>,
+    //     user_id: i32,
+    // ) -> Result<u64, sqlx::Error> {
+    //     let amount_sold_result = sqlx::query!(
+    //         "
+    // select
+    //  SUM(orders.amount_owed_sat) as total_amount_sold, orders.seller_user_id
+    // FROM
+    //  orders
+    // WHERE
+    //  orders.seller_user_id = ?
+    // AND
+    //  orders.reviewed
+    // AND
+    //  completed
+    // GROUP BY
+    //  orders.seller_user_id
+    // ;",
+    //         user_id,
+    //     )
+    //     .fetch_optional(&mut **db)
+    //     .await?;
+    //     println!("amount_sold_result: {:?}", amount_sold_result);
+
+    //     let total_amount_sold = match amount_sold_result {
+    //         Some(r) => r.total_amount_sold,
+    //         None => 0,
+    //     };
+    //     println!("total_amount_sold: {:?}", total_amount_sold);
+
+    //     Ok(total_amount_sold.try_into().unwrap())
+    // }
 
     // TODO: implement this.
     pub async fn most_recent_paid_order(
