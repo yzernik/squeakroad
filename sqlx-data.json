@@ -1872,6 +1872,30 @@
     },
     "query": "select * from orders WHERE invoice_hash = ?;"
   },
+  "a107c8d203991d4785d5fed1cc04503fecf831f953bdace0ec2c804bb67a2493": {
+    "describe": {
+      "columns": [
+        {
+          "name": "total_amount_sold",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "seller_user_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n    select\n     SUM(orders.amount_owed_sat) as total_amount_sold, orders.seller_user_id\n    FROM\n     orders\n    WHERE\n     orders.seller_user_id = ?\n    AND\n     orders.reviewed\n    AND\n     completed\n    GROUP BY\n     orders.seller_user_id\n    ;"
+  },
   "a3b1aa9c6618dbe99226d9412013fdd52cfbde6a22c19d1c26959f23ddacce2f": {
     "describe": {
       "columns": [

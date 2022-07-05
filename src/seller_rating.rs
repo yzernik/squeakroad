@@ -16,6 +16,7 @@ struct Context {
     flash: Option<(String, String)>,
     visited_user: RocketAuthUser,
     amount_sold_sat: u64,
+    amount_sold_with_reviews_sat: u64,
     received_orders: Vec<OrderCard>,
 }
 
@@ -40,11 +41,16 @@ impl Context {
         let amount_sold_sat = Order::amount_sold_sat(&mut db, visited_user.id.unwrap())
             .await
             .map_err(|_| "failed to get amount sold for user.")?;
+        let amount_sold_with_reviews_sat =
+            Order::amount_sold_with_reviews_sat(&mut db, visited_user.id.unwrap())
+                .await
+                .map_err(|_| "failed to get amount sold with reviews for user.")?;
         Ok(Context {
             base_context,
             flash,
             visited_user,
             amount_sold_sat,
+            amount_sold_with_reviews_sat,
             received_orders,
         })
     }

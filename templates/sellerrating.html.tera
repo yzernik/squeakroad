@@ -13,6 +13,7 @@
       <div class="twelve columns">
 
 	<p><b>Amount Sold</b>: {{ amount_sold_sat }} sats</p>
+	<p><b>Amount Sold With Reviews</b>: {{ amount_sold_with_reviews_sat }} sats</p>
 
 	<table class="u-full-width">
 	  <thead>
