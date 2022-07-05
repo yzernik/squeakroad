@@ -2226,6 +2226,7 @@ ON
 
         println!("{:?}", account_balance_changes);
 
+        // TODO: Use "ORDER BY" in query when sqlx is updated with bug fix.
         // Sort by event time
         account_balance_changes.sort_by(|a, b| b.event_time_ms.cmp(&a.event_time_ms));
 
