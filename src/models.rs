@@ -248,7 +248,7 @@ pub struct OrderMessageCard {
 
 #[derive(Debug, FromForm, Clone)]
 pub struct ReviewInput {
-    pub review_rating: u32,
+    pub review_rating: Option<u32>,
     pub review_text: String,
 }
 

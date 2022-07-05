@@ -297,16 +297,16 @@ async fn create_order_review(
     let order = Order::single_by_public_id(db, order_id)
         .await
         .map_err(|_| "failed to get order")?;
+    let review_rating = order_review_info.review_rating.unwrap_or(0);
+    let review_text = order_review_info.review_text;
 
     if !order.completed {
         Err("Cannot post review for order that is not completed.".to_string())
     } else if user.id() != order.buyer_user_id {
         Err("User is not the buyer.".to_string())
-    } else if order_review_info.review_rating < 1 || order_review_info.review_rating > 5 {
+    } else if review_rating < 1 || review_rating > 5 {
         Err("Review rating must be between 1 and 5.".to_string())
-    } else if order_review_info.review_text.is_empty() {
-        Err("Review text cannot be empty.".to_string())
-    } else if order_review_info.review_text.len() > 4096 {
+    } else if review_text.len() > 4096 {
         Err("Review text is too long.".to_string())
     } else {
         let new_review_time_ms = if order.review_time_ms > 0 {
@@ -318,8 +318,8 @@ async fn create_order_review(
         match Order::set_order_review(
             db,
             order_id,
-            order_review_info.review_rating,
-            &order_review_info.review_text,
+            review_rating,
+            &review_text,
             new_review_time_ms,
         )
         .await
