@@ -1871,9 +1871,33 @@
           "name": "payment_time_ms",
           "ordinal": 16,
           "type_info": "Int64"
+        },
+        {
+          "name": "reviewed",
+          "ordinal": 17,
+          "type_info": "Bool"
+        },
+        {
+          "name": "review_rating",
+          "ordinal": 18,
+          "type_info": "Int64"
+        },
+        {
+          "name": "review_text",
+          "ordinal": 19,
+          "type_info": "Text"
+        },
+        {
+          "name": "review_time_ms",
+          "ordinal": 20,
+          "type_info": "Int64"
         }
       ],
       "nullable": [
+        false,
+        false,
+        false,
+        false,
         false,
         false,
         false,
@@ -1985,10 +2009,34 @@
           "name": "payment_time_ms",
           "ordinal": 16,
           "type_info": "Int64"
+        },
+        {
+          "name": "reviewed",
+          "ordinal": 17,
+          "type_info": "Bool"
+        },
+        {
+          "name": "review_rating",
+          "ordinal": 18,
+          "type_info": "Int64"
+        },
+        {
+          "name": "review_text",
+          "ordinal": 19,
+          "type_info": "Text"
+        },
+        {
+          "name": "review_time_ms",
+          "ordinal": 20,
+          "type_info": "Int64"
         }
       ],
       "nullable": [
         true,
+        false,
+        false,
+        false,
+        false,
         false,
         false,
         false,
@@ -3277,9 +3325,33 @@
           "name": "payment_time_ms",
           "ordinal": 16,
           "type_info": "Int64"
+        },
+        {
+          "name": "reviewed",
+          "ordinal": 17,
+          "type_info": "Bool"
+        },
+        {
+          "name": "review_rating",
+          "ordinal": 18,
+          "type_info": "Int64"
+        },
+        {
+          "name": "review_text",
+          "ordinal": 19,
+          "type_info": "Text"
+        },
+        {
+          "name": "review_time_ms",
+          "ordinal": 20,
+          "type_info": "Int64"
         }
       ],
       "nullable": [
+        false,
+        false,
+        false,
+        false,
         false,
         false,
         false,
