@@ -16,7 +16,7 @@ struct Context {
     flash: Option<(String, String)>,
     visited_user: RocketAuthUser,
     amount_sold_sat: u64,
-    amount_sold_with_reviews_sat: u64,
+    weighted_average_rating: f32,
     received_orders: Vec<OrderCard>,
 }
 
@@ -45,12 +45,21 @@ impl Context {
             Order::amount_sold_with_reviews_sat_for_user(&mut db, visited_user.id.unwrap())
                 .await
                 .map_err(|_| "failed to get amount sold with reviews for user.")?;
+        let weighted_total_of_ratings =
+            Order::weighted_sum_of_ratings_for_user(&mut db, visited_user.id.unwrap())
+                .await
+                .map_err(|_| "failed to get weighted total of ratings for user.")?;
+        let weighted_average_rating = if amount_sold_with_reviews_sat == 0 {
+            0.0
+        } else {
+            (weighted_total_of_ratings as f32) / (amount_sold_with_reviews_sat as f32)
+        };
         Ok(Context {
             base_context,
             flash,
             visited_user,
             amount_sold_sat,
-            amount_sold_with_reviews_sat,
+            weighted_average_rating,
             received_orders,
         })
     }

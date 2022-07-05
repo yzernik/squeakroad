@@ -118,6 +118,30 @@
     },
     "query": "UPDATE listings SET removed = true WHERE public_id = ?"
   },
+  "2193bd9b5c76a19961e0741fea23e801853d0172e639502d41d7ea5aadc51b53": {
+    "describe": {
+      "columns": [
+        {
+          "name": "weighted_total",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "seller_user_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n    select\n     SUM(orders.amount_owed_sat * orders.review_rating) as weighted_total, orders.seller_user_id\n    FROM\n     orders\n    WHERE\n     orders.seller_user_id = ?\n    AND\n     orders.reviewed\n    AND\n     completed\n    GROUP BY\n     orders.seller_user_id\n    ;"
+  },
   "23742f0b023f196fa7c285577595b49fa12b753aa5fb6b7771b9769c292315b5": {
     "describe": {
       "columns": [

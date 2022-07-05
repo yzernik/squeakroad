@@ -1651,39 +1651,39 @@ GROUP BY
         Ok(total_amount_sold.try_into().unwrap())
     }
 
-    // pub async fn weighted_sum_of_ratings_for_user(
-    //     db: &mut Connection<Db>,
-    //     user_id: i32,
-    // ) -> Result<u64, sqlx::Error> {
-    //     let amount_sold_result = sqlx::query!(
-    //         "
-    // select
-    //  SUM(orders.amount_owed_sat) as total_amount_sold, orders.seller_user_id
-    // FROM
-    //  orders
-    // WHERE
-    //  orders.seller_user_id = ?
-    // AND
-    //  orders.reviewed
-    // AND
-    //  completed
-    // GROUP BY
-    //  orders.seller_user_id
-    // ;",
-    //         user_id,
-    //     )
-    //     .fetch_optional(&mut **db)
-    //     .await?;
-    //     println!("amount_sold_result: {:?}", amount_sold_result);
+    pub async fn weighted_sum_of_ratings_for_user(
+        db: &mut Connection<Db>,
+        user_id: i32,
+    ) -> Result<u64, sqlx::Error> {
+        let weighted_total_result = sqlx::query!(
+            "
+    select
+     SUM(orders.amount_owed_sat * orders.review_rating) as weighted_total, orders.seller_user_id
+    FROM
+     orders
+    WHERE
+     orders.seller_user_id = ?
+    AND
+     orders.reviewed
+    AND
+     completed
+    GROUP BY
+     orders.seller_user_id
+    ;",
+            user_id,
+        )
+        .fetch_optional(&mut **db)
+        .await?;
+        println!("weighted_total_result: {:?}", weighted_total_result);
 
-    //     let total_amount_sold = match amount_sold_result {
-    //         Some(r) => r.total_amount_sold,
-    //         None => 0,
-    //     };
-    //     println!("total_amount_sold: {:?}", total_amount_sold);
+        let weighted_total = match weighted_total_result {
+            Some(r) => r.weighted_total,
+            None => 0,
+        };
+        println!("weighted_total: {:?}", weighted_total);
 
-    //     Ok(total_amount_sold.try_into().unwrap())
-    // }
+        Ok(weighted_total.try_into().unwrap())
+    }
 
     // TODO: implement this.
     pub async fn most_recent_paid_order(

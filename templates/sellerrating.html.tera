@@ -13,7 +13,7 @@
       <div class="twelve columns">
 
 	<p><b>Amount Sold</b>: {{ amount_sold_sat }} sats</p>
-	<p><b>Amount Sold With Reviews</b>: {{ amount_sold_with_reviews_sat }} sats</p>
+	<p><b>Weighted Averate Rating</b>: {{ weighted_average_rating | round(method="ceil", precision=2) }}</p>
 
 	<table class="u-full-width">
 	  <thead>
