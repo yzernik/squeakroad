@@ -67,7 +67,6 @@ async fn new(
     config: &State<Config>,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
     let order_info = order_form.into_inner();
-    println!("config: {:?}", config);
 
     match create_order(
         id,
@@ -118,9 +117,10 @@ async fn create_order(
         .unwrap()
         .as_millis() as u64;
     let shipping_instructions = order_info.shipping_instructions;
+    let quantity = order_info.quantity.unwrap_or(0);
 
     let price_per_unit_with_shipping_sat: u64 = listing.price_sat + shipping_option.price_sat;
-    let amount_owed_sat: u64 = (order_info.quantity as u64) * price_per_unit_with_shipping_sat;
+    let amount_owed_sat: u64 = (quantity as u64) * price_per_unit_with_shipping_sat;
     // let market_fee_sat: u64 = (amount_owed_sat * (listing.fee_rate_basis_points as u64)) / 10000;
     let market_fee_sat: u64 = divide_round_up(
         amount_owed_sat * (listing.fee_rate_basis_points as u64),
@@ -142,7 +142,9 @@ async fn create_order(
         Err("Shipping option not associated with listing.".to_string())
     } else if user.is_admin {
         Err("Admin user cannot create an order.".to_string())
-    } else if quantity_in_stock < order_info.quantity {
+    } else if quantity == 0 {
+        Err("Quantity must be postive.".to_string())
+    } else if quantity_in_stock < quantity {
         Err("Not enough items in stock.".to_string())
     } else {
         let mut lighting_client = lightning::get_lnd_client(
@@ -169,7 +171,7 @@ async fn create_order(
         let order = Order {
             id: None,
             public_id: Uuid::new_v4().to_string(),
-            quantity: order_info.quantity,
+            quantity: quantity,
             buyer_user_id: user.id(),
             seller_user_id: listing.user_id,
             listing_id: listing.id.unwrap(),
@@ -225,7 +227,7 @@ async fn index(
 
     // TODO: Don't use unwrap.
     let sid = shipping_option_id.unwrap();
-    let quantity = quantity.unwrap();
+    let quantity = quantity.unwrap_or(0);
 
     let flash = flash.map(FlashMessage::into_inner);
     Template::render(

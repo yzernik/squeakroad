@@ -166,7 +166,7 @@ pub struct Order {
 
 #[derive(Debug, FromForm, Clone)]
 pub struct OrderInfo {
-    pub quantity: u32,
+    pub quantity: Option<u32>,
     pub shipping_option_id: String,
     pub shipping_instructions: String,
 }
