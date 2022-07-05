@@ -180,10 +180,14 @@ async fn create_order(
             paid: false,
             completed: false,
             acked: false,
+            reviewed: false,
             invoice_hash: hex::encode(invoice.r_hash),
             invoice_payment_request: invoice.payment_request,
+            review_rating: 0,
+            review_text: "".to_string(),
             created_time_ms: now,
             payment_time_ms: 0,
+            review_time_ms: 0,
         };
 
         match Order::insert(order, db).await {

@@ -1,7 +1,7 @@
 use crate::base::BaseContext;
 use crate::db::Db;
 use crate::models::{
-    Listing, Order, OrderMessage, OrderMessageInput, RocketAuthUser, ShippingOption,
+    Listing, Order, OrderMessage, OrderMessageInput, ReviewInput, RocketAuthUser, ShippingOption,
 };
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
@@ -210,8 +210,6 @@ async fn mark_message_as_read(
             Ok(_) => Ok(()),
             Err(_) => Err("failed to mark image as primary.".to_string()),
         }
-        // println!("Set message as read: {:?}", order_message_id);
-        // Ok(())
     }
 }
 
@@ -257,6 +255,80 @@ async fn mark_order_as_acked(
     }
 }
 
+#[post("/<id>/new_review", data = "<order_review_form>")]
+async fn new_review(
+    id: &str,
+    order_review_form: Form<ReviewInput>,
+    mut db: Connection<Db>,
+    user: User,
+    _admin_user: Option<AdminUser>,
+) -> Result<Flash<Redirect>, Flash<Redirect>> {
+    let order_review_info = order_review_form.into_inner();
+
+    println!("order_review_info: {:?}", order_review_info);
+
+    match create_order_review(id, order_review_info, &mut db, user.clone()).await {
+        Ok(_) => Ok(Flash::success(
+            Redirect::to(format!("/{}/{}", "order", id)),
+            "Review Successfully Posted.",
+        )),
+        Err(e) => {
+            error_!("DB insertion error: {}", e);
+            Err(Flash::error(
+                Redirect::to(format!("/{}/{}", "order", id)),
+                e,
+            ))
+        }
+    }
+}
+
+async fn create_order_review(
+    order_id: &str,
+    order_review_info: ReviewInput,
+    db: &mut Connection<Db>,
+    user: User,
+) -> Result<(), String> {
+    let now = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_millis() as u64;
+    let order = Order::single_by_public_id(db, order_id)
+        .await
+        .map_err(|_| "failed to get order")?;
+
+    if user.id() != order.buyer_user_id {
+        Err("User is not the buyer.".to_string())
+    } else if order_review_info.review_rating < 1 || order_review_info.review_rating > 5 {
+        Err("Review rating must be between 1 and 5.".to_string())
+    } else if order_review_info.review_text.is_empty() {
+        Err("Review text cannot be empty.".to_string())
+    } else if order_review_info.review_text.len() > 4096 {
+        Err("Review text is too long.".to_string())
+    } else {
+        let new_review_time_ms = if order.review_time_ms > 0 {
+            order.review_time_ms
+        } else {
+            now
+        };
+
+        match Order::set_order_review(
+            db,
+            order_id,
+            order_review_info.review_rating,
+            &order_review_info.review_text,
+            new_review_time_ms,
+        )
+        .await
+        {
+            Ok(_) => Ok(()),
+            Err(e) => {
+                error_!("DB insertion error: {}", e);
+                Err("Order Review could not be inserted due an internal error.".to_string())
+            }
+        }
+    }
+}
+
 #[get("/<id>")]
 async fn index(
     flash: Option<FlashMessage<'_>>,
@@ -278,6 +350,9 @@ async fn index(
 
 pub fn order_stage() -> AdHoc {
     AdHoc::on_ignite("Order Stage", |rocket| async {
-        rocket.mount("/order", routes![index, new_message, set_message_read, ack])
+        rocket.mount(
+            "/order",
+            routes![index, new_message, set_message_read, ack, new_review],
+        )
     })
 }
