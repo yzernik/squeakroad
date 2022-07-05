@@ -187,6 +187,7 @@ async fn create_order(
             review_text: "".to_string(),
             created_time_ms: now,
             payment_time_ms: 0,
+            review_time_ms: 0,
         };
 
         match Order::insert(order, db).await {
