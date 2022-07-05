@@ -1764,8 +1764,6 @@ LEFT JOIN
     FROM
      orders
     WHERE
-     orders.completed
-    AND
      completed
     GROUP BY
      orders.seller_user_id) as seller_infos
@@ -1779,7 +1777,7 @@ LEFT JOIN
     WHERE
      orders.reviewed
     AND
-     completed
+     orders.completed
     GROUP BY
      orders.seller_user_id) as seller_infos
 ON
