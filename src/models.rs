@@ -608,11 +608,12 @@ AND
  listings.quantity > 0
 GROUP BY
  listings.id
+ORDER BY listings.created_time_ms DESC
 ;")
                 .fetch(&mut **db)
             .map_ok(|r| {
                 let l = Listing {
-                    id: Some(r.id.try_into().unwrap()),
+                    id: Some(r.id.unwrap().try_into().unwrap()),
                     public_id: r.public_id,
                     user_id: r.user_id.try_into().unwrap(),
                     title: r.title,
