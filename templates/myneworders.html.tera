@@ -9,7 +9,7 @@
     <div class="row">
 
       <h3>My New Orders</h3>
-      <p>Orders that buyers have completed for your listings that have you have not yet acknowledged</p>
+      <p>Orders for your listings with completed payment that have you have not yet acknowledged</p>
 
       <div class="twelve columns">
         <ul>

@@ -143,5 +143,6 @@ pub fn stage(config: Config) -> AdHoc {
             .attach(crate::withdraw::withdraw_stage())
             .attach(crate::withdrawal::withdrawal_stage())
             .attach(crate::seller_rating::seller_rating_stage())
+            .attach(crate::top_sellers::top_sellers_stage())
     })
 }
