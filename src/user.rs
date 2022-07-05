@@ -1,6 +1,6 @@
 use crate::base::BaseContext;
 use crate::db::Db;
-use crate::models::{ListingCardDisplay, RocketAuthUser};
+use crate::models::{ListingCardDisplay, Order, RocketAuthUser};
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::serde::Serialize;
@@ -14,7 +14,8 @@ use rocket_dyn_templates::Template;
 struct Context {
     base_context: BaseContext,
     flash: Option<(String, String)>,
-    visited_user: Option<RocketAuthUser>,
+    visited_user: RocketAuthUser,
+    weighted_average_rating: f32,
     listing_cards: Vec<ListingCardDisplay>,
 }
 
@@ -36,10 +37,15 @@ impl Context {
             ListingCardDisplay::all_approved_for_user(&mut db, visited_user.id.unwrap())
                 .await
                 .map_err(|_| "failed to get approved listings.")?;
+        let weighted_average_rating =
+            Order::weighted_average_rating_for_user(&mut db, visited_user.id.unwrap())
+                .await
+                .map_err(|_| "failed to get weighted average rating for user.")?;
         Ok(Context {
             base_context,
             flash,
-            visited_user: Some(visited_user),
+            visited_user,
+            weighted_average_rating,
             listing_cards,
         })
     }

@@ -8,9 +8,9 @@
 
     <div class="row">
 
-      <h3><b>User</b>: {{ visited_user.username }}</h3>
+      <h3>User: {{ visited_user.username }}</h3>
 
-      <p><b>User rating</b>: <a href="">TODO</a></p>
+      <p><b>User rating</b>: {{ weighted_average_rating | round(method="ceil", precision=2) }} <a href="/seller_rating/{{ visited_user.username }}">(See rating)</a></p>
 
       <div class="twelve columns">
         <ul>

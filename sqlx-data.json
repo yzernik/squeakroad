@@ -118,6 +118,30 @@
     },
     "query": "UPDATE listings SET removed = true WHERE public_id = ?"
   },
+  "2193bd9b5c76a19961e0741fea23e801853d0172e639502d41d7ea5aadc51b53": {
+    "describe": {
+      "columns": [
+        {
+          "name": "weighted_total",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "seller_user_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n    select\n     SUM(orders.amount_owed_sat * orders.review_rating) as weighted_total, orders.seller_user_id\n    FROM\n     orders\n    WHERE\n     orders.seller_user_id = ?\n    AND\n     orders.reviewed\n    AND\n     completed\n    GROUP BY\n     orders.seller_user_id\n    ;"
+  },
   "23742f0b023f196fa7c285577595b49fa12b753aa5fb6b7771b9769c292315b5": {
     "describe": {
       "columns": [
@@ -821,6 +845,30 @@
       }
     },
     "query": "UPDATE listingimages SET is_primary = false WHERE listing_id = ?"
+  },
+  "5a03804bea7afa83044e2a4de5b137ed18f2f89ce93d0eb528c745c9b671ba32": {
+    "describe": {
+      "columns": [
+        {
+          "name": "total_amount_sold",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "seller_user_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n    select\n     SUM(orders.amount_owed_sat) as total_amount_sold, orders.seller_user_id\n    FROM\n     orders\n    WHERE\n     orders.seller_user_id = ?\n    AND\n     completed\n    GROUP BY\n     orders.seller_user_id\n    ;"
   },
   "5a24f9c5cf60ff7f2dc4ce2cf145931a81121bd7854c8b958625bd8ead17c0f8": {
     "describe": {
@@ -1847,6 +1895,30 @@
       }
     },
     "query": "select * from orders WHERE invoice_hash = ?;"
+  },
+  "a107c8d203991d4785d5fed1cc04503fecf831f953bdace0ec2c804bb67a2493": {
+    "describe": {
+      "columns": [
+        {
+          "name": "total_amount_sold",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "seller_user_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n    select\n     SUM(orders.amount_owed_sat) as total_amount_sold, orders.seller_user_id\n    FROM\n     orders\n    WHERE\n     orders.seller_user_id = ?\n    AND\n     orders.reviewed\n    AND\n     completed\n    GROUP BY\n     orders.seller_user_id\n    ;"
   },
   "a3b1aa9c6618dbe99226d9412013fdd52cfbde6a22c19d1c26959f23ddacce2f": {
     "describe": {
