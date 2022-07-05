@@ -110,7 +110,7 @@ async fn create_listing(
         };
         match Listing::insert(listing, db).await {
             Ok(listing_id) => match Listing::single(db, listing_id).await {
-                Ok(new_listing) => Ok(new_listing.public_id.clone()),
+                Ok(new_listing) => Ok(new_listing.public_id),
                 Err(e) => {
                     error_!("DB insertion error: {}", e);
                     Err("New listing could not be found after inserting.".to_string())
