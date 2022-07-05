@@ -62,6 +62,7 @@
       </div>
 
 
+      {% if order.completed %}
       {% if user %}
       {% if user and order.buyer_user_id == user.id or order.seller_user_id == user.id or admin_user %}
       <div class="row">
@@ -103,6 +104,7 @@
       </div>
       {% endif %}
       {% endif %}
+      {% endif %}
 
 
     </div>
@@ -122,27 +124,23 @@
 	{% if user.id == order.buyer_user_id %}
 	<h4> {% if not order.reviewed %}Review This Order{% else %}Update Review{% endif %}</h4>
 	<form action="/order/{{ order.public_id }}/new_review" method="post">
-	  <div class="ten columns">
-	    <label for="review_ratings">Choose a review rating (1-5):</label>
-	    <select id="review_rating" name="review_rating">
-	      <option disabled selected value> -- select a rating -- </option>
-	      {% for rating_value in [1, 2, 3, 4, 5] %}
-	      <option value="{{ rating_value }}">{{ rating_value }}</option>
-	      {% endfor %}
-	    </select>
-	    <label for="review_ratings">Write a review:</label>
-            <textarea placeholder="enter your review..."
-		      name="review_text" id="review_text" value=""
-		      class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}"></textarea>
-            {% if flash %}
-            <small class="field-{{flash.0}}-msg">
-              {{ flash.1 }}
-            </small>
-            {% endif %}
-	  </div>
-	  <div class="two columns">
-            <input type="submit" value="Post Review">
-	  </div>
+	  <label for="review_ratings">Choose a review rating (1-5):</label>
+	  <select id="review_rating" name="review_rating">
+	    <option disabled selected value> -- select a rating -- </option>
+	    {% for rating_value in [1, 2, 3, 4, 5] %}
+	    <option value="{{ rating_value }}">{{ rating_value }}</option>
+	    {% endfor %}
+	  </select>
+	  <label for="review_ratings">Write a review:</label>
+          <textarea placeholder="enter your review..."
+		    name="review_text" id="review_text" value=""
+		    class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}"></textarea>
+          {% if flash %}
+          <small class="field-{{flash.0}}-msg">
+            {{ flash.1 }}
+          </small>
+          {% endif %}
+          <input type="submit" value="Post Review">
 	</form>
 	{% endif %}
 	{% endif %}

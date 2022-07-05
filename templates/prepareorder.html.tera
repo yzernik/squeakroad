@@ -23,22 +23,20 @@
     <p><b>Listing</b>: {{ listing_display.listing.title }} ({{ listing_display.listing.price_sat }} sats)</p>
     <p><b>Shipping Option</b>: {{ selected_shipping_option.title }} ({{ selected_shipping_option.price_sat }} sats)</p>
 
-    <form action="" method="get">
-      <label for="choose_quantity">Choose quantity:</label>
+    <p><b>Price per unit with shipping</b>: {{ listing_display.listing.price_sat }} sats + {{ selected_shipping_option.price_sat }} sats = <b>{{ selected_shipping_option.price_sat + listing_display.listing.price_sat }} sats</b></p>
+
+    <form action="/prepare_order/{{ listing_display.listing.public_id }}/new" method="post">
       <input type="hidden" id="shipping_option_id" name="shipping_option_id" value="{{ selected_shipping_option.public_id }}">
+
+      <label for="quantity">Choose quantity:</label>
       <input type="number" placeholder="enter the quantity of items..."
              name="quantity" id="quantity" value="{{ quantity }}"
 	     class="u-full-width" />
-      <input type="submit" value="Update Quantity">
-    </form>
 
-    <p><b>Price per unit with shipping</b>: {{ listing_display.listing.price_sat }} sats + {{ selected_shipping_option.price_sat }} sats = {{ selected_shipping_option.price_sat + listing_display.listing.price_sat }} sats</p>
-    <p><b>Total price</b>: {{ quantity }} * {{ selected_shipping_option.price_sat + listing_display.listing.price_sat }} sats = <b>{{ quantity * (selected_shipping_option.price_sat + listing_display.listing.price_sat) }} sats</b></p>
-
-    <form action="/prepare_order/{{ listing_display.listing.public_id }}/new" method="post">
-      <input type="hidden" id="quantity" name="quantity" value="{{ quantity }}">
-      <input type="hidden" id="shipping_option_id" name="shipping_option_id" value="{{ selected_shipping_option.public_id }}">
-      <input id="shipping_instructions" placeholder="enter shipping instructions ..." name="shipping_instructions" value="">
+      <label for="shipping_instructions">Enter the shipping address for your order. Enter any other instructions that the buyer will need to ship your order.</label>
+      <textarea placeholder="shipping instructions..."
+		name="shipping_instructions" id="shipping_instructions" placeholder="enter shipping instructions ..." value=""
+		class="u-full-width"></textarea>
       <input type="submit" value="Create Order">
     </form>
 

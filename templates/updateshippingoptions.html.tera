@@ -42,17 +42,32 @@
 	</form>
 
 
-	{% for shipping_option in listing_display.shipping_options %}
-	<li>
-	  <p>{{ shipping_option.title }}</p>
-	  <p>Price: {{ shipping_option.price_sat }} sats</p>
-	  <p>{{ shipping_option.description }}</p>
-	  <form class="inline" action="/update_shipping_options/{{listing_display.listing.public_id}}/add_shipping_option/{{shipping_option.public_id}}" method="post">
-            <input type="hidden" name="_method" value="delete" />
-            <button class="primary small" type="submit">delete</button>
-	  </form>
-	</li>
-	{% endfor %}
+	<table class="u-full-width">
+	  <thead>
+	    <tr>
+	      <th>Shipping Option Name</th>
+	      <th>Shipping Option Description</th>
+	      <th>Price</th>
+	      <th></th>
+	    </tr>
+	  </thead>
+
+	  {% for shipping_option in listing_display.shipping_options %}
+	  <tbody>
+	    <tr>
+	      <td>{{ shipping_option.title }}</td>
+	      <td>{{ shipping_option.description }}</td>
+	      <td>{{ shipping_option.price_sat }} sats</td>
+	      <td>
+		<form class="inline" action="/update_shipping_options/{{listing_display.listing.public_id}}/add_shipping_option/{{shipping_option.public_id}}" method="post">
+		  <input type="hidden" name="_method" value="delete" />
+		  <button class="primary small" type="submit">delete</button>
+		</form>
+	      </td>
+	    </tr>
+	  </tbody>
+          {% endfor %}
+	</table>
 
       </div>
     </div>
