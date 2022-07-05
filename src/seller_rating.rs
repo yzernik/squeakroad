@@ -41,10 +41,9 @@ impl Context {
         // let amount_sold_sat = Order::amount_sold_sat_for_user(&mut db, visited_user.id.unwrap())
         //     .await
         //     .map_err(|_| "failed to get amount sold for user.")?;
-        let seller_info =
-            Order::weighted_average_rating_for_user(&mut db, visited_user.id.unwrap())
-                .await
-                .map_err(|_| "failed to get weighted average rating for user.")?;
+        let seller_info = Order::seller_info_for_user(&mut db, visited_user.id.unwrap())
+            .await
+            .map_err(|_| "failed to get weighted average rating for user.")?;
         let weighted_average_rating = seller_info
             .as_ref()
             .map(|si| si.weighted_average_rating)

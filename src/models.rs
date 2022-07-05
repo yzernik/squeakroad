@@ -1650,7 +1650,7 @@ GROUP BY
     //     Ok(total_amount_sold.try_into().unwrap())
     // }
 
-    pub async fn weighted_average_rating_for_user(
+    pub async fn seller_info_for_user(
         db: &mut Connection<Db>,
         user_id: i32,
     ) -> Result<Option<SellerInfo>, sqlx::Error> {
