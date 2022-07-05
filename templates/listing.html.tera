@@ -106,22 +106,10 @@
 	  </form>
 
 	  <p><b>Shipping Option</b>: {{ selected_shipping_option.title }} ({{ selected_shipping_option.price_sat }} sats)</p>
-	  <p>{{ selected_shipping_option.description }}</p>
+	  <p><b>Shipping Option Description</b>: {{ selected_shipping_option.description }}</p>
 	  {% endif %}
 
-	  <p><b>Description</b>: {{ listing_display.listing.description }} ...
-
-	    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Tincidunt vitae semper quis lectus nulla at volutpat diam. Eget arcu dictum varius duis at. Sem et tortor consequat id. Amet risus nullam eget felis eget nunc lobortis. Porta lorem mollis aliquam ut porttitor leo a diam. Magna etiam tempor orci eu lobortis elementum nibh tellus molestie. Rhoncus urna neque viverra justo. Posuere ac ut consequat semper viverra nam libero justo laoreet. Id leo in vitae turpis massa sed elementum. Consequat semper viverra nam libero justo laoreet sit amet cursus. Maecenas volutpat blandit aliquam etiam erat velit scelerisque. Enim eu turpis egestas pretium.
-
-Vel pharetra vel turpis nunc eget lorem dolor sed. Varius morbi enim nunc faucibus a pellentesque sit. Tincidunt id aliquet risus feugiat. Varius quam quisque id diam. Tortor id aliquet lectus proin nibh nisl. Eros in cursus turpis massa tincidunt. Aliquam sem et tortor consequat id porta nibh venenatis. Vel facilisis volutpat est velit egestas dui id ornare arcu. Eu lobortis elementum nibh tellus molestie nunc non blandit massa. Ipsum consequat nisl vel pretium lectus quam id. Maecenas volutpat blandit aliquam etiam erat velit scelerisque. Est sit amet facilisis magna etiam. Odio morbi quis commodo odio aenean. Mauris nunc congue nisi vitae suscipit tellus mauris. Vitae aliquet nec ullamcorper sit amet risus nullam eget felis. Risus quis varius quam quisque id. Blandit cursus risus at ultrices. Aliquet nibh praesent tristique magna sit amet. Hendrerit gravida rutrum quisque non.
-
-Ultricies lacus sed turpis tincidunt id aliquet risus feugiat in. Nec ullamcorper sit amet risus. At lectus urna duis convallis convallis tellus id interdum. Est ante in nibh mauris cursus mattis. Fringilla est ullamcorper eget nulla facilisi etiam dignissim diam. Proin sed libero enim sed faucibus turpis in. Lorem ipsum dolor sit amet consectetur. Dolor sit amet consectetur adipiscing elit duis tristique. Nunc mi ipsum faucibus vitae aliquet nec ullamcorper. Cum sociis natoque penatibus et magnis dis parturient montes nascetur. Vitae sapien pellentesque habitant morbi tristique senectus et netus et. Dui sapien eget mi proin sed libero enim sed. Turpis massa sed elementum tempus egestas sed. Suspendisse in est ante in nibh mauris cursus. Hendrerit gravida rutrum quisque non tellus orci. Eget lorem dolor sed viverra ipsum nunc aliquet. Vestibulum sed arcu non odio euismod lacinia. Mi ipsum faucibus vitae aliquet nec.
-
-Feugiat pretium nibh ipsum consequat nisl vel pretium lectus quam. Auctor urna nunc id cursus metus. Id neque aliquam vestibulum morbi. Massa enim nec dui nunc mattis enim ut. Elementum nisi quis eleifend quam adipiscing vitae proin sagittis. Tempor orci eu lobortis elementum nibh tellus molestie nunc non. Vel risus commodo viverra maecenas accumsan lacus vel facilisis volutpat. Sit amet purus gravida quis blandit turpis cursus in. A condimentum vitae sapien pellentesque habitant morbi tristique senectus et. Urna molestie at elementum eu. Neque egestas congue quisque egestas diam in arcu cursus euismod. Faucibus ornare suspendisse sed nisi lacus sed viverra tellus in. Pellentesque massa placerat duis ultricies lacus sed turpis. Diam ut venenatis tellus in metus. Accumsan sit amet nulla facilisi morbi tempus. Egestas diam in arcu cursus. Magna eget est lorem ipsum dolor sit. Commodo odio aenean sed adipiscing diam donec. Morbi tristique senectus et netus et malesuada.
-
-Accumsan lacus vel facilisis volutpat est velit. Diam maecenas ultricies mi eget mauris pharetra et ultrices neque. Velit egestas dui id ornare arcu odio. Nunc aliquet bibendum enim facilisis gravida. Erat pellentesque adipiscing commodo elit at imperdiet. Quis risus sed vulputate odio ut. Fames ac turpis egestas sed tempus. In ante metus dictum at tempor commodo ullamcorper. Eget dolor morbi non arcu risus quis. Amet consectetur adipiscing elit pellentesque habitant. Malesuada bibendum arcu vitae elementum curabitur vitae. Amet mattis vulputate enim nulla aliquet. Ultrices sagittis orci a scelerisque purus. Proin nibh nisl condimentum id venenatis a. In fermentum et sollicitudin ac orci phasellus egestas tellus rutrum.
-
-	  </p>
+	  <p><b>Description</b>: {{ listing_display.listing.description }}</p>
 	</div>
       </div>
     </div>

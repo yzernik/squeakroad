@@ -1,53 +1,57 @@
 {% extends "base" %}
 {% block body %}
 
-  <div class="container">
-    <p><!--Nothing to see here --></p>
+<div class="full-width-container">
+  <p><!--Nothing to see here --></p>
 
-    {% if listing_display %}
-    <h3>{{ listing_display.listing.title }}</h3>
+  <h3>{{ listing_display.listing.title }}</h3>
 
-    <br>
+  <h5>Add Listing Images</h5>
+  <p><a href="/listing/{{ listing_display.listing.public_id }}">Back to listing</a></p>
 
-    <div class="row">
-      <h4>Add Listing Images</h4>
-      <p><a href="/listing/{{ listing_display.listing.public_id }}">Back to listing</a></p>
+  <div class="row">
 
-      <form action="/update_listing_images/{{ listing_display.listing.public_id }}/add_image" method="post" enctype="multipart/form-data">
-        <div class="ten columns">
+    <div class="full column">
+
+      <div class="container">
+	<p><!--Nothing to see here --></p>
+
+	<br>
+
+	<form action="/update_listing_images/{{ listing_display.listing.public_id }}/add_image" method="post" enctype="multipart/form-data">
 	  <label for="file">Select an image file to upload</label>
           <input type="file" placeholder="upload a file..."
-            name="file" id="file" value="" autofocus
-            class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" />
+		 name="file" id="file" value="" autofocus
+		 class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" />
           {% if flash %}
-            <small class="field-{{flash.0}}-msg">
-               {{ flash.1 }}
-            </small>
+          <small class="field-{{flash.0}}-msg">
+	    {{ flash.1 }}
+          </small>
           {% endif %}
-        </div>
-        <div class="two columns">
           <input type="submit" value="add image">
-        </div>
-      </form>
+	</form>
+
+	{% for image in listing_display.images %}
+	<li>
+	  <img src="data:image/jpeg;base64,{{ image.image_data_base64 }}" style="width:512px;height:512px;" />
+	  <form class="inline" action="/update_listing_images/{{listing_display.listing.public_id}}/set_primary/{{image.public_id}}" method="post">
+            <input type="hidden" name="_method" value="put" />
+            <button class="link" type="submit">set primary</button>
+	  </form>
+	  <form class="inline" action="/update_listing_images/{{listing_display.listing.public_id}}/add_image/{{image.public_id}}" method="post">
+            <input type="hidden" name="_method" value="delete" />
+            <button class="primary small" type="submit">delete</button>
+	  </form>
+	</li>
+	{% endfor %}
+
+      </div>
     </div>
 
-    {% for image in listing_display.images %}
-    <li>
-      <img src="data:image/jpeg;base64,{{ image.image_data_base64 }}" style="width:512px;height:512px;" />
-      <form class="inline" action="/update_listing_images/{{listing_display.listing.public_id}}/set_primary/{{image.public_id}}" method="post">
-        <input type="hidden" name="_method" value="put" />
-        <button class="link" type="submit">set primary</button>
-      </form>
-      <form class="inline" action="/update_listing_images/{{listing_display.listing.public_id}}/add_image/{{image.public_id}}" method="post">
-        <input type="hidden" name="_method" value="delete" />
-        <button class="primary small" type="submit">delete</button>
-      </form>
-    </li>
-    {% endfor %}
-
-    {% endif %}
-
   </div>
+
+
+</div>
 
 
 {% endblock body %}
