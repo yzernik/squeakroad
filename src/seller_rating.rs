@@ -41,19 +41,6 @@ impl Context {
         let amount_sold_sat = Order::amount_sold_sat_for_user(&mut db, visited_user.id.unwrap())
             .await
             .map_err(|_| "failed to get amount sold for user.")?;
-        // let amount_sold_with_reviews_sat =
-        //     Order::amount_sold_with_reviews_sat_for_user(&mut db, visited_user.id.unwrap())
-        //         .await
-        //         .map_err(|_| "failed to get amount sold with reviews for user.")?;
-        // let weighted_total_of_ratings =
-        //     Order::weighted_sum_of_ratings_for_user(&mut db, visited_user.id.unwrap())
-        //         .await
-        //         .map_err(|_| "failed to get weighted total of ratings for user.")?;
-        // let weighted_average_rating = if amount_sold_with_reviews_sat == 0 {
-        //     0.0
-        // } else {
-        //     (weighted_total_of_ratings as f32) / (amount_sold_with_reviews_sat as f32)
-        // };
         let weighted_average_rating =
             Order::weighted_average_rating_for_user(&mut db, visited_user.id.unwrap())
                 .await

@@ -1642,88 +1642,40 @@ GROUP BY
         Ok(total_amount_sold.try_into().unwrap())
     }
 
-    pub async fn amount_sold_with_reviews_sat_for_user(
-        db: &mut Connection<Db>,
-        user_id: i32,
-    ) -> Result<u64, sqlx::Error> {
-        let amount_sold_result = sqlx::query!(
-            "
-    select
-     SUM(orders.amount_owed_sat) as total_amount_sold, orders.seller_user_id
-    FROM
-     orders
-    WHERE
-     orders.seller_user_id = ?
-    AND
-     orders.reviewed
-    AND
-     completed
-    GROUP BY
-     orders.seller_user_id
-    ;",
-            user_id,
-        )
-        .fetch_optional(&mut **db)
-        .await?;
-        println!("amount_sold_result: {:?}", amount_sold_result);
-
-        let total_amount_sold = match amount_sold_result {
-            Some(r) => r.total_amount_sold,
-            None => 0,
-        };
-        println!("total_amount_sold: {:?}", total_amount_sold);
-
-        Ok(total_amount_sold.try_into().unwrap())
-    }
-
-    pub async fn weighted_sum_of_ratings_for_user(
-        db: &mut Connection<Db>,
-        user_id: i32,
-    ) -> Result<u64, sqlx::Error> {
-        let weighted_total_result = sqlx::query!(
-            "
-    select
-     SUM(orders.amount_owed_sat * orders.review_rating) as weighted_total, orders.seller_user_id
-    FROM
-     orders
-    WHERE
-     orders.seller_user_id = ?
-    AND
-     orders.reviewed
-    AND
-     completed
-    GROUP BY
-     orders.seller_user_id
-    ;",
-            user_id,
-        )
-        .fetch_optional(&mut **db)
-        .await?;
-        println!("weighted_total_result: {:?}", weighted_total_result);
-
-        let weighted_total = match weighted_total_result {
-            Some(r) => r.weighted_total,
-            None => 0,
-        };
-        println!("weighted_total: {:?}", weighted_total);
-
-        Ok(weighted_total.try_into().unwrap())
-    }
-
     pub async fn weighted_average_rating_for_user(
         db: &mut Connection<Db>,
         user_id: i32,
     ) -> Result<f32, sqlx::Error> {
-        let amount_sold_with_reviews_sat =
-            Order::amount_sold_with_reviews_sat_for_user(db, user_id).await?;
-        let weighted_total_of_ratings =
-            Order::weighted_sum_of_ratings_for_user(db, user_id).await?;
-        let weighted_average_rating = if amount_sold_with_reviews_sat == 0 {
-            0.0
-        } else {
-            (weighted_total_of_ratings as f32) / (amount_sold_with_reviews_sat as f32)
+        let weighted_average_result = sqlx::query!(
+            "
+    select
+     SUM(orders.amount_owed_sat * orders.review_rating * 1000) / SUM(orders.amount_owed_sat) as weighted_average, orders.seller_user_id
+    FROM
+     orders
+    WHERE
+     orders.seller_user_id = ?
+    AND
+     orders.reviewed
+    AND
+     completed
+    GROUP BY
+     orders.seller_user_id
+    ;",
+            user_id,
+        )
+        .fetch_optional(&mut **db)
+        .await?;
+        println!("weighted_average_result: {:?}", weighted_average_result);
+
+        let weighted_average = match weighted_average_result {
+            Some(r) => r.weighted_average,
+            None => 0,
         };
-        Ok(weighted_average_rating)
+        println!("weighted_average: {:?}", weighted_average);
+
+        let ret = (weighted_average as f32) / 1000.0;
+
+        Ok(ret)
     }
 
     // TODO: implement this.
