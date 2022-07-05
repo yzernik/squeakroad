@@ -1654,39 +1654,100 @@ GROUP BY
         db: &mut Connection<Db>,
         user_id: i32,
     ) -> Result<Option<SellerInfo>, sqlx::Error> {
-        let seller_info = sqlx::query!(
+        // TODO: Use this query when sqlx is fixed: https://github.com/launchbadge/sqlx/issues/1350
+        //         let seller_info = sqlx::query!(
+        //             "
+        // SELECT weighted_average, total_amount_sold_sat, users.email
+        // FROM
+        //  users
+        // LEFT JOIN
+        //     (select
+        //      SUM(orders.amount_owed_sat) as total_amount_sold_sat, orders.seller_user_id as completed_seller_user_id
+        //     FROM
+        //      orders
+        //     WHERE
+        //      orders.completed
+        //     AND
+        //      completed
+        //     GROUP BY
+        //      orders.seller_user_id) as seller_infos
+        // ON
+        //  users.id = seller_infos.completed_seller_user_id
+        // LEFT JOIN
+        //     (select
+        //      SUM(orders.amount_owed_sat * orders.review_rating * 1000) / SUM(orders.amount_owed_sat) as weighted_average, orders.seller_user_id as reviewed_seller_user_id
+        //     FROM
+        //      orders
+        //     WHERE
+        //      orders.reviewed
+        //     AND
+        //      completed
+        //     GROUP BY
+        //      orders.seller_user_id) as seller_infos
+        // ON
+        //  users.id = seller_infos.reviewed_seller_user_id
+        // WHERE
+        //  users.id = ?
+        //     ;",
+        //             user_id,
+        //         )
+        //             .fetch_optional(&mut **db)
+        //             .map_ok(|maybe_r| maybe_r.map(|r| SellerInfo {
+        //                 username: r.email.unwrap(),
+        //                 total_amount_sold_sat: r.total_amount_sold_sat.unwrap().try_into().unwrap(),
+        //                 weighted_average_rating: (r.weighted_average.unwrap_or(0) as f32) / 1000.0,
+        //             }))
+        //             .await?;
+        //         println!("sellerinfo: {:?}", seller_info);
+
+        let total_amount_sold_sat = sqlx::query!(
             "
-SELECT weighted_average, total_amount_sold_sat, users.email
-FROM
-    (select
-     SUM(orders.amount_owed_sat * orders.review_rating * 1000) / SUM(orders.amount_owed_sat) as weighted_average, SUM(orders.amount_owed_sat) as total_amount_sold_sat, orders.seller_user_id as seller_user_id
-    FROM
-     orders
-    WHERE
-     orders.seller_user_id = ?
-    AND
-     orders.reviewed
-    AND
-     completed
-    GROUP BY
-     orders.seller_user_id) as seller_infos
-LEFT JOIN
- users
-ON
- seller_infos.seller_user_id = users.id
-    ;",
+            select
+             SUM(orders.amount_owed_sat) as total_amount_sold_sat
+            FROM
+             orders
+            WHERE
+             orders.completed
+            AND
+             orders.seller_user_id = ?
+            GROUP BY
+             orders.seller_user_id
+            ;",
             user_id,
         )
-            .fetch_optional(&mut **db)
-            .map_ok(|maybe_r| maybe_r.map(|r| SellerInfo {
-                username: r.email.unwrap(),
-                total_amount_sold_sat: r.total_amount_sold_sat.try_into().unwrap(),
-                weighted_average_rating: (r.weighted_average as f32) / 1000.0,
-            }))
-            .await?;
-        println!("sellerinfo: {:?}", seller_info);
+        .fetch_optional(&mut **db)
+        .map_ok(|maybe_r| maybe_r.map(|r| r.total_amount_sold_sat.try_into().unwrap()))
+        .await?;
+        println!("total_amount_sold_sat: {:?}", total_amount_sold_sat);
 
-        Ok(seller_info)
+        let weighted_average_rating = sqlx::query!(
+            "
+            select
+             SUM(orders.amount_owed_sat * orders.review_rating * 1000) / SUM(orders.amount_owed_sat) as weighted_average
+            FROM
+             orders
+            WHERE
+             orders.reviewed
+            AND
+             orders.seller_user_id = ?
+            GROUP BY
+             orders.seller_user_id
+            ;",
+            user_id,
+        )
+        .fetch_optional(&mut **db)
+        .map_ok(|maybe_r| maybe_r.map(|r| (r.weighted_average as f32) / 1000.0))
+        .await?;
+        println!("weighted_average_rating: {:?}", weighted_average_rating);
+
+        let seller_info = SellerInfo {
+            username: "".to_string(),
+            total_amount_sold_sat: total_amount_sold_sat.unwrap_or(0),
+            weighted_average_rating: weighted_average_rating.unwrap_or(0.0),
+        };
+
+        // TODO: remove option from return type.
+        Ok(Some(seller_info))
     }
 
     pub async fn seller_info_for_all_users(

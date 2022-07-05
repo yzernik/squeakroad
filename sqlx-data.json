@@ -78,6 +78,24 @@
     },
     "query": "UPDATE orders SET acked = true WHERE id = ?"
   },
+  "1026e4f7b2bc1ee467dbdf4c0e975fd13f999b0d5ed2830facba656c4a8844db": {
+    "describe": {
+      "columns": [
+        {
+          "name": "total_amount_sold_sat",
+          "ordinal": 0,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n            select\n             SUM(orders.amount_owed_sat) as total_amount_sold_sat\n            FROM\n             orders\n            WHERE\n             orders.completed\n            AND\n             orders.seller_user_id = ?\n            GROUP BY\n             orders.seller_user_id\n            ;"
+  },
   "11e3096becb72f427c8d3911ef4327afd9516143806981e11f8e34d069c14472": {
     "describe": {
       "columns": [
@@ -851,36 +869,6 @@
       }
     },
     "query": "\nSELECT weighted_average, total_amount_sold_sat, users.email\nFROM\n users\nLEFT JOIN\n    (select\n     SUM(orders.amount_owed_sat) as total_amount_sold_sat, orders.seller_user_id as completed_seller_user_id\n    FROM\n     orders\n    WHERE\n     orders.completed\n    AND\n     completed\n    GROUP BY\n     orders.seller_user_id) as seller_infos\nON\n users.id = seller_infos.completed_seller_user_id\nLEFT JOIN\n    (select\n     SUM(orders.amount_owed_sat * orders.review_rating * 1000) / SUM(orders.amount_owed_sat) as weighted_average, orders.seller_user_id as reviewed_seller_user_id\n    FROM\n     orders\n    WHERE\n     orders.reviewed\n    AND\n     completed\n    GROUP BY\n     orders.seller_user_id) as seller_infos\nON\n users.id = seller_infos.reviewed_seller_user_id\nWHERE\n total_amount_sold_sat > 0\nORDER BY\n total_amount_sold_sat DESC\n    ;"
-  },
-  "58935304c032d3be68c3513314aa5377cfc1b586966d9becefc90fb32b328b47": {
-    "describe": {
-      "columns": [
-        {
-          "name": "weighted_average",
-          "ordinal": 0,
-          "type_info": "Int64"
-        },
-        {
-          "name": "total_amount_sold_sat",
-          "ordinal": 1,
-          "type_info": "Int64"
-        },
-        {
-          "name": "email",
-          "ordinal": 2,
-          "type_info": "Text"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        true
-      ],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "\nSELECT weighted_average, total_amount_sold_sat, users.email\nFROM\n    (select\n     SUM(orders.amount_owed_sat * orders.review_rating * 1000) / SUM(orders.amount_owed_sat) as weighted_average, SUM(orders.amount_owed_sat) as total_amount_sold_sat, orders.seller_user_id as seller_user_id\n    FROM\n     orders\n    WHERE\n     orders.seller_user_id = ?\n    AND\n     orders.reviewed\n    AND\n     completed\n    GROUP BY\n     orders.seller_user_id) as seller_infos\nLEFT JOIN\n users\nON\n seller_infos.seller_user_id = users.id\n    ;"
   },
   "5a24f9c5cf60ff7f2dc4ce2cf145931a81121bd7854c8b958625bd8ead17c0f8": {
     "describe": {
@@ -2495,6 +2483,24 @@
       }
     },
     "query": "INSERT INTO shippingoptions (public_id, listing_id, title, description, price_sat) VALUES (?, ?, ?, ?, ?)"
+  },
+  "b376f4f348475beff006ee32c6bf2a36f4c5b61d2ca98a6d104272f5d57c2bba": {
+    "describe": {
+      "columns": [
+        {
+          "name": "weighted_average",
+          "ordinal": 0,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n            select\n             SUM(orders.amount_owed_sat * orders.review_rating * 1000) / SUM(orders.amount_owed_sat) as weighted_average\n            FROM\n             orders\n            WHERE\n             orders.reviewed\n            AND\n             orders.seller_user_id = ?\n            GROUP BY\n             orders.seller_user_id\n            ;"
   },
   "b3f7779f61e725801c7ca07f135147d29d40d68fdc545e1ed71c624daf195562": {
     "describe": {
