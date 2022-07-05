@@ -180,6 +180,7 @@ async fn create_order(
             paid: false,
             completed: false,
             acked: false,
+            reviewed: false,
             invoice_hash: hex::encode(invoice.r_hash),
             invoice_payment_request: invoice.payment_request,
             created_time_ms: now,
