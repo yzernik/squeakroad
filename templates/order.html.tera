@@ -108,6 +108,7 @@
     </div>
 
     <div class="one-half column">
+      {% if order.completed %}
       <div class="container">
 	{% if order.reviewed %}
 	<h3>Review</h3>
@@ -132,7 +133,7 @@
 	    <label for="review_ratings">Write a review:</label>
             <textarea placeholder="enter your review..."
 		      name="review_text" id="review_text" value=""
-		      class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" /></textarea>
+		      class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}"></textarea>
             {% if flash %}
             <small class="field-{{flash.0}}-msg">
               {{ flash.1 }}
@@ -147,6 +148,8 @@
 	{% endif %}
 
       </div>
+      {% endif %}
+
     </div>
 
   </div>
