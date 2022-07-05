@@ -110,7 +110,7 @@ pub struct ShippingOption {
 pub struct ShippingOptionInfo {
     pub title: String,
     pub description: String,
-    pub price_sat: u64,
+    pub price_sat: Option<u64>,
 }
 
 #[derive(Serialize, Debug, Clone)]
