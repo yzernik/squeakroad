@@ -47,7 +47,7 @@ async fn update(
     _admin_user: AdminUser,
 ) -> Flash<Redirect> {
     let fee_rate_input = fee_rate_form.into_inner();
-    let new_fee_rate_basis_points = fee_rate_input.fee_rate_basis_points;
+    let new_fee_rate_basis_points = fee_rate_input.fee_rate_basis_points.unwrap_or(0);
 
     match change_fee_rate(new_fee_rate_basis_points, &mut db).await {
         Ok(_) => Flash::success(

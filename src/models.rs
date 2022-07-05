@@ -135,7 +135,7 @@ pub struct MarketNameInput {
 
 #[derive(Debug, FromForm)]
 pub struct FeeRateInput {
-    pub fee_rate_basis_points: i32,
+    pub fee_rate_basis_points: Option<i32>,
 }
 
 #[derive(Serialize, Debug, Clone)]
