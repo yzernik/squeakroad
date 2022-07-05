@@ -116,9 +116,9 @@ async fn add_shipping_option(
             id: None,
             public_id: Uuid::new_v4().to_string(),
             listing_id: listing.id.unwrap(),
-            title: title,
-            description: description,
-            price_sat: price_sat,
+            title,
+            description,
+            price_sat,
         };
 
         ShippingOption::insert(shipping_option, db)
