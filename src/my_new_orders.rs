@@ -48,14 +48,14 @@ async fn index(
 ) -> Result<Template, NotFound<String>> {
     let flash = flash.map(FlashMessage::into_inner);
     Ok(Template::render(
-        "myunackedorders",
+        "myneworders",
         Context::raw(flash, db, user, admin_user).await,
     ))
 }
 
-pub fn my_unacked_orders_stage() -> AdHoc {
-    AdHoc::on_ignite("My Unacked Orders Stage", |rocket| async {
-        rocket.mount("/my_unacked_orders", routes![index])
+pub fn my_new_orders_stage() -> AdHoc {
+    AdHoc::on_ignite("My New Orders Stage", |rocket| async {
+        rocket.mount("/my_new_orders", routes![index])
         // .mount("/listing", routes![new])
     })
 }

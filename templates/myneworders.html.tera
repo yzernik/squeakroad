@@ -8,7 +8,8 @@
 
     <div class="row">
 
-      <h3>My Unacknowledged Orders</h3>
+      <h3>My New Orders</h3>
+      <p>Orders for your listings that have not yet been acked</p>
 
       <div class="twelve columns">
         <ul>

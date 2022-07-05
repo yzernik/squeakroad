@@ -60,7 +60,7 @@
             {% else %}
             Welcome, <a class="navbar-brand" href="/user/{{ base_context.user.email }}">{{ base_context.user.email }}</a>
             <a class="navbar-brand" href="/my_unread_messages">Messages{% if base_context.account_info %} ({{ base_context.account_info.num_unread_messages }}){% endif %}</a>
-            <a class="navbar-brand" href="/my_unacked_orders">Orders{% if base_context.account_info %} ({{ base_context.account_info.num_unacked_orders }}){% endif %}</a>
+            <a class="navbar-brand" href="/my_new_orders">Orders{% if base_context.account_info %} ({{ base_context.account_info.num_unacked_orders }}){% endif %}</a>
             <a class="navbar-brand" href="/account">Account{% if base_context.account_info %} ({{ base_context.account_info.account_balance_sat }} sats){% endif %}</a>
             {% endif %}
             {% endif %}
