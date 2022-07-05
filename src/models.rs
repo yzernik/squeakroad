@@ -1683,44 +1683,6 @@ GROUP BY
         Ok(seller_info)
     }
 
-    // pub async fn seller_info_for_all_users(
-    //     db: &mut Connection<Db>,
-    //     user_id: i32,
-    // ) -> Result<Option<SellerInfo>, sqlx::Error> {
-    //     let weighted_average_result = sqlx::query!(
-    //         "
-    // select
-    //  SUM(orders.amount_owed_sat * orders.review_rating * 1000) / SUM(orders.amount_owed_sat) as weighted_average, SUM(orders.amount_owed_sat) as total_amount_sold_sat, orders.seller_user_id
-    // FROM
-    //  orders
-    // WHERE
-    //  orders.reviewed
-    // AND
-    //  completed
-    // GROUP BY
-    //  orders.seller_user_id
-    // ;",
-    //         user_id,
-    //     )
-    //     .fetch_optional(&mut **db)
-    //     .await?;
-    //     println!("weighted_average_result: {:?}", weighted_average_result);
-
-    //     let seller_info = match weighted_average_result {
-    //         Some(r) => Some(SellerInfo {
-    //             username: "".to_string(), // TODO: need to join with users table.
-    //             total_amount_sold_sat: r.total_amount_sold_sat.try_into().unwrap(), // TODO
-    //             weighted_average_rating: (r.weighted_average as f32) / 1000.0,
-    //         }),
-    //         None => None,
-    //     };
-    //     println!("weighted_info: {:?}", seller_info);
-
-    //     // let ret = (weighted_average as f32) / 1000.0;
-
-    //     Ok(seller_info)
-    // }
-
     // TODO: implement this.
     pub async fn most_recent_paid_order(
         db: &mut PoolConnection<Sqlite>,
