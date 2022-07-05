@@ -3,7 +3,7 @@
 
 <h3>My Account</h3>
 
-<b>Username</b>: {{ user.email }}
+<b>Username</b>: <a href="/user/{{ user.email }}">{{ user.email }}</a>
 <br>
 
 <b>Account Balance</b>: {{ account_info.account_balance_sat }} sats
