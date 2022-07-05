@@ -1618,37 +1618,37 @@ GROUP BY
         Ok(())
     }
 
-    pub async fn amount_sold_sat_for_user(
-        db: &mut Connection<Db>,
-        user_id: i32,
-    ) -> Result<u64, sqlx::Error> {
-        let amount_sold_result = sqlx::query!(
-            "
-    select
-     SUM(orders.amount_owed_sat) as total_amount_sold, orders.seller_user_id
-    FROM
-     orders
-    WHERE
-     orders.seller_user_id = ?
-    AND
-     completed
-    GROUP BY
-     orders.seller_user_id
-    ;",
-            user_id,
-        )
-        .fetch_optional(&mut **db)
-        .await?;
-        println!("amount_sold_result: {:?}", amount_sold_result);
+    // pub async fn amount_sold_sat_for_user(
+    //     db: &mut Connection<Db>,
+    //     user_id: i32,
+    // ) -> Result<u64, sqlx::Error> {
+    //     let amount_sold_result = sqlx::query!(
+    //         "
+    // select
+    //  SUM(orders.amount_owed_sat) as total_amount_sold, orders.seller_user_id
+    // FROM
+    //  orders
+    // WHERE
+    //  orders.seller_user_id = ?
+    // AND
+    //  completed
+    // GROUP BY
+    //  orders.seller_user_id
+    // ;",
+    //         user_id,
+    //     )
+    //     .fetch_optional(&mut **db)
+    //     .await?;
+    //     println!("amount_sold_result: {:?}", amount_sold_result);
 
-        let total_amount_sold = match amount_sold_result {
-            Some(r) => r.total_amount_sold,
-            None => 0,
-        };
-        println!("total_amount_sold: {:?}", total_amount_sold);
+    //     let total_amount_sold = match amount_sold_result {
+    //         Some(r) => r.total_amount_sold,
+    //         None => 0,
+    //     };
+    //     println!("total_amount_sold: {:?}", total_amount_sold);
 
-        Ok(total_amount_sold.try_into().unwrap())
-    }
+    //     Ok(total_amount_sold.try_into().unwrap())
+    // }
 
     pub async fn weighted_average_rating_for_user(
         db: &mut Connection<Db>,
@@ -1657,7 +1657,7 @@ GROUP BY
         let weighted_average_result = sqlx::query!(
             "
     select
-     SUM(orders.amount_owed_sat * orders.review_rating * 1000) / SUM(orders.amount_owed_sat) as weighted_average, SUM(orders.amount_owed_sat) as total_amount_sold, orders.seller_user_id
+     SUM(orders.amount_owed_sat * orders.review_rating * 1000) / SUM(orders.amount_owed_sat) as weighted_average, SUM(orders.amount_owed_sat) as total_amount_sold_sat, orders.seller_user_id
     FROM
      orders
     WHERE
@@ -1678,7 +1678,7 @@ GROUP BY
         let seller_info = match weighted_average_result {
             Some(r) => Some(SellerInfo {
                 username: "".to_string(), // TODO: need to join with users table.
-                total_amount_sold_sat: 0, // TODO
+                total_amount_sold_sat: r.total_amount_sold_sat.try_into().unwrap(), // TODO
                 weighted_average_rating: (r.weighted_average as f32) / 1000.0,
             }),
             None => None,

@@ -38,16 +38,21 @@ impl Context {
         let received_orders = OrderCard::all_received_for_user(&mut db, visited_user.id.unwrap())
             .await
             .map_err(|_| "failed to get received orders for user.")?;
-        let amount_sold_sat = Order::amount_sold_sat_for_user(&mut db, visited_user.id.unwrap())
-            .await
-            .map_err(|_| "failed to get amount sold for user.")?;
+        // let amount_sold_sat = Order::amount_sold_sat_for_user(&mut db, visited_user.id.unwrap())
+        //     .await
+        //     .map_err(|_| "failed to get amount sold for user.")?;
         let seller_info =
             Order::weighted_average_rating_for_user(&mut db, visited_user.id.unwrap())
                 .await
                 .map_err(|_| "failed to get weighted average rating for user.")?;
         let weighted_average_rating = seller_info
+            .as_ref()
             .map(|si| si.weighted_average_rating)
             .unwrap_or(0.0);
+        let amount_sold_sat = seller_info
+            .as_ref()
+            .map(|si| si.total_amount_sold_sat)
+            .unwrap_or(0);
         Ok(Context {
             base_context,
             flash,
