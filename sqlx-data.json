@@ -2058,6 +2058,24 @@
     },
     "query": "select * from orders WHERE public_id = ?;"
   },
+  "a3fb13620332abfa1a0d8f2bf50f09de3ab661fbbe0d96dcee225087a94fefe8": {
+    "describe": {
+      "columns": [
+        {
+          "name": "listing_count",
+          "ordinal": 0,
+          "type_info": "Int"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "\nselect count(id) as listing_count from listings\nWHERE\n user_id = ?\nAND\n created_time_ms > ?\nORDER BY listings.created_time_ms ASC;"
+  },
   "a6afe3826d98dc986a448bb1e278ac354578a39fcc19e3101265e664767fcde9": {
     "describe": {
       "columns": [
