@@ -57,7 +57,7 @@ impl Context {
             flash,
             visited_user,
             amount_sold_sat,
-            weighted_average_rating: weighted_average_rating,
+            weighted_average_rating,
             received_orders,
         })
     }

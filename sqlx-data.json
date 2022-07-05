@@ -822,6 +822,36 @@
     },
     "query": "UPDATE listingimages SET is_primary = false WHERE listing_id = ?"
   },
+  "58935304c032d3be68c3513314aa5377cfc1b586966d9becefc90fb32b328b47": {
+    "describe": {
+      "columns": [
+        {
+          "name": "weighted_average",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "total_amount_sold_sat",
+          "ordinal": 1,
+          "type_info": "Int64"
+        },
+        {
+          "name": "email",
+          "ordinal": 2,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\nSELECT weighted_average, total_amount_sold_sat, users.email\nFROM\n    (select\n     SUM(orders.amount_owed_sat * orders.review_rating * 1000) / SUM(orders.amount_owed_sat) as weighted_average, SUM(orders.amount_owed_sat) as total_amount_sold_sat, orders.seller_user_id as seller_user_id\n    FROM\n     orders\n    WHERE\n     orders.seller_user_id = ?\n    AND\n     orders.reviewed\n    AND\n     completed\n    GROUP BY\n     orders.seller_user_id) as seller_infos\nLEFT JOIN\n users\nON\n seller_infos.seller_user_id = users.id\n    ;"
+  },
   "5a24f9c5cf60ff7f2dc4ce2cf145931a81121bd7854c8b958625bd8ead17c0f8": {
     "describe": {
       "columns": [],
@@ -2425,36 +2455,6 @@
       }
     },
     "query": "\nselect count(id) as message_count from ordermessages\nWHERE\n order_id = ?\nAND\n author_id = ?\nAND\n created_time_ms > ?\nORDER BY ordermessages.created_time_ms ASC;"
-  },
-  "afc5c6c92eacdab7164f36785ebb5151dc657cede0d12cc479a197572cebba31": {
-    "describe": {
-      "columns": [
-        {
-          "name": "weighted_average",
-          "ordinal": 0,
-          "type_info": "Int64"
-        },
-        {
-          "name": "total_amount_sold_sat",
-          "ordinal": 1,
-          "type_info": "Int64"
-        },
-        {
-          "name": "seller_user_id",
-          "ordinal": 2,
-          "type_info": "Int64"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "\n    select\n     SUM(orders.amount_owed_sat * orders.review_rating * 1000) / SUM(orders.amount_owed_sat) as weighted_average, SUM(orders.amount_owed_sat) as total_amount_sold_sat, orders.seller_user_id\n    FROM\n     orders\n    WHERE\n     orders.seller_user_id = ?\n    AND\n     orders.reviewed\n    AND\n     completed\n    GROUP BY\n     orders.seller_user_id\n    ;"
   },
   "b26ae7c5b32514b2b055605b39373406f820c6534ec6583bb52b3c1ac00a6855": {
     "describe": {

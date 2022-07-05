@@ -1656,8 +1656,10 @@ GROUP BY
     ) -> Result<Option<SellerInfo>, sqlx::Error> {
         let seller_info = sqlx::query!(
             "
-    select
-     SUM(orders.amount_owed_sat * orders.review_rating * 1000) / SUM(orders.amount_owed_sat) as weighted_average, SUM(orders.amount_owed_sat) as total_amount_sold_sat, orders.seller_user_id
+SELECT weighted_average, total_amount_sold_sat, users.email
+FROM
+    (select
+     SUM(orders.amount_owed_sat * orders.review_rating * 1000) / SUM(orders.amount_owed_sat) as weighted_average, SUM(orders.amount_owed_sat) as total_amount_sold_sat, orders.seller_user_id as seller_user_id
     FROM
      orders
     WHERE
@@ -1667,14 +1669,18 @@ GROUP BY
     AND
      completed
     GROUP BY
-     orders.seller_user_id
+     orders.seller_user_id) as seller_infos
+LEFT JOIN
+ users
+ON
+ seller_infos.seller_user_id = users.id
     ;",
             user_id,
         )
             .fetch_optional(&mut **db)
             .map_ok(|maybe_r| maybe_r.map(|r| SellerInfo {
-                username: "".to_string(), // TODO: need to join with users table.
-                total_amount_sold_sat: r.total_amount_sold_sat.try_into().unwrap(), // TODO
+                username: r.email.unwrap(),
+                total_amount_sold_sat: r.total_amount_sold_sat.try_into().unwrap(),
                 weighted_average_rating: (r.weighted_average as f32) / 1000.0,
             }))
             .await?;
