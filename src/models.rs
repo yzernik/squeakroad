@@ -391,6 +391,31 @@ impl Listing {
         .await?;
         Ok(())
     }
+
+    pub async fn count_for_user_since_time_ms(
+        db: &mut Connection<Db>,
+        user_id: i32,
+        start_time_ms: u64,
+    ) -> Result<u32, sqlx::Error> {
+        let start_time_ms_i64: i64 = start_time_ms.try_into().unwrap();
+
+        let listing_count = sqlx::query!(
+            "
+select count(id) as listing_count from listings
+WHERE
+ user_id = ?
+AND
+ created_time_ms > ?
+ORDER BY listings.created_time_ms ASC;",
+            user_id,
+            start_time_ms_i64,
+        )
+        .fetch_one(&mut **db)
+        .map_ok(|r| r.listing_count)
+        .await?;
+
+        Ok(listing_count.try_into().unwrap())
+    }
 }
 
 impl ListingImage {

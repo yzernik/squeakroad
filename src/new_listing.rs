@@ -74,6 +74,11 @@ async fn create_listing(
         .duration_since(UNIX_EPOCH)
         .unwrap()
         .as_millis() as u64;
+    let one_day_in_ms = 24 * 60 * 60 * 1000;
+    let recent_listing_count =
+        Listing::count_for_user_since_time_ms(db, user.id(), now - one_day_in_ms)
+            .await
+            .map_err(|_| "failed to get number of recent listings.")?;
 
     if listing_info.title.is_empty() {
         Err("Title cannot be empty.".to_string())
@@ -87,6 +92,8 @@ async fn create_listing(
         Err("Quantity must be a positive number.".to_string())
     } else if listing_info.price_sat == 0 {
         Err("Price must be a positive number.".to_string())
+    } else if recent_listing_count >= 10 {
+        Err("More than 10 listings in a single day not allowed.".to_string())
     } else if user.is_admin {
         Err("Admin user cannot create a listing.".to_string())
     } else {
