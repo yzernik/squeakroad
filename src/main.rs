@@ -34,6 +34,7 @@ mod posts;
 mod prepare_order;
 mod review_pending_listings;
 mod routes;
+mod seller_rating;
 mod update_fee_rate;
 mod update_listing_images;
 mod update_market_name;
