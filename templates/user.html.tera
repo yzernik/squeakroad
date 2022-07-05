@@ -1,21 +1,16 @@
 {% extends "base" %}
 {% block body %}
 
-{% if visited_user %}
-{{ visited_user.username }}
-{% else %}
-User not found.
-{% endif %}
-
 <br>
-
 
   <div class="container">
     <p><!--Nothing to see here --></p>
 
     <div class="row">
 
-      <h3>{{ visited_user.username }}'s Listings</h3>
+      <h3><b>User</b>: {{ visited_user.username }}</h3>
+
+      <p><b>User rating</b>: <a href="">TODO</a></p>
 
       <div class="twelve columns">
         <ul>
