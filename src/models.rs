@@ -1585,44 +1585,37 @@ GROUP BY
         Ok(())
     }
 
-    //     pub async fn amount_earned_sat(
-    //         db: &mut Connection<Db>,
-    //         user_id: i32,
-    //     ) -> Result<u64, sqlx::Error> {
-    //         let received_order_total_result = sqlx::query!(
-    //             "
-    // select
-    //  SUM(orders.seller_credit_sat) as total_amount_paid, listings.user_id as listing_user_id
-    // FROM
-    //  orders
-    // LEFT JOIN
-    //  listings
-    // ON
-    //  orders.listing_id = listings.id
-    // WHERE
-    //  listing_user_id = ?
-    // AND
-    //  completed
-    // GROUP BY
-    //  listing_user_id
-    // ;",
-    //             user_id,
-    //         )
-    //         .fetch_optional(&mut **db)
-    //         .await?;
-    //         println!(
-    //             "received_order_total_result: {:?}",
-    //             received_order_total_result
-    //         );
+    pub async fn amount_sold_sat(
+        db: &mut Connection<Db>,
+        user_id: i32,
+    ) -> Result<u64, sqlx::Error> {
+        let amount_sold_result = sqlx::query!(
+            "
+    select
+     SUM(orders.amount_owed_sat) as total_amount_sold, orders.seller_user_id
+    FROM
+     orders
+    WHERE
+     orders.seller_user_id = ?
+    AND
+     completed
+    GROUP BY
+     orders.seller_user_id
+    ;",
+            user_id,
+        )
+        .fetch_optional(&mut **db)
+        .await?;
+        println!("amount_sold_result: {:?}", amount_sold_result);
 
-    //         let received_order_total = match received_order_total_result {
-    //             Some(r) => r.total_amount_paid,
-    //             None => 0,
-    //         };
-    //         println!("received_order_total: {:?}", received_order_total);
+        let total_amount_sold = match amount_sold_result {
+            Some(r) => r.total_amount_sold,
+            None => 0,
+        };
+        println!("total_amount_sold: {:?}", total_amount_sold);
 
-    //         Ok(received_order_total.try_into().unwrap())
-    //     }
+        Ok(total_amount_sold.try_into().unwrap())
+    }
 
     // TODO: implement this.
     pub async fn most_recent_paid_order(
