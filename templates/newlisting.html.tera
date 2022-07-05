@@ -8,18 +8,22 @@
 
     <div class="row">
       <h4>Create New Listing</h4>
+      <p>Market will collect a {{ admin_settings.fee_rate_basis_points / 100 }}% fee rate from each sale</p>
       <form action="/new_listing" method="post">
         <div class="ten columns">
-	  <p>Market will collect a {{ admin_settings.fee_rate_basis_points / 100 }}% fee rate</p>
-          <input type="text" placeholder="enter a listing title..."
+	  <label for="title">Enter the item name</label>
+          <input type="text" placeholder="item name..."
             name="title" id="title" value="" autofocus
             class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" />
-          <input type="text" placeholder="enter a listing description..."
-            name="description" id="description" value=""
-            class="u-full-width" />
-          <input type="number" placeholder="enter a listing price in sats..."
+	  <label for="title">Enter the description of the item</label>
+          <textarea placeholder="item description..."
+		    name="description" id="description" value=""
+		    class="u-full-width" /></textarea>
+	  <label for="title">Enter the price of each item in sats</label>
+          <input type="number" placeholder="item price in sats..."
             name="price_sat" id="price_sat" value=""
             class="u-full-width" />
+	  <label for="title">Enter how many items are for sale</label>
           <input type="number" placeholder="enter the quantity of items..."
             name="quantity" id="quantity" value=""
 		 class="u-full-width" />

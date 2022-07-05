@@ -15,13 +15,16 @@
 
       <form action="/update_shipping_options/{{ listing_display.listing.public_id }}/add_shipping_option" method="post">
         <div class="ten columns">
-          <input type="text" placeholder="enter a shipping option title..."
+	  <label for="title">Enter the name of the shipping option</label>
+          <input type="text" placeholder="shipping option name..."
 		 name="title" id="title" value="" autofocus
 		 class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" />
-          <input type="text" placeholder="enter a shipping option description..."
-		 name="description" id="description" value=""
-		 class="u-full-width" />
-          <input type="number" placeholder="enter a shipping option price in sats..."
+	  <label for="title">Enter the description of the shipping option. Describe how the item will be shipped, and describe any restrictions on where and when it can be shipped</label>
+          <textarea placeholder="shipping item description..."
+		    name="description" id="description" value=""
+		    class="u-full-width" /></textarea>
+	  <label for="title">Enter the price of the shipping option in sats</label>
+          <input type="number" placeholder="shipping option price..."
 		 name="price_sat" id="price_sat" value=""
 		 class="u-full-width" />
           {% if flash %}
