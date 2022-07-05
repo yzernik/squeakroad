@@ -40,7 +40,7 @@ impl Context {
             base_context,
             flash,
             visited_user: Some(visited_user),
-            listing_cards: listing_cards,
+            listing_cards,
         })
     }
 }

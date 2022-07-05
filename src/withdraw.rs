@@ -138,7 +138,7 @@ async fn withdraw(
                 id: None,
                 public_id: Uuid::new_v4().to_string(),
                 user_id: user.id(),
-                amount_sat: amount_sat,
+                amount_sat,
                 invoice_hash: hex::encode(send_response.payment_hash),
                 invoice_payment_request: withdrawal_info.invoice_payment_request,
                 created_time_ms: now,
