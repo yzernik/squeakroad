@@ -1,6 +1,6 @@
 use crate::base::BaseContext;
 use crate::db::Db;
-use crate::models::Withdrawal;
+use crate::models::{RocketAuthUser, Withdrawal};
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::serde::Serialize;
@@ -15,6 +15,7 @@ struct Context {
     base_context: BaseContext,
     flash: Option<(String, String)>,
     withdrawal: Withdrawal,
+    withdrawal_user: RocketAuthUser,
     user: User,
 }
 
@@ -32,10 +33,14 @@ impl Context {
         let withdrawal = Withdrawal::single_by_public_id(&mut db, withdrawal_id)
             .await
             .map_err(|_| "failed to get withdrawal.")?;
+        let withdrawal_user = RocketAuthUser::single(&mut db, withdrawal.user_id)
+            .await
+            .map_err(|_| "failed to get withdrawal user.")?;
         Ok(Context {
             base_context,
             flash,
             withdrawal,
+            withdrawal_user,
             user,
         })
     }
