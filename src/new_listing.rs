@@ -80,6 +80,9 @@ async fn create_listing(
             .await
             .map_err(|_| "failed to get number of recent listings.")?;
 
+    let quantity = listing_info.quantity.unwrap_or(0);
+    let price_sat = listing_info.price_sat.unwrap_or(0);
+
     if listing_info.title.is_empty() {
         Err("Title cannot be empty.".to_string())
     } else if listing_info.description.is_empty() {
@@ -88,9 +91,9 @@ async fn create_listing(
         Err("Title length is too long.".to_string())
     } else if listing_info.description.len() > 4096 {
         Err("Description length is too long.".to_string())
-    } else if listing_info.quantity == 0 {
+    } else if quantity == 0 {
         Err("Quantity must be a positive number.".to_string())
-    } else if listing_info.price_sat == 0 {
+    } else if price_sat == 0 {
         Err("Price must be a positive number.".to_string())
     } else if recent_listing_count >= 10 {
         Err("More than 10 listings in a single day not allowed.".to_string())
@@ -103,8 +106,8 @@ async fn create_listing(
             user_id: user.id(),
             title: listing_info.title,
             description: listing_info.description,
-            price_sat: listing_info.price_sat,
-            quantity: listing_info.quantity,
+            price_sat: price_sat,
+            quantity: quantity,
             fee_rate_basis_points: admin_settings.fee_rate_basis_points,
             submitted: false,
             reviewed: false,

@@ -41,8 +41,8 @@ pub struct Listing {
 pub struct InitialListingInfo {
     pub title: String,
     pub description: String,
-    pub price_sat: u64,
-    pub quantity: u32,
+    pub price_sat: Option<u64>,
+    pub quantity: Option<u32>,
 }
 
 #[derive(FromForm)]
@@ -110,7 +110,7 @@ pub struct ShippingOption {
 pub struct ShippingOptionInfo {
     pub title: String,
     pub description: String,
-    pub price_sat: u64,
+    pub price_sat: Option<u64>,
 }
 
 #[derive(Serialize, Debug, Clone)]
@@ -135,7 +135,7 @@ pub struct MarketNameInput {
 
 #[derive(Debug, FromForm)]
 pub struct FeeRateInput {
-    pub fee_rate_basis_points: i32,
+    pub fee_rate_basis_points: Option<i32>,
 }
 
 #[derive(Serialize, Debug, Clone)]
@@ -166,7 +166,7 @@ pub struct Order {
 
 #[derive(Debug, FromForm, Clone)]
 pub struct OrderInfo {
-    pub quantity: u32,
+    pub quantity: Option<u32>,
     pub shipping_option_id: String,
     pub shipping_instructions: String,
 }
@@ -248,7 +248,7 @@ pub struct OrderMessageCard {
 
 #[derive(Debug, FromForm, Clone)]
 pub struct ReviewInput {
-    pub review_rating: u32,
+    pub review_rating: Option<u32>,
     pub review_text: String,
 }
 

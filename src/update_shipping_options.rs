@@ -64,7 +64,7 @@ async fn new(
     let shipping_option_info = shipping_option_form.into_inner();
     let title = shipping_option_info.title;
     let description = shipping_option_info.description;
-    let price_sat = shipping_option_info.price_sat;
+    let price_sat = shipping_option_info.price_sat.unwrap_or(0);
 
     match add_shipping_option(id, title, description, price_sat, &mut db, user, admin_user).await {
         Ok(_) => Flash::success(
