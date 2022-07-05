@@ -269,82 +269,95 @@ async fn new_review(
 
     println!("order_review_info: {:?}", order_review_info);
 
-    // match create_order_message(id, order_message_info, &mut db, user.clone()).await {
-    //     Ok(_) => Ok(Flash::success(
-    //         Redirect::to(format!("/{}/{}", "order", id)),
-    //         "Order Message Successfully Sent.",
-    //     )),
-    //     Err(e) => {
-    //         error_!("DB insertion error: {}", e);
-    //         Err(Flash::error(
-    //             Redirect::to(format!("/{}/{}", "order", id)),
-    //             e,
-    //         ))
-    //     }
-    // }
+    match create_order_review(id, order_review_info, &mut db, user.clone()).await {
+        Ok(_) => Ok(Flash::success(
+            Redirect::to(format!("/{}/{}", "order", id)),
+            "Review Successfully Posted.",
+        )),
+        Err(e) => {
+            error_!("DB insertion error: {}", e);
+            Err(Flash::error(
+                Redirect::to(format!("/{}/{}", "order", id)),
+                e,
+            ))
+        }
+    }
 
-    Ok(Flash::success(
-        Redirect::to(format!("/{}/{}", "order", id)),
-        "Review Successfully Posted.",
-    ))
+    // Ok(Flash::success(
+    //     Redirect::to(format!("/{}/{}", "order", id)),
+    //     "Review Successfully Posted.",
+    // ))
 }
 
-// async fn create_order_review(
-//     order_id: &str,
-//     order_review_info: ReviewInput,
-//     db: &mut Connection<Db>,
-//     user: User,
-// ) -> Result<(), String> {
-//     let now = SystemTime::now()
-//         .duration_since(UNIX_EPOCH)
-//         .unwrap()
-//         .as_millis() as u64;
-//     let order = Order::single_by_public_id(db, order_id)
-//         .await
-//         .map_err(|_| "failed to get order")?;
-//     let one_day_in_ms = 24 * 60 * 60 * 1000;
-//     let recent_order_message_count = OrderMessage::number_for_order_for_user_since_ms(
-//         db,
-//         order.id.unwrap(),
-//         user.id(),
-//         now - one_day_in_ms,
-//     )
-//     .await
-//     .map_err(|_| "failed to get number of recent messages.")?;
+async fn create_order_review(
+    order_id: &str,
+    order_review_info: ReviewInput,
+    db: &mut Connection<Db>,
+    user: User,
+) -> Result<(), String> {
+    let now = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_millis() as u64;
+    let order = Order::single_by_public_id(db, order_id)
+        .await
+        .map_err(|_| "failed to get order")?;
 
-//     if user.id() != order.seller_user_id && user.id() != order.buyer_user_id {
-//         Err("User is not the seller or the buyer.".to_string())
-//     } else if recent_order_message_count >= 5 {
-//         Err("More than 5 message in a single day not allowed.".to_string())
-//     } else if order_message_info.text.is_empty() {
-//         Err("Message text cannot be empty.".to_string())
-//     } else if order_message_info.text.len() > 1024 {
-//         Err("Message text is too long.".to_string())
-//     } else {
-//         let recipient_id = if user.id() == order.seller_user_id {
-//             order.buyer_user_id
-//         } else {
-//             order.seller_user_id
-//         };
-//         let order_message = OrderMessage {
-//             id: None,
-//             public_id: Uuid::new_v4().to_string(),
-//             order_id: order.id.unwrap(),
-//             author_id: user.id(),
-//             recipient_id,
-//             text: order_message_info.text,
-//             viewed: false,
-//             created_time_ms: now,
-//         };
-//         match OrderMessage::insert(order_message, db).await {
-//             Ok(_) => Ok(()),
-//             Err(e) => {
-//                 error_!("DB insertion error: {}", e);
-//                 Err("Order Message could not be inserted due an internal error.".to_string())
-//             }
-//         }
-//     }
-// }
+    if user.id() != order.buyer_user_id {
+        Err("User is not the buyer.".to_string())
+    } else if order_review_info.review_rating < 1 || order_review_info.review_rating > 5 {
+        Err("Review rating must be between 1 and 5.".to_string())
+    } else if order_review_info.review_text.is_empty() {
+        Err("Review text cannot be empty.".to_string())
+    } else if order_review_info.review_text.len() > 4096 {
+        Err("Review text is too long.".to_string())
+    } else {
+        let new_review_time_ms = if order.review_time_ms > 0 {
+            order.review_time_ms
+        } else {
+            now
+        };
+
+        match Order::set_order_review(
+            db,
+            order_id,
+            order_review_info.review_rating,
+            &order_review_info.review_text,
+            new_review_time_ms,
+        )
+        .await
+        {
+            Ok(_) => Ok(()),
+            Err(e) => {
+                error_!("DB insertion error: {}", e);
+                Err("Order Review could not be inserted due an internal error.".to_string())
+            }
+        }
+
+        // let recipient_id = if user.id() == order.seller_user_id {
+        //     order.buyer_user_id
+        // } else {
+        //     order.seller_user_id
+        // };
+        // let order_message = OrderMessage {
+        //     id: None,
+        //     public_id: Uuid::new_v4().to_string(),
+        //     order_id: order.id.unwrap(),
+        //     author_id: user.id(),
+        //     recipient_id,
+        //     text: order_message_info.text,
+        //     viewed: false,
+        //     created_time_ms: now,
+        // };
+        // match OrderMessage::insert(order_message, db).await {
+        //     Ok(_) => Ok(()),
+        //     Err(e) => {
+        //         error_!("DB insertion error: {}", e);
+        //         Err("Order Message could not be inserted due an internal error.".to_string())
+        //     }
+        // }
+    }
+}
 
 #[get("/<id>")]
 async fn index(
