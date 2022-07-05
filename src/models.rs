@@ -1689,6 +1689,45 @@ ON
         Ok(seller_info)
     }
 
+    pub async fn seller_info_for_all_users(
+        db: &mut Connection<Db>,
+    ) -> Result<Vec<SellerInfo>, sqlx::Error> {
+        let seller_infos = sqlx::query!(
+            "
+SELECT weighted_average, total_amount_sold_sat, users.email
+FROM
+    (select
+     SUM(orders.amount_owed_sat * orders.review_rating * 1000) / SUM(orders.amount_owed_sat) as weighted_average, SUM(orders.amount_owed_sat) as total_amount_sold_sat, orders.seller_user_id as seller_user_id
+    FROM
+     orders
+    WHERE
+     orders.reviewed
+    AND
+     completed
+    GROUP BY
+     orders.seller_user_id) as seller_infos
+LEFT JOIN
+ users
+ON
+ seller_infos.seller_user_id = users.id
+WHERE
+ total_amount_sold_sat > 0
+ORDER BY
+ total_amount_sold_sat DESC
+    ;")
+            .fetch(&mut **db)
+            .map_ok(|r| SellerInfo {
+                username: r.email.unwrap(),
+                total_amount_sold_sat: r.total_amount_sold_sat.unwrap().try_into().unwrap(),
+                weighted_average_rating: (r.weighted_average.unwrap() as f32) / 1000.0,
+            })
+            .try_collect::<Vec<_>>()
+            .await?;
+        println!("seller_infos: {:?}", seller_infos);
+
+        Ok(seller_infos)
+    }
+
     // TODO: implement this.
     pub async fn most_recent_paid_order(
         db: &mut PoolConnection<Sqlite>,
