@@ -585,9 +585,9 @@ impl ListingDisplay {
         let rocket_auth_user = RocketAuthUser::single(&mut *db, listing.user_id).await?;
 
         let listing_display = ListingDisplay {
-            listing: listing,
+            listing,
             images: image_displays,
-            shipping_options: shipping_options,
+            shipping_options,
             user: rocket_auth_user,
         };
 
@@ -1275,7 +1275,7 @@ impl AdminSettings {
             .fetch_optional(&mut tx)
             .await?;
 
-        if let None = maybe_admin_settings {
+        if maybe_admin_settings.is_none() {
             sqlx::query!(
                 "INSERT INTO adminsettings (market_name, fee_rate_basis_points) VALUES (?, ?)",
                 admin_settings.market_name,
@@ -2103,7 +2103,7 @@ impl AccountInfo {
         let unacked_orders = OrderCard::all_unacked_for_user(db, user_id).await?;
         let num_unacked_orders = unacked_orders.len();
         Ok(AccountInfo {
-            account_balance_sat: account_balance_sat,
+            account_balance_sat,
             num_unread_messages: num_unread_messages.try_into().unwrap(),
             num_unacked_orders: num_unacked_orders.try_into().unwrap(),
         })
@@ -2159,7 +2159,7 @@ ON
             .fetch(&mut **db)
             .map_ok(|r| AccountBalanceChange {
                     username: r.email.unwrap(),
-                    amount_change_sat: r.amount_change_sat.try_into().unwrap(),
+                    amount_change_sat: r.amount_change_sat,
                     event_type: r.event_type,
                     event_id: r.event_id,
                     event_time_ms: r.event_time_ms.try_into().unwrap(),

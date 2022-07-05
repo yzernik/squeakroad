@@ -39,7 +39,7 @@ pub async fn handle_received_payments(
 
     println!("Starting subscribe invoices...");
     let invoice_subscription = tonic_lnd::rpc::InvoiceSubscription {
-        settle_index: settle_index,
+        settle_index,
         ..Default::default()
     };
     let update_stream_resp = lighting_client

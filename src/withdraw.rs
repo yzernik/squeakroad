@@ -102,7 +102,6 @@ async fn withdraw(
         let decoded_pay_req_resp = lighting_client
             .decode_pay_req(tonic_lnd::rpc::PayReqString {
                 pay_req: withdrawal_info.invoice_payment_request.clone(),
-                ..tonic_lnd::rpc::PayReqString::default()
             })
             .await
             .map_err(|_| "failed to decode payment request string.")?;
