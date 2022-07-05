@@ -1,20 +1,26 @@
 {% extends "base" %}
 {% block body %}
 
-  <div class="container">
-    <p><!--Nothing to see here --></p>
 
-    {% if listing_display %}
-    <h3>{{ listing_display.listing.title }}</h3>
 
-    <br>
+<div class="full-width-container">
+  <p><!--Nothing to see here --></p>
 
-    <div class="row">
-      <h4>Add Shipping Options</h4>
-      <p><a href="/listing/{{ listing_display.listing.public_id }}">Back to listing</a></p>
+  <h3>{{ listing_display.listing.title }}</h3>
 
-      <form action="/update_shipping_options/{{ listing_display.listing.public_id }}/add_shipping_option" method="post">
-        <div class="ten columns">
+  <h5>Add Shipping Options </h5>
+  <p><a href="/listing/{{ listing_display.listing.public_id }}">Back to listing</a></p>
+
+  <div class="row">
+
+    <div class="full column">
+
+      <div class="container">
+	<p><!--Nothing to see here --></p>
+
+	<br>
+
+	<form action="/update_shipping_options/{{ listing_display.listing.public_id }}/add_shipping_option" method="post">
 	  <label for="title">Enter the name of the shipping option</label>
           <input type="text" placeholder="shipping option name..."
 		 name="title" id="title" value="" autofocus
@@ -22,39 +28,38 @@
 	  <label for="title">Enter the description of the shipping option. Describe how the item will be shipped, and describe any restrictions on where and when it can be shipped</label>
           <textarea placeholder="shipping item description..."
 		    name="description" id="description" value=""
-		    class="u-full-width" /></textarea>
+		    class="u-full-width"></textarea>
 	  <label for="title">Enter the price of the shipping option in sats</label>
-          <input type="number" placeholder="shipping option price..."
+	  <input type="number" placeholder="shipping option price..."
 		 name="price_sat" id="price_sat" value=""
 		 class="u-full-width" />
-          {% if flash %}
-          <small class="field-{{flash.0}}-msg">
-            {{ flash.1 }}
-          </small>
-          {% endif %}
-        </div>
-        <div class="two columns">
-          <input type="submit" value="add shipping option">
-        </div>
-      </form>
+	  {% if flash %}
+	  <small class="field-{{flash.0}}-msg">
+	    {{ flash.1 }}
+	  </small>
+	  {% endif %}
+	  <input type="submit" value="add shipping option">
+	</form>
+
+
+	{% for shipping_option in listing_display.shipping_options %}
+	<li>
+	  <p>{{ shipping_option.title }}</p>
+	  <p>Price: {{ shipping_option.price_sat }} sats</p>
+	  <p>{{ shipping_option.description }}</p>
+	  <form class="inline" action="/update_shipping_options/{{listing_display.listing.public_id}}/add_shipping_option/{{shipping_option.public_id}}" method="post">
+            <input type="hidden" name="_method" value="delete" />
+            <button class="primary small" type="submit">delete</button>
+	  </form>
+	</li>
+	{% endfor %}
+
+      </div>
     </div>
 
-
-    {% for shipping_option in listing_display.shipping_options %}
-    <li>
-      <p>{{ shipping_option.title }}</p>
-      <p>Price: {{ shipping_option.price_sat }} sats</p>
-      <p>{{ shipping_option.description }}</p>
-      <form class="inline" action="/update_shipping_options/{{listing_display.listing.public_id}}/add_shipping_option/{{shipping_option.public_id}}" method="post">
-        <input type="hidden" name="_method" value="delete" />
-        <button class="primary small" type="submit">delete</button>
-      </form>
-    </li>
-    {% endfor %}
-
-    {% endif %}
-
   </div>
+
+</div>
 
 
 {% endblock body %}
