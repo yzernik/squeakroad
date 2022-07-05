@@ -1511,42 +1511,6 @@ GROUP BY
         Ok(quantity_sold.try_into().unwrap())
     }
 
-    // pub async fn single_by_invoice_hash(
-    //     db: &mut Connection<Db>,
-    //     invoice_hash: &str,
-    // ) -> Result<Option<Order>, sqlx::Error> {
-    //     let order = sqlx::query!("select * from orders WHERE invoice_hash = ?;", invoice_hash)
-    //         .fetch_optional(&mut **db)
-    //         // .map_ok(|maybe_r| {
-    //         //     maybe_r.map(|r| AdminSettings {
-    //         //         id: Some(r.id.try_into().unwrap()),
-    //         //         market_name: r.market_name,
-    //         //         fee_rate_basis_points: r.fee_rate_basis_points.try_into().unwrap(),
-    //         //     })
-    //         // })
-    //         .map_ok(|maybe_r| {
-    //             maybe_r.map(|r| Order {
-    //                 id: Some(r.id.try_into().unwrap()),
-    //                 public_id: r.public_id,
-    //                 quantity: r.quantity.try_into().unwrap(),
-    //                 user_id: r.user_id.try_into().unwrap(),
-    //                 listing_id: r.listing_id.try_into().unwrap(),
-    //                 shipping_option_id: r.shipping_option_id.try_into().unwrap(),
-    //                 shipping_instructions: r.shipping_instructions,
-    //                 amount_owed_sat: r.amount_owed_sat.try_into().unwrap(),
-    //                 seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
-    //                 paid: r.paid,
-    //                 completed: r.completed,
-    //                 invoice_hash: r.invoice_hash,
-    //                 invoice_payment_request: r.invoice_payment_request,
-    //                 created_time_ms: r.created_time_ms.try_into().unwrap(),
-    //             })
-    //         })
-    //         .await?;
-
-    //     Ok(order)
-    // }
-
     pub async fn update_order_on_paid(
         db: &mut PoolConnection<Sqlite>,
         invoice_hash: &str,
@@ -1617,38 +1581,6 @@ GROUP BY
             .await?;
         Ok(())
     }
-
-    // pub async fn amount_sold_sat_for_user(
-    //     db: &mut Connection<Db>,
-    //     user_id: i32,
-    // ) -> Result<u64, sqlx::Error> {
-    //     let amount_sold_result = sqlx::query!(
-    //         "
-    // select
-    //  SUM(orders.amount_owed_sat) as total_amount_sold, orders.seller_user_id
-    // FROM
-    //  orders
-    // WHERE
-    //  orders.seller_user_id = ?
-    // AND
-    //  completed
-    // GROUP BY
-    //  orders.seller_user_id
-    // ;",
-    //         user_id,
-    //     )
-    //     .fetch_optional(&mut **db)
-    //     .await?;
-    //     println!("amount_sold_result: {:?}", amount_sold_result);
-
-    //     let total_amount_sold = match amount_sold_result {
-    //         Some(r) => r.total_amount_sold,
-    //         None => 0,
-    //     };
-    //     println!("total_amount_sold: {:?}", total_amount_sold);
-
-    //     Ok(total_amount_sold.try_into().unwrap())
-    // }
 
     pub async fn seller_info_for_user(
         db: &mut Connection<Db>,
