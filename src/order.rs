@@ -210,8 +210,6 @@ async fn mark_message_as_read(
             Ok(_) => Ok(()),
             Err(_) => Err("failed to mark image as primary.".to_string()),
         }
-        // println!("Set message as read: {:?}", order_message_id);
-        // Ok(())
     }
 }
 
@@ -282,11 +280,6 @@ async fn new_review(
             ))
         }
     }
-
-    // Ok(Flash::success(
-    //     Redirect::to(format!("/{}/{}", "order", id)),
-    //     "Review Successfully Posted.",
-    // ))
 }
 
 async fn create_order_review(
@@ -333,29 +326,6 @@ async fn create_order_review(
                 Err("Order Review could not be inserted due an internal error.".to_string())
             }
         }
-
-        // let recipient_id = if user.id() == order.seller_user_id {
-        //     order.buyer_user_id
-        // } else {
-        //     order.seller_user_id
-        // };
-        // let order_message = OrderMessage {
-        //     id: None,
-        //     public_id: Uuid::new_v4().to_string(),
-        //     order_id: order.id.unwrap(),
-        //     author_id: user.id(),
-        //     recipient_id,
-        //     text: order_message_info.text,
-        //     viewed: false,
-        //     created_time_ms: now,
-        // };
-        // match OrderMessage::insert(order_message, db).await {
-        //     Ok(_) => Ok(()),
-        //     Err(e) => {
-        //         error_!("DB insertion error: {}", e);
-        //         Err("Order Message could not be inserted due an internal error.".to_string())
-        //     }
-        // }
     }
 }
 
