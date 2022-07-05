@@ -28,9 +28,7 @@ async fn get_login(mut db: Connection<Db>, user: Option<User>) -> Result<Templat
 
 #[post("/login", data = "<form>")]
 async fn post_login(auth: Auth<'_>, form: Form<Login>) -> Result<Redirect, String> {
-    let result = auth.login(&form).await.map_err(|_| "failed to login.")?;
-    println!("login attempt: {:?}", result);
-    // result?;
+    auth.login(&form).await.map_err(|_| "failed to login.")?;
     Ok(Redirect::to("/"))
 }
 

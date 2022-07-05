@@ -82,7 +82,7 @@ pub fn stage(config: Config) -> AdHoc {
             .attach(AdHoc::on_liftoff("DB polling", |rocket| {
                 // Copied from: https://stackoverflow.com/a/72457117/1639564
                 Box::pin(async move {
-                    let pool = match Db::fetch(&rocket) {
+                    let pool = match Db::fetch(rocket) {
                         Some(pool) => pool.0.clone(), // clone the wrapped pool
                         None => panic!("failed to get db for background task."),
                     };
