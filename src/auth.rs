@@ -52,7 +52,7 @@ async fn post_signup(auth: Auth<'_>, form: Form<Signup>) -> Result<Redirect, Err
 
 #[get("/logout")]
 async fn logout(auth: Auth<'_>, mut db: Connection<Db>) -> Result<Template, String> {
-    auth.logout().await.map_err(|_| "failed to logout.")?;
+    auth.logout().map_err(|_| "failed to logout.")?;
     let base_context = BaseContext::raw(&mut db, None, None)
         .await
         .map_err(|_| "failed to get base template.")?;
