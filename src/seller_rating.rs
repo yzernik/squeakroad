@@ -58,6 +58,12 @@ impl Context {
             Order::weighted_average_rating_for_user(&mut db, visited_user.id.unwrap())
                 .await
                 .map_err(|_| "failed to get weighted average rating for user.")?;
+        // let weighted_average_rating_2 =
+        //     Order::weighted_average_rating_for_user_2(&mut db, visited_user.id.unwrap())
+        //         .await
+        //         .map_err(|_| "failed to get weighted average rating for user.")?;
+        println!("weighted_average_rating: {:?}", weighted_average_rating);
+        // println!("weighted_average_rating_2: {:?}", weighted_average_rating_2);
         Ok(Context {
             base_context,
             flash,
