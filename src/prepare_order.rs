@@ -52,7 +52,7 @@ impl Context {
             flash,
             listing_display: Some(listing_display),
             selected_shipping_option: shipping_option,
-            quantity: quantity,
+            quantity,
         })
     }
 }
@@ -120,8 +120,7 @@ async fn create_order(
     let shipping_instructions = order_info.shipping_instructions;
 
     let price_per_unit_with_shipping_sat: u64 = listing.price_sat + shipping_option.price_sat;
-    let amount_owed_sat: u64 =
-        ((order_info.quantity as u64) * price_per_unit_with_shipping_sat).into();
+    let amount_owed_sat: u64 = (order_info.quantity as u64) * price_per_unit_with_shipping_sat;
     // let market_fee_sat: u64 = (amount_owed_sat * (listing.fee_rate_basis_points as u64)) / 10000;
     let market_fee_sat: u64 = divide_round_up(
         amount_owed_sat * (listing.fee_rate_basis_points as u64),
@@ -176,8 +175,8 @@ async fn create_order(
             listing_id: listing.id.unwrap(),
             shipping_option_id: shipping_option.id.unwrap(),
             shipping_instructions: shipping_instructions.to_string(),
-            amount_owed_sat: amount_owed_sat,
-            seller_credit_sat: seller_credit_sat,
+            amount_owed_sat,
+            seller_credit_sat,
             paid: false,
             completed: false,
             acked: false,

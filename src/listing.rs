@@ -121,7 +121,7 @@ async fn submit_listing(db: &mut Connection<Db>, id: &str, user: User) -> Result
         Err("Listing is already approved.".to_string())
     } else if listing.removed {
         Err("Listing is already removed.".to_string())
-    } else if shipping_options.len() == 0 {
+    } else if shipping_options.is_empty() {
         Err("At least one shipping option required.".to_string())
     } else {
         Listing::mark_as_submitted(db, id)

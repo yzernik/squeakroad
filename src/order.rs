@@ -141,7 +141,7 @@ async fn create_order_message(
             public_id: Uuid::new_v4().to_string(),
             order_id: order.id.unwrap(),
             author_id: user.id(),
-            recipient_id: recipient_id,
+            recipient_id,
             text: order_message_info.text,
             viewed: false,
             created_time_ms: now,
