@@ -45,7 +45,7 @@
 	<p><b>Shipping instructions</b>: {{ order.shipping_instructions }}</p>
 	{% endif %}
 	{% endif %}
-	<p><b>Order status</b>: {% if order.paid %}{% if order.completed %}Completed{% else %}Paid but not completed (funds credited back to buyer account){% endif %}{% else %}Not paid{% endif %}</p>
+	<p><b>Payment status</b>: {% if order.paid %}{% if order.completed %}Completed{% else %}Paid but not completed (funds credited back to buyer account){% endif %}{% else %}Not paid{% endif %}</p>
 	{% if order.paid %}
         <p><b>Payment time</b>: {{ (order.payment_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}</p>
 	{% endif %}
