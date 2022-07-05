@@ -38,13 +38,15 @@ async fn create_users_table(rocket: Rocket<Build>) -> fairing::Result {
     }
 }
 
-async fn create_admin_user(rocket: Rocket<Build>) -> fairing::Result {
+async fn create_admin_user(rocket: Rocket<Build>, config: Config) -> fairing::Result {
     match Db::fetch(&rocket) {
         Some(db) => {
             let users: Users = db.0.clone().into();
             // TODO: Delete all existing admins users here.
             // TODO: User username instead of email.
-            match users.create_user("admin@gmail.com", "pass", true).await {
+            let username = config.admin_username;
+            let password = config.admin_password;
+            match users.create_user(&username, &password, true).await {
                 Ok(_) => Ok(rocket),
                 Err(e) => match e {
                     SqlxError(_) => Ok(rocket),
@@ -61,37 +63,22 @@ async fn create_admin_user(rocket: Rocket<Build>) -> fairing::Result {
 
 pub fn stage(config: Config) -> AdHoc {
     let config_clone = config.clone();
+    let config_clone_2 = config.clone();
 
     AdHoc::on_ignite("SQLx Stage", |rocket| async {
         rocket
             .attach(AdHoc::try_on_ignite("Manage config", |rocket| {
                 Box::pin(async move { Ok(rocket.manage(config)) })
             }))
-            // .attach(AdHoc::try_on_ignite("Manage LND client", |rocket| {
-            //     let cloned_config = config.clone();
-            //     Box::pin(async move {
-            //         match get_lnd_client(
-            //             config.lnd_host.to_string(),
-            //             config.lnd_tls_cert_path.to_string(),
-            //             config.lnd_macaroon_path.to_string(),
-            //         )
-            //         .await
-            //         {
-            //             Ok(lnd_client) => Ok(rocket.manage(lnd_client)),
-            //             Err(_) => Err(rocket),
-            //         }
-            //     })
-            // }))
             .attach(Db::init())
             .attach(AdHoc::try_on_ignite("SQLx Migrations", run_migrations))
             .attach(AdHoc::try_on_ignite(
                 "SQLx Create Users table",
                 create_users_table,
             ))
-            .attach(AdHoc::try_on_ignite(
-                "SQLx Create Admin User",
-                create_admin_user,
-            ))
+            .attach(AdHoc::try_on_ignite("SQLx Create Admin User", |r| {
+                create_admin_user(r, config_clone_2)
+            }))
             .attach(AdHoc::on_liftoff("DB polling", |rocket| {
                 // Copied from: https://stackoverflow.com/a/72457117/1639564
                 Box::pin(async move {
@@ -116,34 +103,11 @@ pub fn stage(config: Config) -> AdHoc {
                                     ),
                                     Err(_) => println!("payment processor task failed"),
                                 }
-                                // println!("conn: {:?}", conn);
                             }
                             println!("Subscription failed. Trying again in {:?} seconds.", 10);
                             interval.tick().await;
                         }
                     });
-
-                    // match Db::fetch(&rocket) {
-                    //     Some(db) => {
-                    //         // let conn = Db::fetch(&rocket);
-                    //         rocket::tokio::spawn(async move {
-                    //             let mut interval = rocket::tokio::time::interval(
-                    //                 rocket::tokio::time::Duration::from_secs(10),
-                    //             );
-                    //             loop {
-                    //                 interval.tick().await;
-                    //                 // do_sql_stuff(&conn).await;
-                    //                 println!("Do something here!!!");
-                    //                 payment_processor::handle_received_payments(
-                    //                     config_clone.clone(),
-                    //                     &**db,
-                    //                 )
-                    //                 .await;
-                    //             }
-                    //         });
-                    //     }
-                    //     None => panic!("failed to get db for background task."),
-                    // }
                 })
             }))
             .attach(Template::fairing())
