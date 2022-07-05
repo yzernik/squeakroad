@@ -1585,7 +1585,7 @@ GROUP BY
     pub async fn seller_info_for_user(
         db: &mut Connection<Db>,
         user_id: i32,
-    ) -> Result<Option<SellerInfo>, sqlx::Error> {
+    ) -> Result<SellerInfo, sqlx::Error> {
         // TODO: Use this query when sqlx is fixed: https://github.com/launchbadge/sqlx/issues/1350
         //         let seller_info = sqlx::query!(
         //             "
@@ -1679,7 +1679,7 @@ GROUP BY
         };
 
         // TODO: remove option from return type.
-        Ok(Some(seller_info))
+        Ok(seller_info)
     }
 
     pub async fn seller_info_for_all_users(
