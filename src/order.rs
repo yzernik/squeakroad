@@ -122,7 +122,9 @@ async fn create_order_message(
     .await
     .map_err(|_| "failed to get number of recent messages.")?;
 
-    if user.id() != order.seller_user_id && user.id() != order.buyer_user_id {
+    if !order.completed {
+        Err("Cannot send message for order that is not completed.".to_string())
+    } else if user.id() != order.seller_user_id && user.id() != order.buyer_user_id {
         Err("User is not the seller or the buyer.".to_string())
     } else if recent_order_message_count >= 5 {
         Err("More than 5 message in a single day not allowed.".to_string())
@@ -296,7 +298,9 @@ async fn create_order_review(
         .await
         .map_err(|_| "failed to get order")?;
 
-    if user.id() != order.buyer_user_id {
+    if !order.completed {
+        Err("Cannot post review for order that is not completed.".to_string())
+    } else if user.id() != order.buyer_user_id {
         Err("User is not the buyer.".to_string())
     } else if order_review_info.review_rating < 1 || order_review_info.review_rating > 5 {
         Err("Review rating must be between 1 and 5.".to_string())
