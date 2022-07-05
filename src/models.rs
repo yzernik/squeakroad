@@ -246,6 +246,12 @@ pub struct OrderMessageCard {
     pub order_public_id: Option<String>,
 }
 
+#[derive(Debug, FromForm, Clone)]
+pub struct ReviewInput {
+    pub review_rating: u32,
+    pub review_text: String,
+}
+
 impl Listing {
     // pub async fn all(db: &mut Connection<Db>) -> Result<Vec<Listing>, sqlx::Error> {
     //     let listings = sqlx::query!("select * from listings;")

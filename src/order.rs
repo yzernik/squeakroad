@@ -1,7 +1,7 @@
 use crate::base::BaseContext;
 use crate::db::Db;
 use crate::models::{
-    Listing, Order, OrderMessage, OrderMessageInput, RocketAuthUser, ShippingOption,
+    Listing, Order, OrderMessage, OrderMessageInput, ReviewInput, RocketAuthUser, ShippingOption,
 };
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
@@ -257,6 +257,38 @@ async fn mark_order_as_acked(
     }
 }
 
+#[post("/<id>/new_review", data = "<order_review_form>")]
+async fn new_review(
+    id: &str,
+    order_review_form: Form<ReviewInput>,
+    mut db: Connection<Db>,
+    user: User,
+    _admin_user: Option<AdminUser>,
+) -> Result<Flash<Redirect>, Flash<Redirect>> {
+    let order_review_info = order_review_form.into_inner();
+
+    println!("order_review_info: {:?}", order_review_info);
+
+    // match create_order_message(id, order_message_info, &mut db, user.clone()).await {
+    //     Ok(_) => Ok(Flash::success(
+    //         Redirect::to(format!("/{}/{}", "order", id)),
+    //         "Order Message Successfully Sent.",
+    //     )),
+    //     Err(e) => {
+    //         error_!("DB insertion error: {}", e);
+    //         Err(Flash::error(
+    //             Redirect::to(format!("/{}/{}", "order", id)),
+    //             e,
+    //         ))
+    //     }
+    // }
+
+    Ok(Flash::success(
+        Redirect::to(format!("/{}/{}", "order", id)),
+        "Review Successfully Posted.",
+    ))
+}
+
 #[get("/<id>")]
 async fn index(
     flash: Option<FlashMessage<'_>>,
@@ -278,6 +310,9 @@ async fn index(
 
 pub fn order_stage() -> AdHoc {
     AdHoc::on_ignite("Order Stage", |rocket| async {
-        rocket.mount("/order", routes![index, new_message, set_message_read, ack])
+        rocket.mount(
+            "/order",
+            routes![index, new_message, set_message_read, ack, new_review],
+        )
     })
 }
