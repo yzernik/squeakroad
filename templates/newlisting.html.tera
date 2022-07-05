@@ -3,43 +3,39 @@
 
 <br>
 
-  <div class="container">
-    <p><!--Nothing to see here --></p>
+<div class="container">
+  <p><!--Nothing to see here --></p>
 
-    <div class="row">
-      <h4>Create New Listing</h4>
-      <p>Market will collect a {{ admin_settings.fee_rate_basis_points / 100 }}% fee rate from each sale</p>
-      <form action="/new_listing" method="post">
-        <div class="ten columns">
-	  <label for="title">Enter the item name</label>
-          <input type="text" placeholder="item name..."
-            name="title" id="title" value="" autofocus
-            class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" />
-	  <label for="title">Enter the description of the item</label>
-          <textarea placeholder="item description..."
-		    name="description" id="description" value=""
-		    class="u-full-width" /></textarea>
-	  <label for="title">Enter the price of each item in sats</label>
-          <input type="number" placeholder="item price in sats..."
-            name="price_sat" id="price_sat" value=""
-            class="u-full-width" />
-	  <label for="title">Enter how many items are for sale</label>
-          <input type="number" placeholder="enter the quantity of items..."
-            name="quantity" id="quantity" value=""
-		 class="u-full-width" />
-          {% if flash %}
-            <small class="field-{{flash.0}}-msg">
-               {{ flash.1 }}
-            </small>
-          {% endif %}
-        </div>
-        <div class="two columns">
-          <input type="submit" value="add listing">
-        </div>
-      </form>
-    </div>
-
+  <div class="row">
+    <h4>Create New Listing</h4>
+    <p>Market will collect a {{ admin_settings.fee_rate_basis_points / 100 }}% fee rate from each sale</p>
+    <form action="/new_listing" method="post">
+      <label for="title">Enter the item name</label>
+      <input type="text" placeholder="item name..."
+             name="title" id="title" value="" autofocus
+             class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" />
+      <label for="title">Enter the description of the item</label>
+      <textarea placeholder="item description..."
+		name="description" id="description" value=""
+		class="u-full-width"></textarea>
+      <label for="title">Enter the price of each item in sats</label>
+      <input type="number" placeholder="item price in sats..."
+	     name="price_sat" id="price_sat" value=""
+	     class="u-full-width" />
+      <label for="title">Enter how many items are for sale</label>
+      <input type="number" placeholder="enter the quantity of items..."
+	     name="quantity" id="quantity" value=""
+	     class="u-full-width" />
+      {% if flash %}
+      <small class="field-{{flash.0}}-msg">
+	{{ flash.1 }}
+      </small>
+      {% endif %}
+      <input type="submit" value="create listing">
+    </form>
   </div>
+
+</div>
 
 
 {% endblock body %}
