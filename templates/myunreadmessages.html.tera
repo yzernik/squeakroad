@@ -11,17 +11,7 @@
       <h3>My Unread Messages</h3>
 
       <div class="twelve columns">
-        <ul>
-        {% for order_message_card in order_message_cards %}
-
-        <li>
-	  <a href="/order/{{order_message_card.order_public_id}}">
-          <p>Message for order ID: {{ order_message_card.order_public_id }}</p>
-          </a>
-	</li>
-
-        {% endfor %}
-        </ul>
+	{% include "unreadmessagepage" %}
       </div>
     </div>
   </div>
