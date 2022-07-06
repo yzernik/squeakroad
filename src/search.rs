@@ -52,7 +52,7 @@ impl Context {
     }
 }
 
-#[get("/<search_text>?<page_num>")]
+#[get("/?<search_text>&<page_num>")]
 async fn index(
     search_text: &str,
     flash: Option<FlashMessage<'_>>,
