@@ -8,7 +8,7 @@
 
     <div class="row">
 
-      <h3>My Completed Orders</h3>
+      <h3>My Paid Orders</h3>
 
       <div class="twelve columns">
 	{% include "ordercardpage" %}

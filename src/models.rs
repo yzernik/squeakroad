@@ -2028,7 +2028,7 @@ OFFSET ?
         Ok(orders)
     }
 
-    pub async fn all_completed_for_user(
+    pub async fn all_paid_for_user(
         db: &mut Connection<Db>,
         user_id: i32,
         page_size: u32,
@@ -2057,7 +2057,7 @@ LEFT JOIN
 ON
  listings.user_id = users.id
 WHERE
- orders.completed
+ orders.paid
 AND
  order_buyer_user_id = ?
 GROUP BY
