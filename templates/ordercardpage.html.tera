@@ -1,0 +1,13 @@
+<ul>
+  {% for order_card in order_cards %}
+
+  <li>
+    <a href="/order/{{order_card.order.public_id}}">
+      <p>{{ order_card.listing.title }} ({{ order_card.listing.price_sat }} sats)</p>
+    </a>
+  </li>
+
+  {% endfor %}
+</ul>
+
+<span>{% if page_num > 1 %}<a href="?page_num={{ page_num - 1 }}">Prev</a>{% else %}Prev{% endif %} - Page {{ page_num }} - <a href="?page_num={{ page_num + 1 }}">Next</a></span>
