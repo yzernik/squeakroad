@@ -850,138 +850,6 @@
     },
     "query": "UPDATE listings SET reviewed = true, approved = false WHERE public_id = ?"
   },
-  "5dc3ff9ae6335a3c8fb09291170f31654fbe1f5d9e482de836b950ec5d1f7a05": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int64"
-        },
-        {
-          "name": "public_id",
-          "ordinal": 1,
-          "type_info": "Text"
-        },
-        {
-          "name": "user_id",
-          "ordinal": 2,
-          "type_info": "Int64"
-        },
-        {
-          "name": "title",
-          "ordinal": 3,
-          "type_info": "Text"
-        },
-        {
-          "name": "description",
-          "ordinal": 4,
-          "type_info": "Text"
-        },
-        {
-          "name": "price_sat",
-          "ordinal": 5,
-          "type_info": "Int64"
-        },
-        {
-          "name": "quantity",
-          "ordinal": 6,
-          "type_info": "Int64"
-        },
-        {
-          "name": "fee_rate_basis_points",
-          "ordinal": 7,
-          "type_info": "Int64"
-        },
-        {
-          "name": "submitted",
-          "ordinal": 8,
-          "type_info": "Bool"
-        },
-        {
-          "name": "reviewed",
-          "ordinal": 9,
-          "type_info": "Bool"
-        },
-        {
-          "name": "approved",
-          "ordinal": 10,
-          "type_info": "Bool"
-        },
-        {
-          "name": "removed",
-          "ordinal": 11,
-          "type_info": "Bool"
-        },
-        {
-          "name": "created_time_ms",
-          "ordinal": 12,
-          "type_info": "Int64"
-        },
-        {
-          "name": "image_id",
-          "ordinal": 13,
-          "type_info": "Int64"
-        },
-        {
-          "name": "image_public_id",
-          "ordinal": 14,
-          "type_info": "Text"
-        },
-        {
-          "name": "listing_id",
-          "ordinal": 15,
-          "type_info": "Int64"
-        },
-        {
-          "name": "image_data",
-          "ordinal": 16,
-          "type_info": "Blob"
-        },
-        {
-          "name": "is_primary",
-          "ordinal": 17,
-          "type_info": "Bool"
-        },
-        {
-          "name": "rocket_auth_user_id",
-          "ordinal": 18,
-          "type_info": "Int64"
-        },
-        {
-          "name": "rocket_auth_user_username",
-          "ordinal": 19,
-          "type_info": "Text"
-        }
-      ],
-      "nullable": [
-        true,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        true,
-        false,
-        false,
-        false,
-        false,
-        true,
-        true
-      ],
-      "parameters": {
-        "Right": 0
-      }
-    },
-    "query": "\nselect\n listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username\nfrom\n listings\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nINNER JOIN\n users\nON\n listings.user_id = users.id\nWHERE\n listings.submitted\nAND\n NOT listings.reviewed\nAND\n not listings.removed\nAND\n listings.quantity > 0\nGROUP BY\n listings.id\nORDER BY listings.created_time_ms DESC\n;"
-  },
   "5feba590fb94cc15ca374c7f7527035298f1fd104d0ce387e46c965b9a13fc1a": {
     "describe": {
       "columns": [
@@ -2703,6 +2571,138 @@
       }
     },
     "query": "select * from ordermessages WHERE public_id = ?;"
+  },
+  "b95663152d781175cf5a9e160226b28e05e3e9169108d0cfbfc98977c64d29e7": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "public_id",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "title",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "description",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "price_sat",
+          "ordinal": 5,
+          "type_info": "Int64"
+        },
+        {
+          "name": "quantity",
+          "ordinal": 6,
+          "type_info": "Int64"
+        },
+        {
+          "name": "fee_rate_basis_points",
+          "ordinal": 7,
+          "type_info": "Int64"
+        },
+        {
+          "name": "submitted",
+          "ordinal": 8,
+          "type_info": "Bool"
+        },
+        {
+          "name": "reviewed",
+          "ordinal": 9,
+          "type_info": "Bool"
+        },
+        {
+          "name": "approved",
+          "ordinal": 10,
+          "type_info": "Bool"
+        },
+        {
+          "name": "removed",
+          "ordinal": 11,
+          "type_info": "Bool"
+        },
+        {
+          "name": "created_time_ms",
+          "ordinal": 12,
+          "type_info": "Int64"
+        },
+        {
+          "name": "image_id",
+          "ordinal": 13,
+          "type_info": "Int64"
+        },
+        {
+          "name": "image_public_id",
+          "ordinal": 14,
+          "type_info": "Text"
+        },
+        {
+          "name": "listing_id",
+          "ordinal": 15,
+          "type_info": "Int64"
+        },
+        {
+          "name": "image_data",
+          "ordinal": 16,
+          "type_info": "Blob"
+        },
+        {
+          "name": "is_primary",
+          "ordinal": 17,
+          "type_info": "Bool"
+        },
+        {
+          "name": "rocket_auth_user_id",
+          "ordinal": 18,
+          "type_info": "Int64"
+        },
+        {
+          "name": "rocket_auth_user_username",
+          "ordinal": 19,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "\nselect\n listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username\nfrom\n listings\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nINNER JOIN\n users\nON\n listings.user_id = users.id\nWHERE\n listings.submitted\nAND\n NOT listings.reviewed\nAND\n not listings.removed\nAND\n listings.quantity > 0\nGROUP BY\n listings.id\nORDER BY listings.created_time_ms DESC\nLIMIT ?\nOFFSET ?\n;"
   },
   "be99d8673183a949c574c4f6ad6dbdc625755f69f860876ee64737ffbb1a9bbf": {
     "describe": {
