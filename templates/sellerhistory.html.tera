@@ -1,0 +1,26 @@
+{% extends "base" %}
+{% block body %}
+
+<br>
+
+  <div class="container">
+    <p><!--Nothing to see here --></p>
+
+    <div class="row">
+
+      <h3>Seller Rating</h3>
+
+      <div class="twelve columns">
+
+	<p><b>User</b>: <a href="/user/{{ visited_user.username }}">{{ visited_user.username }}</a></p>
+	<p><b>Total Amount Sold</b>: {{ amount_sold_sat }} sats</p>
+	<p><b>Weighted Average Rating</b>: {{ weighted_average_rating | round(method="ceil", precision=2) }}</p>
+
+	{% include "ordercardpage" %}
+
+      </div>
+    </div>
+  </div>
+
+
+{% endblock body %}

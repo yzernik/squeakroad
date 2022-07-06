@@ -9,6 +9,8 @@ use rocket_auth::{AdminUser, User};
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
 
+const PAGE_SIZE: u32 = 10;
+
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
 struct Context {
@@ -17,13 +19,15 @@ struct Context {
     visited_user: RocketAuthUser,
     amount_sold_sat: u64,
     weighted_average_rating: f32,
-    received_orders: Vec<OrderCard>,
+    order_cards: Vec<OrderCard>,
+    page_num: u32,
 }
 
 impl Context {
     pub async fn raw(
         flash: Option<(String, String)>,
         mut db: Connection<Db>,
+        maybe_page_num: Option<u32>,
         visited_user_username: &str,
         user: Option<User>,
         admin_user: Option<AdminUser>,
@@ -35,10 +39,15 @@ impl Context {
             RocketAuthUser::single_by_username(&mut db, visited_user_username.to_string())
                 .await
                 .map_err(|_| "failed to get visited user.")?;
-        let received_orders =
-            OrderCard::all_received_for_user(&mut db, visited_user.id.unwrap(), u32::MAX, 1)
-                .await
-                .map_err(|_| "failed to get received orders for user.")?;
+        let page_num = maybe_page_num.unwrap_or(1);
+        let order_cards = OrderCard::all_received_for_user(
+            &mut db,
+            visited_user.id.unwrap(),
+            PAGE_SIZE,
+            page_num,
+        )
+        .await
+        .map_err(|_| "failed to get received orders for user.")?;
         let seller_info = Order::seller_info_for_user(&mut db, visited_user.id.unwrap())
             .await
             .map_err(|_| "failed to get weighted average rating for user.")?;
@@ -50,29 +59,31 @@ impl Context {
             visited_user,
             amount_sold_sat,
             weighted_average_rating,
-            received_orders,
+            order_cards,
+            page_num,
         })
     }
 }
 
-#[get("/<username>")]
+#[get("/<username>?<page_num>")]
 async fn index(
     username: &str,
     flash: Option<FlashMessage<'_>>,
     db: Connection<Db>,
+    page_num: Option<u32>,
     user: Option<User>,
     admin_user: Option<AdminUser>,
 ) -> Result<Template, NotFound<String>> {
     let flash = flash.map(FlashMessage::into_inner);
     Ok(Template::render(
-        "sellerrating",
-        Context::raw(flash, db, username, user, admin_user).await,
+        "sellerhistory",
+        Context::raw(flash, db, page_num, username, user, admin_user).await,
     ))
 }
 
-pub fn seller_rating_stage() -> AdHoc {
-    AdHoc::on_ignite("Seller Rating Stage", |rocket| async {
-        rocket.mount("/seller_rating", routes![index])
+pub fn seller_history_stage() -> AdHoc {
+    AdHoc::on_ignite("Seller History Stage", |rocket| async {
+        rocket.mount("/seller_history", routes![index])
         // .mount("/listing", routes![new])
     })
 }

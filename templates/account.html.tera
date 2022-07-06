@@ -20,7 +20,7 @@
   <p><!--Nothing to see here --></p>
   <div class="row">
     <h5>Seller Info</h5>
-    <a href="/seller_rating/{{ user.email }}">My Rating</a>
+    <a href="/seller_history/{{ user.email }}">My Sold Orders</a>
     <br>
     <a href="my_received_orders">My Received Orders</a>
     <br>
