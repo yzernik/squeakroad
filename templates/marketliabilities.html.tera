@@ -14,29 +14,7 @@
 
 	<p><b>Total Market Liabilities</b>: {{ total_market_liabilities_sat }} sats</p>
 
-	<table class="u-full-width">
-	  <thead>
-	    <tr>
-	      <th>Event time</th>
-	      <th>User</th>
-	      <th>Amount change</th>
-	      <th>Event type</th>
-	      <th>Event id</th>
-	    </tr>
-	  </thead>
-
-          {% for account_balance_change in account_balance_changes %}
-	  <tbody>
-	    <tr>
-	      <td>{{ (account_balance_change.event_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}</td>
-	      <td><a href="/user/{{ account_balance_change.username }}">{{ account_balance_change.username }}</a></td>
-	      <td>{{ account_balance_change.amount_change_sat }} sats</td>
-	      <td>{{ account_balance_change.event_type }}</td>
-	      <td><a href="{% if account_balance_change.event_type == "received_order" %}/order/{{ account_balance_change.event_id }}{% elif account_balance_change.event_type == "refunded_order" %}/order/{{ account_balance_change.event_id }}{% elif account_balance_change.event_type == "withdrawal" %}/withdrawal/{{ account_balance_change.event_id }}{% endif %}">{{ account_balance_change.event_id }}</a></td>
-	    </tr>
-	  </tbody>
-          {% endfor %}
-	</table>
+	{% include "accountbalancechangepage" %}
 
       </div>
     </div>
