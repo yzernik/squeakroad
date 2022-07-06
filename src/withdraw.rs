@@ -57,8 +57,6 @@ async fn new(
     config: &State<Config>,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
     let withdrawal_info = withdrawal_form.into_inner();
-    println!("config: {:?}", config);
-
     match withdraw(
         withdrawal_info.clone(),
         &mut db,
@@ -84,8 +82,6 @@ async fn withdraw(
     user: User,
     config: Config,
 ) -> Result<String, String> {
-    println!("config: {:?}", config);
-
     if withdrawal_info.invoice_payment_request.is_empty() {
         Err("Invoice payment request cannot be empty.".to_string())
     } else if user.is_admin {
@@ -105,18 +101,12 @@ async fn withdraw(
             })
             .await
             .map_err(|_| "failed to decode payment request string.")?;
-        // We only print it here, note that in real-life code you may want to call `.into_inner()` on
-        // the response to get the message.
-        println!("{:#?}", decoded_pay_req_resp);
-        // let invoice = invoice_resp.into_inner();
         let decoded_pay_req = decoded_pay_req_resp.into_inner();
         let amount_sat: u64 = decoded_pay_req.num_satoshis.try_into().unwrap();
-
         let account_info = AccountInfo::account_info_for_user(db, user.id)
             .await
             .map_err(|_| "failed to get account info.")?;
         let account_balance_sat_u64: u64 = account_info.account_balance_sat.try_into().unwrap();
-
         if amount_sat > account_balance_sat_u64 {
             Err("Insufficient funds in account.".to_string())
         } else if user.is_admin {
