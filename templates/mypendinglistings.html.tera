@@ -11,24 +11,7 @@
       <h3>My Pending Listings</h3>
 
       <div class="twelve columns">
-        <ul>
-        {% for card in listing_cards %}
-
-        <li>
-	  <a href="/listing/{{card.listing.public_id}}">
-	    <p>
-            {% if card.image %}
-	    <img src="data:image/jpeg;base64,{{ card.image.image_data_base64 }}" style="width:256px;height:256px;" />
-            {% else %}
-	    <img src="/images/default_listing.png" style="width:256px;height:256px;" />
-            {% endif %}
-	    </p>
-          <p>{{ card.listing.title }} ({{ card.listing.price_sat }} sats)</p>
-          </a>
-	</li>
-
-        {% endfor %}
-        </ul>
+	{% include "listingcardpage" %}
       </div>
     </div>
   </div>

@@ -857,11 +857,15 @@ OFFSET ?
     pub async fn all_pending_for_user(
         db: &mut Connection<Db>,
         user_id: i32,
+        page_size: u32,
+        page_num: u32,
     ) -> Result<Vec<ListingCard>, sqlx::Error> {
         // Example query for this kind of join/group by: https://stackoverflow.com/a/63037790/1639564
         // Other example query: https://stackoverflow.com/a/13698334/1639564
         // TODO: change WHERE condition to use dynamically calculated remaining quantity
         // based on number of completed orders.
+        let offset = (page_num - 1) * page_size;
+        let limit = page_size;
         let listing_cards =
             sqlx::query!("
 select
@@ -891,30 +895,33 @@ AND
 GROUP BY
  listings.id
 ORDER BY listings.created_time_ms DESC
-;", user_id)
+LIMIT ?
+OFFSET ?
+;", user_id, limit, offset)
                 .fetch(&mut **db)
             .map_ok(|r| {
+
                 let l = Listing {
                     id: Some(r.id.unwrap().try_into().unwrap()),
-                    public_id: r.public_id,
-                    user_id: r.user_id.try_into().unwrap(),
-                    title: r.title,
-                    description: r.description,
-                    price_sat: r.price_sat.try_into().unwrap(),
-                    quantity: r.quantity.try_into().unwrap(),
-                    fee_rate_basis_points: r.fee_rate_basis_points.try_into().unwrap(),
-                    submitted: r.submitted,
-                    reviewed: r.reviewed,
-                    approved: r.approved,
-                    removed: r.removed,
-                    created_time_ms: r.created_time_ms.try_into().unwrap(),
+                    public_id: r.public_id.unwrap(),
+                    user_id: r.user_id.unwrap().try_into().unwrap(),
+                    title: r.title.unwrap(),
+                    description: r.description.unwrap(),
+                    price_sat: r.price_sat.unwrap().try_into().unwrap(),
+                    quantity: r.quantity.unwrap().try_into().unwrap(),
+                    fee_rate_basis_points: r.fee_rate_basis_points.unwrap().try_into().unwrap(),
+                    submitted: r.submitted.unwrap(),
+                    reviewed: r.reviewed.unwrap(),
+                    approved: r.approved.unwrap(),
+                    removed: r.removed.unwrap(),
+                    created_time_ms: r.created_time_ms.unwrap().try_into().unwrap(),
                 };
                 let i = r.image_id.map(|image_id| ListingImage {
                     id: Some(image_id.try_into().unwrap()),
-                    public_id: r.image_public_id,
-                    listing_id: r.listing_id.try_into().unwrap(),
-                    image_data: r.image_data,
-                    is_primary: r.is_primary,
+                    public_id: r.image_public_id.unwrap(),
+                    listing_id: r.listing_id.unwrap().try_into().unwrap(),
+                    image_data: r.image_data.unwrap(),
+                    is_primary: r.is_primary.unwrap(),
                 });
                 let u = r.rocket_auth_user_id.map(|rocket_auth_user_id| RocketAuthUser {
                     id: Some(rocket_auth_user_id.try_into().unwrap()),
@@ -1157,8 +1164,11 @@ impl ListingCardDisplay {
     pub async fn all_pending_for_user(
         db: &mut Connection<Db>,
         user_id: i32,
+        page_size: u32,
+        page_num: u32,
     ) -> Result<Vec<ListingCardDisplay>, sqlx::Error> {
-        let listing_cards = ListingCard::all_pending_for_user(db, user_id).await?;
+        let listing_cards =
+            ListingCard::all_pending_for_user(db, user_id, page_size, page_num).await?;
         let listing_card_displays = listing_cards
             .iter()
             .map(ListingCardDisplay::listing_card_to_display)
