@@ -9,6 +9,8 @@ use rocket_auth::{AdminUser, User};
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
 
+const PAGE_SIZE: u32 = 10;
+
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
 struct Context {
@@ -16,21 +18,25 @@ struct Context {
     flash: Option<(String, String)>,
     total_market_liabilities_sat: i64,
     account_balance_changes: Vec<AccountBalanceChange>,
+    page_num: u32,
 }
 
 impl Context {
     pub async fn raw(
         flash: Option<(String, String)>,
         mut db: Connection<Db>,
+        maybe_page_num: Option<u32>,
         user: User,
         admin_user: Option<AdminUser>,
     ) -> Result<Context, String> {
         let base_context = BaseContext::raw(&mut db, Some(user.clone()), admin_user.clone())
             .await
             .map_err(|_| "failed to get base template.")?;
-        let account_balance_changes = AccountInfo::all_account_balance_changes(&mut db)
-            .await
-            .map_err(|_| "failed to get account balance changes.")?;
+        let page_num = maybe_page_num.unwrap_or(1);
+        let account_balance_changes =
+            AccountInfo::all_account_balance_changes(&mut db, PAGE_SIZE, page_num)
+                .await
+                .map_err(|_| "failed to get account balance changes.")?;
         let total_market_liabilities_sat = AccountInfo::total_market_liabilities_sat(&mut db)
             .await
             .map_err(|_| "failed to get total market liabilies.")?;
@@ -39,21 +45,23 @@ impl Context {
             flash,
             total_market_liabilities_sat,
             account_balance_changes,
+            page_num,
         })
     }
 }
 
-#[get("/")]
+#[get("/?<page_num>")]
 async fn index(
     flash: Option<FlashMessage<'_>>,
     db: Connection<Db>,
+    page_num: Option<u32>,
     user: User,
     admin_user: AdminUser,
 ) -> Result<Template, NotFound<String>> {
     let flash = flash.map(FlashMessage::into_inner);
     Ok(Template::render(
         "marketliabilities",
-        Context::raw(flash, db, user, Some(admin_user)).await,
+        Context::raw(flash, db, page_num, user, Some(admin_user)).await,
     ))
 }
 
