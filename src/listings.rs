@@ -32,7 +32,6 @@ impl Context {
             .await
             .map_err(|_| "failed to get base template.")?;
         let page_num = maybe_page_num.unwrap_or(1);
-        println!("page_num: {:?}", page_num);
         let listing_cards = ListingCardDisplay::all_approved(&mut db, PAGE_SIZE, page_num)
             .await
             .map_err(|_| "failed to update market name.")?;
