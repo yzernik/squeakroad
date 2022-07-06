@@ -14,6 +14,7 @@ use rocket_auth::AdminUser;
 use rocket_auth::User;
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
+extern crate base64;
 
 const PAGE_SIZE: u32 = 10;
 
@@ -29,6 +30,7 @@ struct Context {
     seller_user: RocketAuthUser,
     user: Option<User>,
     admin_user: Option<AdminUser>,
+    qr_svg_base64: String,
     page_num: u32,
 }
 
@@ -61,6 +63,8 @@ impl Context {
         let seller_user = RocketAuthUser::single(&mut db, listing.user_id)
             .await
             .map_err(|_| "failed to get order messages.")?;
+        let qr_svg_bytes = util::generate_qr(&order.invoice_payment_request);
+        let qr_svg_base64 = base64::encode(qr_svg_bytes);
         Ok(Context {
             base_context,
             flash,
@@ -71,6 +75,7 @@ impl Context {
             seller_user,
             user,
             admin_user,
+            qr_svg_base64,
             page_num,
         })
     }
