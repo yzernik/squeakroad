@@ -1396,66 +1396,6 @@
     },
     "query": "\nSELECT * FROM\n(select orders.seller_user_id as user_id, orders.seller_credit_sat as amount_change_sat, 'received_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms\nfrom\n orders\nWHERE\n orders.paid\nAND\n orders.completed\nAND\n orders.seller_user_id = ?\nUNION ALL\nselect orders.buyer_user_id as user_id, orders.amount_owed_sat as amount_change_sat, 'refunded_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms\nfrom\n orders\nWHERE\n orders.paid\nAND\n not orders.completed\nAND\n orders.buyer_user_id = ?\nUNION ALL\nselect withdrawals.user_id as user_id, (0 - withdrawals.amount_sat) as amount_change_sat, 'withdrawal' as event_type, withdrawals.public_id as event_id, withdrawals.created_time_ms as event_time_ms\nfrom\n withdrawals\nWHERE\n withdrawals.user_id = ?)\nLEFT JOIN\n users\nON\n user_id = users.id\nLIMIT ?\nOFFSET ?\n;"
   },
-  "7a21312c763886061de64702fdaef47c97aa700b692e48cf9583282e5d13abcf": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int64"
-        },
-        {
-          "name": "public_id",
-          "ordinal": 1,
-          "type_info": "Text"
-        },
-        {
-          "name": "order_id",
-          "ordinal": 2,
-          "type_info": "Int64"
-        },
-        {
-          "name": "author_id",
-          "ordinal": 3,
-          "type_info": "Int64"
-        },
-        {
-          "name": "recipient_id",
-          "ordinal": 4,
-          "type_info": "Int64"
-        },
-        {
-          "name": "text",
-          "ordinal": 5,
-          "type_info": "Text"
-        },
-        {
-          "name": "viewed",
-          "ordinal": 6,
-          "type_info": "Bool"
-        },
-        {
-          "name": "created_time_ms",
-          "ordinal": 7,
-          "type_info": "Int64"
-        }
-      ],
-      "nullable": [
-        true,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "select * from ordermessages WHERE order_id = ? ORDER BY ordermessages.created_time_ms ASC;"
-  },
   "7e727ce71eb3910f7238b0d074c1a98ea21fa90a1959ec0c739e3b9bcc7b35bf": {
     "describe": {
       "columns": [],
@@ -3105,6 +3045,66 @@
       }
     },
     "query": "\nselect ordermessages.id, ordermessages.public_id, ordermessages.order_id, ordermessages.author_id, ordermessages.recipient_id, ordermessages.text, ordermessages.viewed, ordermessages.created_time_ms, orders.public_id as order_public_id\nFROM\n ordermessages\nLEFT JOIN\n orders\nON\n ordermessages.order_id = orders.id\nWHERE\n not viewed\nAND\n recipient_id = ?\nORDER BY ordermessages.created_time_ms ASC;"
+  },
+  "c6c0ecbec00fb2052528710e8760f3edff62820f8db7c8bad65960c81e5e4922": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "public_id",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "order_id",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "author_id",
+          "ordinal": 3,
+          "type_info": "Int64"
+        },
+        {
+          "name": "recipient_id",
+          "ordinal": 4,
+          "type_info": "Int64"
+        },
+        {
+          "name": "text",
+          "ordinal": 5,
+          "type_info": "Text"
+        },
+        {
+          "name": "viewed",
+          "ordinal": 6,
+          "type_info": "Bool"
+        },
+        {
+          "name": "created_time_ms",
+          "ordinal": 7,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "parameters": {
+        "Right": 3
+      }
+    },
+    "query": "\nselect * from ordermessages\nWHERE\n order_id = ?\nORDER BY ordermessages.created_time_ms ASC\nLIMIT ?\nOFFSET ?\n;"
   },
   "cfa7d7cc21275c9db2ffc6d6c6fe7f1bfdce31858ababbde8407e1622cc63709": {
     "describe": {

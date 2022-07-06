@@ -1,0 +1,19 @@
+<ul>
+  {% for order_message in order_messages %}
+  <li>
+    <br>
+    {% if order_message.author_id != user.id and not order_message.viewed %}
+    <span><b>Unread</b></span>
+    <form class="inline" action="/order/{{ order.public_id }}/message/{{ order_message.public_id }}/mark_read" method="post">
+      <input type="hidden" name="_method" value="put" />
+      <button class="link" type="submit">Mark as read</button>
+    </form>
+    {% endif %}
+    <p><b>{% if order_message.author_id == order.seller_user_id %}Seller{% else %}Buyer{% endif %}</b>: {{ order_message.text }}</p>
+    <p>{{ (order_message.created_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}</p>
+  </li>
+  {% endfor %}
+</ul>
+
+
+<span>{% if page_num > 1 %}<a href="?page_num={{ page_num - 1 }}">Prev</a>{% else %}Prev{% endif %} - Page {{ page_num }} - <a href="?page_num={{ page_num + 1 }}">Next</a></span>

@@ -17,6 +17,8 @@ use rocket_dyn_templates::Template;
 use std::time::SystemTime;
 use std::time::UNIX_EPOCH;
 
+const PAGE_SIZE: u32 = 10;
+
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
 struct Context {
@@ -29,6 +31,7 @@ struct Context {
     seller_user: RocketAuthUser,
     user: Option<User>,
     admin_user: Option<AdminUser>,
+    page_num: u32,
 }
 
 impl Context {
@@ -36,6 +39,7 @@ impl Context {
         mut db: Connection<Db>,
         order_id: &str,
         flash: Option<(String, String)>,
+        maybe_page_num: Option<u32>,
         user: Option<User>,
         admin_user: Option<AdminUser>,
     ) -> Result<Context, String> {
@@ -51,9 +55,11 @@ impl Context {
         let shipping_option = ShippingOption::single(&mut db, order.shipping_option_id)
             .await
             .map_err(|_| "failed to get shipping option.")?;
-        let order_messages = OrderMessage::all_for_order(&mut db, order.id.unwrap())
-            .await
-            .map_err(|_| "failed to get order messages.")?;
+        let page_num = maybe_page_num.unwrap_or(1);
+        let order_messages =
+            OrderMessage::all_for_order(&mut db, order.id.unwrap(), PAGE_SIZE, page_num)
+                .await
+                .map_err(|_| "failed to get order messages.")?;
         let seller_user = RocketAuthUser::single(&mut db, listing.user_id)
             .await
             .map_err(|_| "failed to get order messages.")?;
@@ -68,6 +74,7 @@ impl Context {
             seller_user,
             user,
             admin_user,
+            page_num,
         })
     }
 }
@@ -333,16 +340,17 @@ async fn create_order_review(
     }
 }
 
-#[get("/<id>")]
+#[get("/<id>?<page_num>")]
 async fn index(
     flash: Option<FlashMessage<'_>>,
     id: &str,
     db: Connection<Db>,
+    page_num: Option<u32>,
     user: Option<User>,
     admin_user: Option<AdminUser>,
 ) -> Template {
     let flash = flash.map(FlashMessage::into_inner);
-    let context = match Context::raw(db, id, flash, user, admin_user).await {
+    let context = match Context::raw(db, id, flash, page_num, user, admin_user).await {
         Ok(ctx) => ctx,
         Err(e) => {
             error!("{}", e);

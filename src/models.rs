@@ -2544,21 +2544,34 @@ impl OrderMessage {
     pub async fn all_for_order(
         db: &mut Connection<Db>,
         order_id: i32,
+        page_size: u32,
+        page_num: u32,
     ) -> Result<Vec<OrderMessage>, sqlx::Error> {
+        let offset = (page_num - 1) * page_size;
+        let limit = page_size;
         let order_messages = sqlx::query!(
-            "select * from ordermessages WHERE order_id = ? ORDER BY ordermessages.created_time_ms ASC;",
+            "
+select * from ordermessages
+WHERE
+ order_id = ?
+ORDER BY ordermessages.created_time_ms ASC
+LIMIT ?
+OFFSET ?
+;",
             order_id,
+            limit,
+            offset,
         )
         .fetch(&mut **db)
         .map_ok(|r| OrderMessage {
             id: r.id.map(|n| n.try_into().unwrap()),
-            public_id: r.public_id,
-            order_id: r.order_id.try_into().unwrap(),
-            author_id: r.author_id.try_into().unwrap(),
-            recipient_id: r.recipient_id.try_into().unwrap(),
-            text: r.text,
-            viewed: r.viewed,
-            created_time_ms: r.created_time_ms.try_into().unwrap(),
+            public_id: r.public_id.unwrap(),
+            order_id: r.order_id.unwrap().try_into().unwrap(),
+            author_id: r.author_id.unwrap().try_into().unwrap(),
+            recipient_id: r.recipient_id.unwrap().try_into().unwrap(),
+            text: r.text.unwrap(),
+            viewed: r.viewed.unwrap(),
+            created_time_ms: r.created_time_ms.unwrap().try_into().unwrap(),
         })
         .try_collect::<Vec<_>>()
         .await?;
