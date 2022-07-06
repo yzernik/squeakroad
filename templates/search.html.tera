@@ -1,8 +1,6 @@
 {% extends "base" %}
 {% block body %}
 
-{% include "search_form" %}
-
 <br>
 
   <div class="container">
@@ -10,11 +8,10 @@
 
     <div class="row">
 
-      <h5><a href="/new_listing">Add New Listing</a></h5>
-      <br>
+      <h3>Search Results: "{{ search_text }}"</h3>
 
       <div class="twelve columns">
-	{% include "listingcardpage" %}
+	{% include "searchlistingcardpage" %}
       </div>
     </div>
   </div>

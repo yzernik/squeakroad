@@ -1,0 +1,23 @@
+<div style="width:30%;" class="container-fluid">
+  <p><!--Nothing to see here --></p>
+
+  <div class="row">
+
+    <form action="/search" method="get">
+      <div class="ten columns">
+	<input type="text" placeholder="enter a search..."
+	       name="search_text" id="search_text" value=""
+	       class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" />
+	{% if flash %}
+	<small class="field-{{flash.0}}-msg">
+          {{ flash.1 }}
+	</small>
+	{% endif %}
+      </div>
+      <div class="two columns">
+	<input type="submit" value="Search">
+      </div>
+    </form>
+
+  </div>
+</div>

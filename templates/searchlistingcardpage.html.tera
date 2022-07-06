@@ -20,6 +20,7 @@
 
 {% if page_num > 1 %}
 <form class="inline" action="" method="get">
+  <input type="hidden" id="search_text" name="search_text" value="{{ search_text }}">
   <input type="hidden" id="page_num" name="page_num" value="{{ page_num - 1 }}">
   <button class="link" type="submit">Prev</button>
 </form>
@@ -28,6 +29,7 @@ Prev
 {% endif %}
 <span> - Page {{ page_num }} - </span>
 <form class="inline" action="" method="get">
+  <input type="hidden" id="search_text" name="search_text" value="{{ search_text }}">
   <input type="hidden" id="page_num" name="page_num" value="{{ page_num + 1 }}">
   <button class="link" type="submit">Next</button>
 </form>

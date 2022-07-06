@@ -31,6 +31,7 @@ mod payment_processor;
 mod prepare_order;
 mod review_pending_listings;
 mod routes;
+mod search;
 mod seller_history;
 mod top_sellers;
 mod update_fee_rate;
