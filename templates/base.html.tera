@@ -74,8 +74,11 @@
           </div>
       </nav>
 
+      {% include "search_form" %}
+
       <div style="text-align: center;">
         <br>
+
         {% block body %}
         {% endblock body %}
       </div>
