@@ -3,12 +3,12 @@ use crate::config::Config;
 use crate::db::Db;
 use crate::lightning;
 use crate::models::{AccountInfo, Withdrawal, WithdrawalInfo};
+use crate::util;
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
 use rocket::request::FlashMessage;
 use rocket::response::Flash;
 use rocket::response::Redirect;
-use rocket::serde::uuid::Uuid;
 use rocket::serde::Serialize;
 use rocket::State;
 use rocket_auth::AdminUser;
@@ -136,7 +136,7 @@ async fn withdraw(
                 .as_millis() as u64;
             let withdrawal = Withdrawal {
                 id: None,
-                public_id: Uuid::new_v4().to_string(),
+                public_id: util::create_uuid(),
                 user_id: user.id(),
                 amount_sat,
                 invoice_hash: hex::encode(send_response.payment_hash),
@@ -152,37 +152,6 @@ async fn withdraw(
                 }
             }
         }
-
-        // let order = Order {
-        //     id: None,
-        //     public_id: Uuid::new_v4().to_string(),
-        //     quantity: order_info.quantity,
-        //     user_id: user.id(),
-        //     listing_id: listing.id.unwrap(),
-        //     shipping_option_id: shipping_option.id.unwrap(),
-        //     shipping_instructions: shipping_instructions.to_string(),
-        //     amount_owed_sat: amount_owed_sat,
-        //     seller_credit_sat: seller_credit_sat,
-        //     paid: false,
-        //     completed: false,
-        //     invoice_hash: hex::encode(invoice.r_hash),
-        //     invoice_payment_request: invoice.payment_request,
-        //     created_time_ms: now,
-        // };
-
-        // match Order::insert(order, db).await {
-        //     Ok(order_id) => match Order::single(db, order_id).await {
-        //         Ok(new_order) => Ok(new_order.public_id.clone()),
-        //         Err(e) => {
-        //             error_!("DB insertion error: {}", e);
-        //             Err("New order could not be found after inserting.".to_string())
-        //         }
-        //     },
-        //     Err(e) => {
-        //         error_!("DB insertion error: {}", e);
-        //         Err("Order could not be inserted due an internal error.".to_string())
-        //     }
-        // }
     }
 }
 

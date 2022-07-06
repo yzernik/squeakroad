@@ -3,12 +3,12 @@ use crate::db::Db;
 use crate::models::{
     Listing, Order, OrderMessage, OrderMessageInput, ReviewInput, RocketAuthUser, ShippingOption,
 };
+use crate::util;
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
 use rocket::request::FlashMessage;
 use rocket::response::Flash;
 use rocket::response::Redirect;
-use rocket::serde::uuid::Uuid;
 use rocket::serde::Serialize;
 use rocket_auth::AdminUser;
 use rocket_auth::User;
@@ -147,7 +147,7 @@ async fn create_order_message(
         };
         let order_message = OrderMessage {
             id: None,
-            public_id: Uuid::new_v4().to_string(),
+            public_id: util::create_uuid(),
             order_id: order.id.unwrap(),
             author_id: user.id(),
             recipient_id,
