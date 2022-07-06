@@ -17,6 +17,7 @@ struct Context {
     base_context: BaseContext,
     flash: Option<(String, String)>,
     listing_cards: Vec<ListingCardDisplay>,
+    page_num: u32,
 }
 
 impl Context {
@@ -39,6 +40,7 @@ impl Context {
             base_context,
             flash,
             listing_cards,
+            page_num,
         })
     }
 }

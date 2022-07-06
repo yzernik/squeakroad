@@ -1,0 +1,20 @@
+<ul>
+  {% for card in listing_cards %}
+
+  <li>
+    <a href="/listing/{{card.listing.public_id}}">
+      <p>
+        {% if card.image %}
+	<img src="data:image/jpeg;base64,{{ card.image.image_data_base64 }}" style="width:256px;height:256px;" />
+        {% else %}
+	<img src="/images/default_listing.png" style="width:256px;height:256px;" />
+        {% endif %}
+      </p>
+      <p>{{ card.listing.title }} ({{ card.listing.price_sat }} sats)</p>
+    </a>
+  </li>
+
+  {% endfor %}
+</ul>
+
+<span>{% if page_num > 1 %}<a href="?page_num={{ page_num - 1 }}">Prev</a>{% else %}Prev{% endif %} - Page {{ page_num }} - <a href="?page_num={{ page_num + 1 }}">Next</a></span>
