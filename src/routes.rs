@@ -134,7 +134,6 @@ pub fn stage(config: Config) -> AdHoc {
             .attach(crate::my_unpaid_orders::my_unpaid_orders_stage())
             .attach(crate::my_completed_orders::my_completed_orders_stage())
             .attach(crate::my_refunded_orders::my_refunded_orders_stage())
-            .attach(crate::my_received_orders::my_received_orders_stage())
             .attach(crate::my_account_balance::my_account_balance_stage())
             .attach(crate::my_unread_messages::my_unread_messages_stage())
             .attach(crate::my_new_orders::my_new_orders_stage())
