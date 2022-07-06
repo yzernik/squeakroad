@@ -28,7 +28,7 @@ impl Context {
         let base_context = BaseContext::raw(&mut db, Some(user.clone()), admin_user.clone())
             .await
             .map_err(|_| "failed to get base template.")?;
-        let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
+        let admin_settings = AdminSettings::single(&mut db, AdminSettings::default())
             .await
             .map_err(|_| "failed to get admin settings.")?;
         Ok(Context {
@@ -67,7 +67,7 @@ async fn change_fee_rate(
     } else if new_fee_rate_basis_points > 10000 {
         Err("Fee rate basis points cannot be > 10000.".to_string())
     } else {
-        let default_admin_settings = AdminSettings::get_default();
+        let default_admin_settings = AdminSettings::default();
         AdminSettings::set_fee_rate(db, new_fee_rate_basis_points, default_admin_settings)
             .await
             .map_err(|_| "failed to update fee rate.")?;

@@ -260,6 +260,16 @@ pub struct SellerInfo {
     pub weighted_average_rating: f32,
 }
 
+impl Default for AdminSettings {
+    fn default() -> AdminSettings {
+        AdminSettings {
+            id: None,
+            market_name: "Squeakroad".to_string(),
+            fee_rate_basis_points: 500,
+        }
+    }
+}
+
 impl Listing {
     /// Returns the id of the inserted row.
     pub async fn insert(listing: Listing, db: &mut Connection<Db>) -> Result<i32, sqlx::Error> {

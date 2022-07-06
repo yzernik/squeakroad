@@ -10,16 +10,6 @@ use rocket_auth::{AdminUser, User};
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
 
-impl AdminSettings {
-    pub fn get_default() -> AdminSettings {
-        AdminSettings {
-            id: None,
-            market_name: "Squeakroad".to_string(),
-            fee_rate_basis_points: 500,
-        }
-    }
-}
-
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
 struct Context {
@@ -38,7 +28,7 @@ impl Context {
         let base_context = BaseContext::raw(&mut db, Some(user.clone()), admin_user.clone())
             .await
             .map_err(|_| "failed to get base template.")?;
-        let admin_settings = AdminSettings::single(&mut db, AdminSettings::get_default())
+        let admin_settings = AdminSettings::single(&mut db, AdminSettings::default())
             .await
             .map_err(|_| "failed to get admin settings.")?;
         Ok(Context {
@@ -82,7 +72,7 @@ async fn change_market_name(
     } else if new_market_name.len() >= 64 {
         Err("Market name is too long.".to_string())
     } else {
-        let default_admin_settings = AdminSettings::get_default();
+        let default_admin_settings = AdminSettings::default();
         AdminSettings::set_market_name(db, &new_market_name, default_admin_settings)
             .await
             .map_err(|_| "failed to update market name.")?;
