@@ -1,6 +1,8 @@
 {% extends "base" %}
 {% block body %}
 
+{% include "search_form" %}
+
 <br>
 
   <div class="container">
