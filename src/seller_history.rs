@@ -76,14 +76,14 @@ async fn index(
 ) -> Result<Template, NotFound<String>> {
     let flash = flash.map(FlashMessage::into_inner);
     Ok(Template::render(
-        "sellerrating",
+        "sellerhistory",
         Context::raw(flash, db, page_num, username, user, admin_user).await,
     ))
 }
 
-pub fn seller_rating_stage() -> AdHoc {
-    AdHoc::on_ignite("Seller Rating Stage", |rocket| async {
-        rocket.mount("/seller_rating", routes![index])
+pub fn seller_history_stage() -> AdHoc {
+    AdHoc::on_ignite("Seller History Stage", |rocket| async {
+        rocket.mount("/seller_history", routes![index])
         // .mount("/listing", routes![new])
     })
 }
