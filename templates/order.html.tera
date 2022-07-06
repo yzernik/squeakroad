@@ -38,9 +38,11 @@
 	<p><b>Shipping option description</b>: {{ shipping_option.description }}</p>
 	<p><b>Quantity</b>: {{ order.quantity }}</p>
 	<p><b>Payment amount</b>: {{ order.quantity }} x ({{ listing.price_sat }} sats + {{ shipping_option.price_sat }} sats) = <b>{{ order.amount_owed_sat }} sats</b></p>
+	{% if user %}
 	{% if order.seller_user_id == user.id or admin_user %}
 	<p><b>Market fee amount</b>: {{ listing.fee_rate_basis_points / 10000 }} x {{ order.amount_owed_sat }} sats = {{ order.amount_owed_sat - order.seller_credit_sat }} sats</p>
 	<p><b>Seller credit amount</b>: {{ order.amount_owed_sat }} sats - {{ order.amount_owed_sat - order.seller_credit_sat }} sats = {{ order.seller_credit_sat }} sats</p>
+	{% endif %}
 	{% endif %}
 	{% if user %}
 	{% if order.buyer_user_id == user.id or order.seller_user_id == user.id or admin_user %}
