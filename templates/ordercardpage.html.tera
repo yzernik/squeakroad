@@ -1,0 +1,28 @@
+<table class="u-full-width">
+  <thead>
+    <tr>
+      <th>Payment Time</th>
+      <th>Payment Status</th>
+      <th>Order</th>
+      <th>Listing</th>
+      <th>Sale Amount</th>
+      <th>Rating</th>
+    </tr>
+  </thead>
+
+  {% for order_card in order_cards %}
+  <tbody>
+    <tr>
+      <td>{% if order_card.order.paid %}{{ (order_card.order.payment_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}{% else %}None{% endif %}</td>
+      <td>{% if not order_card.order.paid %}Unpaid{% elif order_card.order.completed %}Completed{% else %}Refunded{% endif %}</td>
+      <td><a href="/order/{{ order_card.order.public_id }}">{{ order_card.order.public_id }}</a></td>
+      <td><a href="/listing/{{ order_card.listing.public_id }}">{{ order_card.listing.title }}</a></td>
+      <td>{{ order_card.order.amount_owed_sat }} sats</td>
+      <td>{% if order_card.order.reviewed %}{{ order_card.order.review_rating }}{% else %}Unreviewed{% endif %}</td>
+    </tr>
+  </tbody>
+  {% endfor %}
+</table>
+
+
+<span>{% if page_num > 1 %}<a href="?page_num={{ page_num - 1 }}">Prev</a>{% else %}Prev{% endif %} - Page {{ page_num }} - <a href="?page_num={{ page_num + 1 }}">Next</a></span>

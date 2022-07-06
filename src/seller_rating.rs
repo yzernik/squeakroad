@@ -35,9 +35,10 @@ impl Context {
             RocketAuthUser::single_by_username(&mut db, visited_user_username.to_string())
                 .await
                 .map_err(|_| "failed to get visited user.")?;
-        let received_orders = OrderCard::all_received_for_user(&mut db, visited_user.id.unwrap())
-            .await
-            .map_err(|_| "failed to get received orders for user.")?;
+        let received_orders =
+            OrderCard::all_received_for_user(&mut db, visited_user.id.unwrap(), u32::MAX, 1)
+                .await
+                .map_err(|_| "failed to get received orders for user.")?;
         let seller_info = Order::seller_info_for_user(&mut db, visited_user.id.unwrap())
             .await
             .map_err(|_| "failed to get weighted average rating for user.")?;

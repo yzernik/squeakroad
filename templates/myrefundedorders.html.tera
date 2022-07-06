@@ -11,17 +11,7 @@
       <h3>My Refunded Orders</h3>
 
       <div class="twelve columns">
-        <ul>
-        {% for order_card in order_cards %}
-
-        <li>
-	  <a href="/order/{{order_card.order.public_id}}">
-          <p>{{ order_card.listing.title }} ({{ order_card.listing.price_sat }} sats)</p>
-          </a>
-	</li>
-
-        {% endfor %}
-        </ul>
+	{% include "ordercardpage" %}
       </div>
     </div>
   </div>

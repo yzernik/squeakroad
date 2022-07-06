@@ -1817,7 +1817,11 @@ impl OrderCard {
     pub async fn all_unpaid_for_user(
         db: &mut Connection<Db>,
         user_id: i32,
+        page_size: u32,
+        page_num: u32,
     ) -> Result<Vec<OrderCard>, sqlx::Error> {
+        let offset = (page_num - 1) * page_size;
+        let limit = page_size;
         let orders = sqlx::query!(
             "
 select
@@ -1845,55 +1849,59 @@ AND
 GROUP BY
  orders.id
 ORDER BY orders.created_time_ms DESC
+LIMIT ?
+OFFSET ?
 ;",
             user_id,
+            limit,
+            offset,
         )
             .fetch(&mut **db)
             .map_ok(|r| {
                 let o = Order {
                     id: Some(r.order_id.unwrap().try_into().unwrap()),
-                    public_id: r.order_public_id,
-                    quantity: r.quantity.try_into().unwrap(),
-                    buyer_user_id: r.order_buyer_user_id.try_into().unwrap(),
-                    seller_user_id: r.order_seller_user_id.try_into().unwrap(),
-                    listing_id: r.order_listing_id.try_into().unwrap(),
-                    shipping_option_id: r.shipping_option_id.try_into().unwrap(),
-                    shipping_instructions: r.shipping_instructions,
-                    amount_owed_sat: r.amount_owed_sat.try_into().unwrap(),
-                    seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
-                    paid: r.paid,
-                    completed: r.completed,
-                    acked: r.acked,
-                    reviewed: r.order_reviewed,
-                    invoice_hash: r.invoice_hash,
-                    invoice_payment_request: r.invoice_payment_request,
-                    review_rating: r.review_rating.try_into().unwrap(),
-                    review_text: r.review_text,
-                    created_time_ms: r.created_time_ms.try_into().unwrap(),
-                    payment_time_ms: r.payment_time_ms.try_into().unwrap(),
-                    review_time_ms: r.review_time_ms.try_into().unwrap(),
+                    public_id: r.order_public_id.unwrap(),
+                    quantity: r.quantity.unwrap().try_into().unwrap(),
+                    buyer_user_id: r.order_buyer_user_id.unwrap().try_into().unwrap(),
+                    seller_user_id: r.order_seller_user_id.unwrap().try_into().unwrap(),
+                    listing_id: r.order_listing_id.unwrap().try_into().unwrap(),
+                    shipping_option_id: r.shipping_option_id.unwrap().try_into().unwrap(),
+                    shipping_instructions: r.shipping_instructions.unwrap(),
+                    amount_owed_sat: r.amount_owed_sat.unwrap().try_into().unwrap(),
+                    seller_credit_sat: r.seller_credit_sat.unwrap().try_into().unwrap(),
+                    paid: r.paid.unwrap(),
+                    completed: r.completed.unwrap(),
+                    acked: r.acked.unwrap(),
+                    reviewed: r.order_reviewed.unwrap(),
+                    invoice_hash: r.invoice_hash.unwrap(),
+                    invoice_payment_request: r.invoice_payment_request.unwrap(),
+                    review_rating: r.review_rating.unwrap().try_into().unwrap(),
+                    review_text: r.review_text.unwrap(),
+                    created_time_ms: r.created_time_ms.unwrap().try_into().unwrap(),
+                    payment_time_ms: r.payment_time_ms.unwrap().try_into().unwrap(),
+                    review_time_ms: r.review_time_ms.unwrap().try_into().unwrap(),
                 };
                 let l = r.id.map(|listing_id| Listing {
                     id: Some(listing_id.try_into().unwrap()),
-                    public_id: r.listing_public_id,
-                    user_id: r.listing_user_id.try_into().unwrap(),
-                    title: r.title,
-                    description: r.description,
-                    price_sat: r.price_sat.try_into().unwrap(),
-                    quantity: r.quantity.try_into().unwrap(),
-                    fee_rate_basis_points: r.fee_rate_basis_points.try_into().unwrap(),
-                    submitted: r.submitted,
-                    reviewed: r.reviewed,
-                    approved: r.approved,
-                    removed: r.removed,
-                    created_time_ms: r.listing_created_time_ms.try_into().unwrap(),
+                    public_id: r.listing_public_id.unwrap(),
+                    user_id: r.listing_user_id.unwrap().try_into().unwrap(),
+                    title: r.title.unwrap(),
+                    description: r.description.unwrap(),
+                    price_sat: r.price_sat.unwrap().try_into().unwrap(),
+                    quantity: r.quantity.unwrap().try_into().unwrap(),
+                    fee_rate_basis_points: r.fee_rate_basis_points.unwrap().try_into().unwrap(),
+                    submitted: r.submitted.unwrap(),
+                    reviewed: r.reviewed.unwrap(),
+                    approved: r.approved.unwrap(),
+                    removed: r.removed.unwrap(),
+                    created_time_ms: r.listing_created_time_ms.unwrap().try_into().unwrap(),
                 });
                 let i = r.image_id.map(|image_id| ListingImage {
                     id: Some(image_id.try_into().unwrap()),
-                    public_id: r.image_public_id,
-                    listing_id: r.listing_id.try_into().unwrap(),
-                    image_data: r.image_data,
-                    is_primary: r.is_primary,
+                    public_id: r.image_public_id.unwrap(),
+                    listing_id: r.listing_id.unwrap().try_into().unwrap(),
+                    image_data: r.image_data.unwrap(),
+                    is_primary: r.is_primary.unwrap(),
                 });
                 let u = r.rocket_auth_user_id.map(|rocket_auth_user_id| RocketAuthUser {
                     id: Some(rocket_auth_user_id.try_into().unwrap()),
@@ -1915,7 +1923,11 @@ ORDER BY orders.created_time_ms DESC
     pub async fn all_refunded_for_user(
         db: &mut Connection<Db>,
         user_id: i32,
+        page_size: u32,
+        page_num: u32,
     ) -> Result<Vec<OrderCard>, sqlx::Error> {
+        let offset = (page_num - 1) * page_size;
+        let limit = page_size;
         let orders = sqlx::query!(
             "
 select
@@ -1945,55 +1957,59 @@ AND
 GROUP BY
  orders.id
 ORDER BY orders.payment_time_ms DESC
+LIMIT ?
+OFFSET ?
 ;",
             user_id,
+            limit,
+            offset,
         )
             .fetch(&mut **db)
             .map_ok(|r| {
                 let o = Order {
                     id: Some(r.order_id.unwrap().try_into().unwrap()),
-                    public_id: r.order_public_id,
-                    quantity: r.quantity.try_into().unwrap(),
-                    buyer_user_id: r.order_buyer_user_id.try_into().unwrap(),
-                    seller_user_id: r.order_seller_user_id.try_into().unwrap(),
-                    listing_id: r.order_listing_id.try_into().unwrap(),
-                    shipping_option_id: r.shipping_option_id.try_into().unwrap(),
-                    shipping_instructions: r.shipping_instructions,
-                    amount_owed_sat: r.amount_owed_sat.try_into().unwrap(),
-                    seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
-                    paid: r.paid,
-                    completed: r.completed,
-                    acked: r.acked,
-                    reviewed: r.order_reviewed,
-                    invoice_hash: r.invoice_hash,
-                    invoice_payment_request: r.invoice_payment_request,
-                    review_rating: r.review_rating.try_into().unwrap(),
-                    review_text: r.review_text,
-                    created_time_ms: r.created_time_ms.try_into().unwrap(),
-                    payment_time_ms: r.payment_time_ms.try_into().unwrap(),
-                    review_time_ms: r.review_time_ms.try_into().unwrap(),
+                    public_id: r.order_public_id.unwrap(),
+                    quantity: r.quantity.unwrap().try_into().unwrap(),
+                    buyer_user_id: r.order_buyer_user_id.unwrap().try_into().unwrap(),
+                    seller_user_id: r.order_seller_user_id.unwrap().try_into().unwrap(),
+                    listing_id: r.order_listing_id.unwrap().try_into().unwrap(),
+                    shipping_option_id: r.shipping_option_id.unwrap().try_into().unwrap(),
+                    shipping_instructions: r.shipping_instructions.unwrap(),
+                    amount_owed_sat: r.amount_owed_sat.unwrap().try_into().unwrap(),
+                    seller_credit_sat: r.seller_credit_sat.unwrap().try_into().unwrap(),
+                    paid: r.paid.unwrap(),
+                    completed: r.completed.unwrap(),
+                    acked: r.acked.unwrap(),
+                    reviewed: r.order_reviewed.unwrap(),
+                    invoice_hash: r.invoice_hash.unwrap(),
+                    invoice_payment_request: r.invoice_payment_request.unwrap(),
+                    review_rating: r.review_rating.unwrap().try_into().unwrap(),
+                    review_text: r.review_text.unwrap(),
+                    created_time_ms: r.created_time_ms.unwrap().try_into().unwrap(),
+                    payment_time_ms: r.payment_time_ms.unwrap().try_into().unwrap(),
+                    review_time_ms: r.review_time_ms.unwrap().try_into().unwrap(),
                 };
                 let l = r.id.map(|listing_id| Listing {
                     id: Some(listing_id.try_into().unwrap()),
-                    public_id: r.listing_public_id,
-                    user_id: r.listing_user_id.try_into().unwrap(),
-                    title: r.title,
-                    description: r.description,
-                    price_sat: r.price_sat.try_into().unwrap(),
-                    quantity: r.quantity.try_into().unwrap(),
-                    fee_rate_basis_points: r.fee_rate_basis_points.try_into().unwrap(),
-                    submitted: r.submitted,
-                    reviewed: r.reviewed,
-                    approved: r.approved,
-                    removed: r.removed,
-                    created_time_ms: r.listing_created_time_ms.try_into().unwrap(),
+                    public_id: r.listing_public_id.unwrap(),
+                    user_id: r.listing_user_id.unwrap().try_into().unwrap(),
+                    title: r.title.unwrap(),
+                    description: r.description.unwrap(),
+                    price_sat: r.price_sat.unwrap().try_into().unwrap(),
+                    quantity: r.quantity.unwrap().try_into().unwrap(),
+                    fee_rate_basis_points: r.fee_rate_basis_points.unwrap().try_into().unwrap(),
+                    submitted: r.submitted.unwrap(),
+                    reviewed: r.reviewed.unwrap(),
+                    approved: r.approved.unwrap(),
+                    removed: r.removed.unwrap(),
+                    created_time_ms: r.listing_created_time_ms.unwrap().try_into().unwrap(),
                 });
                 let i = r.image_id.map(|image_id| ListingImage {
                     id: Some(image_id.try_into().unwrap()),
-                    public_id: r.image_public_id,
-                    listing_id: r.listing_id.try_into().unwrap(),
-                    image_data: r.image_data,
-                    is_primary: r.is_primary,
+                    public_id: r.image_public_id.unwrap(),
+                    listing_id: r.listing_id.unwrap().try_into().unwrap(),
+                    image_data: r.image_data.unwrap(),
+                    is_primary: r.is_primary.unwrap(),
                 });
                 let u = r.rocket_auth_user_id.map(|rocket_auth_user_id| RocketAuthUser {
                     id: Some(rocket_auth_user_id.try_into().unwrap()),
@@ -2015,7 +2031,11 @@ ORDER BY orders.payment_time_ms DESC
     pub async fn all_completed_for_user(
         db: &mut Connection<Db>,
         user_id: i32,
+        page_size: u32,
+        page_num: u32,
     ) -> Result<Vec<OrderCard>, sqlx::Error> {
+        let offset = (page_num - 1) * page_size;
+        let limit = page_size;
         let orders = sqlx::query!(
             "
 select
@@ -2043,55 +2063,59 @@ AND
 GROUP BY
  orders.id
 ORDER BY orders.payment_time_ms DESC
+LIMIT ?
+OFFSET ?
 ;",
             user_id,
+            limit,
+            offset,
         )
             .fetch(&mut **db)
             .map_ok(|r| {
                 let o = Order {
                     id: Some(r.order_id.unwrap().try_into().unwrap()),
-                    public_id: r.order_public_id,
-                    quantity: r.quantity.try_into().unwrap(),
-                    buyer_user_id: r.order_buyer_user_id.try_into().unwrap(),
-                    seller_user_id: r.order_seller_user_id.try_into().unwrap(),
-                    listing_id: r.order_listing_id.try_into().unwrap(),
-                    shipping_option_id: r.shipping_option_id.try_into().unwrap(),
-                    shipping_instructions: r.shipping_instructions,
-                    amount_owed_sat: r.amount_owed_sat.try_into().unwrap(),
-                    seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
-                    paid: r.paid,
-                    completed: r.completed,
-                    acked: r.acked,
-                    reviewed: r.order_reviewed,
-                    invoice_hash: r.invoice_hash,
-                    invoice_payment_request: r.invoice_payment_request,
-                    review_rating: r.review_rating.try_into().unwrap(),
-                    review_text: r.review_text,
-                    created_time_ms: r.created_time_ms.try_into().unwrap(),
-                    payment_time_ms: r.payment_time_ms.try_into().unwrap(),
-                    review_time_ms: r.review_time_ms.try_into().unwrap(),
+                    public_id: r.order_public_id.unwrap(),
+                    quantity: r.quantity.unwrap().try_into().unwrap(),
+                    buyer_user_id: r.order_buyer_user_id.unwrap().try_into().unwrap(),
+                    seller_user_id: r.order_seller_user_id.unwrap().try_into().unwrap(),
+                    listing_id: r.order_listing_id.unwrap().try_into().unwrap(),
+                    shipping_option_id: r.shipping_option_id.unwrap().try_into().unwrap(),
+                    shipping_instructions: r.shipping_instructions.unwrap(),
+                    amount_owed_sat: r.amount_owed_sat.unwrap().try_into().unwrap(),
+                    seller_credit_sat: r.seller_credit_sat.unwrap().try_into().unwrap(),
+                    paid: r.paid.unwrap(),
+                    completed: r.completed.unwrap(),
+                    acked: r.acked.unwrap(),
+                    reviewed: r.order_reviewed.unwrap(),
+                    invoice_hash: r.invoice_hash.unwrap(),
+                    invoice_payment_request: r.invoice_payment_request.unwrap(),
+                    review_rating: r.review_rating.unwrap().try_into().unwrap(),
+                    review_text: r.review_text.unwrap(),
+                    created_time_ms: r.created_time_ms.unwrap().try_into().unwrap(),
+                    payment_time_ms: r.payment_time_ms.unwrap().try_into().unwrap(),
+                    review_time_ms: r.review_time_ms.unwrap().try_into().unwrap(),
                 };
                 let l = r.id.map(|listing_id| Listing {
                     id: Some(listing_id.try_into().unwrap()),
-                    public_id: r.listing_public_id,
-                    user_id: r.listing_user_id.try_into().unwrap(),
-                    title: r.title,
-                    description: r.description,
-                    price_sat: r.price_sat.try_into().unwrap(),
-                    quantity: r.quantity.try_into().unwrap(),
-                    fee_rate_basis_points: r.fee_rate_basis_points.try_into().unwrap(),
-                    submitted: r.submitted,
-                    reviewed: r.reviewed,
-                    approved: r.approved,
-                    removed: r.removed,
-                    created_time_ms: r.listing_created_time_ms.try_into().unwrap(),
+                    public_id: r.listing_public_id.unwrap(),
+                    user_id: r.listing_user_id.unwrap().try_into().unwrap(),
+                    title: r.title.unwrap(),
+                    description: r.description.unwrap(),
+                    price_sat: r.price_sat.unwrap().try_into().unwrap(),
+                    quantity: r.quantity.unwrap().try_into().unwrap(),
+                    fee_rate_basis_points: r.fee_rate_basis_points.unwrap().try_into().unwrap(),
+                    submitted: r.submitted.unwrap(),
+                    reviewed: r.reviewed.unwrap(),
+                    approved: r.approved.unwrap(),
+                    removed: r.removed.unwrap(),
+                    created_time_ms: r.listing_created_time_ms.unwrap().try_into().unwrap(),
                 });
                 let i = r.image_id.map(|image_id| ListingImage {
                     id: Some(image_id.try_into().unwrap()),
-                    public_id: r.image_public_id,
-                    listing_id: r.listing_id.try_into().unwrap(),
-                    image_data: r.image_data,
-                    is_primary: r.is_primary,
+                    public_id: r.image_public_id.unwrap(),
+                    listing_id: r.listing_id.unwrap().try_into().unwrap(),
+                    image_data: r.image_data.unwrap(),
+                    is_primary: r.is_primary.unwrap(),
                 });
                 let u = r.rocket_auth_user_id.map(|rocket_auth_user_id| RocketAuthUser {
                     id: Some(rocket_auth_user_id.try_into().unwrap()),
@@ -2113,7 +2137,11 @@ ORDER BY orders.payment_time_ms DESC
     pub async fn all_received_for_user(
         db: &mut Connection<Db>,
         user_id: i32,
+        page_size: u32,
+        page_num: u32,
     ) -> Result<Vec<OrderCard>, sqlx::Error> {
+        let offset = (page_num - 1) * page_size;
+        let limit = page_size;
         let orders = sqlx::query!(
             "
 select
@@ -2141,55 +2169,59 @@ AND
 GROUP BY
  orders.id
 ORDER BY orders.payment_time_ms DESC
+LIMIT ?
+OFFSET ?
 ;",
             user_id,
+            limit,
+            offset,
         )
             .fetch(&mut **db)
             .map_ok(|r| {
                 let o = Order {
                     id: Some(r.order_id.unwrap().try_into().unwrap()),
-                    public_id: r.order_public_id,
-                    quantity: r.quantity.try_into().unwrap(),
-                    buyer_user_id: r.order_buyer_user_id.try_into().unwrap(),
-                    seller_user_id: r.order_seller_user_id.try_into().unwrap(),
-                    listing_id: r.order_listing_id.try_into().unwrap(),
-                    shipping_option_id: r.shipping_option_id.try_into().unwrap(),
-                    shipping_instructions: r.shipping_instructions,
-                    amount_owed_sat: r.amount_owed_sat.try_into().unwrap(),
-                    seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
-                    paid: r.paid,
-                    completed: r.completed,
-                    acked: r.acked,
-                    reviewed: r.order_reviewed,
-                    invoice_hash: r.invoice_hash,
-                    invoice_payment_request: r.invoice_payment_request,
-                    review_rating: r.review_rating.try_into().unwrap(),
-                    review_text: r.review_text,
-                    created_time_ms: r.created_time_ms.try_into().unwrap(),
-                    payment_time_ms: r.payment_time_ms.try_into().unwrap(),
-                    review_time_ms: r.review_time_ms.try_into().unwrap(),
+                    public_id: r.order_public_id.unwrap(),
+                    quantity: r.quantity.unwrap().try_into().unwrap(),
+                    buyer_user_id: r.order_buyer_user_id.unwrap().try_into().unwrap(),
+                    seller_user_id: r.order_seller_user_id.unwrap().try_into().unwrap(),
+                    listing_id: r.order_listing_id.unwrap().try_into().unwrap(),
+                    shipping_option_id: r.shipping_option_id.unwrap().try_into().unwrap(),
+                    shipping_instructions: r.shipping_instructions.unwrap(),
+                    amount_owed_sat: r.amount_owed_sat.unwrap().try_into().unwrap(),
+                    seller_credit_sat: r.seller_credit_sat.unwrap().try_into().unwrap(),
+                    paid: r.paid.unwrap(),
+                    completed: r.completed.unwrap(),
+                    acked: r.acked.unwrap(),
+                    reviewed: r.order_reviewed.unwrap(),
+                    invoice_hash: r.invoice_hash.unwrap(),
+                    invoice_payment_request: r.invoice_payment_request.unwrap(),
+                    review_rating: r.review_rating.unwrap().try_into().unwrap(),
+                    review_text: r.review_text.unwrap(),
+                    created_time_ms: r.created_time_ms.unwrap().try_into().unwrap(),
+                    payment_time_ms: r.payment_time_ms.unwrap().try_into().unwrap(),
+                    review_time_ms: r.review_time_ms.unwrap().try_into().unwrap(),
                 };
                 let l = r.id.map(|listing_id| Listing {
                     id: Some(listing_id.try_into().unwrap()),
-                    public_id: r.listing_public_id,
-                    user_id: r.listing_user_id.try_into().unwrap(),
-                    title: r.title,
-                    description: r.description,
-                    price_sat: r.price_sat.try_into().unwrap(),
-                    quantity: r.quantity.try_into().unwrap(),
-                    fee_rate_basis_points: r.fee_rate_basis_points.try_into().unwrap(),
-                    submitted: r.submitted,
-                    reviewed: r.reviewed,
-                    approved: r.approved,
-                    removed: r.removed,
-                    created_time_ms: r.listing_created_time_ms.try_into().unwrap(),
+                    public_id: r.listing_public_id.unwrap(),
+                    user_id: r.listing_user_id.unwrap().try_into().unwrap(),
+                    title: r.title.unwrap(),
+                    description: r.description.unwrap(),
+                    price_sat: r.price_sat.unwrap().try_into().unwrap(),
+                    quantity: r.quantity.unwrap().try_into().unwrap(),
+                    fee_rate_basis_points: r.fee_rate_basis_points.unwrap().try_into().unwrap(),
+                    submitted: r.submitted.unwrap(),
+                    reviewed: r.reviewed.unwrap(),
+                    approved: r.approved.unwrap(),
+                    removed: r.removed.unwrap(),
+                    created_time_ms: r.listing_created_time_ms.unwrap().try_into().unwrap(),
                 });
                 let i = r.image_id.map(|image_id| ListingImage {
                     id: Some(image_id.try_into().unwrap()),
-                    public_id: r.image_public_id,
-                    listing_id: r.listing_id.try_into().unwrap(),
-                    image_data: r.image_data,
-                    is_primary: r.is_primary,
+                    public_id: r.image_public_id.unwrap(),
+                    listing_id: r.listing_id.unwrap().try_into().unwrap(),
+                    image_data: r.image_data.unwrap(),
+                    is_primary: r.is_primary.unwrap(),
                 });
                 let u = r.rocket_auth_user_id.map(|rocket_auth_user_id| RocketAuthUser {
                     id: Some(rocket_auth_user_id.try_into().unwrap()),
@@ -2211,7 +2243,11 @@ ORDER BY orders.payment_time_ms DESC
     pub async fn all_unacked_for_user(
         db: &mut Connection<Db>,
         user_id: i32,
+        page_size: u32,
+        page_num: u32,
     ) -> Result<Vec<OrderCard>, sqlx::Error> {
+        let offset = (page_num - 1) * page_size;
+        let limit = page_size;
         let orders = sqlx::query!(
             "
 select
@@ -2241,55 +2277,60 @@ AND
 GROUP BY
  orders.id
 ORDER BY orders.payment_time_ms DESC
+LIMIT ?
+OFFSET ?
 ;",
             user_id,
+            limit,
+            offset,
         )
             .fetch(&mut **db)
             .map_ok(|r| {
+
                 let o = Order {
                     id: Some(r.order_id.unwrap().try_into().unwrap()),
-                    public_id: r.order_public_id,
-                    quantity: r.quantity.try_into().unwrap(),
-                    buyer_user_id: r.order_buyer_user_id.try_into().unwrap(),
-                    seller_user_id: r.order_seller_user_id.try_into().unwrap(),
-                    listing_id: r.order_listing_id.try_into().unwrap(),
-                    shipping_option_id: r.shipping_option_id.try_into().unwrap(),
-                    shipping_instructions: r.shipping_instructions,
-                    amount_owed_sat: r.amount_owed_sat.try_into().unwrap(),
-                    seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
-                    paid: r.paid,
-                    completed: r.completed,
-                    acked: r.acked,
-                    reviewed: r.order_reviewed,
-                    invoice_hash: r.invoice_hash,
-                    invoice_payment_request: r.invoice_payment_request,
-                    review_rating: r.review_rating.try_into().unwrap(),
-                    review_text: r.review_text,
-                    created_time_ms: r.created_time_ms.try_into().unwrap(),
-                    payment_time_ms: r.payment_time_ms.try_into().unwrap(),
-                    review_time_ms: r.review_time_ms.try_into().unwrap(),
+                    public_id: r.order_public_id.unwrap(),
+                    quantity: r.quantity.unwrap().try_into().unwrap(),
+                    buyer_user_id: r.order_buyer_user_id.unwrap().try_into().unwrap(),
+                    seller_user_id: r.order_seller_user_id.unwrap().try_into().unwrap(),
+                    listing_id: r.order_listing_id.unwrap().try_into().unwrap(),
+                    shipping_option_id: r.shipping_option_id.unwrap().try_into().unwrap(),
+                    shipping_instructions: r.shipping_instructions.unwrap(),
+                    amount_owed_sat: r.amount_owed_sat.unwrap().try_into().unwrap(),
+                    seller_credit_sat: r.seller_credit_sat.unwrap().try_into().unwrap(),
+                    paid: r.paid.unwrap(),
+                    completed: r.completed.unwrap(),
+                    acked: r.acked.unwrap(),
+                    reviewed: r.order_reviewed.unwrap(),
+                    invoice_hash: r.invoice_hash.unwrap(),
+                    invoice_payment_request: r.invoice_payment_request.unwrap(),
+                    review_rating: r.review_rating.unwrap().try_into().unwrap(),
+                    review_text: r.review_text.unwrap(),
+                    created_time_ms: r.created_time_ms.unwrap().try_into().unwrap(),
+                    payment_time_ms: r.payment_time_ms.unwrap().try_into().unwrap(),
+                    review_time_ms: r.review_time_ms.unwrap().try_into().unwrap(),
                 };
                 let l = r.id.map(|listing_id| Listing {
                     id: Some(listing_id.try_into().unwrap()),
-                    public_id: r.listing_public_id,
-                    user_id: r.listing_user_id.try_into().unwrap(),
-                    title: r.title,
-                    description: r.description,
-                    price_sat: r.price_sat.try_into().unwrap(),
-                    quantity: r.quantity.try_into().unwrap(),
-                    fee_rate_basis_points: r.fee_rate_basis_points.try_into().unwrap(),
-                    submitted: r.submitted,
-                    reviewed: r.reviewed,
-                    approved: r.approved,
-                    removed: r.removed,
-                    created_time_ms: r.listing_created_time_ms.try_into().unwrap(),
+                    public_id: r.listing_public_id.unwrap(),
+                    user_id: r.listing_user_id.unwrap().try_into().unwrap(),
+                    title: r.title.unwrap(),
+                    description: r.description.unwrap(),
+                    price_sat: r.price_sat.unwrap().try_into().unwrap(),
+                    quantity: r.quantity.unwrap().try_into().unwrap(),
+                    fee_rate_basis_points: r.fee_rate_basis_points.unwrap().try_into().unwrap(),
+                    submitted: r.submitted.unwrap(),
+                    reviewed: r.reviewed.unwrap(),
+                    approved: r.approved.unwrap(),
+                    removed: r.removed.unwrap(),
+                    created_time_ms: r.listing_created_time_ms.unwrap().try_into().unwrap(),
                 });
                 let i = r.image_id.map(|image_id| ListingImage {
                     id: Some(image_id.try_into().unwrap()),
-                    public_id: r.image_public_id,
-                    listing_id: r.listing_id.try_into().unwrap(),
-                    image_data: r.image_data,
-                    is_primary: r.is_primary,
+                    public_id: r.image_public_id.unwrap(),
+                    listing_id: r.listing_id.unwrap().try_into().unwrap(),
+                    image_data: r.image_data.unwrap(),
+                    is_primary: r.is_primary.unwrap(),
                 });
                 let u = r.rocket_auth_user_id.map(|rocket_auth_user_id| RocketAuthUser {
                     id: Some(rocket_auth_user_id.try_into().unwrap()),
@@ -2301,6 +2342,7 @@ ORDER BY orders.payment_time_ms DESC
                     image: i,
                     user: u,
                 }
+
             })
             .try_collect::<Vec<_>>()
             .await?;
@@ -2322,7 +2364,7 @@ impl AccountInfo {
             .sum();
         let unread_messages = OrderMessage::all_unread_for_recipient(db, user_id).await?;
         let num_unread_messages = unread_messages.len();
-        let unacked_orders = OrderCard::all_unacked_for_user(db, user_id).await?;
+        let unacked_orders = OrderCard::all_unacked_for_user(db, user_id, u32::MAX, 1).await?;
         let num_unacked_orders = unacked_orders.len();
         Ok(AccountInfo {
             account_balance_sat,
