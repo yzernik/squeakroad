@@ -15,8 +15,6 @@ use rocket_auth::AdminUser;
 use rocket_auth::User;
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
-use std::time::SystemTime;
-use std::time::UNIX_EPOCH;
 
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -120,10 +118,7 @@ async fn withdraw(
                 .await
                 .map_err(|e| format!("failed to send payment: {:?}", e))?;
             let send_response = send_payment_resp.into_inner();
-            let now = SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .unwrap()
-                .as_millis() as u64;
+            let now = util::current_time_millis();
             let withdrawal = Withdrawal {
                 id: None,
                 public_id: util::create_uuid(),

@@ -11,7 +11,6 @@ use rocket::serde::Serialize;
 use rocket_auth::{AdminUser, User};
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
-use std::time::{SystemTime, UNIX_EPOCH};
 
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -70,10 +69,7 @@ async fn create_listing(
     let admin_settings = AdminSettings::single(db, AdminSettings::default())
         .await
         .map_err(|_| "failed to update market name.")?;
-    let now = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap()
-        .as_millis() as u64;
+    let now = util::current_time_millis();
     let one_day_in_ms = 24 * 60 * 60 * 1000;
     let recent_listing_count =
         Listing::count_for_user_since_time_ms(db, user.id(), now - one_day_in_ms)
