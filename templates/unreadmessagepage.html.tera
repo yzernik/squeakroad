@@ -1,0 +1,14 @@
+<ul>
+  {% for order_message_card in order_message_cards %}
+
+  <li>
+    <a href="/order/{{order_message_card.order_public_id}}">
+      <p>Message for order ID: {{ order_message_card.order_public_id }}</p>
+    </a>
+  </li>
+
+  {% endfor %}
+</ul>
+
+
+<span>{% if page_num > 1 %}<a href="?page_num={{ page_num - 1 }}">Prev</a>{% else %}Prev{% endif %} - Page {{ page_num }} - <a href="?page_num={{ page_num + 1 }}">Next</a></span>

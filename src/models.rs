@@ -2254,7 +2254,8 @@ impl AccountInfo {
             .iter()
             .map(|c| c.amount_change_sat)
             .sum();
-        let unread_messages = OrderMessage::all_unread_for_recipient(db, user_id).await?;
+        let unread_messages =
+            OrderMessage::all_unread_for_recipient(db, user_id, u32::MAX, 1).await?;
         let num_unread_messages = unread_messages.len();
         let unacked_orders = OrderCard::all_unacked_for_user(db, user_id, u32::MAX, 1).await?;
         let num_unacked_orders = unacked_orders.len();
@@ -2582,7 +2583,11 @@ OFFSET ?
     pub async fn all_unread_for_recipient(
         db: &mut Connection<Db>,
         user_id: i32,
+        page_size: u32,
+        page_num: u32,
     ) -> Result<Vec<OrderMessageCard>, sqlx::Error> {
+        let offset = (page_num - 1) * page_size;
+        let limit = page_size;
         let order_messages = sqlx::query!(
             "
 select ordermessages.id, ordermessages.public_id, ordermessages.order_id, ordermessages.author_id, ordermessages.recipient_id, ordermessages.text, ordermessages.viewed, ordermessages.created_time_ms, orders.public_id as order_public_id
@@ -2596,20 +2601,25 @@ WHERE
  not viewed
 AND
  recipient_id = ?
-ORDER BY ordermessages.created_time_ms ASC;",
+ORDER BY ordermessages.created_time_ms ASC
+LIMIT ?
+OFFSET ?
+;",
             user_id,
+            limit,
+            offset,
         )
         .fetch(&mut **db)
         .map_ok(|r|  {
             let om = OrderMessage {
                 id: r.id.map(|n| n.try_into().unwrap()),
-                public_id: r.public_id,
-                order_id: r.order_id.try_into().unwrap(),
-                author_id: r.author_id.try_into().unwrap(),
-                recipient_id: r.recipient_id.try_into().unwrap(),
-                text: r.text,
-                viewed: r.viewed,
-                created_time_ms: r.created_time_ms.try_into().unwrap(),
+                public_id: r.public_id.unwrap(),
+                order_id: r.order_id.unwrap().try_into().unwrap(),
+                author_id: r.author_id.unwrap().try_into().unwrap(),
+                recipient_id: r.recipient_id.unwrap().try_into().unwrap(),
+                text: r.text.unwrap(),
+                viewed: r.viewed.unwrap(),
+                created_time_ms: r.created_time_ms.unwrap().try_into().unwrap(),
             };
             let opid = r.order_public_id.try_into().unwrap();
             OrderMessageCard {
