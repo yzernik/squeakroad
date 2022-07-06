@@ -9,6 +9,8 @@ use rocket_auth::User;
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
 
+const PAGE_SIZE: u32 = 10;
+
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
 struct Context {
@@ -17,6 +19,7 @@ struct Context {
     visited_user: RocketAuthUser,
     weighted_average_rating: f32,
     listing_cards: Vec<ListingCardDisplay>,
+    page_num: u32,
 }
 
 impl Context {
@@ -24,6 +27,7 @@ impl Context {
         mut db: Connection<Db>,
         username: String,
         flash: Option<(String, String)>,
+        maybe_page_num: Option<u32>,
         user: Option<User>,
         admin_user: Option<AdminUser>,
     ) -> Result<Context, String> {
@@ -33,10 +37,15 @@ impl Context {
         let visited_user = RocketAuthUser::single_by_username(&mut db, username)
             .await
             .map_err(|_| "failed to get visited user.")?;
-        let listing_cards =
-            ListingCardDisplay::all_approved_for_user(&mut db, visited_user.id.unwrap())
-                .await
-                .map_err(|_| "failed to get approved listings.")?;
+        let page_num = maybe_page_num.unwrap_or(1);
+        let listing_cards = ListingCardDisplay::all_approved_for_user(
+            &mut db,
+            visited_user.id.unwrap(),
+            PAGE_SIZE,
+            page_num,
+        )
+        .await
+        .map_err(|_| "failed to get approved listings.")?;
         let seller_info = Order::seller_info_for_user(&mut db, visited_user.id.unwrap())
             .await
             .map_err(|_| "failed to get weighted average rating for user.")?;
@@ -47,22 +56,24 @@ impl Context {
             visited_user,
             weighted_average_rating,
             listing_cards,
+            page_num,
         })
     }
 }
 
-#[get("/<username>")]
+#[get("/<username>?<page_num>")]
 async fn index(
     username: &str,
     flash: Option<FlashMessage<'_>>,
     db: Connection<Db>,
+    page_num: Option<u32>,
     user: Option<User>,
     admin_user: Option<AdminUser>,
 ) -> Template {
     let flash = flash.map(FlashMessage::into_inner);
     Template::render(
         "user",
-        Context::raw(db, username.to_string(), flash, user, admin_user).await,
+        Context::raw(db, username.to_string(), flash, page_num, user, admin_user).await,
     )
 }
 
