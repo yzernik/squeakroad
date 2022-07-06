@@ -1,6 +1,6 @@
 use crate::base::BaseContext;
 use crate::db::Db;
-use crate::models::{ListingCardDisplay, Order};
+use crate::models::ListingCardDisplay;
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::serde::Serialize;
@@ -16,6 +16,7 @@ const PAGE_SIZE: u32 = 10;
 struct Context {
     base_context: BaseContext,
     flash: Option<(String, String)>,
+    search_text: String,
     listing_cards: Vec<ListingCardDisplay>,
     page_num: u32,
 }
@@ -23,7 +24,7 @@ struct Context {
 impl Context {
     pub async fn raw(
         mut db: Connection<Db>,
-        username: String,
+        search_text: String,
         flash: Option<(String, String)>,
         maybe_page_num: Option<u32>,
         user: Option<User>,
@@ -33,25 +34,27 @@ impl Context {
             .await
             .map_err(|_| "failed to get base template.")?;
         let page_num = maybe_page_num.unwrap_or(1);
-        let listing_cards = ListingCardDisplay::all_approved_for_user(
-            &mut db, //visited_user.id.unwrap(),
-            0,       // TODO: use search term here.
-            PAGE_SIZE, page_num,
+        let listing_cards = ListingCardDisplay::all_approved_for_search_text(
+            &mut db,
+            &search_text,
+            PAGE_SIZE,
+            page_num,
         )
         .await
         .map_err(|_| "failed to get approved listings.")?;
         Ok(Context {
             base_context,
             flash,
+            search_text,
             listing_cards,
             page_num,
         })
     }
 }
 
-#[get("/<username>?<page_num>")]
+#[get("/<search_text>?<page_num>")]
 async fn index(
-    username: &str,
+    search_text: &str,
     flash: Option<FlashMessage<'_>>,
     db: Connection<Db>,
     page_num: Option<u32>,
@@ -61,7 +64,15 @@ async fn index(
     let flash = flash.map(FlashMessage::into_inner);
     Template::render(
         "search",
-        Context::raw(db, username.to_string(), flash, page_num, user, admin_user).await,
+        Context::raw(
+            db,
+            search_text.to_string(),
+            flash,
+            page_num,
+            user,
+            admin_user,
+        )
+        .await,
     )
 }
 
