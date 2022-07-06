@@ -8,7 +8,7 @@
 
   <div class="row">
     <h4>Create New Listing</h4>
-    <p>Market will collect a {{ admin_settings.fee_rate_basis_points / 100 }}% fee rate from each sale</p>
+    <p>Market will collect a {{ admin_settings.fee_rate_basis_points / 100 }}% fee from each sale</p>
     <form action="/new_listing" method="post">
       <label for="title">Enter the item name</label>
       <input type="text" placeholder="item name..."
