@@ -22,9 +22,7 @@
     <h5>Seller Info</h5>
     <a href="/seller_history/{{ user.email }}">My Sold Orders</a>
     <br>
-    <a href="my_received_orders">My Received Orders</a>
-    <br>
-    <a href="my_new_orders">My New Received Orders (not yet acknowledged)</a>
+    <a href="my_new_orders">My New Sold Orders (not yet acknowledged)</a>
     <br>
     <a href="my_unsubmitted_listings">My Unsubmitted Listings</a>
     <br>

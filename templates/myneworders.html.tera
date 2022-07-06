@@ -8,7 +8,7 @@
 
     <div class="row">
 
-      <h3>My New Orders</h3>
+      <h3>My New Sold Orders</h3>
       <p>Orders for your listings with completed payment that have you have not yet acknowledged</p>
 
       <div class="twelve columns">
