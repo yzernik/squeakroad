@@ -37,7 +37,7 @@ impl BaseContext {
             ),
             None => None,
         };
-        let admin_settings = AdminSettings::single(db, AdminSettings::get_default())
+        let admin_settings = AdminSettings::single(db, AdminSettings::default())
             .await
             .map_err(|_| "failed to get admin settings.")?;
         Ok(BaseContext {
