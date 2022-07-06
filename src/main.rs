@@ -21,7 +21,6 @@ mod my_approved_listings;
 mod my_new_orders;
 mod my_paid_orders;
 mod my_pending_listings;
-mod my_refunded_orders;
 mod my_rejected_listings;
 mod my_unpaid_orders;
 mod my_unread_messages;
