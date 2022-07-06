@@ -1920,7 +1920,7 @@ OFFSET ?
         Ok(orders)
     }
 
-    pub async fn all_refunded_for_user(
+    pub async fn all_paid_for_user(
         db: &mut Connection<Db>,
         user_id: i32,
         page_size: u32,
@@ -1950,114 +1950,6 @@ ON
  listings.user_id = users.id
 WHERE
  orders.paid
-AND
- not orders.completed
-AND
- order_buyer_user_id = ?
-GROUP BY
- orders.id
-ORDER BY orders.payment_time_ms DESC
-LIMIT ?
-OFFSET ?
-;",
-            user_id,
-            limit,
-            offset,
-        )
-            .fetch(&mut **db)
-            .map_ok(|r| {
-                let o = Order {
-                    id: Some(r.order_id.unwrap().try_into().unwrap()),
-                    public_id: r.order_public_id.unwrap(),
-                    quantity: r.quantity.unwrap().try_into().unwrap(),
-                    buyer_user_id: r.order_buyer_user_id.unwrap().try_into().unwrap(),
-                    seller_user_id: r.order_seller_user_id.unwrap().try_into().unwrap(),
-                    listing_id: r.order_listing_id.unwrap().try_into().unwrap(),
-                    shipping_option_id: r.shipping_option_id.unwrap().try_into().unwrap(),
-                    shipping_instructions: r.shipping_instructions.unwrap(),
-                    amount_owed_sat: r.amount_owed_sat.unwrap().try_into().unwrap(),
-                    seller_credit_sat: r.seller_credit_sat.unwrap().try_into().unwrap(),
-                    paid: r.paid.unwrap(),
-                    completed: r.completed.unwrap(),
-                    acked: r.acked.unwrap(),
-                    reviewed: r.order_reviewed.unwrap(),
-                    invoice_hash: r.invoice_hash.unwrap(),
-                    invoice_payment_request: r.invoice_payment_request.unwrap(),
-                    review_rating: r.review_rating.unwrap().try_into().unwrap(),
-                    review_text: r.review_text.unwrap(),
-                    created_time_ms: r.created_time_ms.unwrap().try_into().unwrap(),
-                    payment_time_ms: r.payment_time_ms.unwrap().try_into().unwrap(),
-                    review_time_ms: r.review_time_ms.unwrap().try_into().unwrap(),
-                };
-                let l = r.id.map(|listing_id| Listing {
-                    id: Some(listing_id.try_into().unwrap()),
-                    public_id: r.listing_public_id.unwrap(),
-                    user_id: r.listing_user_id.unwrap().try_into().unwrap(),
-                    title: r.title.unwrap(),
-                    description: r.description.unwrap(),
-                    price_sat: r.price_sat.unwrap().try_into().unwrap(),
-                    quantity: r.quantity.unwrap().try_into().unwrap(),
-                    fee_rate_basis_points: r.fee_rate_basis_points.unwrap().try_into().unwrap(),
-                    submitted: r.submitted.unwrap(),
-                    reviewed: r.reviewed.unwrap(),
-                    approved: r.approved.unwrap(),
-                    removed: r.removed.unwrap(),
-                    created_time_ms: r.listing_created_time_ms.unwrap().try_into().unwrap(),
-                });
-                let i = r.image_id.map(|image_id| ListingImage {
-                    id: Some(image_id.try_into().unwrap()),
-                    public_id: r.image_public_id.unwrap(),
-                    listing_id: r.listing_id.unwrap().try_into().unwrap(),
-                    image_data: r.image_data.unwrap(),
-                    is_primary: r.is_primary.unwrap(),
-                });
-                let u = r.rocket_auth_user_id.map(|rocket_auth_user_id| RocketAuthUser {
-                    id: Some(rocket_auth_user_id.try_into().unwrap()),
-                    username: r.rocket_auth_user_username.unwrap(),
-                });
-                OrderCard {
-                    order: o,
-                    listing: l,
-                    image: i,
-                    user: u,
-                }
-            })
-            .try_collect::<Vec<_>>()
-            .await?;
-
-        Ok(orders)
-    }
-
-    pub async fn all_completed_for_user(
-        db: &mut Connection<Db>,
-        user_id: i32,
-        page_size: u32,
-        page_num: u32,
-    ) -> Result<Vec<OrderCard>, sqlx::Error> {
-        let offset = (page_num - 1) * page_size;
-        let limit = page_size;
-        let orders = sqlx::query!(
-            "
-select
- orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.completed, orders.acked, orders.reviewed as order_reviewed, orders.invoice_hash, orders.invoice_payment_request, orders.review_rating, orders.review_text, orders.created_time_ms, orders.payment_time_ms, orders.review_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
-from
- orders
-LEFT JOIN
- listings
-ON
- orders.listing_id = listings.id
-LEFT JOIN
- listingimages
-ON
- listings.id = listingimages.listing_id
-AND
- listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)
-LEFT JOIN
- users
-ON
- listings.user_id = users.id
-WHERE
- orders.completed
 AND
  order_buyer_user_id = ?
 GROUP BY
