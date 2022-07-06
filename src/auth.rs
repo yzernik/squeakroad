@@ -3,12 +3,10 @@ use crate::db::Db;
 use rocket::fairing::AdHoc;
 use rocket::{form::*, get, post, response::Redirect, routes};
 use rocket_auth::{Auth, Error, Login, Signup, User};
-use rocket_db_pools::{sqlx, Connection};
+use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
 use serde_json::json;
 use std::result::Result;
-
-pub type MyResult<T, E = rocket::response::Debug<sqlx::Error>> = std::result::Result<T, E>;
 
 #[catch(401)]
 fn not_authorized() -> Redirect {

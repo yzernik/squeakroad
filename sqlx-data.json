@@ -348,36 +348,6 @@
     },
     "query": "\n            select\n             SUM(orders.amount_owed_sat) as total_amount_sold_sat\n            FROM\n             orders\n            WHERE\n             orders.completed\n            AND\n             orders.seller_user_id = ?\n            GROUP BY\n             orders.seller_user_id\n            ;"
   },
-  "11e3096becb72f427c8d3911ef4327afd9516143806981e11f8e34d069c14472": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int64"
-        },
-        {
-          "name": "title",
-          "ordinal": 1,
-          "type_info": "Text"
-        },
-        {
-          "name": "text",
-          "ordinal": 2,
-          "type_info": "Text"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "SELECT id, title, text FROM posts WHERE id = ?"
-  },
   "12986ccce72c654f36e323cea9271b54570be88f6105d39e7744cdcb456a6981": {
     "describe": {
       "columns": [],
@@ -924,16 +894,6 @@
     },
     "query": "\nselect\n listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username\nfrom\n listings\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nINNER JOIN\n users\nON\n listings.user_id = users.id\nWHERE\n listings.approved\nAND\n not listings.removed\nAND\n listings.quantity > 0\nGROUP BY\n listings.id\nORDER BY listings.created_time_ms DESC\nLIMIT ?\nOFFSET ?\n;"
   },
-  "3c289da9873097a11191dbedc5c78d86afd6a6d36771bfeb12f331abca6279cf": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 2
-      }
-    },
-    "query": "INSERT INTO posts (title, text) VALUES (?, ?)"
-  },
   "3f31a93fe04c7842a54db02d3c9268bbb9b9b568148d3754fe23c4b5759efd86": {
     "describe": {
       "columns": [],
@@ -943,24 +903,6 @@
       }
     },
     "query": "INSERT INTO adminsettings (market_name, fee_rate_basis_points) VALUES (?, ?)"
-  },
-  "4415c35941e52a981b10707fe2e1ceb0bad0e473701e51ef21ecb2973c76b4df": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int64"
-        }
-      ],
-      "nullable": [
-        false
-      ],
-      "parameters": {
-        "Right": 0
-      }
-    },
-    "query": "SELECT id FROM posts"
   },
   "494a05642afb561a5bb4056accb61841729615a2e571674bc3caccaac3d8a044": {
     "describe": {
@@ -1322,16 +1264,6 @@
     },
     "query": "INSERT INTO listingimages (public_id, listing_id, image_data) VALUES (?, ?, ?)"
   },
-  "668690acaca0a0c0b4ac306b14d82aa1bee940f0776fae3f9962639b78328858": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 0
-      }
-    },
-    "query": "DELETE FROM posts"
-  },
   "7167813bfa8f2699a158c45c3605558b398d5bcc779ab036e5b5796f89a4f262": {
     "describe": {
       "columns": [
@@ -1397,16 +1329,6 @@
       }
     },
     "query": "\nselect\n SUM(orders.quantity) as quantity_sold\nFROM\n orders\nWHERE\n listing_id = ?\nAND\n completed\nGROUP BY\n listing_id\n;"
-  },
-  "79301b44b77802e0096efd73b1e9adac27b27a3cf7bf853af3a9f130b1684d91": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "DELETE FROM posts WHERE id = ?"
   },
   "7a21312c763886061de64702fdaef47c97aa700b692e48cf9583282e5d13abcf": {
     "describe": {
