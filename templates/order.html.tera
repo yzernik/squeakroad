@@ -53,14 +53,15 @@
 	{% if order.paid %}
         <p><b>Payment time</b>: {{ (order.payment_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}</p>
 	{% endif %}
-	{% if user %}
-	{% if user and order.buyer_user_id == user.id and not order.paid %}
+	{% if not order.paid %}
 	<p><b>Payment request</b>:
+	  <pre>
+	    <img src="data:image/jpeg;base64,{{ qr_svg_base64 }}" style="width:256px;height:256px;" />
+	  </pre>
 	  <pre>
 	    {{ order.invoice_payment_request }}
 	  </pre>
 	</p>
-	{% endif %}
 	{% endif %}
 
       </div>
