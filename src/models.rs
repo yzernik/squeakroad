@@ -2249,7 +2249,7 @@ impl AccountInfo {
         user_id: i32,
     ) -> Result<AccountInfo, sqlx::Error> {
         let account_balance_changes =
-            AccountInfo::all_account_balance_changes_for_user(db, user_id).await?;
+            AccountInfo::all_account_balance_changes_for_user(db, user_id, u32::MAX, 1).await?;
         let account_balance_sat: i64 = account_balance_changes
             .iter()
             .map(|c| c.amount_change_sat)
@@ -2277,8 +2277,12 @@ impl AccountInfo {
     pub async fn all_account_balance_changes_for_user(
         db: &mut Connection<Db>,
         user_id: i32,
+        page_size: u32,
+        page_num: u32,
     ) -> Result<Vec<AccountBalanceChange>, sqlx::Error> {
         // TODO: Order by event time in SQL query. When this is fixed: https://github.com/launchbadge/sqlx/issues/1350
+        let offset = (page_num - 1) * page_size;
+        let limit = page_size;
         let mut account_balance_changes = sqlx::query!("
 SELECT * FROM
 (select orders.seller_user_id as user_id, orders.seller_credit_sat as amount_change_sat, 'received_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
@@ -2310,8 +2314,10 @@ LEFT JOIN
  users
 ON
  user_id = users.id
+LIMIT ?
+OFFSET ?
 ;",
-        user_id, user_id, user_id)
+        user_id, user_id, user_id, limit, offset)
             .fetch(&mut **db)
             .map_ok(|r| AccountBalanceChange {
                     username: r.email.unwrap(),
