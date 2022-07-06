@@ -1,11 +1,11 @@
 use crate::base::BaseContext;
 use crate::db::Db;
 use crate::models::{Listing, ListingDisplay, ShippingOption, ShippingOptionInfo};
+use crate::util;
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
 use rocket::request::FlashMessage;
 use rocket::response::{Flash, Redirect};
-use rocket::serde::uuid::Uuid;
 use rocket::serde::Serialize;
 use rocket_auth::{AdminUser, User};
 use rocket_db_pools::Connection;
@@ -114,7 +114,7 @@ async fn add_shipping_option(
     } else {
         let shipping_option = ShippingOption {
             id: None,
-            public_id: Uuid::new_v4().to_string(),
+            public_id: util::create_uuid(),
             listing_id: listing.id.unwrap(),
             title,
             description,

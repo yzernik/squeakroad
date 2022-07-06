@@ -1333,11 +1333,7 @@ impl ShippingOption {
         shipping_option: ShippingOption,
         db: &mut Connection<Db>,
     ) -> Result<usize, sqlx::Error> {
-        // let my_uuid_str = Uuid::new_v4().to_string();
         let price_sat: i64 = shipping_option.price_sat.try_into().unwrap();
-
-        println!("inserting shipping option: {:?}", shipping_option);
-
         let insert_result = sqlx::query!(
             "INSERT INTO shippingoptions (public_id, listing_id, title, description, price_sat) VALUES (?, ?, ?, ?, ?)",
             shipping_option.public_id,
@@ -1348,9 +1344,6 @@ impl ShippingOption {
         )
             .execute(&mut **db)
             .await?;
-
-        println!("insert_result: {:?}", insert_result);
-
         Ok(insert_result.rows_affected() as _)
     }
 

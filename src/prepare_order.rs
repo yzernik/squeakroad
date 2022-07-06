@@ -3,12 +3,12 @@ use crate::config::Config;
 use crate::db::Db;
 use crate::lightning;
 use crate::models::{Listing, ListingDisplay, Order, OrderInfo, ShippingOption};
+use crate::util;
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
 use rocket::request::FlashMessage;
 use rocket::response::Flash;
 use rocket::response::Redirect;
-use rocket::serde::uuid::Uuid;
 use rocket::serde::Serialize;
 use rocket::State;
 use rocket_auth::AdminUser;
@@ -170,7 +170,7 @@ async fn create_order(
 
         let order = Order {
             id: None,
-            public_id: Uuid::new_v4().to_string(),
+            public_id: util::create_uuid(),
             quantity: quantity,
             buyer_user_id: user.id(),
             seller_user_id: listing.user_id,

@@ -39,6 +39,7 @@ mod update_listing_images;
 mod update_market_name;
 mod update_shipping_options;
 mod user;
+mod util;
 mod withdraw;
 mod withdrawal;
 

@@ -3,20 +3,18 @@ use crate::config::Config;
 use crate::db::Db;
 use crate::lightning;
 use crate::models::{AccountInfo, Withdrawal, WithdrawalInfo};
+use crate::util;
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
 use rocket::request::FlashMessage;
 use rocket::response::Flash;
 use rocket::response::Redirect;
-use rocket::serde::uuid::Uuid;
 use rocket::serde::Serialize;
 use rocket::State;
 use rocket_auth::AdminUser;
 use rocket_auth::User;
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
-use std::time::SystemTime;
-use std::time::UNIX_EPOCH;
 
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -57,8 +55,6 @@ async fn new(
     config: &State<Config>,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
     let withdrawal_info = withdrawal_form.into_inner();
-    println!("config: {:?}", config);
-
     match withdraw(
         withdrawal_info.clone(),
         &mut db,
@@ -84,8 +80,6 @@ async fn withdraw(
     user: User,
     config: Config,
 ) -> Result<String, String> {
-    println!("config: {:?}", config);
-
     if withdrawal_info.invoice_payment_request.is_empty() {
         Err("Invoice payment request cannot be empty.".to_string())
     } else if user.is_admin {
@@ -105,18 +99,12 @@ async fn withdraw(
             })
             .await
             .map_err(|_| "failed to decode payment request string.")?;
-        // We only print it here, note that in real-life code you may want to call `.into_inner()` on
-        // the response to get the message.
-        println!("{:#?}", decoded_pay_req_resp);
-        // let invoice = invoice_resp.into_inner();
         let decoded_pay_req = decoded_pay_req_resp.into_inner();
         let amount_sat: u64 = decoded_pay_req.num_satoshis.try_into().unwrap();
-
         let account_info = AccountInfo::account_info_for_user(db, user.id)
             .await
             .map_err(|_| "failed to get account info.")?;
         let account_balance_sat_u64: u64 = account_info.account_balance_sat.try_into().unwrap();
-
         if amount_sat > account_balance_sat_u64 {
             Err("Insufficient funds in account.".to_string())
         } else if user.is_admin {
@@ -130,13 +118,10 @@ async fn withdraw(
                 .await
                 .map_err(|e| format!("failed to send payment: {:?}", e))?;
             let send_response = send_payment_resp.into_inner();
-            let now = SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .unwrap()
-                .as_millis() as u64;
+            let now = util::current_time_millis();
             let withdrawal = Withdrawal {
                 id: None,
-                public_id: Uuid::new_v4().to_string(),
+                public_id: util::create_uuid(),
                 user_id: user.id(),
                 amount_sat,
                 invoice_hash: hex::encode(send_response.payment_hash),
@@ -152,37 +137,6 @@ async fn withdraw(
                 }
             }
         }
-
-        // let order = Order {
-        //     id: None,
-        //     public_id: Uuid::new_v4().to_string(),
-        //     quantity: order_info.quantity,
-        //     user_id: user.id(),
-        //     listing_id: listing.id.unwrap(),
-        //     shipping_option_id: shipping_option.id.unwrap(),
-        //     shipping_instructions: shipping_instructions.to_string(),
-        //     amount_owed_sat: amount_owed_sat,
-        //     seller_credit_sat: seller_credit_sat,
-        //     paid: false,
-        //     completed: false,
-        //     invoice_hash: hex::encode(invoice.r_hash),
-        //     invoice_payment_request: invoice.payment_request,
-        //     created_time_ms: now,
-        // };
-
-        // match Order::insert(order, db).await {
-        //     Ok(order_id) => match Order::single(db, order_id).await {
-        //         Ok(new_order) => Ok(new_order.public_id.clone()),
-        //         Err(e) => {
-        //             error_!("DB insertion error: {}", e);
-        //             Err("New order could not be found after inserting.".to_string())
-        //         }
-        //     },
-        //     Err(e) => {
-        //         error_!("DB insertion error: {}", e);
-        //         Err("Order could not be inserted due an internal error.".to_string())
-        //     }
-        // }
     }
 }
 

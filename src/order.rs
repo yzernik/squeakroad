@@ -3,19 +3,17 @@ use crate::db::Db;
 use crate::models::{
     Listing, Order, OrderMessage, OrderMessageInput, ReviewInput, RocketAuthUser, ShippingOption,
 };
+use crate::util;
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
 use rocket::request::FlashMessage;
 use rocket::response::Flash;
 use rocket::response::Redirect;
-use rocket::serde::uuid::Uuid;
 use rocket::serde::Serialize;
 use rocket_auth::AdminUser;
 use rocket_auth::User;
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
-use std::time::SystemTime;
-use std::time::UNIX_EPOCH;
 
 const PAGE_SIZE: u32 = 10;
 
@@ -63,7 +61,6 @@ impl Context {
         let seller_user = RocketAuthUser::single(&mut db, listing.user_id)
             .await
             .map_err(|_| "failed to get order messages.")?;
-        println!("found order: {:?}", order);
         Ok(Context {
             base_context,
             flash,
@@ -88,9 +85,6 @@ async fn new_message(
     _admin_user: Option<AdminUser>,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
     let order_message_info = order_message_form.into_inner();
-
-    println!("order_message_info: {:?}", order_message_info);
-
     match create_order_message(id, order_message_info, &mut db, user.clone()).await {
         Ok(_) => Ok(Flash::success(
             Redirect::to(format!("/{}/{}", "order", id)),
@@ -112,10 +106,7 @@ async fn create_order_message(
     db: &mut Connection<Db>,
     user: User,
 ) -> Result<(), String> {
-    let now = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap()
-        .as_millis() as u64;
+    let now = util::current_time_millis();
     let order = Order::single_by_public_id(db, order_id)
         .await
         .map_err(|_| "failed to get order")?;
@@ -147,7 +138,7 @@ async fn create_order_message(
         };
         let order_message = OrderMessage {
             id: None,
-            public_id: Uuid::new_v4().to_string(),
+            public_id: util::create_uuid(),
             order_id: order.id.unwrap(),
             author_id: user.id(),
             recipient_id,
@@ -273,9 +264,6 @@ async fn new_review(
     _admin_user: Option<AdminUser>,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
     let order_review_info = order_review_form.into_inner();
-
-    println!("order_review_info: {:?}", order_review_info);
-
     match create_order_review(id, order_review_info, &mut db, user.clone()).await {
         Ok(_) => Ok(Flash::success(
             Redirect::to(format!("/{}/{}", "order", id)),
@@ -297,10 +285,7 @@ async fn create_order_review(
     db: &mut Connection<Db>,
     user: User,
 ) -> Result<(), String> {
-    let now = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap()
-        .as_millis() as u64;
+    let now = util::current_time_millis();
     let order = Order::single_by_public_id(db, order_id)
         .await
         .map_err(|_| "failed to get order")?;
