@@ -20,11 +20,11 @@
   <p><!--Nothing to see here --></p>
   <div class="row">
     <h5>Seller Info</h5>
+    <a href="/seller_rating/{{ user.email }}">My Rating</a>
+    <br>
     <a href="my_received_orders">My Received Orders</a>
     <br>
-    <a href="my_unacked_orders">My Unacknowledged Orders</a>
-    <br>
-    <a href="/new_listing">Add New Listing</a>
+    <a href="my_new_orders">My New Received Orders (not yet acknowledged)</a>
     <br>
     <a href="my_unsubmitted_listings">My Unsubmitted Listings</a>
     <br>
