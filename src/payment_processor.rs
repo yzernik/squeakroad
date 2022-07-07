@@ -49,7 +49,6 @@ pub async fn handle_received_payments(
     while let Ok(Some(invoice)) = update_stream.message().await {
         println!("Received invoice: {:?}", invoice);
         let invoice_hash = hex::encode(invoice.r_hash);
-        println!("Invoice hash: {:?}", invoice_hash);
         let now = util::current_time_millis();
 
         Order::update_order_on_paid(&mut conn, &invoice_hash, now)

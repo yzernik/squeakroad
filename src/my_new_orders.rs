@@ -35,7 +35,6 @@ impl Context {
         let order_cards = OrderCard::all_unacked_for_user(&mut db, user.id, PAGE_SIZE, page_num)
             .await
             .map_err(|_| "failed to get unacked orders.")?;
-        println!("order_cards: {:?}", order_cards);
         Ok(Context {
             base_context,
             flash,

@@ -34,7 +34,6 @@ impl Context {
             .await
             .map_err(|_| "failed to get listing display.")?;
         if listing_display.listing.user_id == user.id() {
-            println!("{:?}", listing_display.shipping_options);
             Ok(Context {
                 base_context,
                 flash,
@@ -59,8 +58,6 @@ async fn new(
     user: User,
     admin_user: Option<AdminUser>,
 ) -> Flash<Redirect> {
-    println!("listing_id: {:?}", id);
-
     let shipping_option_info = shipping_option_form.into_inner();
     let title = shipping_option_info.title;
     let description = shipping_option_info.description;

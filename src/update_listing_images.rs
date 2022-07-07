@@ -57,8 +57,6 @@ async fn new(
     user: User,
     admin_user: Option<AdminUser>,
 ) -> Flash<Redirect> {
-    println!("listing_id: {:?}", id);
-
     let image_info = upload_image_form.into_inner();
     let file = image_info.file;
 

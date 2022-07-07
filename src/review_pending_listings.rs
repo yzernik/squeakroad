@@ -35,7 +35,6 @@ impl Context {
         let listing_cards = ListingCardDisplay::all_pending(&mut db, PAGE_SIZE, page_num)
             .await
             .map_err(|_| "failed to get pending listings.")?;
-        println!("Pending listings: {:?}", listing_cards);
         Ok(Context {
             base_context,
             flash,

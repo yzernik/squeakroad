@@ -101,7 +101,6 @@ async fn create_order(
     user: User,
     config: Config,
 ) -> Result<String, String> {
-    println!("config: {:?}", config);
     let listing = Listing::single_by_public_id(db, listing_id)
         .await
         .map_err(|_| "failed to get listing")?;
@@ -111,7 +110,6 @@ async fn create_order(
     let quantity_sold = Order::quantity_of_listing_sold(db, listing.id.unwrap())
         .await
         .map_err(|_| "failed to get quantity sold.")?;
-    println!("quantity_sold: {:?}", quantity_sold);
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
@@ -128,7 +126,6 @@ async fn create_order(
     );
     let seller_credit_sat: u64 = amount_owed_sat - market_fee_sat;
     let quantity_in_stock = listing.quantity - quantity_sold;
-    println!("quantity_in_stock: {:?}", quantity_in_stock);
 
     if shipping_instructions.is_empty() {
         Err("Shipping instructions cannot be empty.".to_string())
@@ -165,7 +162,6 @@ async fn create_order(
             .expect("failed to get new invoice");
         // We only print it here, note that in real-life code you may want to call `.into_inner()` on
         // the response to get the message.
-        println!("{:#?}", invoice_resp);
         let invoice = invoice_resp.into_inner();
 
         let order = Order {
@@ -222,9 +218,6 @@ async fn index(
     user: User,
     admin_user: Option<AdminUser>,
 ) -> Template {
-    println!("looking for listing...");
-    println!("Shipping option id: {:?}", shipping_option_id);
-
     // TODO: Don't use unwrap.
     let sid = shipping_option_id.unwrap();
     let quantity = quantity.unwrap_or(0);
