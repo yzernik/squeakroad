@@ -1,2 +1,2 @@
-[default.databases.sqlite]
-url = "db/sqlx/db.sqlite"
+[default.databases.squeakroad]
+url = "db.sqlite"
