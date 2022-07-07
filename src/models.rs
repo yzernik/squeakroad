@@ -1633,9 +1633,10 @@ impl Order {
         let seller_credit_sat: i64 = order.seller_credit_sat.try_into().unwrap();
         let created_time_ms: i64 = order.created_time_ms.try_into().unwrap();
         let payment_time_ms: i64 = order.payment_time_ms.try_into().unwrap();
+        let review_time_ms: i64 = order.review_time_ms.try_into().unwrap();
 
         let insert_result = sqlx::query!(
-            "INSERT INTO orders (public_id, buyer_user_id, seller_user_id, quantity, listing_id, shipping_option_id, shipping_instructions, amount_owed_sat, seller_credit_sat, paid, completed, acked, reviewed, invoice_hash, invoice_payment_request, created_time_ms, payment_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO orders (public_id, buyer_user_id, seller_user_id, quantity, listing_id, shipping_option_id, shipping_instructions, amount_owed_sat, seller_credit_sat, paid, completed, acked, reviewed, review_text, review_rating, invoice_hash, invoice_payment_request, created_time_ms, payment_time_ms, review_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             order.public_id,
             order.buyer_user_id,
             order.seller_user_id,
@@ -1649,10 +1650,13 @@ impl Order {
             order.completed,
             order.acked,
             order.reviewed,
+            order.review_text,
+            order.review_rating,
             order.invoice_hash,
             order.invoice_payment_request,
             created_time_ms,
             payment_time_ms,
+            review_time_ms,
         )
             .execute(&mut **db)
             .await?;
@@ -1956,48 +1960,48 @@ GROUP BY
         db: &mut Connection<Db>,
     ) -> Result<Vec<SellerInfo>, sqlx::Error> {
         let seller_infos = sqlx::query!(
-            "
-SELECT weighted_average, total_amount_sold_sat, users.email
-FROM
- users
-LEFT JOIN
-    (select
-     SUM(orders.amount_owed_sat) as total_amount_sold_sat, orders.seller_user_id as completed_seller_user_id
-    FROM
-     orders
-    WHERE
-     completed
-    GROUP BY
-     orders.seller_user_id) as seller_infos
-ON
- users.id = seller_infos.completed_seller_user_id
-LEFT JOIN
-    (select
-     SUM(orders.amount_owed_sat * orders.review_rating * 1000) / SUM(orders.amount_owed_sat) as weighted_average, orders.seller_user_id as reviewed_seller_user_id
-    FROM
-     orders
-    WHERE
-     orders.reviewed
-    AND
-     orders.completed
-    GROUP BY
-     orders.seller_user_id) as seller_infos
-ON
- users.id = seller_infos.reviewed_seller_user_id
-WHERE
- total_amount_sold_sat > 0
-ORDER BY
- total_amount_sold_sat DESC
-    ;")
-            .fetch(&mut **db)
-            .map_ok(|r| {
-                SellerInfo {
-                username: r.email.unwrap(),
-                total_amount_sold_sat: r.total_amount_sold_sat.unwrap().try_into().unwrap(),
-                weighted_average_rating: (r.weighted_average.unwrap_or(0) as f32) / 1000.0,
-            }})
-            .try_collect::<Vec<_>>()
-            .await?;
+                    "
+        SELECT weighted_average, total_amount_sold_sat, users.email
+        FROM
+         users
+        LEFT JOIN
+            (select
+             SUM(orders.amount_owed_sat) as total_amount_sold_sat, orders.seller_user_id as completed_seller_user_id
+            FROM
+             orders
+            WHERE
+             completed
+            GROUP BY
+             orders.seller_user_id) as seller_infos
+        ON
+         users.id = seller_infos.completed_seller_user_id
+        LEFT JOIN
+            (select
+             SUM(orders.amount_owed_sat * orders.review_rating * 1000) / SUM(orders.amount_owed_sat) as weighted_average, orders.seller_user_id as reviewed_seller_user_id
+            FROM
+             orders
+            WHERE
+             orders.reviewed
+            AND
+             orders.completed
+            GROUP BY
+             orders.seller_user_id) as seller_infos
+        ON
+         users.id = seller_infos.reviewed_seller_user_id
+        WHERE
+         total_amount_sold_sat > 0
+        ORDER BY
+         total_amount_sold_sat DESC
+            ;")
+                    .fetch(&mut **db)
+                    .map_ok(|r| {
+                        SellerInfo {
+                        username: r.email.unwrap(),
+                        total_amount_sold_sat: r.total_amount_sold_sat.unwrap().try_into().unwrap(),
+                        weighted_average_rating: (r.weighted_average.unwrap_or(0) as f32) / 1000.0,
+                    }})
+                    .try_collect::<Vec<_>>()
+                    .await?;
 
         Ok(seller_infos)
     }
@@ -2683,7 +2687,7 @@ impl Withdrawal {
         let withdrawal = sqlx::query!("select * from withdrawals WHERE public_id = ?;", public_id)
             .fetch_one(&mut **db)
             .map_ok(|r| Withdrawal {
-                id: Some(r.id.try_into().unwrap()),
+                id: Some(r.id.unwrap().try_into().unwrap()),
                 public_id: r.public_id,
                 user_id: r.user_id.try_into().unwrap(),
                 amount_sat: r.amount_sat.try_into().unwrap(),

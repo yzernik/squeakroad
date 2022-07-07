@@ -1,5 +1,35 @@
 {
   "db": "SQLite",
+  "04c011f8eb2e34b272fbac68b9b18c2a101cf4d38cdda7cae26e433cf79e661b": {
+    "describe": {
+      "columns": [
+        {
+          "name": "weighted_average",
+          "ordinal": 0,
+          "type_info": "Int"
+        },
+        {
+          "name": "total_amount_sold_sat",
+          "ordinal": 1,
+          "type_info": "Int"
+        },
+        {
+          "name": "email",
+          "ordinal": 2,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        null,
+        null,
+        true
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "\n        SELECT weighted_average, total_amount_sold_sat, users.email\n        FROM\n         users\n        LEFT JOIN\n            (select\n             SUM(orders.amount_owed_sat) as total_amount_sold_sat, orders.seller_user_id as completed_seller_user_id\n            FROM\n             orders\n            WHERE\n             completed\n            GROUP BY\n             orders.seller_user_id) as seller_infos\n        ON\n         users.id = seller_infos.completed_seller_user_id\n        LEFT JOIN\n            (select\n             SUM(orders.amount_owed_sat * orders.review_rating * 1000) / SUM(orders.amount_owed_sat) as weighted_average, orders.seller_user_id as reviewed_seller_user_id\n            FROM\n             orders\n            WHERE\n             orders.reviewed\n            AND\n             orders.completed\n            GROUP BY\n             orders.seller_user_id) as seller_infos\n        ON\n         users.id = seller_infos.reviewed_seller_user_id\n        WHERE\n         total_amount_sold_sat > 0\n        ORDER BY\n         total_amount_sold_sat DESC\n            ;"
+  },
   "05b9aa0aa21a3c1cbfefb2196ae0b85403a5db4384480e3d1bcb88e93604981b": {
     "describe": {
       "columns": [
@@ -9,29 +39,29 @@
           "type_info": "Int64"
         },
         {
-          "name": "listing_id",
+          "name": "public_id",
           "ordinal": 1,
-          "type_info": "Int64"
-        },
-        {
-          "name": "description",
-          "ordinal": 2,
           "type_info": "Text"
         },
         {
-          "name": "price_sat",
-          "ordinal": 3,
+          "name": "listing_id",
+          "ordinal": 2,
           "type_info": "Int64"
         },
         {
           "name": "title",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "description",
           "ordinal": 4,
           "type_info": "Text"
         },
         {
-          "name": "public_id",
+          "name": "price_sat",
           "ordinal": 5,
-          "type_info": "Text"
+          "type_info": "Int64"
         }
       ],
       "nullable": [
@@ -1319,29 +1349,29 @@
           "type_info": "Int64"
         },
         {
-          "name": "listing_id",
+          "name": "public_id",
           "ordinal": 1,
-          "type_info": "Int64"
-        },
-        {
-          "name": "description",
-          "ordinal": 2,
           "type_info": "Text"
         },
         {
-          "name": "price_sat",
-          "ordinal": 3,
+          "name": "listing_id",
+          "ordinal": 2,
           "type_info": "Int64"
         },
         {
           "name": "title",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "description",
           "ordinal": 4,
           "type_info": "Text"
         },
         {
-          "name": "public_id",
+          "name": "price_sat",
           "ordinal": 5,
-          "type_info": "Text"
+          "type_info": "Int64"
         }
       ],
       "nullable": [
@@ -1452,16 +1482,6 @@
     },
     "query": "\nSELECT * FROM\n(select orders.seller_user_id as user_id, orders.seller_credit_sat as amount_change_sat, 'received_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms\nfrom\n orders\nWHERE\n orders.paid\nAND\n orders.completed\nAND\n orders.seller_user_id = ?\nUNION ALL\nselect orders.buyer_user_id as user_id, orders.amount_owed_sat as amount_change_sat, 'refunded_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms\nfrom\n orders\nWHERE\n orders.paid\nAND\n not orders.completed\nAND\n orders.buyer_user_id = ?\nUNION ALL\nselect withdrawals.user_id as user_id, (0 - withdrawals.amount_sat) as amount_change_sat, 'withdrawal' as event_type, withdrawals.public_id as event_id, withdrawals.created_time_ms as event_time_ms\nfrom\n withdrawals\nWHERE\n withdrawals.user_id = ?)\nLEFT JOIN\n users\nON\n user_id = users.id\nLIMIT ?\nOFFSET ?\n;"
   },
-  "7e727ce71eb3910f7238b0d074c1a98ea21fa90a1959ec0c739e3b9bcc7b35bf": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 17
-      }
-    },
-    "query": "INSERT INTO orders (public_id, buyer_user_id, seller_user_id, quantity, listing_id, shipping_option_id, shipping_instructions, amount_owed_sat, seller_credit_sat, paid, completed, acked, reviewed, invoice_hash, invoice_payment_request, created_time_ms, payment_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-  },
   "83f994a3f0b310e4faa8b4fb7e800ff508988f5edd5cb60ad635d71e1b398865": {
     "describe": {
       "columns": [],
@@ -1481,62 +1501,62 @@
           "type_info": "Int64"
         },
         {
-          "name": "user_id",
+          "name": "public_id",
           "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "quantity",
+          "ordinal": 3,
           "type_info": "Int64"
         },
         {
           "name": "title",
-          "ordinal": 2,
+          "ordinal": 4,
           "type_info": "Text"
         },
         {
           "name": "description",
-          "ordinal": 3,
+          "ordinal": 5,
           "type_info": "Text"
         },
         {
           "name": "price_sat",
-          "ordinal": 4,
+          "ordinal": 6,
           "type_info": "Int64"
         },
         {
-          "name": "submitted",
-          "ordinal": 5,
-          "type_info": "Bool"
-        },
-        {
-          "name": "approved",
-          "ordinal": 6,
-          "type_info": "Bool"
-        },
-        {
-          "name": "created_time_ms",
+          "name": "fee_rate_basis_points",
           "ordinal": 7,
           "type_info": "Int64"
         },
         {
-          "name": "public_id",
+          "name": "reviewed",
           "ordinal": 8,
-          "type_info": "Text"
+          "type_info": "Bool"
         },
         {
-          "name": "removed",
+          "name": "submitted",
           "ordinal": 9,
           "type_info": "Bool"
         },
         {
-          "name": "quantity",
+          "name": "approved",
           "ordinal": 10,
-          "type_info": "Int64"
+          "type_info": "Bool"
         },
         {
-          "name": "reviewed",
+          "name": "removed",
           "ordinal": 11,
           "type_info": "Bool"
         },
         {
-          "name": "fee_rate_basis_points",
+          "name": "created_time_ms",
           "ordinal": 12,
           "type_info": "Int64"
         }
@@ -1737,29 +1757,29 @@
           "type_info": "Int64"
         },
         {
-          "name": "listing_id",
+          "name": "public_id",
           "ordinal": 1,
-          "type_info": "Int64"
-        },
-        {
-          "name": "description",
-          "ordinal": 2,
           "type_info": "Text"
         },
         {
-          "name": "price_sat",
-          "ordinal": 3,
+          "name": "listing_id",
+          "ordinal": 2,
           "type_info": "Int64"
         },
         {
           "name": "title",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "description",
           "ordinal": 4,
           "type_info": "Text"
         },
         {
-          "name": "public_id",
+          "name": "price_sat",
           "ordinal": 5,
-          "type_info": "Text"
+          "type_info": "Int64"
         }
       ],
       "nullable": [
@@ -1917,62 +1937,62 @@
           "type_info": "Int64"
         },
         {
-          "name": "user_id",
+          "name": "public_id",
           "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "quantity",
+          "ordinal": 3,
           "type_info": "Int64"
         },
         {
           "name": "title",
-          "ordinal": 2,
+          "ordinal": 4,
           "type_info": "Text"
         },
         {
           "name": "description",
-          "ordinal": 3,
+          "ordinal": 5,
           "type_info": "Text"
         },
         {
           "name": "price_sat",
-          "ordinal": 4,
+          "ordinal": 6,
           "type_info": "Int64"
         },
         {
-          "name": "submitted",
-          "ordinal": 5,
-          "type_info": "Bool"
-        },
-        {
-          "name": "approved",
-          "ordinal": 6,
-          "type_info": "Bool"
-        },
-        {
-          "name": "created_time_ms",
+          "name": "fee_rate_basis_points",
           "ordinal": 7,
           "type_info": "Int64"
         },
         {
-          "name": "public_id",
+          "name": "reviewed",
           "ordinal": 8,
-          "type_info": "Text"
+          "type_info": "Bool"
         },
         {
-          "name": "removed",
+          "name": "submitted",
           "ordinal": 9,
           "type_info": "Bool"
         },
         {
-          "name": "quantity",
+          "name": "approved",
           "ordinal": 10,
-          "type_info": "Int64"
+          "type_info": "Bool"
         },
         {
-          "name": "reviewed",
+          "name": "removed",
           "ordinal": 11,
           "type_info": "Bool"
         },
         {
-          "name": "fee_rate_basis_points",
+          "name": "created_time_ms",
           "ordinal": 12,
           "type_info": "Int64"
         }
@@ -2038,7 +2058,7 @@
         }
       ],
       "nullable": [
-        false,
+        true,
         false,
         false,
         false,
@@ -2061,64 +2081,64 @@
           "type_info": "Int64"
         },
         {
-          "name": "buyer_user_id",
+          "name": "public_id",
           "ordinal": 1,
-          "type_info": "Int64"
+          "type_info": "Text"
         },
         {
-          "name": "listing_id",
+          "name": "buyer_user_id",
           "ordinal": 2,
           "type_info": "Int64"
         },
         {
-          "name": "shipping_option_id",
+          "name": "seller_user_id",
           "ordinal": 3,
           "type_info": "Int64"
         },
         {
-          "name": "shipping_instructions",
+          "name": "quantity",
           "ordinal": 4,
-          "type_info": "Text"
+          "type_info": "Int64"
         },
         {
-          "name": "amount_owed_sat",
+          "name": "listing_id",
           "ordinal": 5,
           "type_info": "Int64"
         },
         {
-          "name": "seller_credit_sat",
+          "name": "shipping_option_id",
           "ordinal": 6,
           "type_info": "Int64"
         },
         {
-          "name": "paid",
+          "name": "shipping_instructions",
           "ordinal": 7,
-          "type_info": "Bool"
+          "type_info": "Text"
         },
         {
-          "name": "completed",
+          "name": "amount_owed_sat",
           "ordinal": 8,
-          "type_info": "Bool"
+          "type_info": "Int64"
         },
         {
-          "name": "created_time_ms",
+          "name": "seller_credit_sat",
           "ordinal": 9,
           "type_info": "Int64"
         },
         {
-          "name": "public_id",
+          "name": "paid",
           "ordinal": 10,
-          "type_info": "Text"
+          "type_info": "Bool"
         },
         {
-          "name": "quantity",
+          "name": "completed",
           "ordinal": 11,
-          "type_info": "Int64"
+          "type_info": "Bool"
         },
         {
-          "name": "invoice_hash",
+          "name": "acked",
           "ordinal": 12,
-          "type_info": "Text"
+          "type_info": "Bool"
         },
         {
           "name": "invoice_payment_request",
@@ -2126,17 +2146,17 @@
           "type_info": "Text"
         },
         {
-          "name": "seller_user_id",
+          "name": "invoice_hash",
           "ordinal": 14,
-          "type_info": "Int64"
+          "type_info": "Text"
         },
         {
-          "name": "acked",
+          "name": "review_text",
           "ordinal": 15,
-          "type_info": "Bool"
+          "type_info": "Text"
         },
         {
-          "name": "payment_time_ms",
+          "name": "review_rating",
           "ordinal": 16,
           "type_info": "Int64"
         },
@@ -2146,17 +2166,17 @@
           "type_info": "Bool"
         },
         {
-          "name": "review_rating",
+          "name": "created_time_ms",
           "ordinal": 18,
           "type_info": "Int64"
         },
         {
-          "name": "review_text",
+          "name": "review_time_ms",
           "ordinal": 19,
-          "type_info": "Text"
+          "type_info": "Int64"
         },
         {
-          "name": "review_time_ms",
+          "name": "payment_time_ms",
           "ordinal": 20,
           "type_info": "Int64"
         }
@@ -2451,64 +2471,64 @@
           "type_info": "Int64"
         },
         {
-          "name": "buyer_user_id",
+          "name": "public_id",
           "ordinal": 1,
-          "type_info": "Int64"
+          "type_info": "Text"
         },
         {
-          "name": "listing_id",
+          "name": "buyer_user_id",
           "ordinal": 2,
           "type_info": "Int64"
         },
         {
-          "name": "shipping_option_id",
+          "name": "seller_user_id",
           "ordinal": 3,
           "type_info": "Int64"
         },
         {
-          "name": "shipping_instructions",
+          "name": "quantity",
           "ordinal": 4,
-          "type_info": "Text"
+          "type_info": "Int64"
         },
         {
-          "name": "amount_owed_sat",
+          "name": "listing_id",
           "ordinal": 5,
           "type_info": "Int64"
         },
         {
-          "name": "seller_credit_sat",
+          "name": "shipping_option_id",
           "ordinal": 6,
           "type_info": "Int64"
         },
         {
-          "name": "paid",
+          "name": "shipping_instructions",
           "ordinal": 7,
-          "type_info": "Bool"
+          "type_info": "Text"
         },
         {
-          "name": "completed",
+          "name": "amount_owed_sat",
           "ordinal": 8,
-          "type_info": "Bool"
+          "type_info": "Int64"
         },
         {
-          "name": "created_time_ms",
+          "name": "seller_credit_sat",
           "ordinal": 9,
           "type_info": "Int64"
         },
         {
-          "name": "public_id",
+          "name": "paid",
           "ordinal": 10,
-          "type_info": "Text"
+          "type_info": "Bool"
         },
         {
-          "name": "quantity",
+          "name": "completed",
           "ordinal": 11,
-          "type_info": "Int64"
+          "type_info": "Bool"
         },
         {
-          "name": "invoice_hash",
+          "name": "acked",
           "ordinal": 12,
-          "type_info": "Text"
+          "type_info": "Bool"
         },
         {
           "name": "invoice_payment_request",
@@ -2516,17 +2536,17 @@
           "type_info": "Text"
         },
         {
-          "name": "seller_user_id",
+          "name": "invoice_hash",
           "ordinal": 14,
-          "type_info": "Int64"
+          "type_info": "Text"
         },
         {
-          "name": "acked",
+          "name": "review_text",
           "ordinal": 15,
-          "type_info": "Bool"
+          "type_info": "Text"
         },
         {
-          "name": "payment_time_ms",
+          "name": "review_rating",
           "ordinal": 16,
           "type_info": "Int64"
         },
@@ -2536,17 +2556,17 @@
           "type_info": "Bool"
         },
         {
-          "name": "review_rating",
+          "name": "created_time_ms",
           "ordinal": 18,
           "type_info": "Int64"
         },
         {
-          "name": "review_text",
+          "name": "review_time_ms",
           "ordinal": 19,
-          "type_info": "Text"
+          "type_info": "Int64"
         },
         {
-          "name": "review_time_ms",
+          "name": "payment_time_ms",
           "ordinal": 20,
           "type_info": "Int64"
         }
@@ -2916,36 +2936,6 @@
     },
     "query": "\n            select\n             SUM(orders.amount_owed_sat * orders.review_rating * 1000) / SUM(orders.amount_owed_sat) as weighted_average\n            FROM\n             orders\n            WHERE\n             orders.reviewed\n            AND\n             orders.seller_user_id = ?\n            GROUP BY\n             orders.seller_user_id\n            ;"
   },
-  "b3dcea3449d0014ff8e6e920ea0a591eefe74de04b974e649fc39722c9216d9d": {
-    "describe": {
-      "columns": [
-        {
-          "name": "weighted_average",
-          "ordinal": 0,
-          "type_info": "Int"
-        },
-        {
-          "name": "total_amount_sold_sat",
-          "ordinal": 1,
-          "type_info": "Int"
-        },
-        {
-          "name": "email",
-          "ordinal": 2,
-          "type_info": "Text"
-        }
-      ],
-      "nullable": [
-        null,
-        null,
-        true
-      ],
-      "parameters": {
-        "Right": 0
-      }
-    },
-    "query": "\nSELECT weighted_average, total_amount_sold_sat, users.email\nFROM\n users\nLEFT JOIN\n    (select\n     SUM(orders.amount_owed_sat) as total_amount_sold_sat, orders.seller_user_id as completed_seller_user_id\n    FROM\n     orders\n    WHERE\n     completed\n    GROUP BY\n     orders.seller_user_id) as seller_infos\nON\n users.id = seller_infos.completed_seller_user_id\nLEFT JOIN\n    (select\n     SUM(orders.amount_owed_sat * orders.review_rating * 1000) / SUM(orders.amount_owed_sat) as weighted_average, orders.seller_user_id as reviewed_seller_user_id\n    FROM\n     orders\n    WHERE\n     orders.reviewed\n    AND\n     orders.completed\n    GROUP BY\n     orders.seller_user_id) as seller_infos\nON\n users.id = seller_infos.reviewed_seller_user_id\nWHERE\n total_amount_sold_sat > 0\nORDER BY\n total_amount_sold_sat DESC\n    ;"
-  },
   "b3f7779f61e725801c7ca07f135147d29d40d68fdc545e1ed71c624daf195562": {
     "describe": {
       "columns": [],
@@ -3167,12 +3157,12 @@
           "type_info": "Int64"
         },
         {
-          "name": "squeaknode_pubkey",
+          "name": "squeaknode_address",
           "ordinal": 3,
           "type_info": "Text"
         },
         {
-          "name": "squeaknode_address",
+          "name": "squeaknode_pubkey",
           "ordinal": 4,
           "type_info": "Text"
         }
@@ -3365,24 +3355,24 @@
           "type_info": "Int64"
         },
         {
-          "name": "listing_id",
+          "name": "public_id",
           "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "listing_id",
+          "ordinal": 2,
           "type_info": "Int64"
         },
         {
           "name": "image_data",
-          "ordinal": 2,
+          "ordinal": 3,
           "type_info": "Blob"
         },
         {
           "name": "is_primary",
-          "ordinal": 3,
-          "type_info": "Bool"
-        },
-        {
-          "name": "public_id",
           "ordinal": 4,
-          "type_info": "Text"
+          "type_info": "Bool"
         }
       ],
       "nullable": [
@@ -3417,24 +3407,24 @@
           "type_info": "Int64"
         },
         {
-          "name": "listing_id",
+          "name": "public_id",
           "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "listing_id",
+          "ordinal": 2,
           "type_info": "Int64"
         },
         {
           "name": "image_data",
-          "ordinal": 2,
+          "ordinal": 3,
           "type_info": "Blob"
         },
         {
           "name": "is_primary",
-          "ordinal": 3,
-          "type_info": "Bool"
-        },
-        {
-          "name": "public_id",
           "ordinal": 4,
-          "type_info": "Text"
+          "type_info": "Bool"
         }
       ],
       "nullable": [
@@ -3493,64 +3483,64 @@
           "type_info": "Int64"
         },
         {
-          "name": "buyer_user_id",
+          "name": "public_id",
           "ordinal": 1,
-          "type_info": "Int64"
+          "type_info": "Text"
         },
         {
-          "name": "listing_id",
+          "name": "buyer_user_id",
           "ordinal": 2,
           "type_info": "Int64"
         },
         {
-          "name": "shipping_option_id",
+          "name": "seller_user_id",
           "ordinal": 3,
           "type_info": "Int64"
         },
         {
-          "name": "shipping_instructions",
+          "name": "quantity",
           "ordinal": 4,
-          "type_info": "Text"
+          "type_info": "Int64"
         },
         {
-          "name": "amount_owed_sat",
+          "name": "listing_id",
           "ordinal": 5,
           "type_info": "Int64"
         },
         {
-          "name": "seller_credit_sat",
+          "name": "shipping_option_id",
           "ordinal": 6,
           "type_info": "Int64"
         },
         {
-          "name": "paid",
+          "name": "shipping_instructions",
           "ordinal": 7,
-          "type_info": "Bool"
+          "type_info": "Text"
         },
         {
-          "name": "completed",
+          "name": "amount_owed_sat",
           "ordinal": 8,
-          "type_info": "Bool"
+          "type_info": "Int64"
         },
         {
-          "name": "created_time_ms",
+          "name": "seller_credit_sat",
           "ordinal": 9,
           "type_info": "Int64"
         },
         {
-          "name": "public_id",
+          "name": "paid",
           "ordinal": 10,
-          "type_info": "Text"
+          "type_info": "Bool"
         },
         {
-          "name": "quantity",
+          "name": "completed",
           "ordinal": 11,
-          "type_info": "Int64"
+          "type_info": "Bool"
         },
         {
-          "name": "invoice_hash",
+          "name": "acked",
           "ordinal": 12,
-          "type_info": "Text"
+          "type_info": "Bool"
         },
         {
           "name": "invoice_payment_request",
@@ -3558,17 +3548,17 @@
           "type_info": "Text"
         },
         {
-          "name": "seller_user_id",
+          "name": "invoice_hash",
           "ordinal": 14,
-          "type_info": "Int64"
+          "type_info": "Text"
         },
         {
-          "name": "acked",
+          "name": "review_text",
           "ordinal": 15,
-          "type_info": "Bool"
+          "type_info": "Text"
         },
         {
-          "name": "payment_time_ms",
+          "name": "review_rating",
           "ordinal": 16,
           "type_info": "Int64"
         },
@@ -3578,17 +3568,17 @@
           "type_info": "Bool"
         },
         {
-          "name": "review_rating",
+          "name": "created_time_ms",
           "ordinal": 18,
           "type_info": "Int64"
         },
         {
-          "name": "review_text",
+          "name": "review_time_ms",
           "ordinal": 19,
-          "type_info": "Text"
+          "type_info": "Int64"
         },
         {
-          "name": "review_time_ms",
+          "name": "payment_time_ms",
           "ordinal": 20,
           "type_info": "Int64"
         }
@@ -3631,6 +3621,16 @@
       }
     },
     "query": "INSERT INTO ordermessages (public_id, order_id, author_id, recipient_id, text, viewed, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?)"
+  },
+  "f8ed5c7964fdb076244cb9c4d6b055b4c1f2d4905d97c1ff5b1a443f1315e845": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 20
+      }
+    },
+    "query": "INSERT INTO orders (public_id, buyer_user_id, seller_user_id, quantity, listing_id, shipping_option_id, shipping_instructions, amount_owed_sat, seller_credit_sat, paid, completed, acked, reviewed, review_text, review_rating, invoice_hash, invoice_payment_request, created_time_ms, payment_time_ms, review_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
   },
   "fd259d3f6df1cc10ef3a0874ac1da595c1cee9fab81b486c52fd5700c71180c3": {
     "describe": {
