@@ -15,6 +15,9 @@ Username: {{ user.email }}.
 <a href="/update_market_name">Update Market Name</a>
 
 <br>
+<a href="/update_squeaknode_info">Update Squeaknode Info</a>
+
+<br>
 <a href="/update_fee_rate">Update Fee Rate</a>
 
 <br>
