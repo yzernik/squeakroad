@@ -10,14 +10,10 @@
   <div class="row">
     <h4>Update User Squeaknode Info</h4>
 
-    {% if admin_settings.squeaknode_pubkey %}
-    <p><b>Pubkey</b>: {{ admin_settings.squeaknode_pubkey }}</p>
-    {% endif %}
-    {% if admin_settings.squeaknode_address %}
-    <p><b>Address</b>: {{ admin_settings.squeaknode_address }}</p>
-    {% endif %}
+    <p><b>Squeaknode Pubkey</b>: {% if user_settings.squeaknode_pubkey %}{{ user_settings.squeaknode_pubkey }}{% else %}Not set{% endif %}</p>
+    <p><b>Squeaknode Address</b>: {% if user_settings.squeaknode_address %}{{ user_settings.squeaknode_address }}{% else %}Not set{% endif %}</p>
 
-    <form action="/update_squeaknode_info/change" method="post">
+    <form action="/update_user_squeaknode_info/change" method="post">
       <div class="ten columns">
         <input type="text" placeholder="enter your squeaknode pubkey..."
                name="squeaknode_pubkey" id="squeaknode_pubkey" value="" autofocus

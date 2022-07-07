@@ -1632,8 +1632,8 @@ impl UserSettings {
 
         sqlx::query!(
             "UPDATE usersettings SET squeaknode_pubkey = ? WHERE user_id = ?;",
-            user_id,
             new_squeaknode_pubkey,
+            user_id,
         )
         .execute(&mut **db)
         .await?;
@@ -1651,8 +1651,8 @@ impl UserSettings {
 
         sqlx::query!(
             "UPDATE usersettings SET squeaknode_address = ? WHERE user_id = ?;",
-            user_id,
             new_squeaknode_address,
+            user_id,
         )
         .execute(&mut **db)
         .await?;

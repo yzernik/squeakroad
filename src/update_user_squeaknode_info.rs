@@ -1,6 +1,6 @@
 use crate::base::BaseContext;
 use crate::db::Db;
-use crate::models::{AdminSettings, SqueaknodeInfoInput};
+use crate::models::{SqueaknodeInfoInput, UserSettings};
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
 use rocket::request::FlashMessage;
@@ -15,7 +15,7 @@ use rocket_dyn_templates::Template;
 struct Context {
     base_context: BaseContext,
     flash: Option<(String, String)>,
-    admin_settings: AdminSettings,
+    user_settings: UserSettings,
 }
 
 impl Context {
@@ -28,13 +28,15 @@ impl Context {
         let base_context = BaseContext::raw(&mut db, Some(user.clone()), admin_user.clone())
             .await
             .map_err(|_| "failed to get base template.")?;
-        let admin_settings = AdminSettings::single(&mut db, AdminSettings::default())
+        let user_settings = UserSettings::single(&mut db, user.id(), UserSettings::default())
             .await
-            .map_err(|_| "failed to get admin settings.")?;
+            .map_err(|_| "failed to get user settings.")?;
+
+        println!("user_settings: {:?}", user_settings);
         Ok(Context {
             base_context,
             flash,
-            admin_settings,
+            user_settings,
         })
     }
 }
@@ -43,21 +45,27 @@ impl Context {
 async fn update(
     squeaknode_info_form: Form<SqueaknodeInfoInput>,
     mut db: Connection<Db>,
-    _user: User,
-    _admin_user: AdminUser,
+    user: User,
+    _admin_user: Option<AdminUser>,
 ) -> Flash<Redirect> {
     let squeaknode_info = squeaknode_info_form.into_inner();
 
-    match change_squeaknode_info(squeaknode_info, &mut db).await {
+    println!("squeaknode_info: {:?}", squeaknode_info);
+
+    match change_squeaknode_info(user, squeaknode_info, &mut db).await {
         Ok(_) => Flash::success(
-            Redirect::to(uri!("/update_squeaknode_info", index())),
+            Redirect::to(uri!("/update_user_squeaknode_info", index())),
             "Squeaknode info successfully updated.",
         ),
-        Err(e) => Flash::error(Redirect::to(uri!("/update_squeaknode_info", index())), e),
+        Err(e) => Flash::error(
+            Redirect::to(uri!("/update_user_squeaknode_info", index())),
+            e,
+        ),
     }
 }
 
 async fn change_squeaknode_info(
+    user: User,
     squeaknode_info: SqueaknodeInfoInput,
     db: &mut Connection<Db>,
 ) -> Result<(), String> {
@@ -69,17 +77,23 @@ async fn change_squeaknode_info(
     } else if new_squeaknode_address.len() > 128 {
         Err("Address is too long.".to_string())
     } else {
-        let default_admin_settings = AdminSettings::default();
-        AdminSettings::set_squeaknode_pubkey(
+        let default_user_settings = UserSettings::default();
+        UserSettings::set_squeaknode_pubkey(
             db,
+            user.id(),
             &new_squeaknode_pubkey,
-            default_admin_settings.clone(),
+            default_user_settings.clone(),
         )
         .await
         .map_err(|_| "failed to update squeaknode pubkey.")?;
-        AdminSettings::set_squeaknode_address(db, &new_squeaknode_address, default_admin_settings)
-            .await
-            .map_err(|_| "failed to update squeaknode address.")?;
+        UserSettings::set_squeaknode_address(
+            db,
+            user.id(),
+            &new_squeaknode_address,
+            default_user_settings,
+        )
+        .await
+        .map_err(|_| "failed to update squeaknode address.")?;
 
         Ok(())
     }
@@ -94,7 +108,7 @@ async fn index(
 ) -> Template {
     let flash = flash.map(FlashMessage::into_inner);
     Template::render(
-        "updatesqueaknodeinfo",
+        "updateusersqueaknodeinfo",
         Context::raw(db, flash, user, admin_user).await,
     )
 }
