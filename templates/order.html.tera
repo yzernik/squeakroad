@@ -54,10 +54,9 @@
         <p><b>Payment time</b>: {{ (order.payment_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}</p>
 	{% endif %}
 	{% if not order.paid %}
-	<p><b>Payment request</b>:
-	  <pre>
-	    <img src="data:image/jpeg;base64,{{ qr_svg_base64 }}" style="width:256px;height:256px;" />
-	  </pre>
+	<p><b>Payment request</b>:<p>
+	  <img src="data:image/jpeg;base64,{{ qr_svg_base64 }}" style="width:256px;height:256px;" />
+	<p>
 	  <pre>
 	    {{ order.invoice_payment_request }}
 	  </pre>
