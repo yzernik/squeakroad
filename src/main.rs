@@ -39,6 +39,7 @@ mod update_listing_images;
 mod update_market_name;
 mod update_shipping_options;
 mod update_squeaknode_info;
+mod update_user_squeaknode_info;
 mod user;
 mod user_profile;
 mod util;

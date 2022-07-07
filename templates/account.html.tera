@@ -54,5 +54,14 @@
   </div>
 </div>
 
+<div class="container">
+  <p><!--Nothing to see here --></p>
+  <div class="row">
+    <h5>Contact</h5>
+    <a href="update_user_squeaknode_info">Update My Squeaknode Info</a>
+    <br>
+  </div>
+</div>
+
 
 {% endblock body %}
