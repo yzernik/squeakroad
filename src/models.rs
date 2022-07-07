@@ -126,11 +126,19 @@ pub struct AdminSettings {
     pub id: Option<i32>,
     pub market_name: String,
     pub fee_rate_basis_points: u32,
+    pub squeaknode_pubkey: String,
+    pub squeaknode_address: String,
 }
 
 #[derive(Debug, FromForm)]
 pub struct MarketNameInput {
     pub market_name: String,
+}
+
+#[derive(Debug, FromForm)]
+pub struct SqueaknodeInfoInput {
+    pub squeaknode_pubkey: String,
+    pub squeaknode_address: String,
 }
 
 #[derive(Debug, FromForm)]
@@ -266,6 +274,8 @@ impl Default for AdminSettings {
             id: None,
             market_name: "Squeakroad".to_string(),
             fee_rate_basis_points: 500,
+            squeaknode_pubkey: "".to_string(),
+            squeaknode_address: "".to_string(),
         }
     }
 }
@@ -1436,6 +1446,8 @@ impl AdminSettings {
                     id: Some(r.id.try_into().unwrap()),
                     market_name: r.market_name,
                     fee_rate_basis_points: r.fee_rate_basis_points.try_into().unwrap(),
+                    squeaknode_pubkey: r.squeaknode_pubkey,
+                    squeaknode_address: r.squeaknode_address,
                 })
             })
             .await?;
@@ -1497,6 +1509,40 @@ impl AdminSettings {
         sqlx::query!(
             "UPDATE adminsettings SET fee_rate_basis_points = ?",
             new_fee_rate_basis_points,
+        )
+        .execute(&mut **db)
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn set_squeaknode_pubkey(
+        db: &mut Connection<Db>,
+        new_squeaknode_pubkey: &str,
+        default_admin_settings: AdminSettings,
+    ) -> Result<(), sqlx::Error> {
+        AdminSettings::insert_if_doesnt_exist(db, default_admin_settings).await?;
+
+        sqlx::query!(
+            "UPDATE adminsettings SET squeaknode_pubkey = ?",
+            new_squeaknode_pubkey,
+        )
+        .execute(&mut **db)
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn set_squeaknode_address(
+        db: &mut Connection<Db>,
+        new_squeaknode_address: &str,
+        default_admin_settings: AdminSettings,
+    ) -> Result<(), sqlx::Error> {
+        AdminSettings::insert_if_doesnt_exist(db, default_admin_settings).await?;
+
+        sqlx::query!(
+            "UPDATE adminsettings SET squeaknode_address = ?",
+            new_squeaknode_address,
         )
         .execute(&mut **db)
         .await?;
