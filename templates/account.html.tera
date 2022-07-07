@@ -60,6 +60,7 @@
   <p><!--Nothing to see here --></p>
   <div class="row">
     <h5>Contact</h5>
+    <a href="/user_profile/{{ user.email }}">User Profile</a>
     <a href="update_user_squeaknode_info">Update My Squeaknode Info</a>
     <br>
   </div>
