@@ -15,5 +15,5 @@ pub fn current_time_millis() -> u64 {
 }
 
 pub fn generate_qr(payment_request: &str) -> Vec<u8> {
-    qrcode_generator::to_png_to_vec(payment_request, QrCodeEcc::Low, 1024).unwrap()
+    qrcode_generator::to_png_to_vec(payment_request, QrCodeEcc::Low, 128).unwrap()
 }
