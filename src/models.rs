@@ -348,6 +348,32 @@ impl Listing {
         Ok(listing)
     }
 
+    pub async fn single_with_pool_conn(
+        db: &mut PoolConnection<Sqlite>,
+        id: i32,
+    ) -> Result<Listing, sqlx::Error> {
+        let listing = sqlx::query!("select * from listings WHERE id = ?;", id)
+            .fetch_one(&mut **db)
+            .map_ok(|r| Listing {
+                id: Some(r.id.try_into().unwrap()),
+                public_id: r.public_id,
+                user_id: r.user_id.try_into().unwrap(),
+                title: r.title,
+                description: r.description,
+                price_sat: r.price_sat.try_into().unwrap(),
+                quantity: r.quantity.try_into().unwrap(),
+                fee_rate_basis_points: r.fee_rate_basis_points.try_into().unwrap(),
+                submitted: r.submitted,
+                reviewed: r.reviewed,
+                approved: r.approved,
+                removed: r.removed,
+                created_time_ms: r.created_time_ms.try_into().unwrap(),
+            })
+            .await?;
+
+        Ok(listing)
+    }
+
     pub async fn single_by_public_id(
         db: &mut Connection<Db>,
         public_id: &str,
@@ -1766,6 +1792,40 @@ impl Order {
         Ok(order)
     }
 
+    pub async fn single_by_invoice_hash(
+        db: &mut PoolConnection<Sqlite>,
+        invoice_hash: &str,
+    ) -> Result<Order, sqlx::Error> {
+        let order = sqlx::query!("select * from orders WHERE invoice_hash = ?;", invoice_hash)
+            .fetch_one(&mut **db)
+            .map_ok(|r| Order {
+                id: Some(r.id.try_into().unwrap()),
+                public_id: r.public_id,
+                quantity: r.quantity.try_into().unwrap(),
+                buyer_user_id: r.buyer_user_id.try_into().unwrap(),
+                seller_user_id: r.seller_user_id.try_into().unwrap(),
+                listing_id: r.listing_id.try_into().unwrap(),
+                shipping_option_id: r.shipping_option_id.try_into().unwrap(),
+                shipping_instructions: r.shipping_instructions,
+                amount_owed_sat: r.amount_owed_sat.try_into().unwrap(),
+                seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
+                paid: r.paid,
+                completed: r.completed,
+                acked: r.acked,
+                reviewed: r.reviewed,
+                invoice_hash: r.invoice_hash,
+                invoice_payment_request: r.invoice_payment_request,
+                review_rating: r.review_rating.try_into().unwrap(),
+                review_text: r.review_text,
+                created_time_ms: r.created_time_ms.try_into().unwrap(),
+                payment_time_ms: r.payment_time_ms.try_into().unwrap(),
+                review_time_ms: r.review_time_ms.try_into().unwrap(),
+            })
+            .await?;
+
+        Ok(order)
+    }
+
     pub async fn quantity_of_listing_sold(
         db: &mut Connection<Db>,
         listing_id: i32,
@@ -1794,27 +1854,12 @@ GROUP BY
         Ok(quantity_sold.try_into().unwrap())
     }
 
-    pub async fn update_order_on_paid(
+    pub async fn quantity_of_listing_sold_with_pool_conn(
         db: &mut PoolConnection<Sqlite>,
-        invoice_hash: &str,
-        time_now_ms: u64,
-    ) -> Result<(), sqlx::Error> {
-        let time_now_ms_i64: i64 = time_now_ms.try_into().unwrap();
-
-        let mut tx = db.begin().await?;
-
-        let maybe_order =
-            sqlx::query!("select * from orders WHERE invoice_hash = ?;", invoice_hash)
-                .fetch_optional(&mut tx)
-                .await?;
-
-        if let Some(order) = maybe_order {
-            let listing = sqlx::query!("select * from listings WHERE id = ?;", order.listing_id)
-                .fetch_one(&mut tx)
-                .await?;
-
-            let sold_items = sqlx::query!(
-                "
+        listing_id: i32,
+    ) -> Result<u32, sqlx::Error> {
+        let sold_items = sqlx::query!(
+            "
 select
  SUM(orders.quantity) as quantity_sold
 FROM
@@ -1826,30 +1871,34 @@ AND
 GROUP BY
  listing_id
 ;",
-                order.listing_id,
-            )
-            .fetch_optional(&mut tx)
-            .await?;
+            listing_id,
+        )
+        .fetch_optional(&mut **db)
+        .await?;
+        let quantity_sold = match sold_items {
+            Some(r) => r.quantity_sold,
+            None => 0,
+        };
+        Ok(quantity_sold.try_into().unwrap())
+    }
 
-            let quantity_sold = match sold_items {
-                Some(r) => r.quantity_sold,
-                None => 0,
-            };
-            let quantity_in_stock = listing.quantity - quantity_sold;
-            let order_success = quantity_in_stock >= order.quantity;
-            sqlx::query!(
-                "UPDATE orders SET paid = true, completed = ?, payment_time_ms = ? WHERE id = ?",
-                order_success,
-                time_now_ms_i64,
-                order.id,
-            )
-            .execute(&mut tx)
-            .await?;
-        }
+    pub async fn mark_as_paid(
+        db: &mut PoolConnection<Sqlite>,
+        order_id: i32,
+        order_success: bool,
+        time_now_ms: u64,
+    ) -> Result<(), sqlx::Error> {
+        let time_now_ms_i64: i64 = time_now_ms.try_into().unwrap();
 
-        tx.commit().await?;
+        sqlx::query!(
+            "UPDATE orders SET paid = true, completed = ?, payment_time_ms = ? WHERE id = ?",
+            order_success,
+            time_now_ms_i64,
+            order_id,
+        )
+        .execute(&mut **db)
+        .await?;
 
-        // Ok(update_result.rows_affected() as _)
         Ok(())
     }
 

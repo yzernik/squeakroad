@@ -1,6 +1,6 @@
 use crate::config::Config;
 use crate::lightning::get_lnd_client;
-use crate::models::Order;
+use crate::models::{Listing, Order};
 use crate::util;
 use sqlx::pool::PoolConnection;
 use sqlx::Sqlite;
@@ -49,11 +49,31 @@ pub async fn handle_received_payments(
     while let Ok(Some(invoice)) = update_stream.message().await {
         println!("Received invoice: {:?}", invoice);
         let invoice_hash = hex::encode(invoice.r_hash);
+        handle_payment(&mut conn, &invoice_hash).await?;
+    }
+    Ok(())
+}
+
+async fn handle_payment(
+    conn: &mut PoolConnection<Sqlite>,
+    invoice_hash: &str,
+) -> Result<(), String> {
+    let maybe_order = Order::single_by_invoice_hash(conn, invoice_hash).await.ok();
+    if let Some(order) = maybe_order {
+        let maybe_listing = Listing::single_with_pool_conn(conn, order.listing_id)
+            .await
+            .ok();
+        let listing_quantity = maybe_listing.map(|l| l.quantity).unwrap_or(0);
+        let quantity_sold = Order::quantity_of_listing_sold_with_pool_conn(conn, order.listing_id)
+            .await
+            .map_err(|_| "failed to get quantity sold.")?;
+        let quantity_in_stock = listing_quantity - quantity_sold;
+        let order_success = quantity_in_stock >= order.quantity;
         let now = util::current_time_millis();
 
-        Order::update_order_on_paid(&mut conn, &invoice_hash, now)
+        Order::mark_as_paid(conn, order.id.unwrap(), order_success, now)
             .await
-            .map_err(|_| "failed to update database with paid invoice.")?;
+            .map_err(|_| "failed to mark order as paid.")?;
     }
     Ok(())
 }
