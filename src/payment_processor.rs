@@ -49,12 +49,6 @@ pub async fn handle_received_payments(
     while let Ok(Some(invoice)) = update_stream.message().await {
         println!("Received invoice: {:?}", invoice);
         let invoice_hash = hex::encode(invoice.r_hash);
-        // let now = util::current_time_millis();
-
-        // Order::update_order_on_paid(&mut conn, &invoice_hash, now)
-        //     .await
-        //     .map_err(|_| "failed to update database with paid invoice.")?;
-
         handle_payment(&mut conn, &invoice_hash).await?;
     }
     Ok(())

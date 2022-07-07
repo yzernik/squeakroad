@@ -1882,65 +1882,6 @@ GROUP BY
         Ok(quantity_sold.try_into().unwrap())
     }
 
-    //     pub async fn update_order_on_paid(
-    //         db: &mut PoolConnection<Sqlite>,
-    //         invoice_hash: &str,
-    //         time_now_ms: u64,
-    //     ) -> Result<(), sqlx::Error> {
-    //         let time_now_ms_i64: i64 = time_now_ms.try_into().unwrap();
-
-    //         let mut tx = db.begin().await?;
-
-    //         let maybe_order =
-    //             sqlx::query!("select * from orders WHERE invoice_hash = ?;", invoice_hash)
-    //                 .fetch_optional(&mut tx)
-    //                 .await?;
-
-    //         if let Some(order) = maybe_order {
-    //             let listing = sqlx::query!("select * from listings WHERE id = ?;", order.listing_id)
-    //                 .fetch_one(&mut tx)
-    //                 .await?;
-
-    //             let sold_items = sqlx::query!(
-    //                 "
-    // select
-    //  SUM(orders.quantity) as quantity_sold
-    // FROM
-    //  orders
-    // WHERE
-    //  listing_id = ?
-    // AND
-    //  completed
-    // GROUP BY
-    //  listing_id
-    // ;",
-    //                 order.listing_id,
-    //             )
-    //             .fetch_optional(&mut tx)
-    //             .await?;
-
-    //             let quantity_sold = match sold_items {
-    //                 Some(r) => r.quantity_sold,
-    //                 None => 0,
-    //             };
-    //             let quantity_in_stock = listing.quantity - quantity_sold;
-    //             let order_success = quantity_in_stock >= order.quantity;
-    //             sqlx::query!(
-    //                 "UPDATE orders SET paid = true, completed = ?, payment_time_ms = ? WHERE id = ?",
-    //                 order_success,
-    //                 time_now_ms_i64,
-    //                 order.id,
-    //             )
-    //             .execute(&mut tx)
-    //             .await?;
-    //         }
-
-    //         tx.commit().await?;
-
-    //         // Ok(update_result.rows_affected() as _)
-    //         Ok(())
-    //     }
-
     pub async fn mark_as_paid(
         db: &mut PoolConnection<Sqlite>,
         order_id: i32,
