@@ -3,20 +3,9 @@
 
 <h3>About</h3>
 
-<b>Market Name</b>: {{ admin_settings.market_name }}
-<br>
-
-<b>Seller Fee rate</b>: {{ admin_settings.fee_rate_basis_points / 100 }}% of each sale
-<br>
-
-{% if admin_settings.squeaknode_pubkey %}
-<b>Squeaknode Pubkey</b>: {{ admin_settings.squeaknode_pubkey }}
-<br>
-{% endif %}
-
-{% if admin_settings.squeaknode_address %}
-<b>Squeaknode Address</b>: {{ admin_settings.squeaknode_address }}
-<br>
-{% endif %}
+<p><b>Market Name</b>: {{ admin_settings.market_name }}</p>
+<p><b>Seller Fee rate</b>: {{ admin_settings.fee_rate_basis_points / 100 }}% of each sale</p>
+<p><b>Squeaknode Pubkey</b>: {% if admin_settings.squeaknode_pubkey %}{{ admin_settings.squeaknode_pubkey }}{% else %}Not set{% endif %}</p>
+<p><b>Squeaknode Address</b>: {% if admin_settings.squeaknode_address %}{{ admin_settings.squeaknode_address }}{% else %}Not set{% endif %}</p>
 
 {% endblock body %}

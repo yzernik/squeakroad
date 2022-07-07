@@ -130,6 +130,14 @@ pub struct AdminSettings {
     pub squeaknode_address: String,
 }
 
+#[derive(Serialize, Debug, Clone)]
+#[serde(crate = "rocket::serde")]
+pub struct UserSettings {
+    pub id: Option<i32>,
+    pub squeaknode_pubkey: String,
+    pub squeaknode_address: String,
+}
+
 #[derive(Debug, FromForm)]
 pub struct MarketNameInput {
     pub market_name: String,
@@ -274,6 +282,16 @@ impl Default for AdminSettings {
             id: None,
             market_name: "Squeakroad".to_string(),
             fee_rate_basis_points: 500,
+            squeaknode_pubkey: "".to_string(),
+            squeaknode_address: "".to_string(),
+        }
+    }
+}
+
+impl Default for UserSettings {
+    fn default() -> UserSettings {
+        UserSettings {
+            id: None,
             squeaknode_pubkey: "".to_string(),
             squeaknode_address: "".to_string(),
         }
@@ -1472,9 +1490,11 @@ impl AdminSettings {
 
         if maybe_admin_settings.is_none() {
             sqlx::query!(
-                "INSERT INTO adminsettings (market_name, fee_rate_basis_points) VALUES (?, ?)",
+                "INSERT INTO adminsettings (market_name, fee_rate_basis_points, squeaknode_pubkey, squeaknode_address) VALUES (?, ?, ?, ?)",
                 admin_settings.market_name,
                 admin_settings.fee_rate_basis_points,
+                admin_settings.squeaknode_pubkey,
+                admin_settings.squeaknode_address,
             )
             .execute(&mut tx)
             .await?;
@@ -1543,6 +1563,96 @@ impl AdminSettings {
         sqlx::query!(
             "UPDATE adminsettings SET squeaknode_address = ?",
             new_squeaknode_address,
+        )
+        .execute(&mut **db)
+        .await?;
+
+        Ok(())
+    }
+}
+
+impl UserSettings {
+    pub async fn single(
+        db: &mut Connection<Db>,
+        user_id: i32,
+        default_user_settings: UserSettings,
+    ) -> Result<UserSettings, sqlx::Error> {
+        let maybe_user_settings =
+            sqlx::query!("select * from usersettings WHERE user_id = ?;", user_id,)
+                .fetch_optional(&mut **db)
+                .map_ok(|maybe_r| {
+                    maybe_r.map(|r| UserSettings {
+                        id: Some(r.id.try_into().unwrap()),
+                        squeaknode_pubkey: r.squeaknode_pubkey,
+                        squeaknode_address: r.squeaknode_address,
+                    })
+                })
+                .await?;
+        let user_settings = maybe_user_settings.unwrap_or(default_user_settings);
+
+        Ok(user_settings)
+    }
+
+    /// Returns the number of affected rows: 1.
+    async fn insert_if_doesnt_exist(
+        db: &mut Connection<Db>,
+        user_id: i32,
+        user_settings: UserSettings,
+    ) -> Result<(), sqlx::Error> {
+        let mut tx = db.begin().await?;
+
+        let maybe_user_settings =
+            sqlx::query!("select * from usersettings WHERE user_id = ?;", user_id,)
+                .fetch_optional(&mut tx)
+                .await?;
+
+        if maybe_user_settings.is_none() {
+            sqlx::query!(
+                "INSERT INTO usersettings (user_id, squeaknode_pubkey, squeaknode_address) VALUES (?, ?, ?)",
+                user_id,
+                user_settings.squeaknode_pubkey,
+                user_settings.squeaknode_address,
+            )
+            .execute(&mut tx)
+            .await?;
+        }
+
+        tx.commit().await?;
+
+        Ok(())
+    }
+
+    pub async fn set_squeaknode_pubkey(
+        db: &mut Connection<Db>,
+        user_id: i32,
+        new_squeaknode_pubkey: &str,
+        default_user_settings: UserSettings,
+    ) -> Result<(), sqlx::Error> {
+        UserSettings::insert_if_doesnt_exist(db, user_id, default_user_settings).await?;
+
+        sqlx::query!(
+            "UPDATE usersettings SET squeaknode_pubkey = ? WHERE user_id = ?;",
+            new_squeaknode_pubkey,
+            user_id,
+        )
+        .execute(&mut **db)
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn set_squeaknode_address(
+        db: &mut Connection<Db>,
+        user_id: i32,
+        new_squeaknode_address: &str,
+        default_user_settings: UserSettings,
+    ) -> Result<(), sqlx::Error> {
+        UserSettings::insert_if_doesnt_exist(db, user_id, default_user_settings).await?;
+
+        sqlx::query!(
+            "UPDATE usersettings SET squeaknode_address = ? WHERE user_id = ?;",
+            new_squeaknode_address,
+            user_id,
         )
         .execute(&mut **db)
         .await?;

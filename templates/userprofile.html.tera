@@ -1,0 +1,21 @@
+{% extends "base" %}
+{% block body %}
+
+<br>
+
+  <div class="container">
+    <p><!--Nothing to see here --></p>
+
+    <div class="row">
+
+      <h3>User Profile: {{ visited_user.username }}</h3>
+
+      <p><b>Squeaknode Pubkey</b>: {% if visited_user_settings.squeaknode_pubkey %}{{ visited_user_settings.squeaknode_pubkey }}{% else %}Not set{% endif %}</p>
+      <p><b>Squeaknode Address</b>: {% if visited_user_settings.squeaknode_pubkey %}{{ visited_user_settings.squeaknode_pubkey }}{% else %}Not set{% endif %}</p>
+      <br>
+
+    </div>
+  </div>
+
+
+{% endblock body %}
