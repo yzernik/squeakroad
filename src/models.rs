@@ -2556,6 +2556,52 @@ OFFSET ?
         Ok(account_balance_changes)
     }
 
+    // TODO: Use this when sqlx is fixed.
+    //     pub async fn total_account_balance_for_user(
+    //         db: &mut Connection<Db>,
+    //         user_id: i32,
+    //     ) -> Result<Vec<AccountBalanceChange>, sqlx::Error> {
+    //         // TODO: Order by event time in SQL query. When this is fixed: https://github.com/launchbadge/sqlx/issues/1350
+    //         let total_account_balance_result = sqlx::query!("
+    // SELECT SUM(amount_change_sat) as total_account_balance_sat FROM
+    // (select orders.seller_user_id as user_id, orders.seller_credit_sat as amount_change_sat, 'received_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
+    // from
+    //  orders
+    // WHERE
+    //  orders.paid
+    // AND
+    //  orders.completed
+    // AND
+    //  orders.seller_user_id = ?
+    // UNION ALL
+    // select orders.buyer_user_id as user_id, orders.amount_owed_sat as amount_change_sat, 'refunded_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
+    // from
+    //  orders
+    // WHERE
+    //  orders.paid
+    // AND
+    //  not orders.completed
+    // AND
+    //  orders.buyer_user_id = ?
+    // UNION ALL
+    // select withdrawals.user_id as user_id, (0 - withdrawals.amount_sat) as amount_change_sat, 'withdrawal' as event_type, withdrawals.public_id as event_id, withdrawals.created_time_ms as event_time_ms
+    // from
+    //  withdrawals
+    // WHERE
+    //  withdrawals.user_id = ?)
+    // LEFT JOIN
+    //  users
+    // ON
+    //  user_id = users.id
+    // ;",
+    //         user_id, user_id, user_id)
+    //             .fetch_one(&mut **db)
+    //             .map_ok(|r| r.total_account_balance_sat)
+    //             .await?;
+
+    //         Ok(total_account_balance_result)
+    //     }
+
     pub async fn all_account_balance_changes(
         db: &mut Connection<Db>,
         page_size: u32,
