@@ -303,8 +303,6 @@ impl Listing {
     pub async fn insert(listing: Listing, db: &mut Connection<Db>) -> Result<i32, sqlx::Error> {
         let price_sat: i64 = listing.price_sat.try_into().unwrap();
         let created_time_ms: i64 = listing.created_time_ms.try_into().unwrap();
-        println!("price_sat: {:?}", price_sat);
-        println!("created_time_ms: {:?}", created_time_ms);
 
         let insert_result = sqlx::query!(
             "INSERT INTO listings (public_id, user_id, title, description, price_sat, quantity, fee_rate_basis_points, submitted, reviewed, approved, removed, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -323,8 +321,6 @@ impl Listing {
         )
             .execute(&mut **db)
             .await?;
-
-        println!("{:?}", insert_result);
 
         Ok(insert_result.last_insert_rowid() as _)
     }
@@ -348,10 +344,6 @@ impl Listing {
                 created_time_ms: r.created_time_ms.try_into().unwrap(),
             })
             .await?;
-
-        println!("{:?}", listing);
-        println!("price_sat: {:?}", listing.price_sat);
-        println!("created_time_ms: {:?}", listing.created_time_ms);
 
         Ok(listing)
     }
@@ -378,10 +370,6 @@ impl Listing {
                 created_time_ms: r.created_time_ms.try_into().unwrap(),
             })
             .await?;
-
-        println!("{:?}", listing);
-        println!("price_sat: {:?}", listing.price_sat);
-        println!("created_time_ms: {:?}", listing.created_time_ms);
 
         Ok(listing)
     }
@@ -479,8 +467,6 @@ impl ListingImage {
         .execute(&mut **db)
         .await?;
 
-        println!("{:?}", insert_result);
-
         Ok(insert_result.rows_affected() as _)
     }
 
@@ -502,8 +488,6 @@ impl ListingImage {
         })
         .try_collect::<Vec<_>>()
         .await?;
-
-        println!("{}", listing_images.len());
 
         Ok(listing_images)
     }
@@ -573,21 +557,6 @@ impl ListingImage {
 }
 
 impl RocketAuthUser {
-    // pub async fn all(db: &mut Connection<Db>) -> Result<Vec<RocketAuthUser>, sqlx::Error> {
-    //     let rocket_auth_users = sqlx::query!("select * from users;")
-    //         .fetch(&mut **db)
-    //         .map_ok(|r| RocketAuthUser {
-    //             id: Some(r.id as i32),
-    //             username: r.email.unwrap(),
-    //         })
-    //         .try_collect::<Vec<_>>()
-    //         .await?;
-
-    //     println!("{}", rocket_auth_users.len());
-
-    //     Ok(rocket_auth_users)
-    // }
-
     pub async fn single(db: &mut Connection<Db>, id: i32) -> Result<RocketAuthUser, sqlx::Error> {
         let rocket_auth_user = sqlx::query!("select id, email from users WHERE id = ?;", id)
             .fetch_one(&mut **db)
@@ -1395,8 +1364,6 @@ impl ShippingOption {
         .try_collect::<Vec<_>>()
         .await?;
 
-        println!("{}", shipping_options.len());
-
         Ok(shipping_options)
     }
 
@@ -1471,8 +1438,6 @@ impl AdminSettings {
             .await?;
 
         let admin_settings = maybe_admin_settings.unwrap_or(default_admin_settings);
-
-        println!("{:?}", admin_settings);
 
         Ok(admin_settings)
     }
@@ -1669,8 +1634,6 @@ impl Order {
         let created_time_ms: i64 = order.created_time_ms.try_into().unwrap();
         let payment_time_ms: i64 = order.payment_time_ms.try_into().unwrap();
 
-        println!("inserting order: {:?}", order);
-
         let insert_result = sqlx::query!(
             "INSERT INTO orders (public_id, buyer_user_id, seller_user_id, quantity, listing_id, shipping_option_id, shipping_instructions, amount_owed_sat, seller_credit_sat, paid, completed, acked, reviewed, invoice_hash, invoice_payment_request, created_time_ms, payment_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             order.public_id,
@@ -1693,8 +1656,6 @@ impl Order {
         )
             .execute(&mut **db)
             .await?;
-
-        println!("insert_result: {:?}", insert_result);
 
         Ok(insert_result.last_insert_rowid() as _)
     }
@@ -1841,13 +1802,12 @@ GROUP BY
             sqlx::query!("select * from orders WHERE invoice_hash = ?;", invoice_hash)
                 .fetch_optional(&mut tx)
                 .await?;
-        println!("maybe_order: {:?}", maybe_order);
 
         if let Some(order) = maybe_order {
             let listing = sqlx::query!("select * from listings WHERE id = ?;", order.listing_id)
                 .fetch_one(&mut tx)
                 .await?;
-            println!("listing: {:?}", listing);
+
             let sold_items = sqlx::query!(
                 "
 select
@@ -1865,16 +1825,13 @@ GROUP BY
             )
             .fetch_optional(&mut tx)
             .await?;
-            println!("sold items: {:?}", sold_items);
 
             let quantity_sold = match sold_items {
                 Some(r) => r.quantity_sold,
                 None => 0,
             };
-            println!("quantity sold: {:?}", quantity_sold);
             let quantity_in_stock = listing.quantity - quantity_sold;
             let order_success = quantity_in_stock >= order.quantity;
-            println!("set order as paid (and maybe completed) here...");
             sqlx::query!(
                 "UPDATE orders SET paid = true, completed = ?, payment_time_ms = ? WHERE id = ?",
                 order_success,
@@ -1883,7 +1840,6 @@ GROUP BY
             )
             .execute(&mut tx)
             .await?;
-            println!("finished set order as paid here.");
         }
 
         tx.commit().await?;
@@ -1947,7 +1903,6 @@ GROUP BY
         //                 weighted_average_rating: (r.weighted_average.unwrap_or(0) as f32) / 1000.0,
         //             }))
         //             .await?;
-        //         println!("sellerinfo: {:?}", seller_info);
 
         let total_amount_sold_sat = sqlx::query!(
             "
@@ -1967,7 +1922,6 @@ GROUP BY
         .fetch_optional(&mut **db)
         .map_ok(|maybe_r| maybe_r.map(|r| r.total_amount_sold_sat.try_into().unwrap()))
         .await?;
-        println!("total_amount_sold_sat: {:?}", total_amount_sold_sat);
 
         let weighted_average_rating = sqlx::query!(
             "
@@ -1987,7 +1941,6 @@ GROUP BY
         .fetch_optional(&mut **db)
         .map_ok(|maybe_r| maybe_r.map(|r| (r.weighted_average as f32) / 1000.0))
         .await?;
-        println!("weighted_average_rating: {:?}", weighted_average_rating);
 
         let seller_info = SellerInfo {
             username: "".to_string(),
@@ -2038,7 +1991,6 @@ ORDER BY
     ;")
             .fetch(&mut **db)
             .map_ok(|r| {
-                println!("r: {:?}", r);
                 SellerInfo {
                 username: r.email.unwrap(),
                 total_amount_sold_sat: r.total_amount_sold_sat.unwrap().try_into().unwrap(),
@@ -2046,7 +1998,6 @@ ORDER BY
             }})
             .try_collect::<Vec<_>>()
             .await?;
-        println!("seller_infos: {:?}", seller_infos);
 
         Ok(seller_infos)
     }
@@ -2593,8 +2544,6 @@ OFFSET ?
             .try_collect::<Vec<_>>()
             .await?;
 
-        println!("{:?}", account_balance_changes);
-
         // TODO: Use "ORDER BY" in query when sqlx is updated with bug fix.
         // Sort by event time
         account_balance_changes.sort_by(|a, b| b.event_time_ms.cmp(&a.event_time_ms));
@@ -2650,8 +2599,6 @@ OFFSET ?
             .try_collect::<Vec<_>>()
             .await?;
 
-        println!("{:?}", account_balance_changes);
-
         // Sort by event time
         account_balance_changes.sort_by(|a, b| b.event_time_ms.cmp(&a.event_time_ms));
 
@@ -2700,7 +2647,6 @@ OFFSET ?
     //             Some(r) => r.account_balance,
     //             None => 0,
     //         };
-    //         println!("account_balance: {:?}", account_balance);
 
     //         Ok(account_balance)
     //     }
@@ -2726,8 +2672,6 @@ impl Withdrawal {
         )
             .execute(&mut **db)
             .await?;
-
-        println!("{:?}", insert_result);
 
         Ok(insert_result.last_insert_rowid() as _)
     }
@@ -2773,8 +2717,6 @@ impl OrderMessage {
         )
             .execute(&mut **db)
             .await?;
-
-        println!("{:?}", insert_result);
 
         Ok(insert_result.last_insert_rowid() as _)
     }

@@ -89,8 +89,6 @@ async fn submit(
     mut db: Connection<Db>,
     user: User,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
-    println!("Handling submit endpoint for {:?}", id);
-    //match Listing::mark_as_submitted(&mut db, id).await {
     match submit_listing(&mut db, id, user).await {
         Ok(_) => Ok(Flash::success(
             Redirect::to(uri!("/listing", index(id, Some("")))),
@@ -263,9 +261,6 @@ async fn index(
     user: Option<User>,
     admin_user: Option<AdminUser>,
 ) -> Template {
-    println!("looking for listing...");
-    println!("Shipping option id: {:?}", shipping_option_id);
-
     let flash = flash.map(FlashMessage::into_inner);
     Template::render(
         "listing",

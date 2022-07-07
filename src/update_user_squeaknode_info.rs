@@ -32,7 +32,6 @@ impl Context {
             .await
             .map_err(|_| "failed to get user settings.")?;
 
-        println!("user_settings: {:?}", user_settings);
         Ok(Context {
             base_context,
             flash,
@@ -49,8 +48,6 @@ async fn update(
     _admin_user: Option<AdminUser>,
 ) -> Flash<Redirect> {
     let squeaknode_info = squeaknode_info_form.into_inner();
-
-    println!("squeaknode_info: {:?}", squeaknode_info);
 
     match change_squeaknode_info(user, squeaknode_info, &mut db).await {
         Ok(_) => Flash::success(

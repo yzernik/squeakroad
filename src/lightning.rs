@@ -10,7 +10,6 @@ pub async fn get_lnd_client(
     lnd_macaroon_path: String,
 ) -> Result<LightningClient<InterceptedService<Channel, MacaroonInterceptor>>, String> {
     let lnd_address = format!("http://{}:{}", lnd_host, lnd_port);
-    println!("lnd_address: {:?}", lnd_address);
     let client = tonic_lnd::connect(lnd_address, lnd_tls_cert_path, lnd_macaroon_path)
         .await
         .map_err(|_| "failed to get LND client.")?;
