@@ -16,7 +16,8 @@
     {% if user and listing_display.listing.user_id == user.id %}
     {% if listing_display.listing.removed %}
     <h5>Removed Listing</h5>
-    {% elif not listing_display.listing.submitted %}
+    {% else %}
+    {% if not listing_display.listing.submitted %}
     <h5>Unsubmitted Listing</h5>
     <p><a href="/update_listing_images/{{ listing_display.listing.public_id }}">Update images</a></p>
     <p><a href="/update_shipping_options/{{ listing_display.listing.public_id }}">Update shipping options</a></p>
@@ -36,12 +37,14 @@
       <button class="small" type="submit">Remove Listing</button>
     </form>
     {% endif %}
+    {% endif %}
 
     <!-- Options for admin -->
     {% if admin_user %}
     {% if listing_display.listing.removed %}
     <h5>Removed Listing</h5>
-    {% elif not listing_display.listing.submitted %}
+    {% else %}
+    {% if not listing_display.listing.submitted %}
     <h5>Unsubmitted Listing</h5>
     {% elif not listing_display.listing.reviewed %}
     <h5>Pending Listing (waiting for admin approval)</h5>
@@ -62,6 +65,7 @@
       <input type="hidden" name="_method" value="put" />
       <button class="small" type="submit">Remove Listing</button>
     </form>
+    {% endif %}
     {% endif %}
 
     <!-- there are a few shorthand columns widths as well -->

@@ -135,6 +135,8 @@ async fn create_order(
         Err("Listing belongs to same user as buyer.".to_string())
     } else if !listing.approved {
         Err("Listing has not been approved by admin.".to_string())
+    } else if listing.removed {
+        Err("Listing has not been removed.".to_string())
     } else if shipping_option.listing_id != listing.id.unwrap() {
         Err("Shipping option not associated with listing.".to_string())
     } else if user.is_admin {
