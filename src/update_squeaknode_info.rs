@@ -1,6 +1,6 @@
 use crate::base::BaseContext;
 use crate::db::Db;
-use crate::models::{AdminSettings, MarketNameInput};
+use crate::models::{AdminSettings, SqueaknodeInfoInput};
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
 use rocket::request::FlashMessage;
@@ -39,38 +39,47 @@ impl Context {
     }
 }
 
-#[post("/change", data = "<market_name_form>")]
+#[post("/change", data = "<squeaknode_info_form>")]
 async fn update(
-    market_name_form: Form<MarketNameInput>,
+    squeaknode_info_form: Form<SqueaknodeInfoInput>,
     mut db: Connection<Db>,
     _user: User,
     _admin_user: AdminUser,
 ) -> Flash<Redirect> {
-    let market_name_input = market_name_form.into_inner();
-    let new_market_name = market_name_input.market_name;
+    let squeaknode_info = squeaknode_info_form.into_inner();
 
-    match change_market_name(new_market_name, &mut db).await {
+    match change_squeaknode_info(squeaknode_info, &mut db).await {
         Ok(_) => Flash::success(
-            Redirect::to(uri!("/update_market_name", index())),
-            "Market name successfully updated.",
+            Redirect::to(uri!("/update_squeaknode_info", index())),
+            "Squeaknode info successfully updated.",
         ),
-        Err(e) => Flash::error(Redirect::to(uri!("/update_market_name", index())), e),
+        Err(e) => Flash::error(Redirect::to(uri!("/update_squeaknode_info", index())), e),
     }
 }
 
-async fn change_market_name(
-    new_market_name: String,
+async fn change_squeaknode_info(
+    squeaknode_info: SqueaknodeInfoInput,
     db: &mut Connection<Db>,
 ) -> Result<(), String> {
-    if new_market_name.is_empty() {
-        Err("Market name cannot be empty.".to_string())
-    } else if new_market_name.len() >= 64 {
-        Err("Market name is too long.".to_string())
+    let new_squeaknode_pubkey = squeaknode_info.squeaknode_pubkey;
+    let new_squeaknode_address = squeaknode_info.squeaknode_address;
+
+    if new_squeaknode_pubkey.len() != 64 {
+        Err("Pubkey is not valid.".to_string())
+    } else if new_squeaknode_address.len() > 128 {
+        Err("Address is too long.".to_string())
     } else {
         let default_admin_settings = AdminSettings::default();
-        AdminSettings::set_market_name(db, &new_market_name, default_admin_settings)
+        AdminSettings::set_squeaknode_pubkey(
+            db,
+            &new_squeaknode_pubkey,
+            default_admin_settings.clone(),
+        )
+        .await
+        .map_err(|_| "failed to update squeaknode pubkey.")?;
+        AdminSettings::set_squeaknode_address(db, &new_squeaknode_address, default_admin_settings)
             .await
-            .map_err(|_| "failed to update market name.")?;
+            .map_err(|_| "failed to update squeaknode address.")?;
 
         Ok(())
     }
@@ -85,13 +94,13 @@ async fn index(
 ) -> Template {
     let flash = flash.map(FlashMessage::into_inner);
     Template::render(
-        "updatemarketname",
+        "updatesqueaknodeinfo",
         Context::raw(db, flash, user, Some(admin_user)).await,
     )
 }
 
-pub fn update_market_name_stage() -> AdHoc {
-    AdHoc::on_ignite("Update Market Name Stage", |rocket| async {
-        rocket.mount("/update_market_name", routes![index, update])
+pub fn update_squeaknode_info_stage() -> AdHoc {
+    AdHoc::on_ignite("Update Squeaknode Stage", |rocket| async {
+        rocket.mount("/update_squeaknode_info", routes![index, update])
     })
 }

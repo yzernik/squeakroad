@@ -38,6 +38,7 @@ mod update_fee_rate;
 mod update_listing_images;
 mod update_market_name;
 mod update_shipping_options;
+mod update_squeaknode_info;
 mod user;
 mod util;
 mod withdraw;

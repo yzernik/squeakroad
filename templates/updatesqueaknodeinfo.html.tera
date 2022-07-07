@@ -1,0 +1,42 @@
+{% extends "base" %}
+{% block body %}
+
+<br>
+
+
+<div class="container">
+  <p><!--Nothing to see here --></p>
+
+  <div class="row">
+    <h4>Update Squeaknode Info</h4>
+
+    {% if admin_settings.squeaknode_pubkey %}
+    <p><b>Pubkey</b>: {{ admin_settings.squeaknode_pubkey }}</p>
+    {% endif %}
+    {% if admin_settings.squeaknode_address %}
+    <p><b>Address</b>: {{ admin_settings.squeaknode_address }}</p>
+    {% endif %}
+
+    <form action="/update_squeaknode_info/change" method="post">
+      <div class="ten columns">
+        <input type="text" placeholder="enter your squeaknode pubkey..."
+               name="squeaknode_pubkey" id="squeaknode_pubkey" value="" autofocus
+               class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" />
+        <input type="text" placeholder="enter your squeaknode address..."
+               name="squeaknode_address" id="squeaknode_address" value=""
+               class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" />
+        {% if flash %}
+        <small class="field-{{flash.0}}-msg">
+          {{ flash.1 }}
+        </small>
+        {% endif %}
+      </div>
+      <div class="two columns">
+        <input type="submit" value="Update">
+      </div>
+    </form>
+  </div>
+
+</div>
+
+{% endblock body %}

@@ -1330,6 +1330,16 @@
     },
     "query": "\nselect\n SUM(orders.quantity) as quantity_sold\nFROM\n orders\nWHERE\n listing_id = ?\nAND\n completed\nGROUP BY\n listing_id\n;"
   },
+  "73fa36252a280743ca2086265d075ec70720f624594f05f6df36076de7e1659a": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "UPDATE adminsettings SET squeaknode_pubkey = ?"
+  },
   "790b5ba98683e36676288f55b850faeba77f1e4dba96677191415dec1f782157": {
     "describe": {
       "columns": [
@@ -3099,9 +3109,21 @@
           "name": "fee_rate_basis_points",
           "ordinal": 2,
           "type_info": "Int64"
+        },
+        {
+          "name": "squeaknode_pubkey",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "squeaknode_address",
+          "ordinal": 4,
+          "type_info": "Text"
         }
       ],
       "nullable": [
+        false,
+        false,
         false,
         false,
         false
@@ -3361,6 +3383,16 @@
       }
     },
     "query": "select * from listingimages WHERE public_id = ?;"
+  },
+  "f2ca895de0a8649cbefd794eec10db72568c412c791c79e09901ec85c56bdba6": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "UPDATE adminsettings SET squeaknode_address = ?"
   },
   "f3c7d0e13ccbd741995710b1f499ac389e10eedaa31fdcba90c411a9f2472323": {
     "describe": {
