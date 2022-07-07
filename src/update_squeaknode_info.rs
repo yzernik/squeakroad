@@ -50,10 +50,10 @@ async fn update(
 
     match change_squeaknode_info(squeaknode_info, &mut db).await {
         Ok(_) => Flash::success(
-            Redirect::to(uri!("/update_squeaknode", index())),
+            Redirect::to(uri!("/update_squeaknode_info", index())),
             "Squeaknode info successfully updated.",
         ),
-        Err(e) => Flash::error(Redirect::to(uri!("/update_squeaknode", index())), e),
+        Err(e) => Flash::error(Redirect::to(uri!("/update_squeaknode_info", index())), e),
     }
 }
 
@@ -94,13 +94,13 @@ async fn index(
 ) -> Template {
     let flash = flash.map(FlashMessage::into_inner);
     Template::render(
-        "updatesqueaknode",
+        "updatesqueaknodeinfo",
         Context::raw(db, flash, user, Some(admin_user)).await,
     )
 }
 
-pub fn update_squeaknode_stage() -> AdHoc {
+pub fn update_squeaknode_info_stage() -> AdHoc {
     AdHoc::on_ignite("Update Squeaknode Stage", |rocket| async {
-        rocket.mount("/update_squeaknode", routes![index, update])
+        rocket.mount("/update_squeaknode_info", routes![index, update])
     })
 }
