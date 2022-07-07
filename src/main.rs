@@ -40,6 +40,7 @@ mod update_market_name;
 mod update_shipping_options;
 mod update_squeaknode_info;
 mod user;
+mod user_profile;
 mod util;
 mod withdraw;
 mod withdrawal;

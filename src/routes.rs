@@ -122,6 +122,7 @@ pub fn stage(config: Config) -> AdHoc {
             .attach(crate::update_listing_images::update_listing_images_stage())
             .attach(crate::update_shipping_options::update_shipping_options_stage())
             .attach(crate::user::user_stage())
+            .attach(crate::user_profile::user_profile_stage())
             .attach(crate::update_market_name::update_market_name_stage())
             .attach(crate::update_fee_rate::update_fee_rate_stage())
             .attach(crate::update_squeaknode_info::update_squeaknode_info_stage())
