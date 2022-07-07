@@ -1330,16 +1330,6 @@
     },
     "query": "UPDATE listings SET reviewed = true, approved = false WHERE public_id = ?"
   },
-  "605752b2a483360181b72529b1f3308c826930b42a8e4e9eba09599b46d53954": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 3
-      }
-    },
-    "query": "INSERT INTO listingimages (public_id, listing_id, image_data) VALUES (?, ?, ?)"
-  },
   "7167813bfa8f2699a158c45c3605558b398d5bcc779ab036e5b5796f89a4f262": {
     "describe": {
       "columns": [
@@ -2917,6 +2907,16 @@
       }
     },
     "query": "INSERT INTO shippingoptions (public_id, listing_id, title, description, price_sat) VALUES (?, ?, ?, ?, ?)"
+  },
+  "b2dda5fbe9778bc0488594fb968c4f6bd6f1fb92445c62e6fba629ca65491e91": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 4
+      }
+    },
+    "query": "INSERT INTO listingimages (public_id, listing_id, image_data, is_primary) VALUES (?, ?, ?, ?)"
   },
   "b376f4f348475beff006ee32c6bf2a36f4c5b61d2ca98a6d104272f5d57c2bba": {
     "describe": {
