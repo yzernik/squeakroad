@@ -60,13 +60,14 @@ async fn handle_payment(
 ) -> Result<(), String> {
     let maybe_order = Order::single_by_invoice_hash(conn, invoice_hash).await.ok();
     if let Some(order) = maybe_order {
-        let listing = Listing::single_with_pool_conn(conn, order.listing_id)
+        let maybe_listing = Listing::single_with_pool_conn(conn, order.listing_id)
             .await
-            .map_err(|_| "failed to get listing.")?;
+            .ok();
+        let listing_quantity = maybe_listing.map(|l| l.quantity).unwrap_or(0);
         let quantity_sold = Order::quantity_of_listing_sold_with_pool_conn(conn, order.listing_id)
             .await
             .map_err(|_| "failed to get quantity sold.")?;
-        let quantity_in_stock = listing.quantity - quantity_sold;
+        let quantity_in_stock = listing_quantity - quantity_sold;
         let order_success = quantity_in_stock >= order.quantity;
         let now = util::current_time_millis();
 
