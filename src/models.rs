@@ -459,10 +459,11 @@ impl ListingImage {
         db: &mut Connection<Db>,
     ) -> Result<usize, sqlx::Error> {
         let insert_result = sqlx::query!(
-            "INSERT INTO listingimages (public_id, listing_id, image_data) VALUES (?, ?, ?)",
+            "INSERT INTO listingimages (public_id, listing_id, image_data, is_primary) VALUES (?, ?, ?, ?)",
             listingimage.public_id,
             listingimage.listing_id,
             listingimage.image_data,
+            listingimage.is_primary,
         )
         .execute(&mut **db)
         .await?;

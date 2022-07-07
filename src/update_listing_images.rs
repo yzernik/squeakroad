@@ -65,7 +65,10 @@ async fn new(
             Redirect::to(uri!("/update_listing_images", index(id))),
             "Listing image successfully added.",
         ),
-        Err(e) => Flash::error(Redirect::to(uri!("/update_listing_images", index(id))), e),
+        Err(e) => {
+            error!("Failed to save listing image.: {}", e);
+            Flash::error(Redirect::to(uri!("/update_listing_images", index(id))), e)
+        }
     }
 }
 
@@ -110,9 +113,10 @@ async fn upload_image(
             is_primary: false,
         };
 
-        ListingImage::insert(listing_image, db)
-            .await
-            .map_err(|_| "failed to save image in db.")?;
+        ListingImage::insert(listing_image, db).await.map_err(|e| {
+            error!("failed to save image in db: {}", e);
+            "failed to save image in db."
+        })?;
 
         Ok(())
     }
