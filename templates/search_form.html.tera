@@ -5,7 +5,7 @@
 
     <form action="/search" method="get">
       <div class="ten columns">
-	<input type="text" placeholder="enter a search..."
+	<input type="text" placeholder="search for something..."
 	       name="search_text" id="search_text" value=""
 	       class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" />
 	{% if flash %}
