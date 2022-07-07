@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct Config {
+    pub db_url: String,
     pub admin_username: String,
     pub admin_password: String,
     pub lnd_host: String,
@@ -17,6 +18,7 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Config {
         Config {
+            db_url: "db.sqlite".into(),
             admin_username: "admin@gmail.com".into(),
             admin_password: "pass".into(),
             lnd_host: "localhost".into(),

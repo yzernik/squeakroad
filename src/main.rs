@@ -50,5 +50,17 @@ mod withdrawal;
 fn rocket() -> _ {
     let config_figment = config::Config::get_config();
     let config: config::Config = config_figment.extract().unwrap();
-    rocket::build().attach(routes::stage(config))
+
+    let figment = rocket::Config::figment().merge((
+        "databases.squeakroad",
+        rocket_db_pools::Config {
+            url: config.clone().db_url,
+            min_connections: None,
+            max_connections: 1024,
+            connect_timeout: 3,
+            idle_timeout: None,
+        },
+    ));
+
+    rocket::custom(figment).attach(routes::stage(config))
 }
