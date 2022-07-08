@@ -13,9 +13,5 @@
 echo $(openssl rand -base64 32)
 export ROCKET_SECRET_KEY=$(openssl rand -base64 32)
 
-# Configure the address and port
-export ROCKET_ADDRESS=0.0.0.0
-export ROCKET_PORT=8000
-
 # if lnd enabled, attempt to connect
 exec squeakroad
