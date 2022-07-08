@@ -3,7 +3,7 @@
 
 {% include "search_form" %}
 
-<br>
+<a href="/new_listing">Add New Listing</a>
 
   <div class="container">
     <p><!--Nothing to see here --></p>
