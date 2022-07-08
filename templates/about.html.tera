@@ -5,6 +5,8 @@
 
 <p><b>Market Name</b>: {{ admin_settings.market_name }}</p>
 <p><b>Seller Fee rate</b>: {{ admin_settings.fee_rate_basis_points / 100 }}% of each sale</p>
+
+<h6><b>Subscribe to updates from this market on <a href="https://github.com/squeaknode/squeaknode" rel="noreferrer noopener" target="_blank">Squeaknode</a></b>:</h6>
 <p><b>Squeaknode Pubkey</b>: {% if admin_settings.squeaknode_pubkey %}{{ admin_settings.squeaknode_pubkey }}{% else %}Not set{% endif %}</p>
 <p><b>Squeaknode Address</b>: {% if admin_settings.squeaknode_address %}{{ admin_settings.squeaknode_address }}{% else %}Not set{% endif %}</p>
 
