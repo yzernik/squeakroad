@@ -300,7 +300,7 @@ async fn create_order_review(
         Err("Cannot post review for order that is not completed.".to_string())
     } else if user.id() != order.buyer_user_id {
         Err("User is not the buyer.".to_string())
-    } else if review_rating < 1 || review_rating > 5 {
+    } else if !(1..=5).contains(&review_rating) {
         Err("Review rating must be between 1 and 5.".to_string())
     } else if review_text.len() > 4096 {
         Err("Review text is too long.".to_string())

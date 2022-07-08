@@ -2690,7 +2690,7 @@ OFFSET ?
             .fetch(&mut **db)
             .map_ok(|r| AccountBalanceChange {
                     username: r.email.unwrap(),
-                    amount_change_sat: r.amount_change_sat.try_into().unwrap(),
+                    amount_change_sat: r.amount_change_sat,
                     event_type: r.event_type,
                     event_id: r.event_id,
                     event_time_ms: r.event_time_ms.try_into().unwrap(),
@@ -2924,7 +2924,7 @@ OFFSET ?
                 viewed: r.viewed.unwrap(),
                 created_time_ms: r.created_time_ms.unwrap().try_into().unwrap(),
             };
-            let opid = r.order_public_id.try_into().unwrap();
+            let opid = r.order_public_id;
             OrderMessageCard {
                 order_message: om,
                 order_public_id: opid,
