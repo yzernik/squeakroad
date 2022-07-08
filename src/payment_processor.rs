@@ -47,9 +47,12 @@ pub async fn handle_received_payments(
         .map_err(|_| "Failed to call subscribe invoices.")?;
     let mut update_stream = update_stream_resp.into_inner();
     while let Ok(Some(invoice)) = update_stream.message().await {
-        println!("Received invoice: {:?}", invoice);
-        let invoice_hash = util::to_hex(&invoice.r_hash);
-        handle_payment(&mut conn, &invoice_hash).await?;
+        #[allow(deprecated)]
+        if invoice.settled {
+            println!("Handling settled invoice: {:?}", invoice);
+            let invoice_hash = util::to_hex(&invoice.r_hash);
+            handle_payment(&mut conn, &invoice_hash).await?;
+        }
     }
     Ok(())
 }
