@@ -55,7 +55,7 @@
 	{% endif %}
 	{% if not order.paid %}
 	<p><b>Payment request</b>:<p>
-	  <img src="data:image/jpeg;base64,{{ qr_svg_base64 }}" style="width:256px;height:256px;" />
+	  <img src="data:image/bmp;base64,{{ qr_svg_base64 }}" style="width:256px;height:256px;" />
 	<p>
 	  <pre>
 	    {{ order.invoice_payment_request }}

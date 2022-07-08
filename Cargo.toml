@@ -13,7 +13,7 @@ tonic_lnd = "0.3.0"
 figment = { version = "0.10", features = ["toml", "env"] }
 serde = "1.0.138"
 hex = "0.4.3"
-qrcode-generator = "4.1.6"
+qr_code = { version = "1.1.0", features = ["bmp"] }
 
 [dependencies.sqlx]
 version = "0.6.0"
