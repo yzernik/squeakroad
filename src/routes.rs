@@ -43,7 +43,6 @@ async fn create_admin_user(rocket: Rocket<Build>, config: Config) -> fairing::Re
         Some(db) => {
             let users: Users = db.0.clone().into();
             // TODO: Delete all existing admins users here.
-            // TODO: User username instead of email.
             let username = config.admin_username;
             let password = config.admin_password;
             match users.create_user(&username, &password, true).await {
