@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+    - '*'
+  push:
+    branches:
+    - master
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  all:
+    name: All
+
+    strategy:
+      matrix:
+        os:
+        - macos-latest
+        - windows-latest
+        - ubuntu-latest
+        include:
+        - os: macos-latest
+          rustflags: --deny warnings
+        - os: windows-latest
+          rustflags: --deny warnings --codegen=target-feature=+crt-static
+        - os: ubuntu-latest
+          rustflags: --deny warnings
+
+    runs-on: ${{ matrix.os }}
+
+    env:
+      RUSTFLAGS: ${{ matrix.rustflags }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Make openssl-src Use Strawberry Perl
+      if: matrix.os == 'windows-latest'
+      run: echo OPENSSL_SRC_PERL=C:/Strawberry/perl/bin/perl >> $GITHUB_ENV
+
+    - name: Install Rust Toolchain Components
+      uses: actions-rs/toolchain@v1
+      with:
+        components: clippy, rustfmt
+        override: true
+        toolchain: 1.62.0
+
+    - uses: Swatinem/rust-cache@v1
+      with:
+        key: 0
+
+    # - name: Check Lockfile
+    #   run: cargo update --locked --package squeakroad
+
+    - name: Check
+      run: |
+        cargo check --all
+        cargo check --tests
+        cargo check --tests --all-features
+
+    - name: Test
+      run: cargo test --all --all-features
+
+    - name: Clippy
+      run: |
+        cargo clippy --all-targets --all-features
+        cargo clippy --all-targets --all-features --tests
+
+    - name: Check Formatting
+      run: cargo fmt --all -- --check
+
+    # - name: Check for Forbidden Words
+    #   if: matrix.os == 'ubuntu-latest'
+    #   run: |
+    #     sudo apt-get update
+    #     sudo apt-get install ripgrep
+    #     ./bin/forbid

@@ -23,7 +23,7 @@ fn rocket_build(config: Config) -> Rocket<Build> {
     let figment = rocket::Config::figment().merge((
         "databases.squeakroad",
         rocket_db_pools::Config {
-            url: config.clone().db_url,
+            url: config.db_url,
             min_connections: None,
             max_connections: 1024,
             connect_timeout: 3,
@@ -77,5 +77,5 @@ fn test_routes() {
     let config_figment = Config::get_config().merge(("db_url", "sqlite://:memory:".to_string()));
     let config: Config = config_figment.extract().unwrap();
 
-    test_admin_settings("/", crate::routes::stage(config.clone()), config.clone());
+    test_admin_settings("/", crate::routes::stage(config.clone()), config);
 }

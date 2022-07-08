@@ -107,7 +107,6 @@ async fn add_shipping_option(
         Err("Listing is already submitted.".to_string())
     } else if shipping_options.len() >= 5 {
         Err("Maximum number of shipping options already exist.".to_string())
-        // TODO: validate shipping option here.
     } else {
         let shipping_option = ShippingOption {
             id: None,
