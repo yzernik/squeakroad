@@ -19,7 +19,7 @@ impl Default for Config {
     fn default() -> Config {
         Config {
             db_url: "db.sqlite".into(),
-            admin_username: "admin@gmail.com".into(),
+            admin_username: "admin".into(),
             admin_password: "pass".into(),
             lnd_host: "localhost".into(),
             lnd_port: 10009,
