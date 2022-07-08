@@ -25,3 +25,7 @@ pub fn to_hex(bytes: &Vec<u8>) -> String {
 pub fn from_hex(hex_str: &str) -> Vec<u8> {
     hex::decode(hex_str).unwrap()
 }
+
+pub fn to_base64(bytes: &Vec<u8>) -> String {
+    base64::encode(bytes)
+}
