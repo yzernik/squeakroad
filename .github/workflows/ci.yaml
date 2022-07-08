@@ -53,8 +53,8 @@ jobs:
       with:
         key: 0
 
-    - name: Check Lockfile
-      run: cargo update --locked --package squeakroad
+    # - name: Check Lockfile
+    #   run: cargo update --locked --package squeakroad
 
     - name: Check
       run: |
