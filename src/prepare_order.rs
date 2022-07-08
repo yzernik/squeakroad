@@ -169,7 +169,7 @@ async fn create_order(
         let order = Order {
             id: None,
             public_id: util::create_uuid(),
-            quantity: quantity,
+            quantity,
             buyer_user_id: user.id(),
             seller_user_id: listing.user_id,
             listing_id: listing.id.unwrap(),
