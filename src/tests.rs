@@ -4,6 +4,7 @@ use rocket::http::uri::fmt::{Query, UriDisplay};
 use rocket::http::ContentType;
 use rocket::local::blocking::Client;
 use rocket::serde::{Deserialize, Serialize};
+use rocket::{Build, Rocket};
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, UriDisplayQuery)]
 #[serde(crate = "rocket::serde")]
@@ -18,10 +19,25 @@ struct UpdateMarketNameInfo {
     market_name: String,
 }
 
+fn rocket_build(config: Config) -> Rocket<Build> {
+    let figment = rocket::Config::figment().merge((
+        "databases.squeakroad",
+        rocket_db_pools::Config {
+            url: config.clone().db_url,
+            min_connections: None,
+            max_connections: 1024,
+            connect_timeout: 3,
+            idle_timeout: None,
+        },
+    ));
+
+    rocket::custom(figment)
+}
+
 fn test_admin_settings(_base: &str, stage: AdHoc, config: Config) {
     // NOTE: If we had more than one test running concurently that dispatches
     // DB-accessing requests, we'd need transactions or to serialize all tests.
-    let client = Client::tracked(rocket::build().attach(stage)).unwrap();
+    let client = Client::tracked(rocket_build(config.clone()).attach(stage)).unwrap();
 
     // Log in as admin user.
     let admin_login_info = LoginInfo {
@@ -58,7 +74,8 @@ fn test_admin_settings(_base: &str, stage: AdHoc, config: Config) {
 
 #[test]
 fn test_routes() {
-    let config_figment = Config::get_config();
+    let config_figment = Config::get_config().merge(("db_url", "sqlite://:memory:".to_string()));
     let config: Config = config_figment.extract().unwrap();
+
     test_admin_settings("/", crate::routes::stage(config.clone()), config.clone());
 }
