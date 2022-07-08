@@ -50,6 +50,7 @@ mod withdrawal;
 fn rocket() -> _ {
     let config_figment = config::Config::get_config();
     let config: config::Config = config_figment.extract().unwrap();
+    println!("Starting with config: {:?}", config);
 
     let figment = rocket::Config::figment().merge((
         "databases.squeakroad",

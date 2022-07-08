@@ -10,7 +10,6 @@
 # export SQUEAKROAD_LND_MACAROON_PATH=
 
 # Generate a secret
-echo $(openssl rand -base64 32)
 export ROCKET_SECRET_KEY=$(openssl rand -base64 32)
 
 # if lnd enabled, attempt to connect
