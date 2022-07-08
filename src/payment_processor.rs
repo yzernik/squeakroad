@@ -26,7 +26,7 @@ pub async fn handle_received_payments(
     let settle_index: u64 = if let Some(latest_invoice_hash) = latest_paid_order {
         let latest_paid_order_invoice = lighting_client
             .lookup_invoice(tonic_lnd::rpc::PaymentHash {
-                r_hash: hex::decode(latest_invoice_hash).unwrap(),
+                r_hash: util::from_hex(&latest_invoice_hash),
                 ..Default::default()
             })
             .await
@@ -48,7 +48,7 @@ pub async fn handle_received_payments(
     let mut update_stream = update_stream_resp.into_inner();
     while let Ok(Some(invoice)) = update_stream.message().await {
         println!("Received invoice: {:?}", invoice);
-        let invoice_hash = hex::encode(invoice.r_hash);
+        let invoice_hash = util::to_hex(&invoice.r_hash);
         handle_payment(&mut conn, &invoice_hash).await?;
     }
     Ok(())

@@ -17,3 +17,11 @@ pub fn current_time_millis() -> u64 {
 pub fn generate_qr(payment_request: &str) -> Vec<u8> {
     qrcode_generator::to_png_to_vec(payment_request, QrCodeEcc::Low, 128).unwrap()
 }
+
+pub fn to_hex(bytes: &Vec<u8>) -> String {
+    hex::encode(bytes)
+}
+
+pub fn from_hex(hex_str: &str) -> Vec<u8> {
+    hex::decode(hex_str).unwrap()
+}

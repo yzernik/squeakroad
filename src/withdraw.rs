@@ -124,7 +124,7 @@ async fn withdraw(
                 public_id: util::create_uuid(),
                 user_id: user.id(),
                 amount_sat,
-                invoice_hash: hex::encode(send_response.payment_hash),
+                invoice_hash: util::to_hex(&send_response.payment_hash),
                 invoice_payment_request: withdrawal_info.invoice_payment_request,
                 created_time_ms: now,
             };
