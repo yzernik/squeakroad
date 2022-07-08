@@ -31,8 +31,6 @@ Go to http://localhost:8000/ and use the username/password in **config.toml** to
 
 ## Test
 
-### Tests:
-
 ```
 cargo test
 ```
