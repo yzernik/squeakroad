@@ -12,6 +12,6 @@ pub async fn get_lnd_client(
     let lnd_address = format!("http://{}:{}", lnd_host, lnd_port);
     let client = tonic_lnd::connect(lnd_address, lnd_tls_cert_path, lnd_macaroon_path)
         .await
-        .map_err(|_| "failed to get LND client.")?;
+        .map_err(|e| format!("failed to get LND client: {:?}", e))?;
     Ok(client)
 }
