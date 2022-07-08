@@ -1,14 +1,14 @@
 use crate::db::Db;
 use crate::rocket::futures::TryFutureExt;
 use crate::rocket::futures::TryStreamExt;
+use crate::util;
 use rocket::fs::TempFile;
 use rocket::serde::{Deserialize, Serialize};
 use rocket_db_pools::{sqlx, Connection};
-use std::result::Result;
-extern crate base64;
 use sqlx::pool::PoolConnection;
 use sqlx::Acquire;
 use sqlx::Sqlite;
+use std::result::Result;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -626,7 +626,7 @@ impl ListingDisplay {
                 id: img.id,
                 public_id: img.clone().public_id,
                 listing_id: img.listing_id,
-                image_data_base64: base64::encode(&img.image_data),
+                image_data_base64: util::to_base64(&img.image_data),
                 is_primary: img.is_primary,
             })
             .collect::<Vec<_>>();
@@ -1235,7 +1235,7 @@ impl ListingCardDisplay {
                 id: image.id,
                 public_id: image.public_id,
                 listing_id: image.listing_id,
-                image_data_base64: base64::encode(&image.image_data),
+                image_data_base64: util::to_base64(&image.image_data),
                 is_primary: image.is_primary,
             }),
             user: card.clone().user,
