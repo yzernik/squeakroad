@@ -100,7 +100,7 @@ pub fn stage(config: Config) -> AdHoc {
                                     Ok(_) => println!(
                                         "payment processor task `completed` (shouldn't happen)."
                                     ),
-                                    Err(_) => println!("payment processor task failed"),
+                                    Err(e) => println!("payment processor task failed: {:?}", e),
                                 }
                             }
                             println!("Subscription failed. Trying again in {:?} seconds.", 10);

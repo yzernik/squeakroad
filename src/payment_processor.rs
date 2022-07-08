@@ -16,7 +16,7 @@ pub async fn handle_received_payments(
         config.lnd_macaroon_path.clone(),
     )
     .await
-    .map_err(|_| "failed to get lightning client.")?;
+    .map_err(|e| format!("failed to get lightning client: {:?}", e))?;
 
     // Get latest paid invoice if exists.
     let latest_paid_order = Order::most_recent_paid_order(&mut conn)
