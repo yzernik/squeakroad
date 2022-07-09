@@ -1,17 +1,15 @@
-use tonic_lnd::rpc::lightning_client::LightningClient;
-use tonic_lnd::tonic::codegen::InterceptedService;
-use tonic_lnd::tonic::transport::Channel;
-use tonic_lnd::MacaroonInterceptor;
+use squeakroad_lnd_client::get_client;
+use squeakroad_lnd_client::LndClient;
 
 pub async fn get_lnd_client(
     lnd_host: String,
     lnd_port: u32,
     lnd_tls_cert_path: String,
     lnd_macaroon_path: String,
-) -> Result<LightningClient<InterceptedService<Channel, MacaroonInterceptor>>, String> {
-    let lnd_address = format!("http://{}:{}", lnd_host, lnd_port);
-    let client = tonic_lnd::connect(lnd_address, lnd_tls_cert_path, lnd_macaroon_path)
+) -> Result<LndClient, String> {
+    // TODO: don't use unwrap.
+    let client = get_client(lnd_host, lnd_port, lnd_tls_cert_path, lnd_macaroon_path)
         .await
-        .map_err(|e| format!("failed to get LND client: {:?}", e))?;
+        .unwrap();
     Ok(client)
 }

@@ -25,19 +25,19 @@ pub async fn handle_received_payments(
 
     let settle_index: u64 = if let Some(latest_invoice_hash) = latest_paid_order {
         let latest_paid_order_invoice = lighting_client
-            .lookup_invoice(tonic_lnd::rpc::PaymentHash {
+            .lookup_invoice(squeakroad_lnd_client::rpc::PaymentHash {
                 r_hash: util::from_hex(&latest_invoice_hash),
                 ..Default::default()
             })
             .await
-            .map_err(|_| "Failed to lookup invoice.")?;
+            .map_err(|e| format!("Failed to lookup invoice: {:?}", e))?;
         latest_paid_order_invoice.into_inner().settle_index
     } else {
         0
     };
 
     println!("Starting subscribe invoices...");
-    let invoice_subscription = tonic_lnd::rpc::InvoiceSubscription {
+    let invoice_subscription = squeakroad_lnd_client::rpc::InvoiceSubscription {
         settle_index,
         ..Default::default()
     };

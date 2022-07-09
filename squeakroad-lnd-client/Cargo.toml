@@ -1,0 +1,25 @@
+[package]
+name = "squeakroad-lnd-client"
+version = "0.0.1"
+description = "Squeak Road LND client library"
+edition = "2018"
+license = "MIT"
+
+[lib]
+doctest = false
+
+[dependencies]
+tonic = "0.7"
+tonic-openssl = { version = "0.2" }
+hyper = "0.14"
+hyper-openssl = "0.9"
+prost = "0.10"
+tokio = { version = "1", features = ["full"] }
+tokio-stream = { version = "0.1", features = ["net"] }
+openssl = "0.10"
+tower = "0.4"
+pretty_env_logger = "*"
+hex = "0.4.3"
+
+[build-dependencies]
+tonic-build = "0.7"
