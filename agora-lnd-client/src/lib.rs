@@ -67,11 +67,10 @@ pub async fn get_client(
     lnd_tls_cert_path: String,
     lnd_macaroon_path: String,
 ) -> Result<LndClient, Box<dyn std::error::Error>> {
-    // let lnd_address: &'static str = &format!("https://{}:{}", lnd_host, lnd_port);
+    let lnd_address = format!("https://{}:{}", lnd_host, lnd_port).to_string();
 
     let pem = tokio::fs::read(lnd_tls_cert_path).await.ok();
-    // let uri = Uri::from_static("https://[::1]:50051");
-    let uri = Uri::from_static("https://localhost:10002");
+    let uri = lnd_address.parse::<Uri>().unwrap();
     let channel = MyChannel::new(pem, uri).await?;
 
     // TODO: don't use unwrap.
