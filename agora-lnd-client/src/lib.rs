@@ -1,30 +1,33 @@
 use error::InternalConnectError;
-use hyper::{client::connect::HttpConnector, Client, Uri};
+use hyper::client::connect::HttpConnector;
+use hyper::{client::ResponseFuture, Body, Client, Request, Response, Uri};
 use hyper_openssl::HttpsConnector;
 use openssl::{
     ssl::{SslConnector, SslMethod},
     x509::X509,
 };
 use std::path::{Path, PathBuf};
+use std::{error::Error, task::Poll};
+use tonic::body::BoxBody;
 use tonic_openssl::ALPN_H2_WIRE;
 use tower::util::ServiceFn;
+use tower::Service;
 
 pub mod rpc {
     tonic::include_proto!("lnrpc");
 }
 
 /// [`tonic::Status`] is re-exported as `Error` for convenience.
-pub type Error = tonic::Status;
+pub type LndClientError = tonic::Status;
+
+pub type LndClient = rpc::lightning_client::LightningClient<
+    tonic::codegen::InterceptedService<MyChannel, MacaroonInterceptor>,
+>;
 
 mod error;
 
-/// This is a convenience type which you most likely want to use instead of raw client.
-pub type LndClient = rpc::lightning_client::LightningClient<
-    tonic::codegen::InterceptedService<
-        ServiceFn<hyper::Request<tonic::body::BoxBody>>,
-        MacaroonInterceptor,
-    >,
->;
+// /// This is a convenience type which you most likely want to use instead of raw client.
+// pub type LndClient = rpc::lightning_client::LightningClient<MyChannel>;
 
 /// Supplies requests with macaroon
 #[derive(Clone)]
@@ -33,7 +36,10 @@ pub struct MacaroonInterceptor {
 }
 
 impl tonic::service::Interceptor for MacaroonInterceptor {
-    fn call(&mut self, mut request: tonic::Request<()>) -> Result<tonic::Request<()>, Error> {
+    fn call(
+        &mut self,
+        mut request: tonic::Request<()>,
+    ) -> Result<tonic::Request<()>, LndClientError> {
         request.metadata_mut().insert(
             "macaroon",
             tonic::metadata::MetadataValue::from_str(&self.macaroon)
@@ -60,56 +66,77 @@ async fn load_macaroon(
 async fn main() -> Result<LndClient, Box<dyn std::error::Error>> {
     pretty_env_logger::init();
 
-    let pem = tokio::fs::read("example/tls/ca.pem").await?;
-    let ca = X509::from_pem(&pem[..])?;
-    let mut connector = SslConnector::builder(SslMethod::tls())?;
-    connector.cert_store_mut().add_cert(ca)?;
-    connector.set_alpn_protos(ALPN_H2_WIRE)?;
-
-    let mut http = HttpConnector::new();
-    http.enforce_http(false);
-    let mut https = HttpsConnector::with_connector(http, connector)?;
-
-    // This is set because we are currently sending
-    // `[::1]:50051` as the hostname but the cert was
-    // originally signed with `example.com`. This will
-    // disable hostname checking and it is BAD! DON'T DO IT!
-    https.set_callback(|c, _| {
-        c.set_verify_hostname(false);
-        Ok(())
-    });
-
-    // Configure hyper's client to be h2 only and build with the
-    // correct https connector.
-    let hyper = Client::builder().http2_only(true).build(https);
-
+    let pem = tokio::fs::read("example/tls/ca.pem").await.ok();
     let uri = Uri::from_static("https://[::1]:50051");
+    let channel = MyChannel::new(pem, uri).await?;
 
-    // Hyper's client requires that requests contain full Uris include a scheme and
-    // an authority. Tonic's transport will handle this for you but when using the client
-    // manually you need ensure the uri's are set correctly.
-    let add_origin = tower::service_fn(|mut req: hyper::Request<tonic::body::BoxBody>| {
+    // TODO: don't use unwrap.
+    let macaroon = load_macaroon("macaroon_file.macaroon").await.unwrap();
+    let interceptor = MacaroonInterceptor { macaroon };
+    // let client: rpc::lightning_client::LightningClient<MyChannel> =
+    //     rpc::lightning_client::LightningClient::new(channel);
+
+    let client = rpc::lightning_client::LightningClient::with_interceptor(channel, interceptor);
+
+    Ok(client)
+}
+
+#[derive(Clone)]
+pub struct MyChannel {
+    uri: Uri,
+    client: MyClient,
+}
+
+#[derive(Clone)]
+enum MyClient {
+    ClearText(Client<HttpConnector, BoxBody>),
+    Tls(Client<HttpsConnector<HttpConnector>, BoxBody>),
+}
+
+impl MyChannel {
+    pub async fn new(certificate: Option<Vec<u8>>, uri: Uri) -> Result<Self, Box<dyn Error>> {
+        let mut http = HttpConnector::new();
+        http.enforce_http(false);
+        let client = match certificate {
+            None => MyClient::ClearText(Client::builder().http2_only(true).build(http)),
+            Some(pem) => {
+                let ca = X509::from_pem(&pem[..])?;
+                let mut connector = SslConnector::builder(SslMethod::tls())?;
+                connector.cert_store_mut().add_cert(ca)?;
+                connector.set_alpn_protos(ALPN_H2_WIRE)?;
+                let mut https = HttpsConnector::with_connector(http, connector)?;
+                https.set_callback(|c, _| {
+                    c.set_verify_hostname(false);
+                    Ok(())
+                });
+                MyClient::Tls(Client::builder().http2_only(true).build(https))
+            }
+        };
+
+        Ok(Self { client, uri })
+    }
+}
+
+impl Service<Request<BoxBody>> for MyChannel {
+    type Response = Response<Body>;
+    type Error = hyper::Error;
+    type Future = ResponseFuture;
+
+    fn poll_ready(&mut self, _: &mut std::task::Context<'_>) -> Poll<Result<(), Self::Error>> {
+        Ok(()).into()
+    }
+
+    fn call(&mut self, mut req: Request<BoxBody>) -> Self::Future {
         let uri = Uri::builder()
-            .scheme(uri.scheme().unwrap().clone())
-            .authority(uri.authority().unwrap().clone())
+            .scheme(self.uri.scheme().unwrap().clone())
+            .authority(self.uri.authority().unwrap().clone())
             .path_and_query(req.uri().path_and_query().unwrap().clone())
             .build()
             .unwrap();
-
         *req.uri_mut() = uri;
-
-        hyper.request(req)
-    });
-
-    // let client = rpc::lightning_client::LightningClient::new(add_origin);
-
-    let macaroon = load_macaroon("macaroon_file.macaroon").await?;
-
-    let interceptor = MacaroonInterceptor { macaroon };
-
-    // Ok(client)
-    Ok(rpc::lightning_client::LightningClient::with_interceptor(
-        add_origin,
-        interceptor,
-    ))
+        match &self.client {
+            MyClient::ClearText(client) => client.request(req),
+            MyClient::Tls(client) => client.request(req),
+        }
+    }
 }
