@@ -4,6 +4,9 @@ version = "0.0.0"
 edition = "2021"
 publish = false
 
+[workspace]
+members = [".", "agora-lnd-client"]
+
 [dependencies]
 # rocket = { version = "0.5.0-rc.2", features = ["json", "uuid"] }
 rocket = { git = "https://github.com/yzernik/Rocket", branch = "upgrade_sqlx_v_0_6", features = ["json", "uuid", "secrets"] }
@@ -51,3 +54,7 @@ features = [
     "fast-rng",          # Use a faster (but still sufficiently random) RNG
     "macro-diagnostics", # Enable better diagnostics for compile-time UUIDs
 ]
+
+[dependencies.agora-lnd-client]
+path = "agora-lnd-client"
+version = "0.0.2"
