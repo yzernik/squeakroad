@@ -40,7 +40,7 @@
 
     </style>
 
-    <title>{{ base_context.admin_settings.market_name }} - Squeakroad</title>
+    <title>{{ base_context.admin_settings.market_name }} - Squeak Road</title>
 </head>
 
 <body>
@@ -89,7 +89,7 @@
            –––––––––––––––––––––––––––––––––––––––––––––––––– -->
       <div class="container">
         <footer id="footer" class="twelve columns">
-          Powered by <a href="https://github.com/yzernik/squeakroad" rel="noreferrer noopener" target="_blank">Squeakroad</a> Have questions? Join us on <a href="https://t.me/squeakroad" rel="noreferrer noopener" target="_blank">Telegram</a>
+          Powered by <a href="https://github.com/yzernik/squeakroad" rel="noreferrer noopener" target="_blank">Squeak Road</a> Have questions? Join us on <a href="https://t.me/squeakroad" rel="noreferrer noopener" target="_blank">Telegram</a>
         </footer>
       </div> <!-- end footer div.container -->
     </div>  <!-- end footer div.table-block -->

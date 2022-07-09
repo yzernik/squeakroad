@@ -280,7 +280,7 @@ impl Default for AdminSettings {
     fn default() -> AdminSettings {
         AdminSettings {
             id: None,
-            market_name: "Squeakroad".to_string(),
+            market_name: "Squeak Road".to_string(),
             fee_rate_basis_points: 500,
             squeaknode_pubkey: "".to_string(),
             squeaknode_address: "".to_string(),
