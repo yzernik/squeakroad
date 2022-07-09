@@ -5,7 +5,7 @@ edition = "2021"
 publish = false
 
 [workspace]
-members = [".", "agora-lnd-client"]
+members = [".", "squeakroad-lnd-client"]
 
 [dependencies]
 # rocket = { version = "0.5.0-rc.2", features = ["json", "uuid"] }
@@ -55,6 +55,6 @@ features = [
     "macro-diagnostics", # Enable better diagnostics for compile-time UUIDs
 ]
 
-[dependencies.agora-lnd-client]
-path = "agora-lnd-client"
-version = "0.0.2"
+[dependencies.squeakroad-lnd-client]
+path = "squeakroad-lnd-client"
+version = "0.0.1"

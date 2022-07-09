@@ -1,5 +1,5 @@
-use agora_lnd_client::get_client;
-use agora_lnd_client::LndClient;
+use squeakroad_lnd_client::get_client;
+use squeakroad_lnd_client::LndClient;
 
 // pub async fn get_lnd_client(
 //     lnd_host: String,

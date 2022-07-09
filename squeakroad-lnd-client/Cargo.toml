@@ -1,12 +1,9 @@
 [package]
-name = "agora-lnd-client"
-version = "0.0.2"
-description = "Agora LND client library"
-authors = ["Casey Rodarmor <casey@rodarmor.com>", "Sönke Hahn <soenkehahn@gmail.com>"]
+name = "squeakroad-lnd-client"
+version = "0.0.1"
+description = "Squeak Road LND client library"
 edition = "2018"
-license = "CC0-1.0"
-repository = "https://github.com/soenkehahn/agora"
-homepage = "https://github.com/soenkehahn/agora"
+license = "MIT"
 
 [lib]
 doctest = false
