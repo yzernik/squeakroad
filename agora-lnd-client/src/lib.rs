@@ -7,6 +7,7 @@ use openssl::{
 };
 use std::path::{Path, PathBuf};
 use tonic_openssl::ALPN_H2_WIRE;
+use tower::util::ServiceFn;
 
 pub mod rpc {
     tonic::include_proto!("lnrpc");
@@ -19,7 +20,10 @@ mod error;
 
 /// This is a convenience type which you most likely want to use instead of raw client.
 pub type LndClient = rpc::lightning_client::LightningClient<
-    tonic::codegen::InterceptedService<tonic::transport::Channel, MacaroonInterceptor>,
+    tonic::codegen::InterceptedService<
+        ServiceFn<hyper::Request<tonic::body::BoxBody>>,
+        MacaroonInterceptor,
+    >,
 >;
 
 /// Supplies requests with macaroon
@@ -97,7 +101,15 @@ async fn main() -> Result<LndClient, Box<dyn std::error::Error>> {
         hyper.request(req)
     });
 
-    let client = rpc::lightning_client::LightningClient::new(add_origin);
+    // let client = rpc::lightning_client::LightningClient::new(add_origin);
 
-    Ok(client)
+    let macaroon = load_macaroon("macaroon_file.macaroon").await?;
+
+    let interceptor = MacaroonInterceptor { macaroon };
+
+    // Ok(client)
+    Ok(rpc::lightning_client::LightningClient::with_interceptor(
+        add_origin,
+        interceptor,
+    ))
 }
