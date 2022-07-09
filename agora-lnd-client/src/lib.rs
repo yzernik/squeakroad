@@ -10,7 +10,6 @@ use std::path::{Path, PathBuf};
 use std::{error::Error, task::Poll};
 use tonic::body::BoxBody;
 use tonic_openssl::ALPN_H2_WIRE;
-use tower::util::ServiceFn;
 use tower::Service;
 
 pub mod rpc {
@@ -62,16 +61,21 @@ async fn load_macaroon(
     Ok(hex::encode(&macaroon))
 }
 
-#[tokio::main]
-async fn main() -> Result<LndClient, Box<dyn std::error::Error>> {
-    pretty_env_logger::init();
+pub async fn get_client(
+    lnd_host: String,
+    lnd_port: u32,
+    lnd_tls_cert_path: String,
+    lnd_macaroon_path: String,
+) -> Result<LndClient, Box<dyn std::error::Error>> {
+    // let lnd_address: &'static str = &format!("https://{}:{}", lnd_host, lnd_port);
 
-    let pem = tokio::fs::read("example/tls/ca.pem").await.ok();
-    let uri = Uri::from_static("https://[::1]:50051");
+    let pem = tokio::fs::read(lnd_tls_cert_path).await.ok();
+    // let uri = Uri::from_static("https://[::1]:50051");
+    let uri = Uri::from_static("https://localhost:10002");
     let channel = MyChannel::new(pem, uri).await?;
 
     // TODO: don't use unwrap.
-    let macaroon = load_macaroon("macaroon_file.macaroon").await.unwrap();
+    let macaroon = load_macaroon(lnd_macaroon_path).await.unwrap();
     let interceptor = MacaroonInterceptor { macaroon };
     // let client: rpc::lightning_client::LightningClient<MyChannel> =
     //     rpc::lightning_client::LightningClient::new(channel);
