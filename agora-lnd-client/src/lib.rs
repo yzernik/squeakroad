@@ -19,14 +19,12 @@ pub mod rpc {
 /// [`tonic::Status`] is re-exported as `Error` for convenience.
 pub type LndClientError = tonic::Status;
 
+// /// This is a convenience type which you most likely want to use instead of raw client.
 pub type LndClient = rpc::lightning_client::LightningClient<
     tonic::codegen::InterceptedService<MyChannel, MacaroonInterceptor>,
 >;
 
 mod error;
-
-// /// This is a convenience type which you most likely want to use instead of raw client.
-// pub type LndClient = rpc::lightning_client::LightningClient<MyChannel>;
 
 /// Supplies requests with macaroon
 #[derive(Clone)]
@@ -41,6 +39,7 @@ impl tonic::service::Interceptor for MacaroonInterceptor {
     ) -> Result<tonic::Request<()>, LndClientError> {
         request.metadata_mut().insert(
             "macaroon",
+            #[allow(deprecated)]
             tonic::metadata::MetadataValue::from_str(&self.macaroon)
                 .expect("hex produced non-ascii"),
         );
@@ -76,8 +75,6 @@ pub async fn get_client(
     // TODO: don't use unwrap.
     let macaroon = load_macaroon(lnd_macaroon_path).await.unwrap();
     let interceptor = MacaroonInterceptor { macaroon };
-    // let client: rpc::lightning_client::LightningClient<MyChannel> =
-    //     rpc::lightning_client::LightningClient::new(channel);
 
     let client = rpc::lightning_client::LightningClient::with_interceptor(channel, interceptor);
 
