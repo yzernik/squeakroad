@@ -146,6 +146,11 @@ pub struct MarketNameInput {
 }
 
 #[derive(Debug, FromForm)]
+pub struct PGPInfoInput {
+    pub pgp_key_id: String,
+}
+
+#[derive(Debug, FromForm)]
 pub struct SqueaknodeInfoInput {
     pub squeaknode_pubkey: String,
     pub squeaknode_address: String,
