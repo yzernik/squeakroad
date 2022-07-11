@@ -61,6 +61,7 @@
   <div class="row">
     <h5>Contact</h5>
     <a href="/user_profile/{{ user.email }}">User Profile</a>
+    <a href="update_user_pgp_info">Update My PGP Info</a>
     <a href="update_user_squeaknode_info">Update My Squeaknode Info</a>
     <br>
   </div>

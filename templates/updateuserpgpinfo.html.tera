@@ -1,0 +1,34 @@
+{% extends "base" %}
+{% block body %}
+
+<br>
+
+
+<div class="container">
+  <p><!--Nothing to see here --></p>
+
+  <div class="row">
+    <h4>Update PGP Info</h4>
+
+    <p><b>PGP Key</b>: {% if user_settings.pgp_key %}<pre>{{ user_settings.pgp_key }}</pre>{% else %}Not set{% endif %}</p>
+
+    <form action="/update_user_pgp_info/change" method="post">
+      <div class="ten columns">
+        <textarea placeholder="enter your PGP key..."
+		  name="pgp_key" id="pgp_key" value="" autofocus
+		  class="u-full-width"></textarea>
+        {% if flash %}
+	<small class="field-{{flash.0}}-msg">
+          {{ flash.1 }}
+        </small>
+        {% endif %}
+      </div>
+      <div class="two columns">
+        <input type="submit" value="Update">
+      </div>
+    </form>
+  </div>
+
+</div>
+
+{% endblock body %}

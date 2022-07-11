@@ -126,6 +126,7 @@ pub struct AdminSettings {
     pub id: Option<i32>,
     pub market_name: String,
     pub fee_rate_basis_points: u32,
+    pub pgp_key: String,
     pub squeaknode_pubkey: String,
     pub squeaknode_address: String,
 }
@@ -134,6 +135,7 @@ pub struct AdminSettings {
 #[serde(crate = "rocket::serde")]
 pub struct UserSettings {
     pub id: Option<i32>,
+    pub pgp_key: String,
     pub squeaknode_pubkey: String,
     pub squeaknode_address: String,
 }
@@ -141,6 +143,11 @@ pub struct UserSettings {
 #[derive(Debug, FromForm)]
 pub struct MarketNameInput {
     pub market_name: String,
+}
+
+#[derive(Debug, FromForm)]
+pub struct PGPInfoInput {
+    pub pgp_key: String,
 }
 
 #[derive(Debug, FromForm)]
@@ -282,6 +289,7 @@ impl Default for AdminSettings {
             id: None,
             market_name: "Squeak Road".to_string(),
             fee_rate_basis_points: 500,
+            pgp_key: "".to_string(),
             squeaknode_pubkey: "".to_string(),
             squeaknode_address: "".to_string(),
         }
@@ -292,6 +300,7 @@ impl Default for UserSettings {
     fn default() -> UserSettings {
         UserSettings {
             id: None,
+            pgp_key: "".to_string(),
             squeaknode_pubkey: "".to_string(),
             squeaknode_address: "".to_string(),
         }
@@ -1458,6 +1467,7 @@ impl AdminSettings {
                     id: Some(r.id.try_into().unwrap()),
                     market_name: r.market_name,
                     fee_rate_basis_points: r.fee_rate_basis_points.try_into().unwrap(),
+                    pgp_key: r.pgp_key,
                     squeaknode_pubkey: r.squeaknode_pubkey,
                     squeaknode_address: r.squeaknode_address,
                 })
@@ -1482,10 +1492,11 @@ impl AdminSettings {
 
         if maybe_admin_settings.is_none() {
             sqlx::query!(
-                "INSERT INTO adminsettings (market_name, fee_rate_basis_points, squeaknode_pubkey, squeaknode_address) VALUES (?, ?, ?, ?)",
+                "INSERT INTO adminsettings (market_name, fee_rate_basis_points, pgp_key, squeaknode_pubkey, squeaknode_address) VALUES (?, ?, ?, ?, ?)",
                 admin_settings.market_name,
                 admin_settings.fee_rate_basis_points,
                 admin_settings.squeaknode_pubkey,
+                admin_settings.pgp_key,
                 admin_settings.squeaknode_address,
             )
             .execute(&mut tx)
@@ -1524,6 +1535,20 @@ impl AdminSettings {
         )
         .execute(&mut **db)
         .await?;
+
+        Ok(())
+    }
+
+    pub async fn set_pgp_key(
+        db: &mut Connection<Db>,
+        new_pgp_key: &str,
+        default_admin_settings: AdminSettings,
+    ) -> Result<(), sqlx::Error> {
+        AdminSettings::insert_if_doesnt_exist(db, default_admin_settings).await?;
+
+        sqlx::query!("UPDATE adminsettings SET pgp_key = ?", new_pgp_key,)
+            .execute(&mut **db)
+            .await?;
 
         Ok(())
     }
@@ -1575,6 +1600,7 @@ impl UserSettings {
                 .map_ok(|maybe_r| {
                     maybe_r.map(|r| UserSettings {
                         id: Some(r.id.try_into().unwrap()),
+                        pgp_key: r.pgp_key,
                         squeaknode_pubkey: r.squeaknode_pubkey,
                         squeaknode_address: r.squeaknode_address,
                     })
@@ -1600,8 +1626,9 @@ impl UserSettings {
 
         if maybe_user_settings.is_none() {
             sqlx::query!(
-                "INSERT INTO usersettings (user_id, squeaknode_pubkey, squeaknode_address) VALUES (?, ?, ?)",
+                "INSERT INTO usersettings (user_id, pgp_key, squeaknode_pubkey, squeaknode_address) VALUES (?, ?, ?, ?)",
                 user_id,
+                user_settings.pgp_key,
                 user_settings.squeaknode_pubkey,
                 user_settings.squeaknode_address,
             )
@@ -1610,6 +1637,25 @@ impl UserSettings {
         }
 
         tx.commit().await?;
+
+        Ok(())
+    }
+
+    pub async fn set_pgp_key(
+        db: &mut Connection<Db>,
+        user_id: i32,
+        new_pgp_key: &str,
+        default_user_settings: UserSettings,
+    ) -> Result<(), sqlx::Error> {
+        UserSettings::insert_if_doesnt_exist(db, user_id, default_user_settings).await?;
+
+        sqlx::query!(
+            "UPDATE usersettings SET pgp_key = ? WHERE user_id = ?;",
+            new_pgp_key,
+            user_id,
+        )
+        .execute(&mut **db)
+        .await?;
 
         Ok(())
     }
