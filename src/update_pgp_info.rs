@@ -1,6 +1,8 @@
 use crate::base::BaseContext;
 use crate::db::Db;
 use crate::models::{AdminSettings, PGPInfoInput};
+use pgp::Deserializable;
+use pgp::SignedPublicKey;
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
 use rocket::request::FlashMessage;
@@ -60,11 +62,20 @@ async fn update(
 async fn change_pgp_info(pgp_info: PGPInfoInput, db: &mut Connection<Db>) -> Result<(), String> {
     let new_pgp_key_id = pgp_info.pgp_key_id;
 
-    if new_pgp_key_id.len() != 64 {
+    let (key, _headers) =
+        SignedPublicKey::from_string(&new_pgp_key_id).map_err(|_| "Invalid PGP key input.")?;
+
+    println!("parsed pgp key: {:?}", key);
+
+    let validated_pgp_key = key.to_armored_string(None).unwrap();
+
+    println!("pgp key to asc armor: {:?}", validated_pgp_key,);
+
+    if false {
         Err("PGP key id is not valid.".to_string())
     } else {
         let default_admin_settings = AdminSettings::default();
-        AdminSettings::set_pgp_key_id(db, &new_pgp_key_id, default_admin_settings.clone())
+        AdminSettings::set_pgp_key_id(db, &validated_pgp_key, default_admin_settings.clone())
             .await
             .map_err(|_| "failed to update PGP key id.")?;
 
