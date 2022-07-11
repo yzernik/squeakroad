@@ -498,28 +498,23 @@ impl ListingImage {
         listing_id: i32,
         image_id: &str,
     ) -> Result<usize, sqlx::Error> {
-        let mut tx = db.begin().await?;
-
         // Set all images for listing_id to not primary.
-        sqlx::query!(
-            "UPDATE listingimages SET is_primary = false WHERE listing_id = ?",
+        let update_primary_result = sqlx::query!(
+            "
+UPDATE
+ listingimages
+SET
+ is_primary = (public_id = ?)
+WHERE
+ listing_id = ?
+;",
+            image_id,
             listing_id
         )
-        .execute(&mut tx)
+        .execute(&mut **db)
         .await?;
 
-        // Set image for listing_id and image_id to primary.
-        let update_result = sqlx::query!(
-            "UPDATE listingimages SET is_primary = true WHERE listing_id = ? AND public_id = ?",
-            listing_id,
-            image_id,
-        )
-        .execute(&mut tx)
-        .await?;
-
-        tx.commit().await?;
-
-        Ok(update_result.rows_affected() as _)
+        Ok(update_primary_result.rows_affected() as _)
     }
 
     /// Returns the number of affected rows: 1.
