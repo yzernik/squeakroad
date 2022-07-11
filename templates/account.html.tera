@@ -20,9 +20,9 @@
   <p><!--Nothing to see here --></p>
   <div class="row">
     <h5>Seller Info</h5>
-    <a href="/seller_history/{{ user.email }}">My Sold Orders</a>
+    <a href="/seller_history/{{ user.email }}">My Shipped Orders</a>
     <br>
-    <a href="my_new_orders">My New Sold Orders (not yet acknowledged)</a>
+    <a href="my_new_orders">My Unshipped Orders</a>
     <br>
     <a href="/new_listing">Add New Listing</a>
     <br>

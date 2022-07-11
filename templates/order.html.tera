@@ -6,12 +6,12 @@
   <p><!--Nothing to see here --></p>
 
   {% if user %}
-  {% if order.seller_user_id == user.id and not order.acked %}
+  {% if order.seller_user_id == user.id and not order.shipped %}
   <div class="container">
-    <span><b>Unacknowledged by seller</b></span>
-    <form class="inline" action="/order/{{ order.public_id }}/ack" method="post">
+    <span><b>Unshipped by seller</b></span>
+    <form class="inline" action="/order/{{ order.public_id }}/ship" method="post">
       <input type="hidden" name="_method" value="put" />
-      <button class="link" type="submit">Ack</button>
+      <button class="link" type="submit">Ship</button>
     </form>
   </div>
   {% endif %}
