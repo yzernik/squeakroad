@@ -67,8 +67,7 @@ async fn change_fee_rate(
     } else if new_fee_rate_basis_points > 10000 {
         Err("Fee rate basis points cannot be > 10000.".to_string())
     } else {
-        let default_admin_settings = AdminSettings::default();
-        AdminSettings::set_fee_rate(db, new_fee_rate_basis_points, default_admin_settings)
+        AdminSettings::set_fee_rate(db, new_fee_rate_basis_points)
             .await
             .map_err(|_| "failed to update fee rate.")?;
 

@@ -1393,10 +1393,8 @@ impl AdminSettings {
         Ok(admin_settings)
     }
 
-    async fn insert_if_doesnt_exist(
-        db: &mut Connection<Db>,
-        admin_settings: AdminSettings,
-    ) -> Result<(), sqlx::Error> {
+    async fn insert_if_doesnt_exist(db: &mut Connection<Db>) -> Result<(), sqlx::Error> {
+        let admin_settings = AdminSettings::default();
         sqlx::query!(
             "
 INSERT INTO
@@ -1419,9 +1417,8 @@ WHERE NOT EXISTS(SELECT 1 FROM adminsettings)
     pub async fn set_market_name(
         db: &mut Connection<Db>,
         new_market_name: &str,
-        default_admin_settings: AdminSettings,
     ) -> Result<(), sqlx::Error> {
-        AdminSettings::insert_if_doesnt_exist(db, default_admin_settings).await?;
+        AdminSettings::insert_if_doesnt_exist(db).await?;
 
         sqlx::query!("UPDATE adminsettings SET market_name = ?", new_market_name)
             .execute(&mut **db)
@@ -1433,9 +1430,8 @@ WHERE NOT EXISTS(SELECT 1 FROM adminsettings)
     pub async fn set_fee_rate(
         db: &mut Connection<Db>,
         new_fee_rate_basis_points: i32,
-        default_admin_settings: AdminSettings,
     ) -> Result<(), sqlx::Error> {
-        AdminSettings::insert_if_doesnt_exist(db, default_admin_settings).await?;
+        AdminSettings::insert_if_doesnt_exist(db).await?;
 
         sqlx::query!(
             "UPDATE adminsettings SET fee_rate_basis_points = ?",
@@ -1450,9 +1446,8 @@ WHERE NOT EXISTS(SELECT 1 FROM adminsettings)
     pub async fn set_pgp_key(
         db: &mut Connection<Db>,
         new_pgp_key: &str,
-        default_admin_settings: AdminSettings,
     ) -> Result<(), sqlx::Error> {
-        AdminSettings::insert_if_doesnt_exist(db, default_admin_settings).await?;
+        AdminSettings::insert_if_doesnt_exist(db).await?;
 
         sqlx::query!("UPDATE adminsettings SET pgp_key = ?", new_pgp_key,)
             .execute(&mut **db)
@@ -1464,9 +1459,8 @@ WHERE NOT EXISTS(SELECT 1 FROM adminsettings)
     pub async fn set_squeaknode_pubkey(
         db: &mut Connection<Db>,
         new_squeaknode_pubkey: &str,
-        default_admin_settings: AdminSettings,
     ) -> Result<(), sqlx::Error> {
-        AdminSettings::insert_if_doesnt_exist(db, default_admin_settings).await?;
+        AdminSettings::insert_if_doesnt_exist(db).await?;
 
         sqlx::query!(
             "UPDATE adminsettings SET squeaknode_pubkey = ?",
@@ -1481,9 +1475,8 @@ WHERE NOT EXISTS(SELECT 1 FROM adminsettings)
     pub async fn set_squeaknode_address(
         db: &mut Connection<Db>,
         new_squeaknode_address: &str,
-        default_admin_settings: AdminSettings,
     ) -> Result<(), sqlx::Error> {
-        AdminSettings::insert_if_doesnt_exist(db, default_admin_settings).await?;
+        AdminSettings::insert_if_doesnt_exist(db).await?;
 
         sqlx::query!(
             "UPDATE adminsettings SET squeaknode_address = ?",

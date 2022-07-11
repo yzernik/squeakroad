@@ -69,15 +69,10 @@ async fn change_squeaknode_info(
     } else if new_squeaknode_address.len() > 128 {
         Err("Address is too long.".to_string())
     } else {
-        let default_admin_settings = AdminSettings::default();
-        AdminSettings::set_squeaknode_pubkey(
-            db,
-            &new_squeaknode_pubkey,
-            default_admin_settings.clone(),
-        )
-        .await
-        .map_err(|_| "failed to update squeaknode pubkey.")?;
-        AdminSettings::set_squeaknode_address(db, &new_squeaknode_address, default_admin_settings)
+        AdminSettings::set_squeaknode_pubkey(db, &new_squeaknode_pubkey)
+            .await
+            .map_err(|_| "failed to update squeaknode pubkey.")?;
+        AdminSettings::set_squeaknode_address(db, &new_squeaknode_address)
             .await
             .map_err(|_| "failed to update squeaknode address.")?;
 
