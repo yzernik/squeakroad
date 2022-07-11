@@ -60,10 +60,10 @@ async fn update(
 }
 
 async fn change_pgp_info(pgp_info: PGPInfoInput, db: &mut Connection<Db>) -> Result<(), String> {
-    let new_pgp_key_id = pgp_info.pgp_key_id;
+    let new_pgp_key = pgp_info.pgp_key;
 
     let (key, _headers) =
-        SignedPublicKey::from_string(&new_pgp_key_id).map_err(|_| "Invalid PGP key input.")?;
+        SignedPublicKey::from_string(&new_pgp_key).map_err(|_| "Invalid PGP key input.")?;
 
     println!("parsed pgp key: {:?}", key);
 
@@ -75,7 +75,7 @@ async fn change_pgp_info(pgp_info: PGPInfoInput, db: &mut Connection<Db>) -> Res
         Err("PGP key id is not valid.".to_string())
     } else {
         let default_admin_settings = AdminSettings::default();
-        AdminSettings::set_pgp_key_id(db, &validated_pgp_key, default_admin_settings.clone())
+        AdminSettings::set_pgp_key(db, &validated_pgp_key, default_admin_settings.clone())
             .await
             .map_err(|_| "failed to update PGP key id.")?;
 
