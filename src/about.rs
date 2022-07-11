@@ -32,7 +32,7 @@ impl Context {
         let base_context = BaseContext::raw(&mut db, user.clone(), admin_user.clone())
             .await
             .map_err(|_| "failed to get base template.")?;
-        let admin_settings = AdminSettings::single(&mut db, AdminSettings::default())
+        let admin_settings = AdminSettings::single(&mut db)
             .await
             .map_err(|_| "failed to update market name.")?;
         let lightning_node_pubkey = get_lightning_node_pubkey(config)

@@ -28,7 +28,7 @@ impl Context {
         let base_context = BaseContext::raw(&mut db, Some(user.clone()), admin_user.clone())
             .await
             .map_err(|_| "failed to get base template.")?;
-        let admin_settings = AdminSettings::single(&mut db, AdminSettings::default())
+        let admin_settings = AdminSettings::single(&mut db)
             .await
             .map_err(|_| "failed to get admin settings.")?;
         Ok(Context {

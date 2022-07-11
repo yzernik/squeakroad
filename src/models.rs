@@ -1373,10 +1373,7 @@ impl ShippingOption {
 }
 
 impl AdminSettings {
-    pub async fn single(
-        db: &mut Connection<Db>,
-        default_admin_settings: AdminSettings,
-    ) -> Result<AdminSettings, sqlx::Error> {
+    pub async fn single(db: &mut Connection<Db>) -> Result<AdminSettings, sqlx::Error> {
         let maybe_admin_settings = sqlx::query!("select * from adminsettings;")
             .fetch_optional(&mut **db)
             .map_ok(|maybe_r| {
@@ -1391,7 +1388,7 @@ impl AdminSettings {
             })
             .await?;
 
-        let admin_settings = maybe_admin_settings.unwrap_or(default_admin_settings);
+        let admin_settings = maybe_admin_settings.unwrap_or(AdminSettings::default());
 
         Ok(admin_settings)
     }
