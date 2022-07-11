@@ -2345,7 +2345,7 @@ OFFSET ?
         Ok(orders)
     }
 
-    pub async fn all_unshipped_for_user(
+    pub async fn all_pending_for_user(
         db: &mut Connection<Db>,
         user_id: i32,
         page_size: u32,
@@ -2376,7 +2376,7 @@ ON
 WHERE
  orders.paid
 AND
- not orders.shipped
+ not (orders.shipped OR orders.canceled_by_seller OR orders.canceled_by_buyer)
 AND
  listing_user_id = ?
 GROUP BY
@@ -2467,7 +2467,7 @@ impl AccountInfo {
             .iter()
             .map(|c| c.amount_change_sat)
             .sum();
-        let unshipped_orders = OrderCard::all_unshipped_for_user(db, user_id, u32::MAX, 1).await?;
+        let unshipped_orders = OrderCard::all_pending_for_user(db, user_id, u32::MAX, 1).await?;
         let num_unshipped_orders = unshipped_orders.len();
         Ok(AccountInfo {
             account_balance_sat,
@@ -2618,7 +2618,7 @@ from
 WHERE
  orders.paid
 AND
- not orders.shipped
+ (orders.canceled_by_seller OR orders.canceled_by_buyer)
 UNION ALL
 select withdrawals.user_id as user_id, (0 - withdrawals.amount_sat) as amount_change_sat, 'withdrawal' as event_type, withdrawals.public_id as event_id, withdrawals.created_time_ms as event_time_ms
 from

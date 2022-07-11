@@ -8,7 +8,7 @@
 
     <div class="row">
 
-      <h3>My Unshipped Orders</h3>
+      <h3>My Pending Orders</h3>
       <p>Orders for your listings that you have not yet shipped</p>
 
       <div class="twelve columns">
