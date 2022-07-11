@@ -34,7 +34,7 @@
 	<h3>Order</h3>
 
 	<p><b>Order id</b>: {{ order.public_id }}</p>
-	<p><b>Status</b>: {% if order.paid %}{% if order.shipped %}Shipped{% else %}Processing (waiting for seller to ship){% endif %}{% else %}Not paid{% endif %}</p>
+	<p><b>Status</b>: {% if order.paid %}{% if order.shipped %}Shipped{% elif order.canceled_by_seller%}Canceled by seller{% elif order.canceled_by_buyer}Canceled by buyer{% else %}Processing (waiting for seller to ship){% endif %}{% else %}Not paid{% endif %}</p>
         <p><b>Order time</b>: {{ (order.created_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}</p>
 	{% if order.paid %}
         <p><b>Payment time</b>: {{ (order.payment_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}</p>
