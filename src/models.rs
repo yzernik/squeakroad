@@ -1828,6 +1828,34 @@ impl Order {
         Ok(())
     }
 
+    pub async fn mark_as_canceled_by_seller(
+        db: &mut PoolConnection<Sqlite>,
+        order_id: i32,
+    ) -> Result<(), sqlx::Error> {
+        sqlx::query!(
+            "UPDATE orders SET canceled_by_seller = true WHERE id = ?",
+            order_id,
+        )
+        .execute(&mut **db)
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn mark_as_canceled_by_buyer(
+        db: &mut PoolConnection<Sqlite>,
+        order_id: i32,
+    ) -> Result<(), sqlx::Error> {
+        sqlx::query!(
+            "UPDATE orders SET canceled_by_buyer = true WHERE id = ?",
+            order_id,
+        )
+        .execute(&mut **db)
+        .await?;
+
+        Ok(())
+    }
+
     pub async fn seller_info_for_user(
         db: &mut Connection<Db>,
         user_id: i32,

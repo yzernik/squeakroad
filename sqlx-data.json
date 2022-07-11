@@ -690,6 +690,16 @@
     },
     "query": "UPDATE listingimages SET is_primary = false WHERE listing_id = ?"
   },
+  "51f7148cab55c7fb5ae81eb951a62a821514f61a875939fde1231ae49c290d2a": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "UPDATE orders SET canceled_by_buyer = true WHERE id = ?"
+  },
   "53eebe6fb53cec9c107ef412848c686ad61c17316edd2720c70a4d58852f9efd": {
     "describe": {
       "columns": [],
@@ -1497,6 +1507,16 @@
       }
     },
     "query": "select * from listings WHERE public_id = ?;"
+  },
+  "8e184e91b89024ab0a5275c22eb22d3695ff68740f173bb79a5843a19d9044c8": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "UPDATE orders SET canceled_by_seller = true WHERE id = ?"
   },
   "8fdcd745e8ec978aaa58558046f9d9dcbba481bf3595129a0b73a8c98c367372": {
     "describe": {
