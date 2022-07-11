@@ -2,8 +2,9 @@ use crate::base::BaseContext;
 use crate::config::Config;
 use crate::db::Db;
 use crate::lightning;
-use crate::models::{Listing, ListingDisplay, Order, OrderInfo, ShippingOption};
+use crate::models::{Listing, ListingDisplay, Order, OrderInfo, ShippingOption, UserSettings};
 use crate::util;
+use pgp::composed::{Deserializable, Message};
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
 use rocket::request::FlashMessage;
@@ -26,6 +27,7 @@ struct Context {
     listing_display: Option<ListingDisplay>,
     selected_shipping_option: ShippingOption,
     quantity: i32,
+    seller_user_settings: UserSettings,
 }
 
 impl Context {
@@ -47,12 +49,20 @@ impl Context {
         let shipping_option = ShippingOption::single_by_public_id(&mut db, shipping_option_id)
             .await
             .map_err(|_| "failed to get shipping option.")?;
+        let seller_user_settings = UserSettings::single(
+            &mut db,
+            listing_display.listing.user_id,
+            UserSettings::default(),
+        )
+        .await
+        .map_err(|_| "failed to get visited user settings.")?;
         Ok(Context {
             base_context,
             flash,
             listing_display: Some(listing_display),
             selected_shipping_option: shipping_option,
             quantity,
+            seller_user_settings,
         })
     }
 }
@@ -127,9 +137,13 @@ async fn create_order(
     let seller_credit_sat: u64 = amount_owed_sat - market_fee_sat;
     let quantity_in_stock = listing.quantity - quantity_sold;
 
+    let (message, _) =
+        Message::from_string(&shipping_instructions).map_err(|_| "Invalid PGP message.")?;
+    info!("message: {:?}", &message);
+
     if shipping_instructions.is_empty() {
         Err("Shipping instructions cannot be empty.".to_string())
-    } else if shipping_instructions.len() > 1024 {
+    } else if shipping_instructions.len() > 4096 {
         Err("Shipping instructions length is too long.".to_string())
     } else if listing.user_id == user.id() {
         Err("Listing belongs to same user as buyer.".to_string())

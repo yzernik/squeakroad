@@ -46,7 +46,7 @@
 	{% endif %}
 	{% if user %}
 	{% if order.buyer_user_id == user.id or order.seller_user_id == user.id or admin_user %}
-	<p><b>Shipping instructions</b>: {{ order.shipping_instructions }}</p>
+	<p><b>Shipping instructions</b>: <pre>{{ order.shipping_instructions }}</pre></p>
 	{% endif %}
 	{% endif %}
 	<p><b>Payment status</b>: {% if order.paid %}{% if order.completed %}Completed{% else %}Paid but not completed (funds credited back to buyer account){% endif %}{% else %}Not paid{% endif %}</p>
