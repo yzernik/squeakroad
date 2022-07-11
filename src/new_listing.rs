@@ -30,7 +30,7 @@ impl Context {
         let base_context = BaseContext::raw(&mut db, user.clone(), admin_user.clone())
             .await
             .map_err(|_| "failed to get base template.")?;
-        let admin_settings = AdminSettings::single(&mut db, AdminSettings::default())
+        let admin_settings = AdminSettings::single(&mut db)
             .await
             .map_err(|_| "failed to update market name.")?;
         Ok(Context {
@@ -66,7 +66,7 @@ async fn create_listing(
     db: &mut Connection<Db>,
     user: User,
 ) -> Result<String, String> {
-    let admin_settings = AdminSettings::single(db, AdminSettings::default())
+    let admin_settings = AdminSettings::single(db)
         .await
         .map_err(|_| "failed to update market name.")?;
     let now = util::current_time_millis();

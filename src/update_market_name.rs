@@ -28,7 +28,7 @@ impl Context {
         let base_context = BaseContext::raw(&mut db, Some(user.clone()), admin_user.clone())
             .await
             .map_err(|_| "failed to get base template.")?;
-        let admin_settings = AdminSettings::single(&mut db, AdminSettings::default())
+        let admin_settings = AdminSettings::single(&mut db)
             .await
             .map_err(|_| "failed to get admin settings.")?;
         Ok(Context {
@@ -67,8 +67,7 @@ async fn change_market_name(
     } else if new_market_name.len() >= 64 {
         Err("Market name is too long.".to_string())
     } else {
-        let default_admin_settings = AdminSettings::default();
-        AdminSettings::set_market_name(db, &new_market_name, default_admin_settings)
+        AdminSettings::set_market_name(db, &new_market_name)
             .await
             .map_err(|_| "failed to update market name.")?;
 

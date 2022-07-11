@@ -30,7 +30,7 @@ impl Context {
         let base_context = BaseContext::raw(&mut db, Some(user.clone()), admin_user.clone())
             .await
             .map_err(|_| "failed to get base template.")?;
-        let admin_settings = AdminSettings::single(&mut db, AdminSettings::default())
+        let admin_settings = AdminSettings::single(&mut db)
             .await
             .map_err(|_| "failed to get admin settings.")?;
         Ok(Context {
@@ -61,26 +61,13 @@ async fn update(
 
 async fn change_pgp_info(pgp_info: PGPInfoInput, db: &mut Connection<Db>) -> Result<(), String> {
     let new_pgp_key = pgp_info.pgp_key;
-
     let (key, _headers) =
         SignedPublicKey::from_string(&new_pgp_key).map_err(|_| "Invalid PGP key input.")?;
-
-    println!("parsed pgp key: {:?}", key);
-
     let validated_pgp_key = key.to_armored_string(None).unwrap();
-
-    println!("pgp key to asc armor: {:?}", validated_pgp_key,);
-
-    if false {
-        Err("PGP key id is not valid.".to_string())
-    } else {
-        let default_admin_settings = AdminSettings::default();
-        AdminSettings::set_pgp_key(db, &validated_pgp_key, default_admin_settings.clone())
-            .await
-            .map_err(|_| "failed to update PGP key id.")?;
-
-        Ok(())
-    }
+    AdminSettings::set_pgp_key(db, &validated_pgp_key)
+        .await
+        .map_err(|_| "failed to update PGP key id.")?;
+    Ok(())
 }
 
 #[get("/")]

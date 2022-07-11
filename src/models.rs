@@ -6,7 +6,6 @@ use rocket::fs::TempFile;
 use rocket::serde::{Deserialize, Serialize};
 use rocket_db_pools::{sqlx, Connection};
 use sqlx::pool::PoolConnection;
-use sqlx::Acquire;
 use sqlx::Sqlite;
 use std::result::Result;
 
@@ -1374,10 +1373,7 @@ impl ShippingOption {
 }
 
 impl AdminSettings {
-    pub async fn single(
-        db: &mut Connection<Db>,
-        default_admin_settings: AdminSettings,
-    ) -> Result<AdminSettings, sqlx::Error> {
+    pub async fn single(db: &mut Connection<Db>) -> Result<AdminSettings, sqlx::Error> {
         let maybe_admin_settings = sqlx::query!("select * from adminsettings;")
             .fetch_optional(&mut **db)
             .map_ok(|maybe_r| {
@@ -1392,36 +1388,28 @@ impl AdminSettings {
             })
             .await?;
 
-        let admin_settings = maybe_admin_settings.unwrap_or(default_admin_settings);
+        let admin_settings = maybe_admin_settings.unwrap_or_default();
 
         Ok(admin_settings)
     }
 
-    /// Returns the number of affected rows: 1.
-    async fn insert_if_doesnt_exist(
-        db: &mut Connection<Db>,
-        admin_settings: AdminSettings,
-    ) -> Result<(), sqlx::Error> {
-        let mut tx = db.begin().await?;
-
-        let maybe_admin_settings = sqlx::query!("select * from adminsettings;")
-            .fetch_optional(&mut tx)
-            .await?;
-
-        if maybe_admin_settings.is_none() {
-            sqlx::query!(
-                "INSERT INTO adminsettings (market_name, fee_rate_basis_points, pgp_key, squeaknode_pubkey, squeaknode_address) VALUES (?, ?, ?, ?, ?)",
-                admin_settings.market_name,
-                admin_settings.fee_rate_basis_points,
-                admin_settings.squeaknode_pubkey,
-                admin_settings.pgp_key,
-                admin_settings.squeaknode_address,
-            )
-            .execute(&mut tx)
-            .await?;
-        }
-
-        tx.commit().await?;
+    async fn insert_if_doesnt_exist(db: &mut Connection<Db>) -> Result<(), sqlx::Error> {
+        let admin_settings = AdminSettings::default();
+        sqlx::query!(
+            "
+INSERT INTO
+ adminsettings (market_name, fee_rate_basis_points, pgp_key, squeaknode_pubkey, squeaknode_address)
+SELECT ?, ?, ?, ?, ?
+WHERE NOT EXISTS(SELECT 1 FROM adminsettings)
+;",
+            admin_settings.market_name,
+            admin_settings.fee_rate_basis_points,
+            admin_settings.squeaknode_pubkey,
+            admin_settings.pgp_key,
+            admin_settings.squeaknode_address,
+        )
+        .execute(&mut **db)
+        .await?;
 
         Ok(())
     }
@@ -1429,9 +1417,8 @@ impl AdminSettings {
     pub async fn set_market_name(
         db: &mut Connection<Db>,
         new_market_name: &str,
-        default_admin_settings: AdminSettings,
     ) -> Result<(), sqlx::Error> {
-        AdminSettings::insert_if_doesnt_exist(db, default_admin_settings).await?;
+        AdminSettings::insert_if_doesnt_exist(db).await?;
 
         sqlx::query!("UPDATE adminsettings SET market_name = ?", new_market_name)
             .execute(&mut **db)
@@ -1443,9 +1430,8 @@ impl AdminSettings {
     pub async fn set_fee_rate(
         db: &mut Connection<Db>,
         new_fee_rate_basis_points: i32,
-        default_admin_settings: AdminSettings,
     ) -> Result<(), sqlx::Error> {
-        AdminSettings::insert_if_doesnt_exist(db, default_admin_settings).await?;
+        AdminSettings::insert_if_doesnt_exist(db).await?;
 
         sqlx::query!(
             "UPDATE adminsettings SET fee_rate_basis_points = ?",
@@ -1460,9 +1446,8 @@ impl AdminSettings {
     pub async fn set_pgp_key(
         db: &mut Connection<Db>,
         new_pgp_key: &str,
-        default_admin_settings: AdminSettings,
     ) -> Result<(), sqlx::Error> {
-        AdminSettings::insert_if_doesnt_exist(db, default_admin_settings).await?;
+        AdminSettings::insert_if_doesnt_exist(db).await?;
 
         sqlx::query!("UPDATE adminsettings SET pgp_key = ?", new_pgp_key,)
             .execute(&mut **db)
@@ -1474,9 +1459,8 @@ impl AdminSettings {
     pub async fn set_squeaknode_pubkey(
         db: &mut Connection<Db>,
         new_squeaknode_pubkey: &str,
-        default_admin_settings: AdminSettings,
     ) -> Result<(), sqlx::Error> {
-        AdminSettings::insert_if_doesnt_exist(db, default_admin_settings).await?;
+        AdminSettings::insert_if_doesnt_exist(db).await?;
 
         sqlx::query!(
             "UPDATE adminsettings SET squeaknode_pubkey = ?",
@@ -1491,9 +1475,8 @@ impl AdminSettings {
     pub async fn set_squeaknode_address(
         db: &mut Connection<Db>,
         new_squeaknode_address: &str,
-        default_admin_settings: AdminSettings,
     ) -> Result<(), sqlx::Error> {
-        AdminSettings::insert_if_doesnt_exist(db, default_admin_settings).await?;
+        AdminSettings::insert_if_doesnt_exist(db).await?;
 
         sqlx::query!(
             "UPDATE adminsettings SET squeaknode_address = ?",
@@ -1510,7 +1493,6 @@ impl UserSettings {
     pub async fn single(
         db: &mut Connection<Db>,
         user_id: i32,
-        default_user_settings: UserSettings,
     ) -> Result<UserSettings, sqlx::Error> {
         let maybe_user_settings =
             sqlx::query!("select * from usersettings WHERE user_id = ?;", user_id,)
@@ -1524,7 +1506,7 @@ impl UserSettings {
                     })
                 })
                 .await?;
-        let user_settings = maybe_user_settings.unwrap_or(default_user_settings);
+        let user_settings = maybe_user_settings.unwrap_or_default();
 
         Ok(user_settings)
     }
@@ -1533,28 +1515,23 @@ impl UserSettings {
     async fn insert_if_doesnt_exist(
         db: &mut Connection<Db>,
         user_id: i32,
-        user_settings: UserSettings,
     ) -> Result<(), sqlx::Error> {
-        let mut tx = db.begin().await?;
-
-        let maybe_user_settings =
-            sqlx::query!("select * from usersettings WHERE user_id = ?;", user_id,)
-                .fetch_optional(&mut tx)
-                .await?;
-
-        if maybe_user_settings.is_none() {
-            sqlx::query!(
-                "INSERT INTO usersettings (user_id, pgp_key, squeaknode_pubkey, squeaknode_address) VALUES (?, ?, ?, ?)",
-                user_id,
-                user_settings.pgp_key,
-                user_settings.squeaknode_pubkey,
-                user_settings.squeaknode_address,
-            )
-            .execute(&mut tx)
-            .await?;
-        }
-
-        tx.commit().await?;
+        let user_settings = UserSettings::default();
+        sqlx::query!(
+            "
+INSERT INTO
+ usersettings (user_id, pgp_key, squeaknode_pubkey, squeaknode_address)
+SELECT ?, ?, ?, ?
+WHERE NOT EXISTS(SELECT 1 FROM usersettings WHERE user_id = ?)
+;",
+            user_id,
+            user_settings.pgp_key,
+            user_settings.squeaknode_pubkey,
+            user_settings.squeaknode_address,
+            user_id,
+        )
+        .execute(&mut **db)
+        .await?;
 
         Ok(())
     }
@@ -1563,9 +1540,8 @@ impl UserSettings {
         db: &mut Connection<Db>,
         user_id: i32,
         new_pgp_key: &str,
-        default_user_settings: UserSettings,
     ) -> Result<(), sqlx::Error> {
-        UserSettings::insert_if_doesnt_exist(db, user_id, default_user_settings).await?;
+        UserSettings::insert_if_doesnt_exist(db, user_id).await?;
 
         sqlx::query!(
             "UPDATE usersettings SET pgp_key = ? WHERE user_id = ?;",
@@ -1582,9 +1558,8 @@ impl UserSettings {
         db: &mut Connection<Db>,
         user_id: i32,
         new_squeaknode_pubkey: &str,
-        default_user_settings: UserSettings,
     ) -> Result<(), sqlx::Error> {
-        UserSettings::insert_if_doesnt_exist(db, user_id, default_user_settings).await?;
+        UserSettings::insert_if_doesnt_exist(db, user_id).await?;
 
         sqlx::query!(
             "UPDATE usersettings SET squeaknode_pubkey = ? WHERE user_id = ?;",
@@ -1601,9 +1576,8 @@ impl UserSettings {
         db: &mut Connection<Db>,
         user_id: i32,
         new_squeaknode_address: &str,
-        default_user_settings: UserSettings,
     ) -> Result<(), sqlx::Error> {
-        UserSettings::insert_if_doesnt_exist(db, user_id, default_user_settings).await?;
+        UserSettings::insert_if_doesnt_exist(db, user_id).await?;
 
         sqlx::query!(
             "UPDATE usersettings SET squeaknode_address = ? WHERE user_id = ?;",

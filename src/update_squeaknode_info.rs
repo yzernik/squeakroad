@@ -28,7 +28,7 @@ impl Context {
         let base_context = BaseContext::raw(&mut db, Some(user.clone()), admin_user.clone())
             .await
             .map_err(|_| "failed to get base template.")?;
-        let admin_settings = AdminSettings::single(&mut db, AdminSettings::default())
+        let admin_settings = AdminSettings::single(&mut db)
             .await
             .map_err(|_| "failed to get admin settings.")?;
         Ok(Context {
@@ -69,15 +69,10 @@ async fn change_squeaknode_info(
     } else if new_squeaknode_address.len() > 128 {
         Err("Address is too long.".to_string())
     } else {
-        let default_admin_settings = AdminSettings::default();
-        AdminSettings::set_squeaknode_pubkey(
-            db,
-            &new_squeaknode_pubkey,
-            default_admin_settings.clone(),
-        )
-        .await
-        .map_err(|_| "failed to update squeaknode pubkey.")?;
-        AdminSettings::set_squeaknode_address(db, &new_squeaknode_address, default_admin_settings)
+        AdminSettings::set_squeaknode_pubkey(db, &new_squeaknode_pubkey)
+            .await
+            .map_err(|_| "failed to update squeaknode pubkey.")?;
+        AdminSettings::set_squeaknode_address(db, &new_squeaknode_address)
             .await
             .map_err(|_| "failed to update squeaknode address.")?;
 

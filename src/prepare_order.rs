@@ -49,13 +49,9 @@ impl Context {
         let shipping_option = ShippingOption::single_by_public_id(&mut db, shipping_option_id)
             .await
             .map_err(|_| "failed to get shipping option.")?;
-        let seller_user_settings = UserSettings::single(
-            &mut db,
-            listing_display.listing.user_id,
-            UserSettings::default(),
-        )
-        .await
-        .map_err(|_| "failed to get visited user settings.")?;
+        let seller_user_settings = UserSettings::single(&mut db, listing_display.listing.user_id)
+            .await
+            .map_err(|_| "failed to get visited user settings.")?;
         Ok(Context {
             base_context,
             flash,

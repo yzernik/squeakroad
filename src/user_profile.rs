@@ -32,10 +32,9 @@ impl Context {
         let visited_user = RocketAuthUser::single_by_username(&mut db, username)
             .await
             .map_err(|_| "failed to get visited user.")?;
-        let visited_user_settings =
-            UserSettings::single(&mut db, visited_user.id.unwrap(), UserSettings::default())
-                .await
-                .map_err(|_| "failed to get visited user settings.")?;
+        let visited_user_settings = UserSettings::single(&mut db, visited_user.id.unwrap())
+            .await
+            .map_err(|_| "failed to get visited user settings.")?;
         Ok(Context {
             base_context,
             flash,
