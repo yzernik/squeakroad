@@ -481,22 +481,22 @@
           "type_info": "Int64"
         },
         {
-          "name": "squeaknode_pubkey",
-          "ordinal": 1,
-          "type_info": "Text"
-        },
-        {
-          "name": "squeaknode_address",
-          "ordinal": 2,
-          "type_info": "Text"
-        },
-        {
           "name": "user_id",
-          "ordinal": 3,
+          "ordinal": 1,
           "type_info": "Int64"
         },
         {
           "name": "pgp_key",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "squeaknode_pubkey",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "squeaknode_address",
           "ordinal": 4,
           "type_info": "Text"
         }
@@ -1737,7 +1737,7 @@
         }
       ],
       "nullable": [
-        true,
+        false,
         false,
         false,
         false,
@@ -1941,7 +1941,7 @@
         }
       ],
       "nullable": [
-        true,
+        false,
         false,
         false,
         false,
@@ -2204,7 +2204,7 @@
         }
       ],
       "nullable": [
-        true,
+        false,
         false,
         false,
         false,
@@ -2282,54 +2282,54 @@
           "type_info": "Bool"
         },
         {
-          "name": "invoice_payment_request",
-          "ordinal": 12,
-          "type_info": "Text"
-        },
-        {
-          "name": "invoice_hash",
-          "ordinal": 13,
-          "type_info": "Text"
-        },
-        {
-          "name": "review_text",
-          "ordinal": 14,
-          "type_info": "Text"
-        },
-        {
-          "name": "review_rating",
-          "ordinal": 15,
-          "type_info": "Int64"
-        },
-        {
-          "name": "reviewed",
-          "ordinal": 16,
-          "type_info": "Bool"
-        },
-        {
-          "name": "created_time_ms",
-          "ordinal": 17,
-          "type_info": "Int64"
-        },
-        {
-          "name": "review_time_ms",
-          "ordinal": 18,
-          "type_info": "Int64"
-        },
-        {
-          "name": "payment_time_ms",
-          "ordinal": 19,
-          "type_info": "Int64"
-        },
-        {
           "name": "canceled_by_seller",
-          "ordinal": 20,
+          "ordinal": 12,
           "type_info": "Bool"
         },
         {
           "name": "canceled_by_buyer",
-          "ordinal": 21,
+          "ordinal": 13,
           "type_info": "Bool"
+        },
+        {
+          "name": "invoice_payment_request",
+          "ordinal": 14,
+          "type_info": "Text"
+        },
+        {
+          "name": "invoice_hash",
+          "ordinal": 15,
+          "type_info": "Text"
+        },
+        {
+          "name": "review_text",
+          "ordinal": 16,
+          "type_info": "Text"
+        },
+        {
+          "name": "review_rating",
+          "ordinal": 17,
+          "type_info": "Int64"
+        },
+        {
+          "name": "reviewed",
+          "ordinal": 18,
+          "type_info": "Bool"
+        },
+        {
+          "name": "created_time_ms",
+          "ordinal": 19,
+          "type_info": "Int64"
+        },
+        {
+          "name": "review_time_ms",
+          "ordinal": 20,
+          "type_info": "Int64"
+        },
+        {
+          "name": "payment_time_ms",
+          "ordinal": 21,
+          "type_info": "Int64"
         }
       ],
       "nullable": [
@@ -2426,58 +2426,58 @@
           "type_info": "Bool"
         },
         {
-          "name": "invoice_payment_request",
-          "ordinal": 12,
-          "type_info": "Text"
-        },
-        {
-          "name": "invoice_hash",
-          "ordinal": 13,
-          "type_info": "Text"
-        },
-        {
-          "name": "review_text",
-          "ordinal": 14,
-          "type_info": "Text"
-        },
-        {
-          "name": "review_rating",
-          "ordinal": 15,
-          "type_info": "Int64"
-        },
-        {
-          "name": "reviewed",
-          "ordinal": 16,
-          "type_info": "Bool"
-        },
-        {
-          "name": "created_time_ms",
-          "ordinal": 17,
-          "type_info": "Int64"
-        },
-        {
-          "name": "review_time_ms",
-          "ordinal": 18,
-          "type_info": "Int64"
-        },
-        {
-          "name": "payment_time_ms",
-          "ordinal": 19,
-          "type_info": "Int64"
-        },
-        {
           "name": "canceled_by_seller",
-          "ordinal": 20,
+          "ordinal": 12,
           "type_info": "Bool"
         },
         {
           "name": "canceled_by_buyer",
-          "ordinal": 21,
+          "ordinal": 13,
           "type_info": "Bool"
+        },
+        {
+          "name": "invoice_payment_request",
+          "ordinal": 14,
+          "type_info": "Text"
+        },
+        {
+          "name": "invoice_hash",
+          "ordinal": 15,
+          "type_info": "Text"
+        },
+        {
+          "name": "review_text",
+          "ordinal": 16,
+          "type_info": "Text"
+        },
+        {
+          "name": "review_rating",
+          "ordinal": 17,
+          "type_info": "Int64"
+        },
+        {
+          "name": "reviewed",
+          "ordinal": 18,
+          "type_info": "Bool"
+        },
+        {
+          "name": "created_time_ms",
+          "ordinal": 19,
+          "type_info": "Int64"
+        },
+        {
+          "name": "review_time_ms",
+          "ordinal": 20,
+          "type_info": "Int64"
+        },
+        {
+          "name": "payment_time_ms",
+          "ordinal": 21,
+          "type_info": "Int64"
         }
       ],
       "nullable": [
-        true,
+        false,
         false,
         false,
         false,
@@ -2667,17 +2667,17 @@
           "type_info": "Int64"
         },
         {
-          "name": "squeaknode_address",
+          "name": "pgp_key",
           "ordinal": 3,
           "type_info": "Text"
         },
         {
-          "name": "squeaknode_pubkey",
+          "name": "squeaknode_address",
           "ordinal": 4,
           "type_info": "Text"
         },
         {
-          "name": "pgp_key",
+          "name": "squeaknode_pubkey",
           "ordinal": 5,
           "type_info": "Text"
         }
@@ -2952,7 +2952,7 @@
         }
       ],
       "nullable": [
-        true,
+        false,
         false,
         false,
         false,
@@ -3320,54 +3320,54 @@
           "type_info": "Bool"
         },
         {
-          "name": "invoice_payment_request",
-          "ordinal": 12,
-          "type_info": "Text"
-        },
-        {
-          "name": "invoice_hash",
-          "ordinal": 13,
-          "type_info": "Text"
-        },
-        {
-          "name": "review_text",
-          "ordinal": 14,
-          "type_info": "Text"
-        },
-        {
-          "name": "review_rating",
-          "ordinal": 15,
-          "type_info": "Int64"
-        },
-        {
-          "name": "reviewed",
-          "ordinal": 16,
-          "type_info": "Bool"
-        },
-        {
-          "name": "created_time_ms",
-          "ordinal": 17,
-          "type_info": "Int64"
-        },
-        {
-          "name": "review_time_ms",
-          "ordinal": 18,
-          "type_info": "Int64"
-        },
-        {
-          "name": "payment_time_ms",
-          "ordinal": 19,
-          "type_info": "Int64"
-        },
-        {
           "name": "canceled_by_seller",
-          "ordinal": 20,
+          "ordinal": 12,
           "type_info": "Bool"
         },
         {
           "name": "canceled_by_buyer",
-          "ordinal": 21,
+          "ordinal": 13,
           "type_info": "Bool"
+        },
+        {
+          "name": "invoice_payment_request",
+          "ordinal": 14,
+          "type_info": "Text"
+        },
+        {
+          "name": "invoice_hash",
+          "ordinal": 15,
+          "type_info": "Text"
+        },
+        {
+          "name": "review_text",
+          "ordinal": 16,
+          "type_info": "Text"
+        },
+        {
+          "name": "review_rating",
+          "ordinal": 17,
+          "type_info": "Int64"
+        },
+        {
+          "name": "reviewed",
+          "ordinal": 18,
+          "type_info": "Bool"
+        },
+        {
+          "name": "created_time_ms",
+          "ordinal": 19,
+          "type_info": "Int64"
+        },
+        {
+          "name": "review_time_ms",
+          "ordinal": 20,
+          "type_info": "Int64"
+        },
+        {
+          "name": "payment_time_ms",
+          "ordinal": 21,
+          "type_info": "Int64"
         }
       ],
       "nullable": [
