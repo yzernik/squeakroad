@@ -16,6 +16,7 @@ figment = { version = "0.10", features = ["toml", "env"] }
 serde = "1.0.138"
 hex = "0.4.3"
 qr_code = { version = "1.1.0", features = ["bmp"] }
+pgp = "0.8.0"
 
 [dependencies.sqlx]
 version = "0.6.0"

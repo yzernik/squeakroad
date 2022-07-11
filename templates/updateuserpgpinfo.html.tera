@@ -10,15 +10,15 @@
   <div class="row">
     <h4>Update PGP Info</h4>
 
-    <p><b>PGP Key Id</b>: {% if user_settings.pgp_key_id %}{{ user_settings.pgp_key_id }}{% else %}Not set{% endif %}</p>
+    <p><b>PGP Key Id</b>: {% if user_settings.pgp_key_id %}<pre>{{ user_settings.pgp_key_id }}</pre>{% else %}Not set{% endif %}</p>
 
     <form action="/update_user_pgp_info/change" method="post">
       <div class="ten columns">
-        <input type="text" placeholder="enter your PGP key id..."
-               name="pgp_key_id" id="pgp_key_id" value="" autofocus
-               class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" />
+        <textarea placeholder="enter your PGP key id..."
+		  name="pgp_key_id" id="pgp_key_id" value=""
+		  class="u-full-width"></textarea>
         {% if flash %}
-        <small class="field-{{flash.0}}-msg">
+	<small class="field-{{flash.0}}-msg">
           {{ flash.1 }}
         </small>
         {% endif %}
