@@ -2,7 +2,6 @@ CREATE TABLE listings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     public_id VARCHAR NOT NULL,
     user_id INTEGER NOT NULL,
-    quantity INTEGER NOT NULL,
     title VARCHAR NOT NULL,
     description VARCHAR NOT NULL,
     price_sat UNSIGNED BIG INT NOT NULL,
@@ -14,8 +13,6 @@ CREATE TABLE listings (
     created_time_ms UNSIGNED BIG INT NOT NULL
 );
 
-CREATE UNIQUE INDEX ux_listings_public_id ON listings(public_id);
-
 CREATE TABLE listingimages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     public_id VARCHAR NOT NULL,
@@ -23,8 +20,6 @@ CREATE TABLE listingimages (
     image_data BLOB NOT NULL,
     is_primary BOOLEAN NOT NULL
 );
-
-CREATE UNIQUE INDEX ux_listingimages_public_id ON listingimages(public_id);
 
 CREATE TABLE shippingoptions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -35,12 +30,11 @@ CREATE TABLE shippingoptions (
     price_sat UNSIGNED BIG INT NOT NULL
 );
 
-CREATE UNIQUE INDEX ux_shippingoptions_public_id ON shippingoptions(public_id);
-
 CREATE TABLE adminsettings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     market_name VARCHAR NOT NULL,
     fee_rate_basis_points INTEGER NOT NULL,
+    pgp_key VARCHAR NOT NULL,
     squeaknode_address VARCHAR NOT NULL,
     squeaknode_pubkey VARCHAR NOT NULL
 );
@@ -57,8 +51,9 @@ CREATE TABLE orders (
     amount_owed_sat UNSIGNED BIG INT NOT NULL,
     seller_credit_sat UNSIGNED BIG INT NOT NULL,
     paid BOOLEAN NOT NULL,
-    completed BOOLEAN NOT NULL,
-    acked BOOLEAN NOT NULL,
+    shipped BOOLEAN NOT NULL,
+    canceled_by_seller boolean NOT NULL,
+    canceled_by_buyer boolean NOT NULL,
     invoice_payment_request VARCHAR NOT NULL,
     invoice_hash VARCHAR NOT NULL,
     review_text VARCHAR NOT NULL,
@@ -68,8 +63,6 @@ CREATE TABLE orders (
     review_time_ms UNSIGNED BIG INT NOT NULL,
     payment_time_ms UNSIGNED BIG INT NOT NULL
 );
-
-CREATE UNIQUE INDEX ux_orders_public_id ON orders(public_id);
 
 CREATE TABLE withdrawals (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -81,22 +74,10 @@ CREATE TABLE withdrawals (
     invoice_payment_request VARCHAR NOT NULL
 );
 
-CREATE UNIQUE INDEX ux_withdrawals_public_id ON withdrawals(public_id);
-
-CREATE TABLE ordermessages (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    public_id VARCHAR NOT NULL,
-    order_id INTEGER NOT NULL,
-    author_id INTEGER NOT NULL,
-    recipient_id INTEGER NOT NULL,
-    text VARCHAR NOT NULL,
-    viewed BOOLEAN NOT NULL,
-    created_time_ms UNSIGNED BIG INT NOT NULL
-);
-
 CREATE TABLE usersettings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    pgp_key VARCHAR NOT NULL,
     squeaknode_pubkey VARCHAR NOT NULL,
-    squeaknode_address VARCHAR NOT NULL,
-    user_id INTEGER NOT NULL
+    squeaknode_address VARCHAR NOT NULL
 );

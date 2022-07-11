@@ -334,7 +334,7 @@ impl Listing {
         let listing = sqlx::query!("select * from listings WHERE public_id = ?;", public_id)
             .fetch_one(&mut **db)
             .map_ok(|r| Listing {
-                id: r.id.map(|n| n.try_into().unwrap()),
+                id: Some(r.id.try_into().unwrap()),
                 public_id: r.public_id,
                 user_id: r.user_id.try_into().unwrap(),
                 title: r.title,
@@ -481,7 +481,7 @@ impl ListingImage {
         )
         .fetch_one(&mut **db)
         .map_ok(|r| ListingImage {
-            id: r.id.map(|n| n.try_into().unwrap()),
+            id: Some(r.id.try_into().unwrap()),
             public_id: r.public_id,
             listing_id: r.listing_id.try_into().unwrap(),
             image_data: r.image_data,
@@ -1346,7 +1346,7 @@ impl ShippingOption {
         )
         .fetch_one(&mut **db)
         .map_ok(|r| ShippingOption {
-            id: r.id.map(|n| n.try_into().unwrap()),
+            id: Some(r.id.try_into().unwrap()),
             public_id: r.public_id,
             listing_id: r.listing_id.try_into().unwrap(),
             title: r.title,
@@ -1705,7 +1705,7 @@ impl Order {
         let order = sqlx::query!("select * from orders WHERE public_id = ?;", public_id)
             .fetch_one(&mut **db)
             .map_ok(|r| Order {
-                id: r.id.map(|n| n.try_into().unwrap()),
+                id: Some(r.id.try_into().unwrap()),
                 public_id: r.public_id,
                 quantity: r.quantity.try_into().unwrap(),
                 buyer_user_id: r.buyer_user_id.try_into().unwrap(),
@@ -2722,7 +2722,7 @@ impl Withdrawal {
         let withdrawal = sqlx::query!("select * from withdrawals WHERE public_id = ?;", public_id)
             .fetch_one(&mut **db)
             .map_ok(|r| Withdrawal {
-                id: Some(r.id.unwrap().try_into().unwrap()),
+                id: Some(r.id.try_into().unwrap()),
                 public_id: r.public_id,
                 user_id: r.user_id.try_into().unwrap(),
                 amount_sat: r.amount_sat.try_into().unwrap(),
