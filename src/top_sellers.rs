@@ -9,6 +9,8 @@ use rocket_auth::{AdminUser, User};
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
 
+const PAGE_SIZE: u32 = 10;
+
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
 struct Context {
@@ -27,9 +29,15 @@ impl Context {
         let base_context = BaseContext::raw(&mut db, user.clone(), admin_user.clone())
             .await
             .map_err(|_| "failed to get base template.")?;
-        let seller_infos = Order::seller_info_for_all_users(&mut db)
+        let seller_infos_for_all = Order::seller_info_for_all_users(&mut db)
             .await
             .map_err(|_| "failed to get seller infos for top users.")?;
+        // Use db query to take only top N sellers.
+        let seller_infos = seller_infos_for_all
+            .iter()
+            .cloned()
+            .take(PAGE_SIZE.try_into().unwrap())
+            .collect::<Vec<_>>();
         Ok(Context {
             base_context,
             flash,
