@@ -5,15 +5,18 @@
 <div class="container">
   <p><!--Nothing to see here --></p>
 
-  {% if user %}
-  {% if order.seller_user_id == user.id and not order.shipped %}
-  <div class="container">
-    <span><b>Unshipped by seller</b></span>
+  <!-- Options for the seller -->
+  {% if user and order.seller_user_id == user.id %}
+  {% if order.paid and not order.shipped and not order.canceled_by_seller and not order.canceled_by_buyer %}
+  <h5>Process Order (ship or cancel)</h5>
     <form class="inline" action="/order/{{ order.public_id }}/ship" method="post">
       <input type="hidden" name="_method" value="put" />
-      <button class="link" type="submit">Ship</button>
+      <button class="small" type="submit">Mark as shipped</button>
     </form>
-  </div>
+    <form class="inline" action="/order/{{ order.public_id }}/seller_cancel" method="post">
+      <input type="hidden" name="_method" value="put" />
+      <button class="small" type="submit">Mark as canceled</button>
+    </form>
   {% endif %}
   {% endif %}
 
@@ -31,8 +34,8 @@
 	<h3>Order</h3>
 
 	<p><b>Order id</b>: {{ order.public_id }}</p>
+	<p><b>Status</b>: {% if order.paid %}{% if order.shipped %}Shipped{% else %}Processing (waiting for seller to ship){% endif %}{% else %}Not paid{% endif %}</p>
         <p><b>Order time</b>: {{ (order.created_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}</p>
-	<p><b>Payment status</b>: {% if order.paid %}{% if order.shipped %}Shipped{% else %}Processing (waiting for seller to ship){% endif %}{% else %}Not paid{% endif %}</p>
 	{% if order.paid %}
         <p><b>Payment time</b>: {{ (order.payment_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}</p>
 	<p><b>Listing</b>: <a href="/listing/{{ listing.public_id }}">{{ listing.title }}</a> ({{ listing.price_sat }} sats)</p>
