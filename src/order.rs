@@ -127,6 +127,10 @@ async fn mark_order_as_shipped(
 
     if order.seller_user_id != user.id() {
         Err("User is not the order seller.".to_string())
+    } else if order.shipped {
+        Err("order is already shipped.".to_string())
+    } else if order.canceled_by_seller || order.canceled_by_buyer {
+        Err("order is already canceled.".to_string())
     } else {
         match Order::mark_as_shipped(&mut *db, order.id.unwrap()).await {
             Ok(_) => Ok(()),
@@ -169,6 +173,10 @@ async fn mark_order_as_canceled_by_seller(
 
     if order.seller_user_id != user.id() {
         Err("User is not the order seller.".to_string())
+    } else if order.shipped {
+        Err("order is already shipped.".to_string())
+    } else if order.canceled_by_seller || order.canceled_by_buyer {
+        Err("order is already canceled.".to_string())
     } else {
         match Order::mark_as_canceled_by_seller(&mut *db, order.id.unwrap()).await {
             Ok(_) => Ok(()),
@@ -211,6 +219,10 @@ async fn mark_order_as_canceled_by_buyer(
 
     if order.buyer_user_id != user.id() {
         Err("User is not the order buyer.".to_string())
+    } else if order.shipped {
+        Err("order is already shipped.".to_string())
+    } else if order.canceled_by_seller || order.canceled_by_buyer {
+        Err("order is already canceled.".to_string())
     } else {
         match Order::mark_as_canceled_by_buyer(&mut *db, order.id.unwrap()).await {
             Ok(_) => Ok(()),
