@@ -1,6 +1,6 @@
 use crate::base::BaseContext;
 use crate::db::Db;
-use crate::models::{Listing, ListingDisplay, Order, ShippingOption};
+use crate::models::{Listing, ListingDisplay, ShippingOption};
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::response::Flash;
@@ -18,7 +18,6 @@ struct Context {
     flash: Option<(String, String)>,
     listing_display: ListingDisplay,
     selected_shipping_option: Option<ShippingOption>,
-    quantity_in_stock: u32,
     user: Option<User>,
     admin_user: Option<AdminUser>,
 }
@@ -57,10 +56,6 @@ impl Context {
         {
             Err("Listing is not approved.".to_string())
         } else {
-            let quantity_sold =
-                Order::quantity_of_listing_sold(&mut db, listing_display.listing.id.unwrap())
-                    .await
-                    .map_err(|_| "failed to get quantity sold.")?;
             let maybe_shipping_option = match shipping_option_id {
                 Some(sid) => {
                     let shipping_option = ShippingOption::single_by_public_id(&mut db, sid).await;
@@ -68,14 +63,12 @@ impl Context {
                 }
                 None => None,
             };
-            let quantity_in_stock = listing_display.listing.quantity - quantity_sold;
 
             Ok(Context {
                 base_context,
                 flash,
                 listing_display,
                 selected_shipping_option: maybe_shipping_option,
-                quantity_in_stock,
                 user,
                 admin_user,
             })

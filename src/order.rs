@@ -66,29 +66,29 @@ impl Context {
     }
 }
 
-#[put("/<id>/ack")]
-async fn ack(
+#[put("/<id>/ship")]
+async fn ship(
     id: &str,
     mut db: Connection<Db>,
     user: User,
     admin_user: Option<AdminUser>,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
-    match mark_order_as_acked(id, &mut db, user.clone(), admin_user.clone()).await {
+    match mark_order_as_shipped(id, &mut db, user.clone(), admin_user.clone()).await {
         Ok(_) => Ok(Flash::success(
             Redirect::to(format!("/{}/{}", "order", id)),
-            "Order marked as acked.",
+            "Order marked as shipped.",
         )),
         Err(e) => {
             error_!("DB update({}) error: {}", id, e);
             Err(Flash::error(
                 Redirect::to(format!("/{}/{}", "order", id)),
-                "Failed to mark order as acked.",
+                "Failed to mark order as shipped.",
             ))
         }
     }
 }
 
-async fn mark_order_as_acked(
+async fn mark_order_as_shipped(
     order_id: &str,
     db: &mut Connection<Db>,
     user: User,
@@ -101,9 +101,93 @@ async fn mark_order_as_acked(
     if order.seller_user_id != user.id() {
         Err("User is not the order seller.".to_string())
     } else {
-        match Order::mark_as_acked(&mut *db, order.id.unwrap()).await {
+        match Order::mark_as_shipped(&mut *db, order.id.unwrap()).await {
             Ok(_) => Ok(()),
-            Err(_) => Err("failed to mark order as acked.".to_string()),
+            Err(_) => Err("failed to mark order as shipped.".to_string()),
+        }
+    }
+}
+
+#[put("/<id>/seller_cancel")]
+async fn seller_cancel(
+    id: &str,
+    mut db: Connection<Db>,
+    user: User,
+    admin_user: Option<AdminUser>,
+) -> Result<Flash<Redirect>, Flash<Redirect>> {
+    match mark_order_as_canceled_by_seller(id, &mut db, user.clone(), admin_user.clone()).await {
+        Ok(_) => Ok(Flash::success(
+            Redirect::to(format!("/{}/{}", "order", id)),
+            "Order marked as canceled by seller.",
+        )),
+        Err(e) => {
+            error_!("DB update({}) error: {}", id, e);
+            Err(Flash::error(
+                Redirect::to(format!("/{}/{}", "order", id)),
+                "Failed to mark order as canceled by seller.",
+            ))
+        }
+    }
+}
+
+async fn mark_order_as_canceled_by_seller(
+    order_id: &str,
+    db: &mut Connection<Db>,
+    user: User,
+    _admin_user: Option<AdminUser>,
+) -> Result<(), String> {
+    let order = Order::single_by_public_id(db, order_id)
+        .await
+        .map_err(|_| "failed to get order.")?;
+
+    if order.seller_user_id != user.id() {
+        Err("User is not the order seller.".to_string())
+    } else {
+        match Order::mark_as_canceled_by_seller(&mut *db, order.id.unwrap()).await {
+            Ok(_) => Ok(()),
+            Err(_) => Err("failed to mark order as canceled by seller.".to_string()),
+        }
+    }
+}
+
+#[put("/<id>/buyer_cancel")]
+async fn buyer_cancel(
+    id: &str,
+    mut db: Connection<Db>,
+    user: User,
+    admin_user: Option<AdminUser>,
+) -> Result<Flash<Redirect>, Flash<Redirect>> {
+    match mark_order_as_canceled_by_buyer(id, &mut db, user.clone(), admin_user.clone()).await {
+        Ok(_) => Ok(Flash::success(
+            Redirect::to(format!("/{}/{}", "order", id)),
+            "Order marked as canceled by buyer.",
+        )),
+        Err(e) => {
+            error_!("DB update({}) error: {}", id, e);
+            Err(Flash::error(
+                Redirect::to(format!("/{}/{}", "order", id)),
+                "Failed to mark order as canceled by buyer.",
+            ))
+        }
+    }
+}
+
+async fn mark_order_as_canceled_by_buyer(
+    order_id: &str,
+    db: &mut Connection<Db>,
+    user: User,
+    _admin_user: Option<AdminUser>,
+) -> Result<(), String> {
+    let order = Order::single_by_public_id(db, order_id)
+        .await
+        .map_err(|_| "failed to get order.")?;
+
+    if order.buyer_user_id != user.id() {
+        Err("User is not the order buyer.".to_string())
+    } else {
+        match Order::mark_as_canceled_by_buyer(&mut *db, order.id.unwrap()).await {
+            Ok(_) => Ok(()),
+            Err(_) => Err("failed to mark order as canceled by buyer.".to_string()),
         }
     }
 }
@@ -145,8 +229,8 @@ async fn create_order_review(
     let review_rating = order_review_info.review_rating.unwrap_or(0);
     let review_text = order_review_info.review_text;
 
-    if !order.completed {
-        Err("Cannot post review for order that is not completed.".to_string())
+    if !order.shipped {
+        Err("Cannot post review for order that is not shipped.".to_string())
     } else if user.id() != order.buyer_user_id {
         Err("User is not the buyer.".to_string())
     } else if !(1..=5).contains(&review_rating) {
@@ -199,6 +283,9 @@ async fn index(
 
 pub fn order_stage() -> AdHoc {
     AdHoc::on_ignite("Order Stage", |rocket| async {
-        rocket.mount("/order", routes![index, ack, new_review])
+        rocket.mount(
+            "/order",
+            routes![index, ship, seller_cancel, buyer_cancel, new_review],
+        )
     })
 }

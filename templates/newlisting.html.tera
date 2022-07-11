@@ -22,10 +22,6 @@
       <input type="number" placeholder="item price in sats..."
 	     name="price_sat" id="price_sat" value=""
 	     class="u-full-width" />
-      <label for="title">Enter how many items are for sale</label>
-      <input type="number" placeholder="enter the quantity of items..."
-	     name="quantity" id="quantity" value=""
-	     class="u-full-width" />
       {% if flash %}
       <small class="field-{{flash.0}}-msg">
 	{{ flash.1 }}

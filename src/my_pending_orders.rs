@@ -32,9 +32,9 @@ impl Context {
             .await
             .map_err(|_| "failed to get base template.")?;
         let page_num = maybe_page_num.unwrap_or(1);
-        let order_cards = OrderCard::all_unacked_for_user(&mut db, user.id, PAGE_SIZE, page_num)
+        let order_cards = OrderCard::all_pending_for_user(&mut db, user.id, PAGE_SIZE, page_num)
             .await
-            .map_err(|_| "failed to get unacked orders.")?;
+            .map_err(|_| "failed to get pending orders.")?;
         Ok(Context {
             base_context,
             flash,
@@ -54,14 +54,14 @@ async fn index(
 ) -> Result<Template, NotFound<String>> {
     let flash = flash.map(FlashMessage::into_inner);
     Ok(Template::render(
-        "myneworders",
+        "mypendingorders",
         Context::raw(flash, db, page_num, user, admin_user).await,
     ))
 }
 
-pub fn my_new_orders_stage() -> AdHoc {
-    AdHoc::on_ignite("My New Orders Stage", |rocket| async {
-        rocket.mount("/my_new_orders", routes![index])
+pub fn my_pending_orders_stage() -> AdHoc {
+    AdHoc::on_ignite("My Pending Orders Stage", |rocket| async {
+        rocket.mount("/my_pending_orders", routes![index])
         // .mount("/listing", routes![new])
     })
 }

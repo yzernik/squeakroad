@@ -117,9 +117,6 @@ async fn create_order(
     let shipping_option = ShippingOption::single_by_public_id(db, &order_info.shipping_option_id)
         .await
         .map_err(|_| "failed to get shipping option.")?;
-    let quantity_sold = Order::quantity_of_listing_sold(db, listing.id.unwrap())
-        .await
-        .map_err(|_| "failed to get quantity sold.")?;
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
@@ -135,7 +132,6 @@ async fn create_order(
         10000,
     );
     let seller_credit_sat: u64 = amount_owed_sat - market_fee_sat;
-    let quantity_in_stock = listing.quantity - quantity_sold;
 
     let (message, _) =
         Message::from_string(&shipping_instructions).map_err(|_| "Invalid PGP message.")?;
@@ -157,8 +153,6 @@ async fn create_order(
         Err("Admin user cannot create an order.".to_string())
     } else if quantity == 0 {
         Err("Quantity must be postive.".to_string())
-    } else if quantity_in_stock < quantity {
-        Err("Not enough items in stock.".to_string())
     } else {
         let mut lighting_client = lightning::get_lnd_client(
             config.lnd_host.clone(),
@@ -192,8 +186,9 @@ async fn create_order(
             amount_owed_sat,
             seller_credit_sat,
             paid: false,
-            completed: false,
-            acked: false,
+            shipped: false,
+            canceled_by_seller: false,
+            canceled_by_buyer: false,
             reviewed: false,
             invoice_hash: util::to_hex(&invoice.r_hash),
             invoice_payment_request: invoice.payment_request,

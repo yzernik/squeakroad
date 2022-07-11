@@ -2,7 +2,7 @@
   <thead>
     <tr>
       <th>Payment Time</th>
-      <th>Payment Status</th>
+      <th>Status</th>
       <th>Order</th>
       <th>Listing</th>
       <th>Sale Amount</th>
@@ -14,7 +14,13 @@
   <tbody>
     <tr>
       <td>{% if order_card.order.paid %}{{ (order_card.order.payment_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}{% else %}None{% endif %}</td>
-      <td>{% if not order_card.order.paid %}Unpaid{% elif order_card.order.completed %}Completed{% else %}Refunded{% endif %}</td>
+      <td>
+	{% if not order_card.order.paid %}
+	Not paid
+	{% else %}
+	{% if order_card.order.shipped %}Shipped{% elif order_card.order.canceled_by_seller%}Canceled by seller{% elif order_card.order.canceled_by_buyer %}Canceled by buyer{% else %}Processing (waiting for seller to ship){% endif %}
+	{% endif %}
+      </td>
       <td><a href="/order/{{ order_card.order.public_id }}">{{ order_card.order.public_id }}</a></td>
       <td><a href="/listing/{{ order_card.listing.public_id }}">{{ order_card.listing.title }}</a></td>
       <td>{{ order_card.order.amount_owed_sat }} sats</td>
