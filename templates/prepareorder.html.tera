@@ -25,6 +25,8 @@
 
     <p><b>Price per unit with shipping</b>: {{ listing_display.listing.price_sat }} sats + {{ selected_shipping_option.price_sat }} sats = <b>{{ selected_shipping_option.price_sat + listing_display.listing.price_sat }} sats</b></p>
 
+    <p><b>Seller PGP Key</b>: {% if seller_user_settings.pgp_key %}<pre>{{ seller_user_settings.pgp_key }}</pre>{% else %}Not set{% endif %}</p>
+
     <form action="/prepare_order/{{ listing_display.listing.public_id }}/new" method="post">
       <input type="hidden" id="shipping_option_id" name="shipping_option_id" value="{{ selected_shipping_option.public_id }}">
 
@@ -33,7 +35,7 @@
              name="quantity" id="quantity" value="{{ quantity }}"
 	     class="u-full-width" />
 
-      <label for="shipping_instructions">Enter the shipping address for your order. Enter any other instructions that the buyer will need to ship your order.</label>
+      <label for="shipping_instructions">Please enter your name and address as it would apper on a letter (encrypt with the seller PGP key):</label>
       <textarea placeholder="shipping instructions..."
 		name="shipping_instructions" id="shipping_instructions" placeholder="enter shipping instructions ..." value=""
 		class="u-full-width"></textarea>
