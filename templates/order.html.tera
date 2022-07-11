@@ -49,7 +49,7 @@
 	<p><b>Shipping instructions</b>: <pre>{{ order.shipping_instructions }}</pre></p>
 	{% endif %}
 	{% endif %}
-	<p><b>Payment status</b>: {% if order.paid %}{% if order.processing %}Processing{% else %}Paid but not processing (funds credited back to buyer account){% endif %}{% else %}Not paid{% endif %}</p>
+	<p><b>Payment status</b>: {% if order.paid %}{% if order.shipped %}Shipped{% else %}Paid but not shipped (funds credited back to buyer account){% endif %}{% else %}Not paid{% endif %}</p>
 	{% if order.paid %}
         <p><b>Payment time</b>: {{ (order.payment_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}</p>
 	{% endif %}
@@ -68,7 +68,7 @@
     </div>
 
     <div class="one-half column">
-      {% if order.processing %}
+      {% if order.shipped %}
       <div class="container">
 	{% if order.reviewed %}
 	<h3>Review</h3>

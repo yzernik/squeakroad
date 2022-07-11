@@ -63,11 +63,8 @@ async fn handle_payment(
 ) -> Result<(), String> {
     let maybe_order = Order::single_by_invoice_hash(conn, invoice_hash).await.ok();
     if let Some(order) = maybe_order {
-        // let order_success = quantity_in_stock >= order.quantity;
-        let order_success = true;
         let now = util::current_time_millis();
-
-        Order::mark_as_paid(conn, order.id.unwrap(), order_success, now)
+        Order::mark_as_paid(conn, order.id.unwrap(), now)
             .await
             .map_err(|_| "failed to mark order as paid.")?;
     }

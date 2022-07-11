@@ -145,8 +145,8 @@ async fn create_order_review(
     let review_rating = order_review_info.review_rating.unwrap_or(0);
     let review_text = order_review_info.review_text;
 
-    if !order.processing {
-        Err("Cannot post review for order that is not processing.".to_string())
+    if !order.shipped {
+        Err("Cannot post review for order that is not shipped.".to_string())
     } else if user.id() != order.buyer_user_id {
         Err("User is not the buyer.".to_string())
     } else if !(1..=5).contains(&review_rating) {

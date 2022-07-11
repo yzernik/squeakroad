@@ -32,9 +32,9 @@ impl Context {
             .await
             .map_err(|_| "failed to get base template.")?;
         let page_num = maybe_page_num.unwrap_or(1);
-        let order_cards = OrderCard::all_unacked_for_user(&mut db, user.id, PAGE_SIZE, page_num)
+        let order_cards = OrderCard::all_unshipped_for_user(&mut db, user.id, PAGE_SIZE, page_num)
             .await
-            .map_err(|_| "failed to get unacked orders.")?;
+            .map_err(|_| "failed to get unshipped orders.")?;
         Ok(Context {
             base_context,
             flash,
