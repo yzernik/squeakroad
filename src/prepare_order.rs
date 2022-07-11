@@ -4,6 +4,7 @@ use crate::db::Db;
 use crate::lightning;
 use crate::models::{Listing, ListingDisplay, Order, OrderInfo, ShippingOption, UserSettings};
 use crate::util;
+use pgp::composed::{Deserializable, Message};
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
 use rocket::request::FlashMessage;
@@ -136,9 +137,13 @@ async fn create_order(
     let seller_credit_sat: u64 = amount_owed_sat - market_fee_sat;
     let quantity_in_stock = listing.quantity - quantity_sold;
 
+    let (message, _) =
+        Message::from_string(&shipping_instructions).map_err(|_| "Invalid PGP message.")?;
+    info!("message: {:?}", &message);
+
     if shipping_instructions.is_empty() {
         Err("Shipping instructions cannot be empty.".to_string())
-    } else if shipping_instructions.len() > 1024 {
+    } else if shipping_instructions.len() > 4096 {
         Err("Shipping instructions length is too long.".to_string())
     } else if listing.user_id == user.id() {
         Err("Listing belongs to same user as buyer.".to_string())
