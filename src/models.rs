@@ -174,6 +174,8 @@ pub struct Order {
     pub seller_credit_sat: u64,
     pub paid: bool,
     pub shipped: bool,
+    pub canceled_by_seller: bool,
+    pub canceled_by_buyer: bool,
     pub reviewed: bool,
     pub invoice_hash: String,
     pub invoice_payment_request: String,
@@ -1630,7 +1632,7 @@ impl Order {
         let review_time_ms: i64 = order.review_time_ms.try_into().unwrap();
 
         let insert_result = sqlx::query!(
-            "INSERT INTO orders (public_id, buyer_user_id, seller_user_id, quantity, listing_id, shipping_option_id, shipping_instructions, amount_owed_sat, seller_credit_sat, paid, shipped, reviewed, review_text, review_rating, invoice_hash, invoice_payment_request, created_time_ms, payment_time_ms, review_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO orders (public_id, buyer_user_id, seller_user_id, quantity, listing_id, shipping_option_id, shipping_instructions, amount_owed_sat, seller_credit_sat, paid, shipped, canceled_by_seller, canceled_by_buyer, reviewed, review_text, review_rating, invoice_hash, invoice_payment_request, created_time_ms, payment_time_ms, review_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             order.public_id,
             order.buyer_user_id,
             order.seller_user_id,
@@ -1642,6 +1644,8 @@ impl Order {
             seller_credit_sat,
             order.paid,
             order.shipped,
+            order.canceled_by_seller,
+            order.canceled_by_buyer,
             order.reviewed,
             order.review_text,
             order.review_rating,
@@ -1709,6 +1713,8 @@ impl Order {
                 seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
                 paid: r.paid,
                 shipped: r.shipped,
+                canceled_by_seller: r.canceled_by_seller,
+                canceled_by_buyer: r.canceled_by_buyer,
                 reviewed: r.reviewed,
                 invoice_hash: r.invoice_hash,
                 invoice_payment_request: r.invoice_payment_request,
@@ -1742,6 +1748,8 @@ impl Order {
                 seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
                 paid: r.paid,
                 shipped: r.shipped,
+                canceled_by_seller: r.canceled_by_seller,
+                canceled_by_buyer: r.canceled_by_buyer,
                 reviewed: r.reviewed,
                 invoice_hash: r.invoice_hash,
                 invoice_payment_request: r.invoice_payment_request,
@@ -1775,6 +1783,8 @@ impl Order {
                 seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
                 paid: r.paid,
                 shipped: r.shipped,
+                canceled_by_seller: r.canceled_by_seller,
+                canceled_by_buyer: r.canceled_by_buyer,
                 reviewed: r.reviewed,
                 invoice_hash: r.invoice_hash,
                 invoice_payment_request: r.invoice_payment_request,
@@ -2000,7 +2010,7 @@ impl OrderCard {
         let orders = sqlx::query!(
             "
 select
- orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.quantity as order_quantity, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.shipped, orders.reviewed as order_reviewed, orders.invoice_hash, orders.invoice_payment_request, orders.review_rating, orders.review_text, orders.created_time_ms, orders.payment_time_ms, orders.review_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+ orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.quantity as order_quantity, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.shipped, orders.canceled_by_seller, orders.canceled_by_buyer, orders.reviewed as order_reviewed, orders.invoice_hash, orders.invoice_payment_request, orders.review_rating, orders.review_text, orders.created_time_ms, orders.payment_time_ms, orders.review_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  orders
 LEFT JOIN
@@ -2046,6 +2056,8 @@ OFFSET ?
                     seller_credit_sat: r.seller_credit_sat.unwrap().try_into().unwrap(),
                     paid: r.paid.unwrap(),
                     shipped: r.shipped.unwrap(),
+                    canceled_by_seller: r.canceled_by_seller.unwrap(),
+                    canceled_by_buyer: r.canceled_by_buyer.unwrap(),
                     reviewed: r.order_reviewed.unwrap(),
                     invoice_hash: r.invoice_hash.unwrap(),
                     invoice_payment_request: r.invoice_payment_request.unwrap(),
@@ -2104,7 +2116,7 @@ OFFSET ?
         let orders = sqlx::query!(
             "
 select
- orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.quantity as order_quantity, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.shipped, orders.reviewed as order_reviewed, orders.invoice_hash, orders.invoice_payment_request, orders.review_rating, orders.review_text, orders.created_time_ms, orders.payment_time_ms, orders.review_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+ orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.quantity as order_quantity, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.shipped, orders.canceled_by_seller, orders.canceled_by_buyer, orders.reviewed as order_reviewed, orders.invoice_hash, orders.invoice_payment_request, orders.review_rating, orders.review_text, orders.created_time_ms, orders.payment_time_ms, orders.review_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  orders
 LEFT JOIN
@@ -2150,6 +2162,8 @@ OFFSET ?
                     seller_credit_sat: r.seller_credit_sat.unwrap().try_into().unwrap(),
                     paid: r.paid.unwrap(),
                     shipped: r.shipped.unwrap(),
+                    canceled_by_seller: r.canceled_by_seller.unwrap(),
+                    canceled_by_buyer: r.canceled_by_buyer.unwrap(),
                     reviewed: r.order_reviewed.unwrap(),
                     invoice_hash: r.invoice_hash.unwrap(),
                     invoice_payment_request: r.invoice_payment_request.unwrap(),
@@ -2208,7 +2222,7 @@ OFFSET ?
         let orders = sqlx::query!(
             "
 select
- orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.quantity as order_quantity, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.shipped, orders.reviewed as order_reviewed, orders.invoice_hash, orders.invoice_payment_request, orders.review_rating, orders.review_text, orders.created_time_ms, orders.payment_time_ms, orders.review_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+ orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.quantity as order_quantity, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.shipped, orders.canceled_by_seller, orders.canceled_by_buyer, orders.reviewed as order_reviewed, orders.invoice_hash, orders.invoice_payment_request, orders.review_rating, orders.review_text, orders.created_time_ms, orders.payment_time_ms, orders.review_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  orders
 LEFT JOIN
@@ -2254,6 +2268,8 @@ OFFSET ?
                     seller_credit_sat: r.seller_credit_sat.unwrap().try_into().unwrap(),
                     paid: r.paid.unwrap(),
                     shipped: r.shipped.unwrap(),
+                    canceled_by_seller: r.canceled_by_seller.unwrap(),
+                    canceled_by_buyer: r.canceled_by_buyer.unwrap(),
                     reviewed: r.order_reviewed.unwrap(),
                     invoice_hash: r.invoice_hash.unwrap(),
                     invoice_payment_request: r.invoice_payment_request.unwrap(),
@@ -2312,7 +2328,7 @@ OFFSET ?
         let orders = sqlx::query!(
             "
 select
- orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.quantity as order_quantity, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.shipped, orders.reviewed as order_reviewed, orders.invoice_hash, orders.invoice_payment_request, orders.review_rating, orders.review_text, orders.created_time_ms, orders.payment_time_ms, orders.review_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+ orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.quantity as order_quantity, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.shipped, orders.canceled_by_seller, orders.canceled_by_buyer, orders.reviewed as order_reviewed, orders.invoice_hash, orders.invoice_payment_request, orders.review_rating, orders.review_text, orders.created_time_ms, orders.payment_time_ms, orders.review_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  orders
 LEFT JOIN
@@ -2361,6 +2377,8 @@ OFFSET ?
                     seller_credit_sat: r.seller_credit_sat.unwrap().try_into().unwrap(),
                     paid: r.paid.unwrap(),
                     shipped: r.shipped.unwrap(),
+                    canceled_by_seller: r.canceled_by_seller.unwrap(),
+                    canceled_by_buyer: r.canceled_by_buyer.unwrap(),
                     reviewed: r.order_reviewed.unwrap(),
                     invoice_hash: r.invoice_hash.unwrap(),
                     invoice_payment_request: r.invoice_payment_request.unwrap(),
