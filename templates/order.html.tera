@@ -81,6 +81,7 @@
 	    {{ order.invoice_payment_request }}
 	  </pre>
 	</p>
+	<p><b>Open a channel to the market</b>: <a href="https://amboss.space/node/{{ lightning_node_pubkey }}" rel="noreferrer noopener" target="_blank">{{ lightning_node_pubkey }}</a></p>
 	{% endif %}
 
       </div>
