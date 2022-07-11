@@ -2654,24 +2654,6 @@
     },
     "query": "INSERT INTO withdrawals (public_id, user_id, amount_sat, invoice_hash, invoice_payment_request, created_time_ms) VALUES (?, ?, ?, ?, ?, ?)"
   },
-  "adfcb2ec6919530a081168c8ed33d6bb3abac97897220b8dff8d39f54e636388": {
-    "describe": {
-      "columns": [
-        {
-          "name": "message_count",
-          "ordinal": 0,
-          "type_info": "Int"
-        }
-      ],
-      "nullable": [
-        false
-      ],
-      "parameters": {
-        "Right": 3
-      }
-    },
-    "query": "\nselect count(id) as message_count from ordermessages\nWHERE\n order_id = ?\nAND\n author_id = ?\nAND\n created_time_ms > ?\nORDER BY ordermessages.created_time_ms ASC;"
-  },
   "b20fa6144932c2ef5a6b687205981af957b9ee5090bba971ad9eddc8d8f26970": {
     "describe": {
       "columns": [
@@ -2972,66 +2954,6 @@
     },
     "query": "UPDATE listingimages SET is_primary = true WHERE listing_id = ? AND public_id = ?"
   },
-  "b66bcebc1d9510bd2ebaa27e8cdc42af1602b8d019ab56c047b42d9ae185c463": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int64"
-        },
-        {
-          "name": "public_id",
-          "ordinal": 1,
-          "type_info": "Text"
-        },
-        {
-          "name": "order_id",
-          "ordinal": 2,
-          "type_info": "Int64"
-        },
-        {
-          "name": "author_id",
-          "ordinal": 3,
-          "type_info": "Int64"
-        },
-        {
-          "name": "recipient_id",
-          "ordinal": 4,
-          "type_info": "Int64"
-        },
-        {
-          "name": "text",
-          "ordinal": 5,
-          "type_info": "Text"
-        },
-        {
-          "name": "viewed",
-          "ordinal": 6,
-          "type_info": "Bool"
-        },
-        {
-          "name": "created_time_ms",
-          "ordinal": 7,
-          "type_info": "Int64"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "select * from ordermessages WHERE public_id = ?;"
-  },
   "b95663152d781175cf5a9e160226b28e05e3e9169108d0cfbfc98977c64d29e7": {
     "describe": {
       "columns": [
@@ -3212,132 +3134,6 @@
     },
     "query": "select * from adminsettings;"
   },
-  "c4242a5a02d54b42aab4369ee3b579a87bf7f2ef913dd43685bb962c9dd867af": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int64"
-        },
-        {
-          "name": "public_id",
-          "ordinal": 1,
-          "type_info": "Text"
-        },
-        {
-          "name": "order_id",
-          "ordinal": 2,
-          "type_info": "Int64"
-        },
-        {
-          "name": "author_id",
-          "ordinal": 3,
-          "type_info": "Int64"
-        },
-        {
-          "name": "recipient_id",
-          "ordinal": 4,
-          "type_info": "Int64"
-        },
-        {
-          "name": "text",
-          "ordinal": 5,
-          "type_info": "Text"
-        },
-        {
-          "name": "viewed",
-          "ordinal": 6,
-          "type_info": "Bool"
-        },
-        {
-          "name": "created_time_ms",
-          "ordinal": 7,
-          "type_info": "Int64"
-        },
-        {
-          "name": "order_public_id",
-          "ordinal": 8,
-          "type_info": "Text"
-        }
-      ],
-      "nullable": [
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true
-      ],
-      "parameters": {
-        "Right": 3
-      }
-    },
-    "query": "\nselect ordermessages.id, ordermessages.public_id, ordermessages.order_id, ordermessages.author_id, ordermessages.recipient_id, ordermessages.text, ordermessages.viewed, ordermessages.created_time_ms, orders.public_id as order_public_id\nFROM\n ordermessages\nLEFT JOIN\n orders\nON\n ordermessages.order_id = orders.id\nWHERE\n not viewed\nAND\n recipient_id = ?\nORDER BY ordermessages.created_time_ms ASC\nLIMIT ?\nOFFSET ?\n;"
-  },
-  "c6c0ecbec00fb2052528710e8760f3edff62820f8db7c8bad65960c81e5e4922": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int64"
-        },
-        {
-          "name": "public_id",
-          "ordinal": 1,
-          "type_info": "Text"
-        },
-        {
-          "name": "order_id",
-          "ordinal": 2,
-          "type_info": "Int64"
-        },
-        {
-          "name": "author_id",
-          "ordinal": 3,
-          "type_info": "Int64"
-        },
-        {
-          "name": "recipient_id",
-          "ordinal": 4,
-          "type_info": "Int64"
-        },
-        {
-          "name": "text",
-          "ordinal": 5,
-          "type_info": "Text"
-        },
-        {
-          "name": "viewed",
-          "ordinal": 6,
-          "type_info": "Bool"
-        },
-        {
-          "name": "created_time_ms",
-          "ordinal": 7,
-          "type_info": "Int64"
-        }
-      ],
-      "nullable": [
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true
-      ],
-      "parameters": {
-        "Right": 3
-      }
-    },
-    "query": "\nselect * from ordermessages\nWHERE\n order_id = ?\nORDER BY ordermessages.created_time_ms ASC\nLIMIT ?\nOFFSET ?\n;"
-  },
   "cfa7d7cc21275c9db2ffc6d6c6fe7f1bfdce31858ababbde8407e1622cc63709": {
     "describe": {
       "columns": [],
@@ -3357,16 +3153,6 @@
       }
     },
     "query": "\n        UPDATE\n         orders\n        SET\n         reviewed = true,\n         review_rating = ?,\n         review_text = ?,\n         review_time_ms = ?\n        WHERE\n         public_id = ?\n        ;"
-  },
-  "e1725cd45fe93f160628b8042fcf9f878c1abc743fae77aeedc45cc93f04b8f5": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "UPDATE ordermessages SET viewed = true WHERE public_id = ?"
   },
   "e706307d9941de70d4a03738669354505bfcdc2e4792fb9582cf3eaf597119cb": {
     "describe": {
@@ -3643,16 +3429,6 @@
       }
     },
     "query": "select * from orders WHERE id = ?;"
-  },
-  "f5127628572d53da457711312ccf45744ccc0d1a1a51e0013fc1bdab71c8866b": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 7
-      }
-    },
-    "query": "INSERT INTO ordermessages (public_id, order_id, author_id, recipient_id, text, viewed, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?)"
   },
   "f8ed5c7964fdb076244cb9c4d6b055b4c1f2d4905d97c1ff5b1a443f1315e845": {
     "describe": {
