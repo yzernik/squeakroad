@@ -59,7 +59,7 @@ impl Context {
         let qr_svg_base64 = util::to_base64(&qr_svg_bytes);
         let lightning_node_pubkey = get_lightning_node_pubkey(config)
             .await
-            .unwrap_or("".to_string());
+            .unwrap_or_else(|_| "".to_string());
         Ok(Context {
             base_context,
             flash,

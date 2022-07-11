@@ -37,7 +37,7 @@ impl Context {
             .map_err(|_| "failed to update market name.")?;
         let lightning_node_pubkey = get_lightning_node_pubkey(config)
             .await
-            .unwrap_or("".to_string());
+            .unwrap_or_else(|_| "".to_string());
         Ok(Context {
             base_context,
             flash,
