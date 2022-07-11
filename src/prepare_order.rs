@@ -187,7 +187,6 @@ async fn create_order(
             seller_credit_sat,
             paid: false,
             shipped: false,
-            acked: false,
             reviewed: false,
             invoice_hash: util::to_hex(&invoice.r_hash),
             invoice_payment_request: invoice.payment_request,
