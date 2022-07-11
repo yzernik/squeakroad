@@ -35,8 +35,8 @@ impl Context {
         // Use db query to take only top N sellers.
         let seller_infos = seller_infos_for_all
             .iter()
-            .cloned()
             .take(PAGE_SIZE.try_into().unwrap())
+            .cloned()
             .collect::<Vec<_>>();
         Ok(Context {
             base_context,
