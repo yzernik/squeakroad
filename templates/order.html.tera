@@ -8,7 +8,7 @@
   <!-- Options for the seller -->
   {% if user and order.seller_user_id == user.id %}
   {% if order.paid and not order.shipped and not order.canceled_by_seller and not order.canceled_by_buyer %}
-  <h5>Ship or Cancel Order)</h5>
+  <h5>Ship or Cancel Order</h5>
   <form class="inline" action="/order/{{ order.public_id }}/ship" method="post">
     <input type="hidden" name="_method" value="put" />
     <button class="small" type="submit">Mark as shipped</button>
@@ -23,7 +23,7 @@
   <!-- Options for the buyer -->
   {% if user and order.buyer_user_id == user.id %}
   {% if order.paid and not order.shipped and not order.canceled_by_seller and not order.canceled_by_buyer %}
-  <h5>Cancel Order)</h5>
+  <h5>Cancel Order</h5>
   <form class="inline" action="/order/{{ order.public_id }}/buyer_cancel" method="post">
     <input type="hidden" name="_method" value="put" />
     <button class="small" type="submit">Mark as canceled</button>

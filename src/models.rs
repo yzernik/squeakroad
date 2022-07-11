@@ -1821,9 +1821,23 @@ impl Order {
         db: &mut PoolConnection<Sqlite>,
         order_id: i32,
     ) -> Result<(), sqlx::Error> {
-        sqlx::query!("UPDATE orders SET shipped = true WHERE id = ?", order_id,)
-            .execute(&mut **db)
-            .await?;
+        sqlx::query!(
+            "
+UPDATE
+ orders
+SET
+ shipped = true
+WHERE
+ id = ?
+AND
+ paid
+AND
+ not (shipped OR canceled_by_seller OR canceled_by_buyer)
+;",
+            order_id,
+        )
+        .execute(&mut **db)
+        .await?;
 
         Ok(())
     }
@@ -1833,7 +1847,16 @@ impl Order {
         order_id: i32,
     ) -> Result<(), sqlx::Error> {
         sqlx::query!(
-            "UPDATE orders SET canceled_by_seller = true WHERE id = ?",
+            "
+UPDATE
+ orders
+SET
+ canceled_by_seller = true
+WHERE
+ id = ?
+AND
+ not (shipped OR canceled_by_seller OR canceled_by_buyer)
+;",
             order_id,
         )
         .execute(&mut **db)
@@ -1847,7 +1870,16 @@ impl Order {
         order_id: i32,
     ) -> Result<(), sqlx::Error> {
         sqlx::query!(
-            "UPDATE orders SET canceled_by_buyer = true WHERE id = ?",
+            "
+UPDATE
+ orders
+SET
+ canceled_by_buyer = true
+WHERE
+ id = ?
+AND
+ not (shipped OR canceled_by_seller OR canceled_by_buyer)
+;",
             order_id,
         )
         .execute(&mut **db)
