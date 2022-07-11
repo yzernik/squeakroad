@@ -74,19 +74,23 @@ async fn change_pgp_info(
 
     println!("parsed pgp key: {:?}", key);
 
+    let validated_pgp_key = key.to_armored_string(None).unwrap();
+
+    println!("pgp key to asc armor: {:?}", validated_pgp_key,);
+
     // TODO: check if pubkey armor string is valid.
     if false {
         Err("PGP key is not valid.".to_string())
     } else {
         let default_user_settings = UserSettings::default();
-        // UserSettings::set_pgp_key_id(
-        //     db,
-        //     user.id(),
-        //     &new_pgp_key_id,
-        //     default_user_settings.clone(),
-        // )
-        // .await
-        // .map_err(|_| "failed to update pgp key id.")?;
+        UserSettings::set_pgp_key_id(
+            db,
+            user.id(),
+            &validated_pgp_key,
+            default_user_settings.clone(),
+        )
+        .await
+        .map_err(|_| "failed to update pgp key id.")?;
 
         Ok(())
     }
