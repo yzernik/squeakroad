@@ -2526,7 +2526,7 @@ impl AccountInfo {
         // TODO: Order by event time in SQL query. When this is fixed: https://github.com/launchbadge/sqlx/issues/1350
         let offset = (page_num - 1) * page_size;
         let limit = page_size;
-        let mut account_balance_changes = sqlx::query!("
+        let account_balance_changes = sqlx::query!("
 SELECT * FROM
 (select orders.seller_user_id as user_id, orders.seller_credit_sat as amount_change_sat, 'received_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
 from
@@ -2557,6 +2557,7 @@ LEFT JOIN
  users
 ON
  user_id = users.id
+ORDER BY event_time_ms DESC
 LIMIT ?
 OFFSET ?
 ;",
@@ -2564,18 +2565,14 @@ OFFSET ?
             .fetch(&mut **db)
             .map_ok(|r| AccountBalanceChange {
                     username: r.email.unwrap(),
-                    amount_change_sat: r.amount_change_sat,
-                    event_type: r.event_type,
-                    event_id: r.event_id,
-                    event_time_ms: r.event_time_ms.try_into().unwrap(),
+                    amount_change_sat: r.amount_change_sat.unwrap(),
+                    event_type: r.event_type.unwrap(),
+                    event_id: r.event_id.unwrap(),
+                    event_time_ms: r.event_time_ms.unwrap().try_into().unwrap(),
                 }
             )
             .try_collect::<Vec<_>>()
             .await?;
-
-        // TODO: Use "ORDER BY" in query when sqlx is updated with bug fix.
-        // Sort by event time
-        account_balance_changes.sort_by(|a, b| b.event_time_ms.cmp(&a.event_time_ms));
 
         Ok(account_balance_changes)
     }
@@ -2634,7 +2631,7 @@ OFFSET ?
         // TODO: Order by event time in SQL query. When this is fixed: https://github.com/launchbadge/sqlx/issues/1350
         let offset = (page_num - 1) * page_size;
         let limit = page_size;
-        let mut account_balance_changes = sqlx::query!("
+        let account_balance_changes = sqlx::query!("
 SELECT * FROM
 (select orders.seller_user_id as user_id, orders.seller_credit_sat as amount_change_sat, 'received_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
 from
@@ -2659,23 +2656,21 @@ LEFT JOIN
  users
 ON
  user_id = users.id
+ORDER BY event_time_ms DESC
 LIMIT ?
 OFFSET ?
 ;", limit, offset)
             .fetch(&mut **db)
             .map_ok(|r| AccountBalanceChange {
                     username: r.email.unwrap(),
-                    amount_change_sat: r.amount_change_sat,
-                    event_type: r.event_type,
-                    event_id: r.event_id,
-                    event_time_ms: r.event_time_ms.try_into().unwrap(),
+                    amount_change_sat: r.amount_change_sat.unwrap(),
+                    event_type: r.event_type.unwrap(),
+                    event_id: r.event_id.unwrap(),
+                    event_time_ms: r.event_time_ms.unwrap().try_into().unwrap(),
                 }
             )
             .try_collect::<Vec<_>>()
             .await?;
-
-        // Sort by event time
-        account_balance_changes.sort_by(|a, b| b.event_time_ms.cmp(&a.event_time_ms));
 
         Ok(account_balance_changes)
     }

@@ -534,6 +534,72 @@
     },
     "query": "DELETE FROM shippingoptions WHERE public_id = ?"
   },
+  "25c844dc169750774bc01cce6b19cffed9af73c0e2f6d84ba03643b0a34bd866": {
+    "describe": {
+      "columns": [
+        {
+          "name": "user_id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "amount_change_sat",
+          "ordinal": 1,
+          "type_info": "Int64"
+        },
+        {
+          "name": "event_type",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "event_id",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "event_time_ms",
+          "ordinal": 4,
+          "type_info": "Int64"
+        },
+        {
+          "name": "id",
+          "ordinal": 5,
+          "type_info": "Int64"
+        },
+        {
+          "name": "email",
+          "ordinal": 6,
+          "type_info": "Text"
+        },
+        {
+          "name": "password",
+          "ordinal": 7,
+          "type_info": "Text"
+        },
+        {
+          "name": "is_admin",
+          "ordinal": 8,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "\nSELECT * FROM\n(select orders.seller_user_id as user_id, orders.seller_credit_sat as amount_change_sat, 'received_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms\nfrom\n orders\nWHERE\n orders.paid\nAND\n orders.shipped\nUNION ALL\nselect orders.buyer_user_id as user_id, orders.amount_owed_sat as amount_change_sat, 'refunded_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms\nfrom\n orders\nWHERE\n orders.paid\nAND\n (orders.canceled_by_seller OR orders.canceled_by_buyer)\nUNION ALL\nselect withdrawals.user_id as user_id, (0 - withdrawals.amount_sat) as amount_change_sat, 'withdrawal' as event_type, withdrawals.public_id as event_id, withdrawals.created_time_ms as event_time_ms\nfrom\n withdrawals)\nLEFT JOIN\n users\nON\n user_id = users.id\nORDER BY event_time_ms DESC\nLIMIT ?\nOFFSET ?\n;"
+  },
   "314fdcd59658ccc0e37afd5be1ee08ee13bb59bd5863578d920ee45825486dc8": {
     "describe": {
       "columns": [
@@ -1037,72 +1103,6 @@
       }
     },
     "query": "\nselect\n listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username\nfrom\n listings\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nINNER JOIN\n users\nON\n listings.user_id = users.id\nWHERE\n listings.approved\nAND\n not listings.removed\nGROUP BY\n listings.id\nORDER BY listings.created_time_ms DESC\nLIMIT ?\nOFFSET ?\n;"
-  },
-  "6f47d7130fe660dc4bb3395f7e2f49fbd7abdee975af7844d8412ce893fe8d28": {
-    "describe": {
-      "columns": [
-        {
-          "name": "user_id",
-          "ordinal": 0,
-          "type_info": "Int64"
-        },
-        {
-          "name": "amount_change_sat",
-          "ordinal": 1,
-          "type_info": "Int64"
-        },
-        {
-          "name": "event_type",
-          "ordinal": 2,
-          "type_info": "Text"
-        },
-        {
-          "name": "event_id",
-          "ordinal": 3,
-          "type_info": "Text"
-        },
-        {
-          "name": "event_time_ms",
-          "ordinal": 4,
-          "type_info": "Int64"
-        },
-        {
-          "name": "id",
-          "ordinal": 5,
-          "type_info": "Int64"
-        },
-        {
-          "name": "email",
-          "ordinal": 6,
-          "type_info": "Text"
-        },
-        {
-          "name": "password",
-          "ordinal": 7,
-          "type_info": "Text"
-        },
-        {
-          "name": "is_admin",
-          "ordinal": 8,
-          "type_info": "Bool"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        true,
-        false,
-        true
-      ],
-      "parameters": {
-        "Right": 5
-      }
-    },
-    "query": "\nSELECT * FROM\n(select orders.seller_user_id as user_id, orders.seller_credit_sat as amount_change_sat, 'received_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms\nfrom\n orders\nWHERE\n orders.paid\nAND\n orders.shipped\nAND\n orders.seller_user_id = ?\nUNION ALL\nselect orders.buyer_user_id as user_id, orders.amount_owed_sat as amount_change_sat, 'refunded_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms\nfrom\n orders\nWHERE\n orders.paid\nAND\n (orders.canceled_by_seller OR orders.canceled_by_buyer)\nAND\n orders.buyer_user_id = ?\nUNION ALL\nselect withdrawals.user_id as user_id, (0 - withdrawals.amount_sat) as amount_change_sat, 'withdrawal' as event_type, withdrawals.public_id as event_id, withdrawals.created_time_ms as event_time_ms\nfrom\n withdrawals\nWHERE\n withdrawals.user_id = ?)\nLEFT JOIN\n users\nON\n user_id = users.id\nLIMIT ?\nOFFSET ?\n;"
   },
   "7167813bfa8f2699a158c45c3605558b398d5bcc779ab036e5b5796f89a4f262": {
     "describe": {
@@ -2554,6 +2554,72 @@
     },
     "query": "INSERT INTO withdrawals (public_id, user_id, amount_sat, invoice_hash, invoice_payment_request, created_time_ms) VALUES (?, ?, ?, ?, ?, ?)"
   },
+  "ad063299d91c43143f7c82292538a34f6a0c562e9873912577136183b0ddba79": {
+    "describe": {
+      "columns": [
+        {
+          "name": "user_id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "amount_change_sat",
+          "ordinal": 1,
+          "type_info": "Int64"
+        },
+        {
+          "name": "event_type",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "event_id",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "event_time_ms",
+          "ordinal": 4,
+          "type_info": "Int64"
+        },
+        {
+          "name": "id",
+          "ordinal": 5,
+          "type_info": "Int64"
+        },
+        {
+          "name": "email",
+          "ordinal": 6,
+          "type_info": "Text"
+        },
+        {
+          "name": "password",
+          "ordinal": 7,
+          "type_info": "Text"
+        },
+        {
+          "name": "is_admin",
+          "ordinal": 8,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "parameters": {
+        "Right": 5
+      }
+    },
+    "query": "\nSELECT * FROM\n(select orders.seller_user_id as user_id, orders.seller_credit_sat as amount_change_sat, 'received_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms\nfrom\n orders\nWHERE\n orders.paid\nAND\n orders.shipped\nAND\n orders.seller_user_id = ?\nUNION ALL\nselect orders.buyer_user_id as user_id, orders.amount_owed_sat as amount_change_sat, 'refunded_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms\nfrom\n orders\nWHERE\n orders.paid\nAND\n (orders.canceled_by_seller OR orders.canceled_by_buyer)\nAND\n orders.buyer_user_id = ?\nUNION ALL\nselect withdrawals.user_id as user_id, (0 - withdrawals.amount_sat) as amount_change_sat, 'withdrawal' as event_type, withdrawals.public_id as event_id, withdrawals.created_time_ms as event_time_ms\nfrom\n withdrawals\nWHERE\n withdrawals.user_id = ?)\nLEFT JOIN\n users\nON\n user_id = users.id\nORDER BY event_time_ms DESC\nLIMIT ?\nOFFSET ?\n;"
+  },
   "b26ae7c5b32514b2b055605b39373406f820c6534ec6583bb52b3c1ac00a6855": {
     "describe": {
       "columns": [],
@@ -2793,72 +2859,6 @@
       }
     },
     "query": "\nselect\n listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username\nfrom\n listings\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nINNER JOIN\n users\nON\n listings.user_id = users.id\nWHERE\n listings.submitted\nAND\n NOT listings.reviewed\nAND\n not listings.removed\nGROUP BY\n listings.id\nORDER BY listings.created_time_ms DESC\nLIMIT ?\nOFFSET ?\n;"
-  },
-  "cf5edf96f730545623c04db0134d3564a4f7410281c925d47d515e38616d9590": {
-    "describe": {
-      "columns": [
-        {
-          "name": "user_id",
-          "ordinal": 0,
-          "type_info": "Int64"
-        },
-        {
-          "name": "amount_change_sat",
-          "ordinal": 1,
-          "type_info": "Int64"
-        },
-        {
-          "name": "event_type",
-          "ordinal": 2,
-          "type_info": "Text"
-        },
-        {
-          "name": "event_id",
-          "ordinal": 3,
-          "type_info": "Text"
-        },
-        {
-          "name": "event_time_ms",
-          "ordinal": 4,
-          "type_info": "Int64"
-        },
-        {
-          "name": "id",
-          "ordinal": 5,
-          "type_info": "Int64"
-        },
-        {
-          "name": "email",
-          "ordinal": 6,
-          "type_info": "Text"
-        },
-        {
-          "name": "password",
-          "ordinal": 7,
-          "type_info": "Text"
-        },
-        {
-          "name": "is_admin",
-          "ordinal": 8,
-          "type_info": "Bool"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        true,
-        false,
-        true
-      ],
-      "parameters": {
-        "Right": 2
-      }
-    },
-    "query": "\nSELECT * FROM\n(select orders.seller_user_id as user_id, orders.seller_credit_sat as amount_change_sat, 'received_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms\nfrom\n orders\nWHERE\n orders.paid\nAND\n orders.shipped\nUNION ALL\nselect orders.buyer_user_id as user_id, orders.amount_owed_sat as amount_change_sat, 'refunded_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms\nfrom\n orders\nWHERE\n orders.paid\nAND\n (orders.canceled_by_seller OR orders.canceled_by_buyer)\nUNION ALL\nselect withdrawals.user_id as user_id, (0 - withdrawals.amount_sat) as amount_change_sat, 'withdrawal' as event_type, withdrawals.public_id as event_id, withdrawals.created_time_ms as event_time_ms\nfrom\n withdrawals)\nLEFT JOIN\n users\nON\n user_id = users.id\nLIMIT ?\nOFFSET ?\n;"
   },
   "cfa7d7cc21275c9db2ffc6d6c6fe7f1bfdce31858ababbde8407e1622cc63709": {
     "describe": {
