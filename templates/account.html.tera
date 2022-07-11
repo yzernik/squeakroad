@@ -46,16 +46,6 @@
   </div>
 </div>
 
-
-<div class="container">
-  <p><!--Nothing to see here --></p>
-  <div class="row">
-    <h5>Messages</h5>
-    <a href="my_unread_messages">My Unread Messages</a>
-    <br>
-  </div>
-</div>
-
 <div class="container">
   <p><!--Nothing to see here --></p>
   <div class="row">
