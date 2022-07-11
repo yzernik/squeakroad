@@ -938,16 +938,6 @@
     },
     "query": "UPDATE usersettings SET squeaknode_address = ? WHERE user_id = ?;"
   },
-  "53eebe6fb53cec9c107ef412848c686ad61c17316edd2720c70a4d58852f9efd": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 4
-      }
-    },
-    "query": "INSERT INTO usersettings (user_id, pgp_key, squeaknode_pubkey, squeaknode_address) VALUES (?, ?, ?, ?)"
-  },
   "5a24f9c5cf60ff7f2dc4ce2cf145931a81121bd7854c8b958625bd8ead17c0f8": {
     "describe": {
       "columns": [],
@@ -1083,6 +1073,16 @@
       }
     },
     "query": "\nselect\n listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username\nfrom\n listings\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nINNER JOIN\n users\nON\n listings.user_id = users.id\nWHERE\n listings.approved\nAND\n not listings.removed\nGROUP BY\n listings.id\nORDER BY listings.created_time_ms DESC\nLIMIT ?\nOFFSET ?\n;"
+  },
+  "714c4e0de57ccd557bb960add3db93f42a742411c949565b11a8a2da25ec78bb": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 5
+      }
+    },
+    "query": "\nINSERT INTO\n usersettings (user_id, pgp_key, squeaknode_pubkey, squeaknode_address)\nSELECT ?, ?, ?, ?\nWHERE NOT EXISTS(SELECT 1 FROM usersettings WHERE user_id = ?)\n;"
   },
   "7167813bfa8f2699a158c45c3605558b398d5bcc779ab036e5b5796f89a4f262": {
     "describe": {

@@ -6,7 +6,6 @@ use rocket::fs::TempFile;
 use rocket::serde::{Deserialize, Serialize};
 use rocket_db_pools::{sqlx, Connection};
 use sqlx::pool::PoolConnection;
-use sqlx::Acquire;
 use sqlx::Sqlite;
 use std::result::Result;
 
@@ -1529,26 +1528,21 @@ impl UserSettings {
         user_id: i32,
         user_settings: UserSettings,
     ) -> Result<(), sqlx::Error> {
-        let mut tx = db.begin().await?;
-
-        let maybe_user_settings =
-            sqlx::query!("select * from usersettings WHERE user_id = ?;", user_id,)
-                .fetch_optional(&mut tx)
-                .await?;
-
-        if maybe_user_settings.is_none() {
-            sqlx::query!(
-                "INSERT INTO usersettings (user_id, pgp_key, squeaknode_pubkey, squeaknode_address) VALUES (?, ?, ?, ?)",
-                user_id,
-                user_settings.pgp_key,
-                user_settings.squeaknode_pubkey,
-                user_settings.squeaknode_address,
-            )
-            .execute(&mut tx)
-            .await?;
-        }
-
-        tx.commit().await?;
+        sqlx::query!(
+            "
+INSERT INTO
+ usersettings (user_id, pgp_key, squeaknode_pubkey, squeaknode_address)
+SELECT ?, ?, ?, ?
+WHERE NOT EXISTS(SELECT 1 FROM usersettings WHERE user_id = ?)
+;",
+            user_id,
+            user_settings.pgp_key,
+            user_settings.squeaknode_pubkey,
+            user_settings.squeaknode_address,
+            user_id,
+        )
+        .execute(&mut **db)
+        .await?;
 
         Ok(())
     }
