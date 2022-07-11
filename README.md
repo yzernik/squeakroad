@@ -1,7 +1,7 @@
 # squeakroad
 
 [![GitHub release](https://img.shields.io/github/release/yzernik/squeakroad.svg)](https://github.com/yzernik/squeakroad/releases)
-[![GitHub CI workflow](https://github.com/yzernik/squeakroad/actions/workflows/ci.yml/badge.svg)](https://github.com/yzernik/squeakroad/actions/workflows/ci.yml)
+[![GitHub CI workflow](https://github.com/yzernik/squeakroad/actions/workflows/ci.yaml/badge.svg)](https://github.com/yzernik/squeakroad/actions/workflows/ci.yaml)
 
 ## Installation
 
