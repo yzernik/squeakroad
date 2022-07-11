@@ -1388,7 +1388,7 @@ impl AdminSettings {
             })
             .await?;
 
-        let admin_settings = maybe_admin_settings.unwrap_or(AdminSettings::default());
+        let admin_settings = maybe_admin_settings.unwrap_or_default();
 
         Ok(admin_settings)
     }
@@ -1493,7 +1493,6 @@ impl UserSettings {
     pub async fn single(
         db: &mut Connection<Db>,
         user_id: i32,
-        default_user_settings: UserSettings,
     ) -> Result<UserSettings, sqlx::Error> {
         let maybe_user_settings =
             sqlx::query!("select * from usersettings WHERE user_id = ?;", user_id,)
@@ -1507,7 +1506,7 @@ impl UserSettings {
                     })
                 })
                 .await?;
-        let user_settings = maybe_user_settings.unwrap_or(default_user_settings);
+        let user_settings = maybe_user_settings.unwrap_or_default();
 
         Ok(user_settings)
     }
@@ -1516,8 +1515,8 @@ impl UserSettings {
     async fn insert_if_doesnt_exist(
         db: &mut Connection<Db>,
         user_id: i32,
-        user_settings: UserSettings,
     ) -> Result<(), sqlx::Error> {
+        let user_settings = UserSettings::default();
         sqlx::query!(
             "
 INSERT INTO
@@ -1541,9 +1540,8 @@ WHERE NOT EXISTS(SELECT 1 FROM usersettings WHERE user_id = ?)
         db: &mut Connection<Db>,
         user_id: i32,
         new_pgp_key: &str,
-        default_user_settings: UserSettings,
     ) -> Result<(), sqlx::Error> {
-        UserSettings::insert_if_doesnt_exist(db, user_id, default_user_settings).await?;
+        UserSettings::insert_if_doesnt_exist(db, user_id).await?;
 
         sqlx::query!(
             "UPDATE usersettings SET pgp_key = ? WHERE user_id = ?;",
@@ -1560,9 +1558,8 @@ WHERE NOT EXISTS(SELECT 1 FROM usersettings WHERE user_id = ?)
         db: &mut Connection<Db>,
         user_id: i32,
         new_squeaknode_pubkey: &str,
-        default_user_settings: UserSettings,
     ) -> Result<(), sqlx::Error> {
-        UserSettings::insert_if_doesnt_exist(db, user_id, default_user_settings).await?;
+        UserSettings::insert_if_doesnt_exist(db, user_id).await?;
 
         sqlx::query!(
             "UPDATE usersettings SET squeaknode_pubkey = ? WHERE user_id = ?;",
@@ -1579,9 +1576,8 @@ WHERE NOT EXISTS(SELECT 1 FROM usersettings WHERE user_id = ?)
         db: &mut Connection<Db>,
         user_id: i32,
         new_squeaknode_address: &str,
-        default_user_settings: UserSettings,
     ) -> Result<(), sqlx::Error> {
-        UserSettings::insert_if_doesnt_exist(db, user_id, default_user_settings).await?;
+        UserSettings::insert_if_doesnt_exist(db, user_id).await?;
 
         sqlx::query!(
             "UPDATE usersettings SET squeaknode_address = ? WHERE user_id = ?;",
