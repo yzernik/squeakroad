@@ -175,7 +175,7 @@ pub struct Order {
     pub amount_owed_sat: u64,
     pub seller_credit_sat: u64,
     pub paid: bool,
-    pub completed: bool,
+    pub processing: bool,
     pub acked: bool,
     pub reviewed: bool,
     pub invoice_hash: String,
@@ -637,7 +637,7 @@ impl ListingCard {
         // Example query for this kind of join/group by: https://stackoverflow.com/a/63037790/1639564
         // Other example query: https://stackoverflow.com/a/13698334/1639564
         // TODO: change WHERE condition to use dynamically calculated remaining quantity
-        // based on number of completed orders.
+        // based on number of processing orders.
         let offset = (page_num - 1) * page_size;
         let limit = page_size;
         let listing_cards =
@@ -716,7 +716,7 @@ OFFSET ?
         // Example query for this kind of join/group by: https://stackoverflow.com/a/63037790/1639564
         // Other example query: https://stackoverflow.com/a/13698334/1639564
         // TODO: change WHERE condition to use dynamically calculated remaining quantity
-        // based on number of completed orders.
+        // based on number of processing orders.
         let offset = (page_num - 1) * page_size;
         let limit = page_size;
         let listing_cards =
@@ -798,7 +798,7 @@ OFFSET ?
         // Example query for this kind of join/group by: https://stackoverflow.com/a/63037790/1639564
         // Other example query: https://stackoverflow.com/a/13698334/1639564
         // TODO: change WHERE condition to use dynamically calculated remaining quantity
-        // based on number of completed orders.
+        // based on number of processing orders.
         let offset = (page_num - 1) * page_size;
         let limit = page_size;
         let listing_cards =
@@ -880,7 +880,7 @@ OFFSET ?
         // Example query for this kind of join/group by: https://stackoverflow.com/a/63037790/1639564
         // Other example query: https://stackoverflow.com/a/13698334/1639564
         // TODO: change WHERE condition to use dynamically calculated remaining quantity
-        // based on number of completed orders.
+        // based on number of processing orders.
         let offset = (page_num - 1) * page_size;
         let limit = page_size;
         let listing_cards =
@@ -964,7 +964,7 @@ OFFSET ?
         // Example query for this kind of join/group by: https://stackoverflow.com/a/63037790/1639564
         // Other example query: https://stackoverflow.com/a/13698334/1639564
         // TODO: change WHERE condition to use dynamically calculated remaining quantity
-        // based on number of completed orders.
+        // based on number of processing orders.
         let offset = (page_num - 1) * page_size;
         let limit = page_size;
         let listing_cards =
@@ -1048,7 +1048,7 @@ OFFSET ?
         // Example query for this kind of join/group by: https://stackoverflow.com/a/63037790/1639564
         // Other example query: https://stackoverflow.com/a/13698334/1639564
         // TODO: change WHERE condition to use dynamically calculated remaining quantity
-        // based on number of completed orders.
+        // based on number of processing orders.
         let offset = (page_num - 1) * page_size;
         let limit = page_size;
         let listing_cards =
@@ -1132,7 +1132,7 @@ OFFSET ?
         // Example query for this kind of join/group by: https://stackoverflow.com/a/63037790/1639564
         // Other example query: https://stackoverflow.com/a/13698334/1639564
         // TODO: change WHERE condition to use dynamically calculated remaining quantity
-        // based on number of completed orders.
+        // based on number of processing orders.
         let offset = (page_num - 1) * page_size;
         let limit = page_size;
         // let uppercase_search_term = search_text.to_owned().to_ascii_uppercase();
@@ -1683,7 +1683,7 @@ impl Order {
         let review_time_ms: i64 = order.review_time_ms.try_into().unwrap();
 
         let insert_result = sqlx::query!(
-            "INSERT INTO orders (public_id, buyer_user_id, seller_user_id, quantity, listing_id, shipping_option_id, shipping_instructions, amount_owed_sat, seller_credit_sat, paid, completed, acked, reviewed, review_text, review_rating, invoice_hash, invoice_payment_request, created_time_ms, payment_time_ms, review_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO orders (public_id, buyer_user_id, seller_user_id, quantity, listing_id, shipping_option_id, shipping_instructions, amount_owed_sat, seller_credit_sat, paid, processing, acked, reviewed, review_text, review_rating, invoice_hash, invoice_payment_request, created_time_ms, payment_time_ms, review_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             order.public_id,
             order.buyer_user_id,
             order.seller_user_id,
@@ -1694,7 +1694,7 @@ impl Order {
             amount_owed_sat,
             seller_credit_sat,
             order.paid,
-            order.completed,
+            order.processing,
             order.acked,
             order.reviewed,
             order.review_text,
@@ -1762,7 +1762,7 @@ impl Order {
                 amount_owed_sat: r.amount_owed_sat.try_into().unwrap(),
                 seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
                 paid: r.paid,
-                completed: r.completed,
+                processing: r.processing,
                 acked: r.acked,
                 reviewed: r.reviewed,
                 invoice_hash: r.invoice_hash,
@@ -1796,7 +1796,7 @@ impl Order {
                 amount_owed_sat: r.amount_owed_sat.try_into().unwrap(),
                 seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
                 paid: r.paid,
-                completed: r.completed,
+                processing: r.processing,
                 acked: r.acked,
                 reviewed: r.reviewed,
                 invoice_hash: r.invoice_hash,
@@ -1830,7 +1830,7 @@ impl Order {
                 amount_owed_sat: r.amount_owed_sat.try_into().unwrap(),
                 seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
                 paid: r.paid,
-                completed: r.completed,
+                processing: r.processing,
                 acked: r.acked,
                 reviewed: r.reviewed,
                 invoice_hash: r.invoice_hash,
@@ -1859,7 +1859,7 @@ FROM
 WHERE
  listing_id = ?
 AND
- completed
+ processing
 GROUP BY
  listing_id
 ;",
@@ -1887,7 +1887,7 @@ FROM
 WHERE
  listing_id = ?
 AND
- completed
+ processing
 GROUP BY
  listing_id
 ;",
@@ -1911,7 +1911,7 @@ GROUP BY
         let time_now_ms_i64: i64 = time_now_ms.try_into().unwrap();
 
         sqlx::query!(
-            "UPDATE orders SET paid = true, completed = ?, payment_time_ms = ? WHERE id = ?",
+            "UPDATE orders SET paid = true, processing = ?, payment_time_ms = ? WHERE id = ?",
             order_success,
             time_now_ms_i64,
             order_id,
@@ -1941,17 +1941,17 @@ GROUP BY
         //  users
         // LEFT JOIN
         //     (select
-        //      SUM(orders.amount_owed_sat) as total_amount_sold_sat, orders.seller_user_id as completed_seller_user_id
+        //      SUM(orders.amount_owed_sat) as total_amount_sold_sat, orders.seller_user_id as processing_seller_user_id
         //     FROM
         //      orders
         //     WHERE
-        //      orders.completed
+        //      orders.processing
         //     AND
-        //      completed
+        //      processing
         //     GROUP BY
         //      orders.seller_user_id) as seller_infos
         // ON
-        //  users.id = seller_infos.completed_seller_user_id
+        //  users.id = seller_infos.processing_seller_user_id
         // LEFT JOIN
         //     (select
         //      SUM(orders.amount_owed_sat * orders.review_rating * 1000) / SUM(orders.amount_owed_sat) as weighted_average, orders.seller_user_id as reviewed_seller_user_id
@@ -1960,7 +1960,7 @@ GROUP BY
         //     WHERE
         //      orders.reviewed
         //     AND
-        //      completed
+        //      processing
         //     GROUP BY
         //      orders.seller_user_id) as seller_infos
         // ON
@@ -1985,7 +1985,7 @@ GROUP BY
             FROM
              orders
             WHERE
-             orders.completed
+             orders.processing
             AND
              orders.seller_user_id = ?
             GROUP BY
@@ -2036,15 +2036,15 @@ GROUP BY
          users
         LEFT JOIN
             (select
-             SUM(orders.amount_owed_sat) as total_amount_sold_sat, orders.seller_user_id as completed_seller_user_id
+             SUM(orders.amount_owed_sat) as total_amount_sold_sat, orders.seller_user_id as processing_seller_user_id
             FROM
              orders
             WHERE
-             completed
+             processing
             GROUP BY
              orders.seller_user_id) as seller_infos
         ON
-         users.id = seller_infos.completed_seller_user_id
+         users.id = seller_infos.processing_seller_user_id
         LEFT JOIN
             (select
              SUM(orders.amount_owed_sat * orders.review_rating * 1000) / SUM(orders.amount_owed_sat) as weighted_average, orders.seller_user_id as reviewed_seller_user_id
@@ -2053,7 +2053,7 @@ GROUP BY
             WHERE
              orders.reviewed
             AND
-             orders.completed
+             orders.processing
             GROUP BY
              orders.seller_user_id) as seller_infos
         ON
@@ -2111,7 +2111,7 @@ impl OrderCard {
         let orders = sqlx::query!(
             "
 select
- orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.completed, orders.acked, orders.reviewed as order_reviewed, orders.invoice_hash, orders.invoice_payment_request, orders.review_rating, orders.review_text, orders.created_time_ms, orders.payment_time_ms, orders.review_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+ orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.processing, orders.acked, orders.reviewed as order_reviewed, orders.invoice_hash, orders.invoice_payment_request, orders.review_rating, orders.review_text, orders.created_time_ms, orders.payment_time_ms, orders.review_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  orders
 LEFT JOIN
@@ -2156,7 +2156,7 @@ OFFSET ?
                     amount_owed_sat: r.amount_owed_sat.unwrap().try_into().unwrap(),
                     seller_credit_sat: r.seller_credit_sat.unwrap().try_into().unwrap(),
                     paid: r.paid.unwrap(),
-                    completed: r.completed.unwrap(),
+                    processing: r.processing.unwrap(),
                     acked: r.acked.unwrap(),
                     reviewed: r.order_reviewed.unwrap(),
                     invoice_hash: r.invoice_hash.unwrap(),
@@ -2217,7 +2217,7 @@ OFFSET ?
         let orders = sqlx::query!(
             "
 select
- orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.completed, orders.acked, orders.reviewed as order_reviewed, orders.invoice_hash, orders.invoice_payment_request, orders.review_rating, orders.review_text, orders.created_time_ms, orders.payment_time_ms, orders.review_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+ orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.processing, orders.acked, orders.reviewed as order_reviewed, orders.invoice_hash, orders.invoice_payment_request, orders.review_rating, orders.review_text, orders.created_time_ms, orders.payment_time_ms, orders.review_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  orders
 LEFT JOIN
@@ -2262,7 +2262,7 @@ OFFSET ?
                     amount_owed_sat: r.amount_owed_sat.unwrap().try_into().unwrap(),
                     seller_credit_sat: r.seller_credit_sat.unwrap().try_into().unwrap(),
                     paid: r.paid.unwrap(),
-                    completed: r.completed.unwrap(),
+                    processing: r.processing.unwrap(),
                     acked: r.acked.unwrap(),
                     reviewed: r.order_reviewed.unwrap(),
                     invoice_hash: r.invoice_hash.unwrap(),
@@ -2323,7 +2323,7 @@ OFFSET ?
         let orders = sqlx::query!(
             "
 select
- orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.completed, orders.acked, orders.reviewed as order_reviewed, orders.invoice_hash, orders.invoice_payment_request, orders.review_rating, orders.review_text, orders.created_time_ms, orders.payment_time_ms, orders.review_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+ orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.processing, orders.acked, orders.reviewed as order_reviewed, orders.invoice_hash, orders.invoice_payment_request, orders.review_rating, orders.review_text, orders.created_time_ms, orders.payment_time_ms, orders.review_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  orders
 LEFT JOIN
@@ -2341,7 +2341,7 @@ LEFT JOIN
 ON
  listings.user_id = users.id
 WHERE
- orders.completed
+ orders.processing
 AND
  listing_user_id = ?
 GROUP BY
@@ -2368,7 +2368,7 @@ OFFSET ?
                     amount_owed_sat: r.amount_owed_sat.unwrap().try_into().unwrap(),
                     seller_credit_sat: r.seller_credit_sat.unwrap().try_into().unwrap(),
                     paid: r.paid.unwrap(),
-                    completed: r.completed.unwrap(),
+                    processing: r.processing.unwrap(),
                     acked: r.acked.unwrap(),
                     reviewed: r.order_reviewed.unwrap(),
                     invoice_hash: r.invoice_hash.unwrap(),
@@ -2429,7 +2429,7 @@ OFFSET ?
         let orders = sqlx::query!(
             "
 select
- orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.completed, orders.acked, orders.reviewed as order_reviewed, orders.invoice_hash, orders.invoice_payment_request, orders.review_rating, orders.review_text, orders.created_time_ms, orders.payment_time_ms, orders.review_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+ orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.processing, orders.acked, orders.reviewed as order_reviewed, orders.invoice_hash, orders.invoice_payment_request, orders.review_rating, orders.review_text, orders.created_time_ms, orders.payment_time_ms, orders.review_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.quantity, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  orders
 LEFT JOIN
@@ -2447,7 +2447,7 @@ LEFT JOIN
 ON
  listings.user_id = users.id
 WHERE
- orders.completed
+ orders.processing
 AND
  not orders.acked
 AND
@@ -2477,7 +2477,7 @@ OFFSET ?
                     amount_owed_sat: r.amount_owed_sat.unwrap().try_into().unwrap(),
                     seller_credit_sat: r.seller_credit_sat.unwrap().try_into().unwrap(),
                     paid: r.paid.unwrap(),
-                    completed: r.completed.unwrap(),
+                    processing: r.processing.unwrap(),
                     acked: r.acked.unwrap(),
                     reviewed: r.order_reviewed.unwrap(),
                     invoice_hash: r.invoice_hash.unwrap(),
@@ -2575,7 +2575,7 @@ from
 WHERE
  orders.paid
 AND
- orders.completed
+ orders.processing
 AND
  orders.seller_user_id = ?
 UNION ALL
@@ -2585,7 +2585,7 @@ from
 WHERE
  orders.paid
 AND
- not orders.completed
+ not orders.processing
 AND
  orders.buyer_user_id = ?
 UNION ALL
@@ -2635,7 +2635,7 @@ OFFSET ?
     // WHERE
     //  orders.paid
     // AND
-    //  orders.completed
+    //  orders.processing
     // AND
     //  orders.seller_user_id = ?
     // UNION ALL
@@ -2645,7 +2645,7 @@ OFFSET ?
     // WHERE
     //  orders.paid
     // AND
-    //  not orders.completed
+    //  not orders.processing
     // AND
     //  orders.buyer_user_id = ?
     // UNION ALL
@@ -2683,7 +2683,7 @@ from
 WHERE
  orders.paid
 AND
- orders.completed
+ orders.processing
 UNION ALL
 select orders.buyer_user_id as user_id, orders.amount_owed_sat as amount_change_sat, 'refunded_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
 from
@@ -2691,7 +2691,7 @@ from
 WHERE
  orders.paid
 AND
- not orders.completed
+ not orders.processing
 UNION ALL
 select withdrawals.user_id as user_id, (0 - withdrawals.amount_sat) as amount_change_sat, 'withdrawal' as event_type, withdrawals.public_id as event_id, withdrawals.created_time_ms as event_time_ms
 from
@@ -2739,7 +2739,7 @@ OFFSET ?
     // WHERE
     //  orders.paid
     // AND
-    //  orders.completed
+    //  orders.processing
     // AND
     //  listings.user_id = ?
     // UNION ALL
@@ -2749,7 +2749,7 @@ OFFSET ?
     // WHERE
     //  orders.paid
     // AND
-    //  not orders.completed
+    //  not orders.processing
     // AND
     //  orders.user_id = ?
     // ) data

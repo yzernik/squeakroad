@@ -192,7 +192,7 @@ async fn create_order(
             amount_owed_sat,
             seller_credit_sat,
             paid: false,
-            completed: false,
+            processing: false,
             acked: false,
             reviewed: false,
             invoice_hash: util::to_hex(&invoice.r_hash),
