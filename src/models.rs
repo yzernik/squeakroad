@@ -1397,31 +1397,25 @@ impl AdminSettings {
         Ok(admin_settings)
     }
 
-    /// Returns the number of affected rows: 1.
     async fn insert_if_doesnt_exist(
         db: &mut Connection<Db>,
         admin_settings: AdminSettings,
     ) -> Result<(), sqlx::Error> {
-        let mut tx = db.begin().await?;
-
-        let maybe_admin_settings = sqlx::query!("select * from adminsettings;")
-            .fetch_optional(&mut tx)
-            .await?;
-
-        if maybe_admin_settings.is_none() {
-            sqlx::query!(
-                "INSERT INTO adminsettings (market_name, fee_rate_basis_points, pgp_key, squeaknode_pubkey, squeaknode_address) VALUES (?, ?, ?, ?, ?)",
-                admin_settings.market_name,
-                admin_settings.fee_rate_basis_points,
-                admin_settings.squeaknode_pubkey,
-                admin_settings.pgp_key,
-                admin_settings.squeaknode_address,
-            )
-            .execute(&mut tx)
-            .await?;
-        }
-
-        tx.commit().await?;
+        sqlx::query!(
+            "
+INSERT INTO
+ adminsettings (market_name, fee_rate_basis_points, pgp_key, squeaknode_pubkey, squeaknode_address)
+SELECT ?, ?, ?, ?, ?
+WHERE NOT EXISTS(SELECT 1 FROM adminsettings)
+;",
+            admin_settings.market_name,
+            admin_settings.fee_rate_basis_points,
+            admin_settings.squeaknode_pubkey,
+            admin_settings.pgp_key,
+            admin_settings.squeaknode_address,
+        )
+        .execute(&mut **db)
+        .await?;
 
         Ok(())
     }
