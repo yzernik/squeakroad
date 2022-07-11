@@ -948,16 +948,6 @@
     },
     "query": "UPDATE usersettings SET squeaknode_address = ? WHERE user_id = ?;"
   },
-  "501eb603b5ab9e467ecb0b5211b67740d1455a34904bbe5ba45bdb0975f18b50": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "UPDATE listingimages SET is_primary = false WHERE listing_id = ?"
-  },
   "53eebe6fb53cec9c107ef412848c686ad61c17316edd2720c70a4d58852f9efd": {
     "describe": {
       "columns": [],
@@ -1671,6 +1661,16 @@
       }
     },
     "query": "\nselect\n listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username\nfrom\n listings\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nINNER JOIN\n users\nON\n listings.user_id = users.id\nWHERE\n listings.approved\nAND\n listings.reviewed\nAND\n not listings.removed\nAND\n (UPPER(listings.title) like ? OR UPPER(listings.description) like ?)\nGROUP BY\n listings.id\nORDER BY listings.created_time_ms DESC\nLIMIT ?\nOFFSET ?\n;"
+  },
+  "83c789988a2d13a077071a064eff001a8476f9ee44e463c8392740b4dafc9f10": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "\nUPDATE\n listingimages\nSET\n is_primary = (public_id = ?)\nWHERE\n listing_id = ?\n;"
   },
   "83f994a3f0b310e4faa8b4fb7e800ff508988f5edd5cb60ad635d71e1b398865": {
     "describe": {
@@ -2657,16 +2657,6 @@
       }
     },
     "query": "\n            select\n             SUM(orders.amount_owed_sat * orders.review_rating * 1000) / SUM(orders.amount_owed_sat) as weighted_average\n            FROM\n             orders\n            WHERE\n             orders.reviewed\n            AND\n             orders.seller_user_id = ?\n            GROUP BY\n             orders.seller_user_id\n            ;"
-  },
-  "b3f7779f61e725801c7ca07f135147d29d40d68fdc545e1ed71c624daf195562": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 2
-      }
-    },
-    "query": "UPDATE listingimages SET is_primary = true WHERE listing_id = ? AND public_id = ?"
   },
   "be99d8673183a949c574c4f6ad6dbdc625755f69f860876ee64737ffbb1a9bbf": {
     "describe": {
