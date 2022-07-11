@@ -2512,7 +2512,7 @@ from
 WHERE
  orders.paid
 AND
- not orders.shipped
+ (orders.canceled_by_seller OR orders.canceled_by_buyer)
 AND
  orders.buyer_user_id = ?
 UNION ALL
