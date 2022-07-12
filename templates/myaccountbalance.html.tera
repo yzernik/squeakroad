@@ -13,6 +13,7 @@
       <div class="twelve columns">
 
 	<p><b>Account Balance</b>: {{ account_balance_sat }} sats</p>
+	<p><a href="withdraw">Withdraw Funds</a></p>
 
 	{% include "accountbalancechangepage" %}
 
