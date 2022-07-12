@@ -13,6 +13,7 @@
 > Create a **config.toml** file and fill in the relevant sections to connect to your LND node:
 
 ```
+db_url="db.sqlite"
 admin_username="admin"
 admin_password="pass"
 lnd_host="localhost"
