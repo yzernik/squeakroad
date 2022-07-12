@@ -10,6 +10,8 @@
 
       <h3>User Profile: {{ visited_user.username }}</h3>
 
+      <p><b>User</b>: <a href="/user/{{ visited_user.username }}">{{ visited_user.username }}</a></p>
+
       <p><b>PGP Key</b>: {% if visited_user_settings.pgp_key %}<pre>{{ visited_user_settings.pgp_key }}</pre>{% else %}Not set{% endif %}</p>
 
       <h6><b>Subscribe to updates from this user on <a href="https://github.com/squeaknode/squeaknode" rel="noreferrer noopener" target="_blank">Squeaknode</a></b>:</h6>
