@@ -86,7 +86,7 @@ async fn get_lightning_node_pubkey(config: &Config) -> Result<String, String> {
     .expect("failed to get lightning client");
     let get_info_resp = lighting_client
         // All calls require at least empty parameter
-        .get_info(squeakroad_lnd_client::rpc::GetInfoRequest {})
+        .get_info(tonic_openssl_lnd::rpc::GetInfoRequest {})
         .await
         .expect("failed to get lightning node info");
     let info = get_info_resp.into_inner();

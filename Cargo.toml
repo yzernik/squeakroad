@@ -7,9 +7,6 @@ license = "MIT"
 edition = "2021"
 publish = false
 
-[workspace]
-members = [".", "squeakroad-lnd-client"]
-
 [dependencies]
 # rocket = { version = "0.5.0-rc.2", features = ["json", "uuid"] }
 rocket = { git = "https://github.com/yzernik/Rocket", branch = "upgrade_sqlx_v_0_6", features = ["json", "uuid", "secrets"] }
@@ -20,6 +17,7 @@ serde = "1.0.138"
 hex = "0.4.3"
 qr_code = { version = "1.1.0", features = ["bmp"] }
 pgp = "0.8.0"
+tonic_openssl_lnd = "0.1.0"
 
 [dependencies.sqlx]
 version = "0.6.0"
@@ -57,7 +55,3 @@ features = [
     "fast-rng",          # Use a faster (but still sufficiently random) RNG
     "macro-diagnostics", # Enable better diagnostics for compile-time UUIDs
 ]
-
-[dependencies.squeakroad-lnd-client]
-path = "squeakroad-lnd-client"
-version = "0.0.1"
