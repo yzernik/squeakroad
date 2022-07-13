@@ -94,7 +94,7 @@ async fn withdraw(
         .await
         .expect("failed to get lightning client");
         let decoded_pay_req_resp = lighting_client
-            .decode_pay_req(squeakroad_lnd_client::rpc::PayReqString {
+            .decode_pay_req(tonic_openssl_lnd::rpc::PayReqString {
                 pay_req: withdrawal_info.invoice_payment_request.clone(),
             })
             .await
@@ -111,9 +111,9 @@ async fn withdraw(
             Err("Admin user cannot withdraw funds.".to_string())
         } else {
             let send_payment_resp = lighting_client
-                .send_payment_sync(squeakroad_lnd_client::rpc::SendRequest {
+                .send_payment_sync(tonic_openssl_lnd::rpc::SendRequest {
                     payment_request: withdrawal_info.invoice_payment_request.clone(),
-                    ..squeakroad_lnd_client::rpc::SendRequest::default()
+                    ..tonic_openssl_lnd::rpc::SendRequest::default()
                 })
                 .await
                 .map_err(|e| format!("failed to send payment: {:?}", e))?;

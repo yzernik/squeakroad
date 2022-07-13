@@ -160,9 +160,9 @@ async fn create_order(
         .expect("failed to get lightning client");
         let invoice_resp = lighting_client
             // All calls require at least empty parameter
-            .add_invoice(squeakroad_lnd_client::rpc::Invoice {
+            .add_invoice(tonic_openssl_lnd::rpc::Invoice {
                 value_msat: (amount_owed_sat as i64) * 1000,
-                ..squeakroad_lnd_client::rpc::Invoice::default()
+                ..tonic_openssl_lnd::rpc::Invoice::default()
             })
             .await
             .expect("failed to get new invoice");
