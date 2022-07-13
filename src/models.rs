@@ -217,7 +217,6 @@ pub struct AdminInfo {
 #[derive(Serialize, Debug, Clone)]
 #[serde(crate = "rocket::serde")]
 pub struct AccountBalanceChange {
-    pub username: String,
     pub amount_change_sat: i64,
     pub event_type: String,
     pub event_id: String,
@@ -2522,10 +2521,6 @@ from
  withdrawals
 WHERE
  withdrawals.user_id = ?)
-LEFT JOIN
- users
-ON
- user_id = users.id
 ORDER BY event_time_ms DESC
 LIMIT ?
 OFFSET ?
@@ -2533,7 +2528,6 @@ OFFSET ?
         user_id, user_id, user_id, limit, offset)
             .fetch(&mut **db)
             .map_ok(|r| AccountBalanceChange {
-                    username: r.email.unwrap(),
                     amount_change_sat: r.amount_change_sat.unwrap(),
                     event_type: r.event_type.unwrap(),
                     event_id: r.event_id.unwrap(),
@@ -2621,17 +2615,12 @@ UNION ALL
 select withdrawals.user_id as user_id, (0 - withdrawals.amount_sat) as amount_change_sat, 'withdrawal' as event_type, withdrawals.public_id as event_id, withdrawals.created_time_ms as event_time_ms
 from
  withdrawals)
-LEFT JOIN
- users
-ON
- user_id = users.id
 ORDER BY event_time_ms DESC
 LIMIT ?
 OFFSET ?
 ;", limit, offset)
             .fetch(&mut **db)
             .map_ok(|r| AccountBalanceChange {
-                    username: r.email.unwrap(),
                     amount_change_sat: r.amount_change_sat.unwrap(),
                     event_type: r.event_type.unwrap(),
                     event_id: r.event_id.unwrap(),
