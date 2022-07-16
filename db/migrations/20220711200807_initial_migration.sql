@@ -30,6 +30,24 @@ CREATE TABLE shippingoptions (
     price_sat UNSIGNED BIG INT NOT NULL
 );
 
+CREATE TABLE listingactivations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    public_id VARCHAR NOT NULL,
+    listing_id INTEGER NOT NULL,
+    price_per_day_sat UNSIGNED BIG INT NOT NULL,
+    amount_owed_sat UNSIGNED BIG INT NOT NULL,
+    amount_refunded_sat UNSIGNED BIG INT NOT NULL,
+    invoice_payment_request VARCHAR NOT NULL,
+    invoice_hash VARCHAR NOT NULL,
+    paid BOOLEAN NOT NULL,
+    approved BOOLEAN NOT NULL,
+    canceled_by_seller boolean NOT NULL,
+    canceled_by_admin boolean NOT NULL,
+    start_time_ms UNSIGNED BIG INT NOT NULL,
+    end_time_ms UNSIGNED BIG INT NOT NULL,
+    payment_time_ms UNSIGNED BIG INT NOT NULL
+);
+
 CREATE TABLE adminsettings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     market_name VARCHAR NOT NULL,
