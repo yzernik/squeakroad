@@ -2348,9 +2348,15 @@
           "name": "payment_time_ms",
           "ordinal": 21,
           "type_info": "Int64"
+        },
+        {
+          "name": "invoice_expiry_time_ms",
+          "ordinal": 22,
+          "type_info": "Int64"
         }
       ],
       "nullable": [
+        false,
         false,
         false,
         false,
@@ -2492,9 +2498,15 @@
           "name": "payment_time_ms",
           "ordinal": 21,
           "type_info": "Int64"
+        },
+        {
+          "name": "invoice_expiry_time_ms",
+          "ordinal": 22,
+          "type_info": "Int64"
         }
       ],
       "nullable": [
+        false,
         false,
         false,
         false,
@@ -3320,9 +3332,15 @@
           "name": "payment_time_ms",
           "ordinal": 21,
           "type_info": "Int64"
+        },
+        {
+          "name": "invoice_expiry_time_ms",
+          "ordinal": 22,
+          "type_info": "Int64"
         }
       ],
       "nullable": [
+        false,
         false,
         false,
         false,

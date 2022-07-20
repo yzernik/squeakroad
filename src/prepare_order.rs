@@ -158,17 +158,25 @@ async fn create_order(
         )
         .await
         .expect("failed to get lightning client");
-        let invoice_resp = lighting_client
+        let add_invoice_resp = lighting_client
             // All calls require at least empty parameter
             .add_invoice(tonic_openssl_lnd::rpc::Invoice {
                 value_msat: (amount_owed_sat as i64) * 1000,
-                ..tonic_openssl_lnd::rpc::Invoice::default()
+                ..Default::default()
             })
             .await
-            .expect("failed to get new invoice");
-        // We only print it here, note that in real-life code you may want to call `.into_inner()` on
-        // the response to get the message.
-        let invoice = invoice_resp.into_inner();
+            .expect("failed to get add invoice resp")
+            .into_inner();
+
+        let invoice = lighting_client
+            // All calls require at least empty parameter
+            .lookup_invoice(tonic_openssl_lnd::rpc::PaymentHash {
+                r_hash: add_invoice_resp.clone().r_hash,
+                ..Default::default()
+            })
+            .await
+            .expect("failed to get new invoice")
+            .into_inner();
 
         let order = Order {
             id: None,
@@ -186,11 +194,12 @@ async fn create_order(
             canceled_by_seller: false,
             canceled_by_buyer: false,
             reviewed: false,
-            invoice_hash: util::to_hex(&invoice.r_hash),
-            invoice_payment_request: invoice.payment_request,
+            invoice_hash: util::to_hex(&add_invoice_resp.r_hash),
+            invoice_payment_request: add_invoice_resp.payment_request,
             review_rating: 0,
             review_text: "".to_string(),
             created_time_ms: now,
+            invoice_expiry_time_ms: now + (invoice.expiry as u64 * 1000),
             payment_time_ms: 0,
             review_time_ms: 0,
         };

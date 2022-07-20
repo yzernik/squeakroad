@@ -181,6 +181,7 @@ pub struct Order {
     pub review_rating: u32,
     pub review_text: String,
     pub created_time_ms: u64,
+    pub invoice_expiry_time_ms: u64,
     pub payment_time_ms: u64,
     pub review_time_ms: u64,
 }
@@ -1689,6 +1690,7 @@ impl Order {
                 review_rating: r.review_rating.try_into().unwrap(),
                 review_text: r.review_text,
                 created_time_ms: r.created_time_ms.try_into().unwrap(),
+                invoice_expiry_time_ms: r.invoice_expiry_time_ms.try_into().unwrap(),
                 payment_time_ms: r.payment_time_ms.try_into().unwrap(),
                 review_time_ms: r.review_time_ms.try_into().unwrap(),
             })
@@ -1724,6 +1726,7 @@ impl Order {
                 review_rating: r.review_rating.try_into().unwrap(),
                 review_text: r.review_text,
                 created_time_ms: r.created_time_ms.try_into().unwrap(),
+                invoice_expiry_time_ms: r.invoice_expiry_time_ms.try_into().unwrap(),
                 payment_time_ms: r.payment_time_ms.try_into().unwrap(),
                 review_time_ms: r.review_time_ms.try_into().unwrap(),
             })
