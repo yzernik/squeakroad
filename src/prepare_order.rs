@@ -150,7 +150,7 @@ async fn create_order(
     } else if quantity == 0 {
         Err("Quantity must be postive.".to_string())
     } else {
-        let mut lighting_client = lightning::get_lnd_client(
+        let mut lightning_client = lightning::get_lnd_client(
             config.lnd_host.clone(),
             config.lnd_port,
             config.lnd_tls_cert_path.clone(),
@@ -158,17 +158,14 @@ async fn create_order(
         )
         .await
         .expect("failed to get lightning client");
-        let invoice_resp = lighting_client
-            // All calls require at least empty parameter
+        let invoice = lightning_client
             .add_invoice(tonic_openssl_lnd::rpc::Invoice {
                 value_msat: (amount_owed_sat as i64) * 1000,
-                ..tonic_openssl_lnd::rpc::Invoice::default()
+                ..Default::default()
             })
             .await
-            .expect("failed to get new invoice");
-        // We only print it here, note that in real-life code you may want to call `.into_inner()` on
-        // the response to get the message.
-        let invoice = invoice_resp.into_inner();
+            .expect("failed to get new invoice")
+            .into_inner();
 
         let order = Order {
             id: None,

@@ -76,7 +76,7 @@ impl Context {
 }
 
 async fn get_lightning_node_pubkey(config: &Config) -> Result<String, String> {
-    let mut lighting_client = lightning::get_lnd_client(
+    let mut lightning_client = lightning::get_lnd_client(
         config.lnd_host.clone(),
         config.lnd_port,
         config.lnd_tls_cert_path.clone(),
@@ -84,13 +84,13 @@ async fn get_lightning_node_pubkey(config: &Config) -> Result<String, String> {
     )
     .await
     .expect("failed to get lightning client");
-    let get_info_resp = lighting_client
+    let get_info_resp = lightning_client
         // All calls require at least empty parameter
         .get_info(tonic_openssl_lnd::rpc::GetInfoRequest {})
         .await
-        .expect("failed to get lightning node info");
-    let info = get_info_resp.into_inner();
-    Ok(info.identity_pubkey)
+        .expect("failed to get lightning node info")
+        .into_inner();
+    Ok(get_info_resp.identity_pubkey)
 }
 
 #[put("/<id>/ship")]
