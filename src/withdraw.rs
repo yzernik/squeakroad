@@ -85,7 +85,7 @@ async fn withdraw(
     } else if user.is_admin {
         Err("Admin user cannot withdraw funds.".to_string())
     } else {
-        let mut lighting_client = lightning::get_lnd_client(
+        let mut lightning_client = lightning::get_lnd_client(
             config.lnd_host.clone(),
             config.lnd_port,
             config.lnd_tls_cert_path.clone(),
@@ -93,13 +93,13 @@ async fn withdraw(
         )
         .await
         .expect("failed to get lightning client");
-        let decoded_pay_req_resp = lighting_client
+        let decoded_pay_req = lightning_client
             .decode_pay_req(tonic_openssl_lnd::rpc::PayReqString {
                 pay_req: withdrawal_info.invoice_payment_request.clone(),
             })
             .await
-            .map_err(|_| "failed to decode payment request string.")?;
-        let decoded_pay_req = decoded_pay_req_resp.into_inner();
+            .map_err(|_| "failed to decode payment request string.")?
+            .into_inner();
         let amount_sat: u64 = decoded_pay_req.num_satoshis.try_into().unwrap();
         let account_info = AccountInfo::account_info_for_user(db, user.id)
             .await
@@ -110,14 +110,14 @@ async fn withdraw(
         } else if user.is_admin {
             Err("Admin user cannot withdraw funds.".to_string())
         } else {
-            let send_payment_resp = lighting_client
+            let send_response = lightning_client
                 .send_payment_sync(tonic_openssl_lnd::rpc::SendRequest {
                     payment_request: withdrawal_info.invoice_payment_request.clone(),
-                    ..tonic_openssl_lnd::rpc::SendRequest::default()
+                    ..Default::default()
                 })
                 .await
-                .map_err(|e| format!("failed to send payment: {:?}", e))?;
-            let send_response = send_payment_resp.into_inner();
+                .map_err(|e| format!("failed to send payment: {:?}", e))?
+                .into_inner();
             let now = util::current_time_millis();
             let withdrawal = Withdrawal {
                 id: None,

@@ -9,7 +9,7 @@ pub async fn handle_received_payments(
     config: Config,
     mut conn: PoolConnection<Sqlite>,
 ) -> Result<(), String> {
-    let mut lighting_client = get_lnd_client(
+    let mut lightning_client = get_lnd_client(
         config.lnd_host.clone(),
         config.lnd_port,
         config.lnd_tls_cert_path.clone(),
@@ -24,14 +24,15 @@ pub async fn handle_received_payments(
         .map_err(|_| "failed to latest paid order.")?;
 
     let settle_index: u64 = if let Some(latest_invoice_hash) = latest_paid_order {
-        let latest_paid_order_invoice = lighting_client
+        let latest_paid_order_invoice = lightning_client
             .lookup_invoice(tonic_openssl_lnd::rpc::PaymentHash {
                 r_hash: util::from_hex(&latest_invoice_hash),
                 ..Default::default()
             })
             .await
-            .map_err(|e| format!("Failed to lookup invoice: {:?}", e))?;
-        latest_paid_order_invoice.into_inner().settle_index
+            .map_err(|e| format!("Failed to lookup invoice: {:?}", e))?
+            .into_inner();
+        latest_paid_order_invoice.settle_index
     } else {
         0
     };
@@ -41,11 +42,11 @@ pub async fn handle_received_payments(
         settle_index,
         ..Default::default()
     };
-    let update_stream_resp = lighting_client
+    let mut update_stream = lightning_client
         .subscribe_invoices(invoice_subscription)
         .await
-        .map_err(|_| "Failed to call subscribe invoices.")?;
-    let mut update_stream = update_stream_resp.into_inner();
+        .map_err(|_| "Failed to call subscribe invoices.")?
+        .into_inner();
     while let Ok(Some(invoice)) = update_stream.message().await {
         #[allow(deprecated)]
         if invoice.settled {
