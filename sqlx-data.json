@@ -2182,6 +2182,150 @@
     },
     "query": "\nselect\n listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username\nfrom\n listings\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nINNER JOIN\n users\nON\n listings.user_id = users.id\nWHERE\n listings.submitted\nAND\n not listings.reviewed\nAND\n not listings.removed\nAND\n users.id = ?\nGROUP BY\n listings.id\nORDER BY listings.created_time_ms DESC\nLIMIT ?\nOFFSET ?\n;"
   },
+  "9d8fdfcc0e6acb32f7c077a29feba40d8d3d5eb697573ddd6a5163fc7eedec0b": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "public_id",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "buyer_user_id",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "seller_user_id",
+          "ordinal": 3,
+          "type_info": "Int64"
+        },
+        {
+          "name": "quantity",
+          "ordinal": 4,
+          "type_info": "Int64"
+        },
+        {
+          "name": "listing_id",
+          "ordinal": 5,
+          "type_info": "Int64"
+        },
+        {
+          "name": "shipping_option_id",
+          "ordinal": 6,
+          "type_info": "Int64"
+        },
+        {
+          "name": "shipping_instructions",
+          "ordinal": 7,
+          "type_info": "Text"
+        },
+        {
+          "name": "amount_owed_sat",
+          "ordinal": 8,
+          "type_info": "Int64"
+        },
+        {
+          "name": "seller_credit_sat",
+          "ordinal": 9,
+          "type_info": "Int64"
+        },
+        {
+          "name": "paid",
+          "ordinal": 10,
+          "type_info": "Bool"
+        },
+        {
+          "name": "shipped",
+          "ordinal": 11,
+          "type_info": "Bool"
+        },
+        {
+          "name": "canceled_by_seller",
+          "ordinal": 12,
+          "type_info": "Bool"
+        },
+        {
+          "name": "canceled_by_buyer",
+          "ordinal": 13,
+          "type_info": "Bool"
+        },
+        {
+          "name": "invoice_payment_request",
+          "ordinal": 14,
+          "type_info": "Text"
+        },
+        {
+          "name": "invoice_hash",
+          "ordinal": 15,
+          "type_info": "Text"
+        },
+        {
+          "name": "review_text",
+          "ordinal": 16,
+          "type_info": "Text"
+        },
+        {
+          "name": "review_rating",
+          "ordinal": 17,
+          "type_info": "Int64"
+        },
+        {
+          "name": "reviewed",
+          "ordinal": 18,
+          "type_info": "Bool"
+        },
+        {
+          "name": "created_time_ms",
+          "ordinal": 19,
+          "type_info": "Int64"
+        },
+        {
+          "name": "review_time_ms",
+          "ordinal": 20,
+          "type_info": "Int64"
+        },
+        {
+          "name": "payment_time_ms",
+          "ordinal": 21,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\nselect *\nfrom\n orders\nWHERE\n created_time_ms < ?\nAND\n NOT paid\n;"
+  },
   "9dd7bf9e971edc81b99d1d329acfddeda496abc66d282a60e07058102b149ff2": {
     "describe": {
       "columns": [
@@ -2561,6 +2705,16 @@
       }
     },
     "query": "INSERT INTO withdrawals (public_id, user_id, amount_sat, invoice_hash, invoice_payment_request, created_time_ms) VALUES (?, ?, ?, ?, ?, ?)"
+  },
+  "b23841e1a92436bf56b1447d3165e6a4996a4908ce38d9f796153b593504c7a7": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\nDELETE FROM orders\nWHERE\n id = ?\nAND\n NOT paid\n;"
   },
   "b26ae7c5b32514b2b055605b39373406f820c6534ec6583bb52b3c1ac00a6855": {
     "describe": {

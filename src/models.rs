@@ -1767,6 +1767,55 @@ impl Order {
         Ok(order)
     }
 
+    pub async fn all_older_than(
+        db: &mut PoolConnection<Sqlite>,
+        created_time_ms: u64,
+    ) -> Result<Vec<Order>, sqlx::Error> {
+        let created_time_ms_i64: i64 = created_time_ms.try_into().unwrap();
+
+        let orders = sqlx::query!(
+            "
+select *
+from
+ orders
+WHERE
+ created_time_ms < ?
+AND
+ NOT paid
+;",
+            created_time_ms_i64,
+        )
+        .fetch(&mut **db)
+        .map_ok(|r| Order {
+            id: Some(r.id.try_into().unwrap()),
+            public_id: r.public_id,
+            quantity: r.quantity.try_into().unwrap(),
+            buyer_user_id: r.buyer_user_id.try_into().unwrap(),
+            seller_user_id: r.seller_user_id.try_into().unwrap(),
+            listing_id: r.listing_id.try_into().unwrap(),
+            shipping_option_id: r.shipping_option_id.try_into().unwrap(),
+            shipping_instructions: r.shipping_instructions,
+            amount_owed_sat: r.amount_owed_sat.try_into().unwrap(),
+            seller_credit_sat: r.seller_credit_sat.try_into().unwrap(),
+            paid: r.paid,
+            shipped: r.shipped,
+            canceled_by_seller: r.canceled_by_seller,
+            canceled_by_buyer: r.canceled_by_buyer,
+            reviewed: r.reviewed,
+            invoice_hash: r.invoice_hash,
+            invoice_payment_request: r.invoice_payment_request,
+            review_rating: r.review_rating.try_into().unwrap(),
+            review_text: r.review_text,
+            created_time_ms: r.created_time_ms.try_into().unwrap(),
+            payment_time_ms: r.payment_time_ms.try_into().unwrap(),
+            review_time_ms: r.review_time_ms.try_into().unwrap(),
+        })
+        .try_collect::<Vec<_>>()
+        .await?;
+
+        Ok(orders)
+    }
+
     pub async fn mark_as_paid(
         db: &mut PoolConnection<Sqlite>,
         order_id: i32,
@@ -1847,6 +1896,26 @@ WHERE
  id = ?
 AND
  not (shipped OR canceled_by_seller OR canceled_by_buyer)
+;",
+            order_id,
+        )
+        .execute(&mut **db)
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn delete_expired_order(
+        db: &mut PoolConnection<Sqlite>,
+        order_id: i32,
+    ) -> Result<(), sqlx::Error> {
+        sqlx::query!(
+            "
+DELETE FROM orders
+WHERE
+ id = ?
+AND
+ NOT paid
 ;",
             order_id,
         )

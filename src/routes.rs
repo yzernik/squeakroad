@@ -1,5 +1,6 @@
 use crate::config::Config;
 use crate::db::Db;
+use crate::order_expiry;
 use crate::payment_processor;
 use rocket::fairing::{self, AdHoc};
 use rocket::fs::{relative, FileServer};
@@ -8,6 +9,9 @@ use rocket_auth::Error::SqlxError;
 use rocket_auth::Users;
 use rocket_db_pools::{sqlx, Database};
 use rocket_dyn_templates::Template;
+
+const PAYMENT_PROCESSOR_TASK_INTERVAL_S: u64 = 10;
+const ORDER_EXPIRY_TASK_INTERVAL_S: u64 = 600;
 
 async fn run_migrations(rocket: Rocket<Build>) -> fairing::Result {
     match Db::fetch(&rocket) {
@@ -63,6 +67,7 @@ async fn create_admin_user(rocket: Rocket<Build>, config: Config) -> fairing::Re
 pub fn stage(config: Config) -> AdHoc {
     let config_clone = config.clone();
     let config_clone_2 = config.clone();
+    let config_clone_3 = config.clone();
 
     AdHoc::on_ignite("SQLx Stage", |rocket| async {
         rocket
@@ -87,7 +92,9 @@ pub fn stage(config: Config) -> AdHoc {
                     };
                     rocket::tokio::spawn(async move {
                         let mut interval = rocket::tokio::time::interval(
-                            rocket::tokio::time::Duration::from_secs(10),
+                            rocket::tokio::time::Duration::from_secs(
+                                PAYMENT_PROCESSOR_TASK_INTERVAL_S,
+                            ),
                         );
                         loop {
                             if let Ok(conn) = pool.acquire().await {
@@ -103,7 +110,37 @@ pub fn stage(config: Config) -> AdHoc {
                                     Err(e) => println!("payment processor task failed: {:?}", e),
                                 }
                             }
-                            println!("Subscription failed. Trying again in {:?} seconds.", 10);
+                            println!(
+                                "Subscription failed. Trying again in {:?} seconds.",
+                                PAYMENT_PROCESSOR_TASK_INTERVAL_S
+                            );
+                            interval.tick().await;
+                        }
+                    });
+                })
+            }))
+            .attach(AdHoc::on_liftoff("Remove expired orders", |rocket| {
+                Box::pin(async move {
+                    let pool = match Db::fetch(rocket) {
+                        Some(pool) => pool.0.clone(), // clone the wrapped pool
+                        None => panic!("failed to get db for background task."),
+                    };
+                    rocket::tokio::spawn(async move {
+                        let mut interval = rocket::tokio::time::interval(
+                            rocket::tokio::time::Duration::from_secs(ORDER_EXPIRY_TASK_INTERVAL_S),
+                        );
+                        loop {
+                            if let Ok(conn) = pool.acquire().await {
+                                match order_expiry::remove_expired_orders(
+                                    config_clone_3.clone(),
+                                    conn,
+                                )
+                                .await
+                                {
+                                    Ok(_) => (),
+                                    Err(e) => println!("order expiry task failed: {:?}", e),
+                                }
+                            }
                             interval.tick().await;
                         }
                     });

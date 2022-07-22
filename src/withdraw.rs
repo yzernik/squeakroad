@@ -85,7 +85,7 @@ async fn withdraw(
     } else if user.is_admin {
         Err("Admin user cannot withdraw funds.".to_string())
     } else {
-        let mut lightning_client = lightning::get_lnd_client(
+        let mut lightning_client = lightning::get_lnd_lightning_client(
             config.lnd_host.clone(),
             config.lnd_port,
             config.lnd_tls_cert_path.clone(),
@@ -94,7 +94,7 @@ async fn withdraw(
         .await
         .expect("failed to get lightning client");
         let decoded_pay_req = lightning_client
-            .decode_pay_req(tonic_openssl_lnd::rpc::PayReqString {
+            .decode_pay_req(tonic_openssl_lnd::lnrpc::PayReqString {
                 pay_req: withdrawal_info.invoice_payment_request.clone(),
             })
             .await
@@ -111,7 +111,7 @@ async fn withdraw(
             Err("Admin user cannot withdraw funds.".to_string())
         } else {
             let send_response = lightning_client
-                .send_payment_sync(tonic_openssl_lnd::rpc::SendRequest {
+                .send_payment_sync(tonic_openssl_lnd::lnrpc::SendRequest {
                     payment_request: withdrawal_info.invoice_payment_request.clone(),
                     ..Default::default()
                 })
