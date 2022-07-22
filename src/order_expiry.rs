@@ -45,7 +45,6 @@ async fn remove_order(
     lightning_invoices_client
         .cancel_invoice(tonic_openssl_lnd::invoicesrpc::CancelInvoiceMsg {
             payment_hash: util::from_hex(&order.invoice_hash),
-            ..Default::default()
         })
         .await
         .expect("failed to cancel invoice");

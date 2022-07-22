@@ -137,7 +137,7 @@ pub fn stage(config: Config) -> AdHoc {
                                 )
                                 .await
                                 {
-                                    Ok(_) => println!("order expiry task `completed`."),
+                                    Ok(_) => (),
                                     Err(e) => println!("order expiry task failed: {:?}", e),
                                 }
                             }
