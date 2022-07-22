@@ -1905,6 +1905,26 @@ AND
         Ok(())
     }
 
+    pub async fn delete_expired_order(
+        db: &mut PoolConnection<Sqlite>,
+        order_id: i32,
+    ) -> Result<(), sqlx::Error> {
+        sqlx::query!(
+            "
+DELETE FROM orders
+WHERE
+ id = ?
+AND
+ NOT paid
+;",
+            order_id,
+        )
+        .execute(&mut **db)
+        .await?;
+
+        Ok(())
+    }
+
     pub async fn seller_info_for_user(
         db: &mut Connection<Db>,
         user_id: i32,

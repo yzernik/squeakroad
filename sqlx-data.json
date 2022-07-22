@@ -2706,6 +2706,16 @@
     },
     "query": "INSERT INTO withdrawals (public_id, user_id, amount_sat, invoice_hash, invoice_payment_request, created_time_ms) VALUES (?, ?, ?, ?, ?, ?)"
   },
+  "b23841e1a92436bf56b1447d3165e6a4996a4908ce38d9f796153b593504c7a7": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\nDELETE FROM orders\nWHERE\n id = ?\nAND\n NOT paid\n;"
+  },
   "b26ae7c5b32514b2b055605b39373406f820c6534ec6583bb52b3c1ac00a6855": {
     "describe": {
       "columns": [],

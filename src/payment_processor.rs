@@ -1,5 +1,5 @@
 use crate::config::Config;
-use crate::lightning::get_lnd_client;
+use crate::lightning::get_lnd_lightning_client;
 use crate::models::Order;
 use crate::util;
 use sqlx::pool::PoolConnection;
@@ -9,7 +9,7 @@ pub async fn handle_received_payments(
     config: Config,
     mut conn: PoolConnection<Sqlite>,
 ) -> Result<(), String> {
-    let mut lightning_client = get_lnd_client(
+    let mut lightning_client = get_lnd_lightning_client(
         config.lnd_host.clone(),
         config.lnd_port,
         config.lnd_tls_cert_path.clone(),
@@ -25,7 +25,7 @@ pub async fn handle_received_payments(
 
     let settle_index: u64 = if let Some(latest_invoice_hash) = latest_paid_order {
         let latest_paid_order_invoice = lightning_client
-            .lookup_invoice(tonic_openssl_lnd::rpc::PaymentHash {
+            .lookup_invoice(tonic_openssl_lnd::lnrpc::PaymentHash {
                 r_hash: util::from_hex(&latest_invoice_hash),
                 ..Default::default()
             })
@@ -38,7 +38,7 @@ pub async fn handle_received_payments(
     };
 
     println!("Starting subscribe invoices...");
-    let invoice_subscription = tonic_openssl_lnd::rpc::InvoiceSubscription {
+    let invoice_subscription = tonic_openssl_lnd::lnrpc::InvoiceSubscription {
         settle_index,
         ..Default::default()
     };

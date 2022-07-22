@@ -150,7 +150,7 @@ async fn create_order(
     } else if quantity == 0 {
         Err("Quantity must be postive.".to_string())
     } else {
-        let mut lightning_client = lightning::get_lnd_client(
+        let mut lightning_client = lightning::get_lnd_lightning_client(
             config.lnd_host.clone(),
             config.lnd_port,
             config.lnd_tls_cert_path.clone(),
@@ -159,7 +159,7 @@ async fn create_order(
         .await
         .expect("failed to get lightning client");
         let invoice = lightning_client
-            .add_invoice(tonic_openssl_lnd::rpc::Invoice {
+            .add_invoice(tonic_openssl_lnd::lnrpc::Invoice {
                 value_msat: (amount_owed_sat as i64) * 1000,
                 ..Default::default()
             })
