@@ -12,6 +12,8 @@ use rocket_auth::{AdminUser, User};
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
 
+const MAX_LISTINGS_PER_USER_PER_DAY: u32 = 10;
+
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
 struct Context {
@@ -88,8 +90,11 @@ async fn create_listing(
         Err("Description length is too long.".to_string())
     } else if price_sat == 0 {
         Err("Price must be a positive number.".to_string())
-    } else if recent_listing_count >= 10 {
-        Err("More than 10 listings in a single day not allowed.".to_string())
+    } else if recent_listing_count >= MAX_LISTINGS_PER_USER_PER_DAY {
+        Err(format!(
+            "More than {:?} listings in a single day not allowed.",
+            MAX_LISTINGS_PER_USER_PER_DAY,
+        ))
     } else if user.is_admin {
         Err("Admin user cannot create a listing.".to_string())
     } else {

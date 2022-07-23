@@ -16,6 +16,8 @@ use rocket_auth::User;
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
 
+const MAX_WITHDRAWALS_PER_USER_PER_DAY: u32 = 5;
+
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
 struct Context {
@@ -80,10 +82,22 @@ async fn withdraw(
     user: User,
     config: Config,
 ) -> Result<String, String> {
+    let now = util::current_time_millis();
+    let one_day_in_ms = 24 * 60 * 60 * 1000;
+    let recent_withdrawal_count =
+        Withdrawal::count_for_user_since_time_ms(db, user.id(), now - one_day_in_ms)
+            .await
+            .map_err(|_| "failed to get number of recent withdrawals.")?;
+
     if withdrawal_info.invoice_payment_request.is_empty() {
         Err("Invoice payment request cannot be empty.".to_string())
     } else if user.is_admin {
         Err("Admin user cannot withdraw funds.".to_string())
+    } else if recent_withdrawal_count >= MAX_WITHDRAWALS_PER_USER_PER_DAY {
+        Err(format!(
+            "More than {:?} withdrawals in a single day not allowed.",
+            MAX_WITHDRAWALS_PER_USER_PER_DAY,
+        ))
     } else {
         let mut lightning_client = lightning::get_lnd_lightning_client(
             config.lnd_host.clone(),
@@ -118,7 +132,6 @@ async fn withdraw(
                 .await
                 .map_err(|e| format!("failed to send payment: {:?}", e))?
                 .into_inner();
-            let now = util::current_time_millis();
             let withdrawal = Withdrawal {
                 id: None,
                 public_id: util::create_uuid(),
