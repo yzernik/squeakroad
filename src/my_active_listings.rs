@@ -33,7 +33,7 @@ impl Context {
             .map_err(|_| "failed to get base template.")?;
         let page_num = maybe_page_num.unwrap_or(1);
         let listing_cards =
-            ListingCardDisplay::all_approved_for_user(&mut db, user.id, PAGE_SIZE, page_num)
+            ListingCardDisplay::all_active_for_user(&mut db, user.id, PAGE_SIZE, page_num)
                 .await
                 .map_err(|_| "failed to get approved listings.")?;
         Ok(Context {
