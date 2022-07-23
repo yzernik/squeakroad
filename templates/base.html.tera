@@ -60,7 +60,7 @@
             <a class="navbar-brand" href="/admin">Admin</a>
             {% else %}
             Welcome, <a class="navbar-brand" href="/user/{{ base_context.user.email }}">{{ base_context.user.email }}</a>
-            <a class="navbar-brand" href="/my_pending_orders">Orders{% if base_context.account_info %} ({{ base_context.account_info.num_unshipped_orders }}){% endif %}</a>
+            <a class="navbar-brand" href="/my_processing_orders">Orders{% if base_context.account_info %} ({{ base_context.account_info.num_unshipped_orders }}){% endif %}</a>
             <a class="navbar-brand" href="/account">Account{% if base_context.account_info %} ({{ base_context.account_info.account_balance_sat }} sats){% endif %}</a>
             {% endif %}
             {% endif %}

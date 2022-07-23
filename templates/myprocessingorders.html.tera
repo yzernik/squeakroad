@@ -8,8 +8,8 @@
 
     <div class="row">
 
-      <h3>My Pending Orders</h3>
-      <p>Orders for your listings that you have not yet shipped</p>
+      <h3>My Processing Orders</h3>
+      <p>Orders you have received that you have not yet shipped</p>
 
       <div class="twelve columns">
 	{% include "ordercardpage" %}

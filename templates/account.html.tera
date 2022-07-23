@@ -22,7 +22,7 @@
     <h5>Seller Info</h5>
     <a href="/seller_history/{{ user.email }}">My Shipped Orders</a>
     <br>
-    <a href="my_pending_orders">My Pending Orders</a>
+    <a href="my_processing_orders">My Processing Orders</a>
     <br>
     <a href="/new_listing">Add New Listing</a>
     <br>
