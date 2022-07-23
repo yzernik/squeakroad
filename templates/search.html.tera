@@ -11,7 +11,7 @@
       <h3>Search Results: "{{ search_text }}"</h3>
 
       <div class="twelve columns">
-	{% include "searchlistingcardpage" %}
+	{% include "searchlistingtablepage" %}
       </div>
     </div>
   </div>

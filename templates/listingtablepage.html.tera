@@ -1,0 +1,50 @@
+<table class="u-full-width">
+  <thead>
+    <tr>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+
+  {% for card in listing_cards %}
+  <tbody>
+    <tr>
+      <td>
+	<a href="/listing/{{ card.listing.public_id }}">
+          {% if card.image %}
+	  <img src="data:image/jpeg;base64,{{ card.image.image_data_base64 }}" style="width:128px;height:128px;" />
+          {% else %}
+	  <img src="/images/default_listing.png" style="width:128px;height:128px;" />
+          {% endif %}
+	</a>
+      </td>
+      <td>
+	<a href="/listing/{{ card.listing.public_id }}">
+	  {{ card.listing.title }}
+	</a>
+      </td>
+      <td>
+	<a href="/listing/{{ card.listing.public_id }}">
+	  {{ card.listing.price_sat }} sats
+	</a>
+      </td>
+    </tr>
+  </tbody>
+  {% endfor %}
+</table>
+
+
+{% if page_num > 1 %}
+<form class="inline" action="" method="get">
+  <input type="hidden" id="page_num" name="page_num" value="{{ page_num - 1 }}">
+  <button class="link" type="submit">Prev</button>
+</form>
+{% else %}
+Prev
+{% endif %}
+<span> - Page {{ page_num }} - </span>
+<form class="inline" action="" method="get">
+  <input type="hidden" id="page_num" name="page_num" value="{{ page_num + 1 }}">
+  <button class="link" type="submit">Next</button>
+</form>
