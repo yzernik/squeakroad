@@ -34,7 +34,7 @@ impl Context {
             .await
             .map_err(|_| "failed to get base template.")?;
         let page_num = maybe_page_num.unwrap_or(1);
-        let listing_cards = ListingCardDisplay::all_approved_for_search_text(
+        let listing_cards = ListingCardDisplay::all_active_for_search_text(
             &mut db,
             &search_text,
             PAGE_SIZE,
