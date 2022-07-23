@@ -592,7 +592,7 @@ impl ListingDisplay {
 }
 
 impl ListingCard {
-    pub async fn all_approved(
+    pub async fn all_active(
         db: &mut Connection<Db>,
         page_size: u32,
         page_num: u32,
@@ -1068,7 +1068,7 @@ OFFSET ?
         Ok(listing_cards)
     }
 
-    pub async fn all_approved_for_search_text(
+    pub async fn all_active_for_search_text(
         db: &mut Connection<Db>,
         search_text: &str,
         page_size: u32,
@@ -1167,12 +1167,12 @@ impl ListingCardDisplay {
         }
     }
 
-    pub async fn all_approved(
+    pub async fn all_active(
         db: &mut Connection<Db>,
         page_size: u32,
         page_num: u32,
     ) -> Result<Vec<ListingCardDisplay>, sqlx::Error> {
-        let listing_cards = ListingCard::all_approved(db, page_size, page_num).await?;
+        let listing_cards = ListingCard::all_active(db, page_size, page_num).await?;
         let listing_card_displays = listing_cards
             .iter()
             .map(ListingCardDisplay::listing_card_to_display)
@@ -1259,14 +1259,14 @@ impl ListingCardDisplay {
         Ok(listing_card_displays)
     }
 
-    pub async fn all_approved_for_search_text(
+    pub async fn all_active_for_search_text(
         db: &mut Connection<Db>,
         search_text: &str,
         page_size: u32,
         page_num: u32,
     ) -> Result<Vec<ListingCardDisplay>, sqlx::Error> {
         let listing_cards =
-            ListingCard::all_approved_for_search_text(db, search_text, page_size, page_num).await?;
+            ListingCard::all_active_for_search_text(db, search_text, page_size, page_num).await?;
         let listing_card_displays = listing_cards
             .iter()
             .map(ListingCardDisplay::listing_card_to_display)
