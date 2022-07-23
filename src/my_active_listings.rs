@@ -55,14 +55,14 @@ async fn index(
 ) -> Result<Template, NotFound<String>> {
     let flash = flash.map(FlashMessage::into_inner);
     Ok(Template::render(
-        "myapprovedlistings",
+        "myactivelistings",
         Context::raw(flash, db, page_num, user, admin_user).await,
     ))
 }
 
-pub fn my_approved_listings_stage() -> AdHoc {
-    AdHoc::on_ignite("My Approved Listings Stage", |rocket| async {
-        rocket.mount("/my_approved_listings", routes![index])
+pub fn my_active_listings_stage() -> AdHoc {
+    AdHoc::on_ignite("My Active Listings Stage", |rocket| async {
+        rocket.mount("/my_active_listings", routes![index])
         // .mount("/listing", routes![new])
     })
 }

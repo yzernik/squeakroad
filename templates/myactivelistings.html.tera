@@ -8,7 +8,7 @@
 
     <div class="row">
 
-      <h3>My Approved Listings</h3>
+      <h3>My Active Listings</h3>
 
       <div class="twelve columns">
 	{% include "listingtablepage" %}
