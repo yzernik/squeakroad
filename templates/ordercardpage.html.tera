@@ -24,7 +24,7 @@
       <td><a href="/order/{{ order_card.order.public_id }}">{{ order_card.order.public_id }}</a></td>
       <td><a href="/listing/{{ order_card.listing.public_id }}">{{ order_card.listing.title }}</a></td>
       <td>{{ order_card.order.amount_owed_sat }} sats</td>
-      <td>{% if order_card.order.reviewed %}{{ order_card.order.review_rating }}{% else %}Unreviewed{% endif %}</td>
+      <td>{% if order_card.order.reviewed %}{{ order_card.order.review_rating }}{% else %}Unrated{% endif %}</td>
     </tr>
   </tbody>
   {% endfor %}
