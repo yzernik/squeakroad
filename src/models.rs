@@ -2792,6 +2792,31 @@ impl Withdrawal {
 
         Ok(withdrawal)
     }
+
+    pub async fn count_for_user_since_time_ms(
+        db: &mut Connection<Db>,
+        user_id: i32,
+        start_time_ms: u64,
+    ) -> Result<u32, sqlx::Error> {
+        let start_time_ms_i64: i64 = start_time_ms.try_into().unwrap();
+
+        let withdrawal_count = sqlx::query!(
+            "
+select count(id) as withdrawal_count from withdrawals
+WHERE
+ user_id = ?
+AND
+ created_time_ms > ?
+ORDER BY withdrawals.created_time_ms ASC;",
+            user_id,
+            start_time_ms_i64,
+        )
+        .fetch_one(&mut **db)
+        .map_ok(|r| r.withdrawal_count)
+        .await?;
+
+        Ok(withdrawal_count.try_into().unwrap())
+    }
 }
 
 impl AdminInfo {

@@ -2754,6 +2754,24 @@
     },
     "query": "\n            select\n             SUM(orders.amount_owed_sat * orders.review_rating * 1000) / SUM(orders.amount_owed_sat) as weighted_average\n            FROM\n             orders\n            WHERE\n             orders.reviewed\n            AND\n             orders.seller_user_id = ?\n            GROUP BY\n             orders.seller_user_id\n            ;"
   },
+  "b62a67f5068451705f5dc187479431da2f9af18eb058a3cc14b4a33c935279ff": {
+    "describe": {
+      "columns": [
+        {
+          "name": "withdrawal_count",
+          "ordinal": 0,
+          "type_info": "Int"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "\nselect count(id) as withdrawal_count from withdrawals\nWHERE\n user_id = ?\nAND\n created_time_ms > ?\nORDER BY withdrawals.created_time_ms ASC;"
+  },
   "be99d8673183a949c574c4f6ad6dbdc625755f69f860876ee64737ffbb1a9bbf": {
     "describe": {
       "columns": [
