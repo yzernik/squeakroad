@@ -33,7 +33,7 @@ impl Context {
             .map_err(|_| "failed to get base template.")?;
         let page_num = maybe_page_num.unwrap_or(1);
         let listing_cards =
-            ListingCardDisplay::all_approved_for_user(&mut db, user.id, PAGE_SIZE, page_num)
+            ListingCardDisplay::all_active_for_user(&mut db, user.id, PAGE_SIZE, page_num)
                 .await
                 .map_err(|_| "failed to get approved listings.")?;
         Ok(Context {
@@ -55,14 +55,14 @@ async fn index(
 ) -> Result<Template, NotFound<String>> {
     let flash = flash.map(FlashMessage::into_inner);
     Ok(Template::render(
-        "myapprovedlistings",
+        "myactivelistings",
         Context::raw(flash, db, page_num, user, admin_user).await,
     ))
 }
 
-pub fn my_approved_listings_stage() -> AdHoc {
-    AdHoc::on_ignite("My Approved Listings Stage", |rocket| async {
-        rocket.mount("/my_approved_listings", routes![index])
+pub fn my_active_listings_stage() -> AdHoc {
+    AdHoc::on_ignite("My Active Listings Stage", |rocket| async {
+        rocket.mount("/my_active_listings", routes![index])
         // .mount("/listing", routes![new])
     })
 }

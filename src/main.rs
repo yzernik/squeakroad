@@ -17,7 +17,7 @@ mod listings;
 mod market_liabilities;
 mod models;
 mod my_account_balance;
-mod my_approved_listings;
+mod my_active_listings;
 mod my_paid_orders;
 mod my_pending_listings;
 mod my_pending_orders;

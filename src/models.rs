@@ -987,7 +987,7 @@ OFFSET ?
         Ok(listing_cards)
     }
 
-    pub async fn all_approved_for_user(
+    pub async fn all_active_for_user(
         db: &mut Connection<Db>,
         user_id: i32,
         page_size: u32,
@@ -1243,14 +1243,14 @@ impl ListingCardDisplay {
         Ok(listing_card_displays)
     }
 
-    pub async fn all_approved_for_user(
+    pub async fn all_active_for_user(
         db: &mut Connection<Db>,
         user_id: i32,
         page_size: u32,
         page_num: u32,
     ) -> Result<Vec<ListingCardDisplay>, sqlx::Error> {
         let listing_cards =
-            ListingCard::all_approved_for_user(db, user_id, page_size, page_num).await?;
+            ListingCard::all_active_for_user(db, user_id, page_size, page_num).await?;
         let listing_card_displays = listing_cards
             .iter()
             .map(ListingCardDisplay::listing_card_to_display)

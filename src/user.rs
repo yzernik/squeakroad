@@ -38,7 +38,7 @@ impl Context {
             .await
             .map_err(|_| "failed to get visited user.")?;
         let page_num = maybe_page_num.unwrap_or(1);
-        let listing_cards = ListingCardDisplay::all_approved_for_user(
+        let listing_cards = ListingCardDisplay::all_active_for_user(
             &mut db,
             visited_user.id.unwrap(),
             PAGE_SIZE,
