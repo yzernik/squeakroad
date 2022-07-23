@@ -11,7 +11,7 @@
       <h3>My Approved Listings</h3>
 
       <div class="twelve columns">
-	{% include "listingcardpage" %}
+	{% include "listingtablepage" %}
       </div>
     </div>
   </div>

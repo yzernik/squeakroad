@@ -14,7 +14,7 @@
       <p><b><a href="/user_profile/{{ visited_user.username }}">User Profile</a></b></p>
 
       <div class="twelve columns">
-	{% include "listingcardpage" %}
+	{% include "listingtablepage" %}
       </div>
     </div>
   </div>
