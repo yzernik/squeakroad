@@ -174,7 +174,7 @@ pub fn stage(config: Config) -> AdHoc {
             .attach(crate::my_unpaid_orders::my_unpaid_orders_stage())
             .attach(crate::my_paid_orders::my_paid_orders_stage())
             .attach(crate::my_account_balance::my_account_balance_stage())
-            .attach(crate::my_pending_orders::my_pending_orders_stage())
+            .attach(crate::my_processing_orders::my_processing_orders_stage())
             .attach(crate::prepare_order::prepare_order_stage())
             .attach(crate::order::order_stage())
             .attach(crate::withdraw::withdraw_stage())

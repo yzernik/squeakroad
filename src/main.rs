@@ -20,7 +20,7 @@ mod my_account_balance;
 mod my_active_listings;
 mod my_paid_orders;
 mod my_pending_listings;
-mod my_pending_orders;
+mod my_processing_orders;
 mod my_rejected_listings;
 mod my_unpaid_orders;
 mod my_unsubmitted_listings;
