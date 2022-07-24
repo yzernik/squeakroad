@@ -93,11 +93,11 @@ async fn withdraw(
         Err("Invoice payment request cannot be empty.".to_string())
     } else if user.is_admin {
         Err("Admin user cannot withdraw funds.".to_string())
-    } else if recent_withdrawal_count >= MAX_WITHDRAWALS_PER_USER_PER_DAY {
-        Err(format!(
-            "More than {:?} withdrawals in a single day not allowed.",
-            MAX_WITHDRAWALS_PER_USER_PER_DAY,
-        ))
+    // } else if recent_withdrawal_count >= MAX_WITHDRAWALS_PER_USER_PER_DAY {
+    //     Err(format!(
+    //         "More than {:?} withdrawals in a single day not allowed.",
+    //         MAX_WITHDRAWALS_PER_USER_PER_DAY,
+    //     ))
     } else {
         let mut lightning_client = lightning::get_lnd_lightning_client(
             config.lnd_host.clone(),
@@ -115,42 +115,48 @@ async fn withdraw(
             .map_err(|_| "failed to decode payment request string.")?
             .into_inner();
         let amount_sat: u64 = decoded_pay_req.num_satoshis.try_into().unwrap();
-        let account_info = AccountInfo::account_info_for_user(db, user.id)
-            .await
-            .map_err(|_| "failed to get account info.")?;
-        let account_balance_sat_u64: u64 = account_info.account_balance_sat.try_into().unwrap();
-        if amount_sat > account_balance_sat_u64 {
-            Err("Insufficient funds in account.".to_string())
-        } else if user.is_admin {
-            Err("Admin user cannot withdraw funds.".to_string())
-        } else {
-            let send_response = lightning_client
-                .send_payment_sync(tonic_openssl_lnd::lnrpc::SendRequest {
-                    payment_request: withdrawal_info.invoice_payment_request.clone(),
-                    ..Default::default()
-                })
-                .await
-                .map_err(|e| format!("failed to send payment: {:?}", e))?
-                .into_inner();
-            let withdrawal = Withdrawal {
-                id: None,
-                public_id: util::create_uuid(),
-                user_id: user.id(),
-                amount_sat,
-                invoice_hash: util::to_hex(&send_response.payment_hash),
-                invoice_payment_request: withdrawal_info.invoice_payment_request,
-                created_time_ms: now,
-            };
-
-            match Withdrawal::insert(withdrawal, db).await {
-                Ok(_) => Ok("Inserted.".to_string()),
-                Err(e) => {
-                    error_!("DB insertion error: {}", e);
-                    Err("Order could not be inserted due an internal error.".to_string())
-                }
+        let invoice_payment_request = withdrawal_info.invoice_payment_request;
+        let withdrawal = Withdrawal {
+            id: None,
+            public_id: util::create_uuid(),
+            user_id: user.id(),
+            amount_sat,
+            invoice_hash: "".to_string(),
+            invoice_payment_request: invoice_payment_request.clone(),
+            created_time_ms: now,
+        };
+        let send_withdrawal_funds_ret = send_withdrawal_funds(invoice_payment_request, config);
+        match Withdrawal::do_withdrawal(withdrawal, db, send_withdrawal_funds_ret).await {
+            Ok(_) => Ok("Inserted.".to_string()),
+            Err(e) => {
+                error_!("DB insertion error: {}", e);
+                Err(e)
             }
         }
     }
+}
+
+async fn send_withdrawal_funds(
+    invoice_payment_request: String,
+    config: Config,
+) -> Result<tonic_openssl_lnd::lnrpc::SendResponse, String> {
+    let mut lightning_client = lightning::get_lnd_lightning_client(
+        config.lnd_host.clone(),
+        config.lnd_port,
+        config.lnd_tls_cert_path.clone(),
+        config.lnd_macaroon_path.clone(),
+    )
+    .await
+    .expect("failed to get lightning client");
+    let send_response = lightning_client
+        .send_payment_sync(tonic_openssl_lnd::lnrpc::SendRequest {
+            payment_request: invoice_payment_request,
+            ..Default::default()
+        })
+        .await
+        .map_err(|e| format!("failed to send payment: {:?}", e))?
+        .into_inner();
+    Ok(send_response)
 }
 
 #[get("/")]

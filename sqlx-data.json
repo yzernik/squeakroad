@@ -554,6 +554,16 @@
     },
     "query": "\n        SELECT weighted_average, total_amount_sold_sat, users.email\n        FROM\n         users\n        LEFT JOIN\n            (select\n             SUM(orders.amount_owed_sat) as total_amount_sold_sat, orders.seller_user_id as shipped_seller_user_id\n            FROM\n             orders\n            WHERE\n             shipped\n            GROUP BY\n             orders.seller_user_id) as seller_infos\n        ON\n         users.id = seller_infos.shipped_seller_user_id\n        LEFT JOIN\n            (select\n             SUM(orders.amount_owed_sat * orders.review_rating * 1000) / SUM(orders.amount_owed_sat) as weighted_average, orders.seller_user_id as reviewed_seller_user_id\n            FROM\n             orders\n            WHERE\n             orders.reviewed\n            AND\n             orders.shipped\n            GROUP BY\n             orders.seller_user_id) as seller_infos\n        ON\n         users.id = seller_infos.reviewed_seller_user_id\n        WHERE\n         total_amount_sold_sat > 0\n        ORDER BY\n         total_amount_sold_sat DESC\n            ;"
   },
+  "315ad7161209611da140321218a44f8790d1bcf7b8bcea82ece0e131c5aed7ea": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "UPDATE withdrawals SET invoice_hash = ? WHERE id = ?"
+  },
   "325f84210e7451ac90ba88f43018321d94e126e1fd706687562383cbe34696a0": {
     "describe": {
       "columns": [],
