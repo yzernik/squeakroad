@@ -2753,29 +2753,6 @@ OFFSET ?
 }
 
 impl Withdrawal {
-    // /// Returns the id of the inserted row.
-    // pub async fn insert(
-    //     withdrawal: Withdrawal,
-    //     db: &mut rocket_db_pools::sqlx::Transaction<'_, Db>,
-    // ) -> Result<i32, sqlx::Error> {
-    //     let amount_sat: i64 = withdrawal.amount_sat.try_into().unwrap();
-    //     let created_time_ms: i64 = withdrawal.created_time_ms.try_into().unwrap();
-
-    //     let insert_result = sqlx::query!(
-    //         "INSERT INTO withdrawals (public_id, user_id, amount_sat, invoice_hash, invoice_payment_request, created_time_ms) VALUES (?, ?, ?, ?, ?, ?)",
-    //         withdrawal.public_id,
-    //         withdrawal.user_id,
-    //         amount_sat,
-    //         withdrawal.invoice_hash,
-    //         withdrawal.invoice_payment_request,
-    //         created_time_ms,
-    //     )
-    //         .execute(&mut **db)
-    //         .await?;
-
-    //     Ok(insert_result.last_insert_rowid() as _)
-    // }
-
     pub async fn do_withdrawal(
         withdrawal: Withdrawal,
         db: &mut Connection<Db>,
