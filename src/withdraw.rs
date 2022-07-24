@@ -86,51 +86,53 @@ async fn withdraw(
     let one_day_in_ms = 24 * 60 * 60 * 1000;
 
     if withdrawal_info.invoice_payment_request.is_empty() {
-        Err("Invoice payment request cannot be empty.".to_string())
-    } else if user.is_admin {
-        Err("Admin user cannot withdraw funds.".to_string())
-    } else {
-        let mut lightning_client = lightning::get_lnd_lightning_client(
-            config.lnd_host.clone(),
-            config.lnd_port,
-            config.lnd_tls_cert_path.clone(),
-            config.lnd_macaroon_path.clone(),
-        )
+        return Err("Invoice payment request cannot be empty.".to_string());
+    };
+
+    if user.is_admin {
+        return Err("Admin user cannot withdraw funds.".to_string());
+    }
+
+    let mut lightning_client = lightning::get_lnd_lightning_client(
+        config.lnd_host.clone(),
+        config.lnd_port,
+        config.lnd_tls_cert_path.clone(),
+        config.lnd_macaroon_path.clone(),
+    )
+    .await
+    .expect("failed to get lightning client");
+    let decoded_pay_req = lightning_client
+        .decode_pay_req(tonic_openssl_lnd::lnrpc::PayReqString {
+            pay_req: withdrawal_info.invoice_payment_request.clone(),
+        })
         .await
-        .expect("failed to get lightning client");
-        let decoded_pay_req = lightning_client
-            .decode_pay_req(tonic_openssl_lnd::lnrpc::PayReqString {
-                pay_req: withdrawal_info.invoice_payment_request.clone(),
-            })
-            .await
-            .map_err(|_| "failed to decode payment request string.")?
-            .into_inner();
-        let amount_sat: u64 = decoded_pay_req.num_satoshis.try_into().unwrap();
-        let invoice_payment_request = withdrawal_info.invoice_payment_request;
-        let withdrawal = Withdrawal {
-            id: None,
-            public_id: util::create_uuid(),
-            user_id: user.id(),
-            amount_sat,
-            invoice_hash: "".to_string(),
-            invoice_payment_request: invoice_payment_request.clone(),
-            created_time_ms: now,
-        };
-        let send_withdrawal_funds_ret = send_withdrawal_funds(invoice_payment_request, config);
-        match Withdrawal::do_withdrawal(
-            withdrawal,
-            db,
-            send_withdrawal_funds_ret,
-            MAX_WITHDRAWALS_PER_USER_PER_DAY,
-            now - one_day_in_ms,
-        )
-        .await
-        {
-            Ok(_) => Ok("Inserted.".to_string()),
-            Err(e) => {
-                error_!("DB insertion error: {}", e);
-                Err(e)
-            }
+        .map_err(|_| "failed to decode payment request string.")?
+        .into_inner();
+    let amount_sat: u64 = decoded_pay_req.num_satoshis.try_into().unwrap();
+    let invoice_payment_request = withdrawal_info.invoice_payment_request;
+    let withdrawal = Withdrawal {
+        id: None,
+        public_id: util::create_uuid(),
+        user_id: user.id(),
+        amount_sat,
+        invoice_hash: "".to_string(),
+        invoice_payment_request: invoice_payment_request.clone(),
+        created_time_ms: now,
+    };
+    let send_withdrawal_funds_ret = send_withdrawal_funds(invoice_payment_request, config);
+    match Withdrawal::do_withdrawal(
+        withdrawal,
+        db,
+        send_withdrawal_funds_ret,
+        MAX_WITHDRAWALS_PER_USER_PER_DAY,
+        now - one_day_in_ms,
+    )
+    .await
+    {
+        Ok(_) => Ok("Inserted.".to_string()),
+        Err(e) => {
+            error_!("DB insertion error: {}", e);
+            Err(e)
         }
     }
 }
