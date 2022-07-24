@@ -2684,6 +2684,14 @@ WHERE
 AND
  (orders.canceled_by_seller OR orders.canceled_by_buyer)
 UNION ALL
+select orders.buyer_user_id as user_id, orders.amount_owed_sat as amount_change_sat, 'processing_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
+from
+ orders
+WHERE
+ orders.paid
+AND
+ NOT (orders.shipped OR orders.canceled_by_seller OR orders.canceled_by_buyer)
+UNION ALL
 select withdrawals.user_id as user_id, (0 - withdrawals.amount_sat) as amount_change_sat, 'withdrawal' as event_type, withdrawals.public_id as event_id, withdrawals.created_time_ms as event_time_ms
 from
  withdrawals)
