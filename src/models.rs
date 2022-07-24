@@ -6,7 +6,10 @@ use rocket::fs::TempFile;
 use rocket::serde::{Deserialize, Serialize};
 use rocket_db_pools::{sqlx, Connection};
 use sqlx::pool::PoolConnection;
+use sqlx::Acquire;
+use sqlx::Row;
 use sqlx::Sqlite;
+use std::future::Future;
 use std::result::Result;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -2530,28 +2533,13 @@ impl AccountInfo {
         db: &mut Connection<Db>,
         user_id: i32,
     ) -> Result<AccountInfo, sqlx::Error> {
-        let account_balance_changes =
-            AccountInfo::all_account_balance_changes_for_user(db, user_id, u32::MAX, 1).await?;
-        let account_balance_sat: i64 = account_balance_changes
-            .iter()
-            .map(|c| c.amount_change_sat)
-            .sum();
+        let account_balance_sat = AccountInfo::total_account_balance_for_user(db, user_id).await?;
         let unshipped_orders = OrderCard::all_pending_for_user(db, user_id, u32::MAX, 1).await?;
         let num_unshipped_orders = unshipped_orders.len();
         Ok(AccountInfo {
             account_balance_sat,
             num_unshipped_orders: num_unshipped_orders.try_into().unwrap(),
         })
-    }
-
-    pub async fn total_market_liabilities_sat(db: &mut Connection<Db>) -> Result<i64, sqlx::Error> {
-        let account_balance_changes =
-            AccountInfo::all_account_balance_changes(db, u32::MAX, 1).await?;
-        let market_liabilities_sat: i64 = account_balance_changes
-            .iter()
-            .map(|c| c.amount_change_sat)
-            .sum();
-        Ok(market_liabilities_sat)
     }
 
     pub async fn all_account_balance_changes_for_user(
@@ -2563,7 +2551,7 @@ impl AccountInfo {
         // TODO: Order by event time in SQL query. When this is fixed: https://github.com/launchbadge/sqlx/issues/1350
         let offset = (page_num - 1) * page_size;
         let limit = page_size;
-        let account_balance_changes = sqlx::query!("
+        let account_balance_changes = sqlx::query("
 SELECT * FROM
 (select orders.seller_user_id as user_id, orders.seller_credit_sat as amount_change_sat, 'received_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
 from
@@ -2593,67 +2581,72 @@ WHERE
 ORDER BY event_time_ms DESC
 LIMIT ?
 OFFSET ?
-;",
-        user_id, user_id, user_id, limit, offset)
+;")
+            .bind(user_id)
+            .bind(user_id)
+            .bind(user_id)
+            .bind(limit)
+            .bind(offset)
             .fetch(&mut **db)
             .map_ok(|r| AccountBalanceChange {
-                    amount_change_sat: r.amount_change_sat.unwrap(),
-                    event_type: r.event_type.unwrap(),
-                    event_id: r.event_id.unwrap(),
-                    event_time_ms: r.event_time_ms.unwrap().try_into().unwrap(),
-                }
-            )
+                amount_change_sat: r.try_get("amount_change_sat").unwrap(),
+                event_type: r.try_get("event_type").unwrap(),
+                event_id: r.try_get("event_id").unwrap(),
+                event_time_ms: {
+                    let time_ms_i64: i64 = r.try_get("event_time_ms").unwrap();
+                    time_ms_i64 as u64
+                },
+            })
             .try_collect::<Vec<_>>()
             .await?;
 
         Ok(account_balance_changes)
     }
 
-    // TODO: Use this when sqlx is fixed.
-    //     pub async fn total_account_balance_for_user(
-    //         db: &mut Connection<Db>,
-    //         user_id: i32,
-    //     ) -> Result<Vec<AccountBalanceChange>, sqlx::Error> {
-    //         // TODO: Order by event time in SQL query. When this is fixed: https://github.com/launchbadge/sqlx/issues/1350
-    //         let total_account_balance_result = sqlx::query!("
-    // SELECT SUM(amount_change_sat) as total_account_balance_sat FROM
-    // (select orders.seller_user_id as user_id, orders.seller_credit_sat as amount_change_sat, 'received_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
-    // from
-    //  orders
-    // WHERE
-    //  orders.paid
-    // AND
-    //  orders.shipped
-    // AND
-    //  orders.seller_user_id = ?
-    // UNION ALL
-    // select orders.buyer_user_id as user_id, orders.amount_owed_sat as amount_change_sat, 'refunded_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
-    // from
-    //  orders
-    // WHERE
-    //  orders.paid
-    // AND
-    //  not orders.shipped
-    // AND
-    //  orders.buyer_user_id = ?
-    // UNION ALL
-    // select withdrawals.user_id as user_id, (0 - withdrawals.amount_sat) as amount_change_sat, 'withdrawal' as event_type, withdrawals.public_id as event_id, withdrawals.created_time_ms as event_time_ms
-    // from
-    //  withdrawals
-    // WHERE
-    //  withdrawals.user_id = ?)
-    // LEFT JOIN
-    //  users
-    // ON
-    //  user_id = users.id
-    // ;",
-    //         user_id, user_id, user_id)
-    //             .fetch_one(&mut **db)
-    //             .map_ok(|r| r.total_account_balance_sat)
-    //             .await?;
+    pub async fn total_account_balance_for_user(
+        db: &mut Connection<Db>,
+        user_id: i32,
+    ) -> Result<i64, sqlx::Error> {
+        let account_balance_sat = sqlx::query("
+SELECT SUM(amount_change_sat) as total_account_balance_sat FROM
+(select orders.seller_user_id as user_id, orders.seller_credit_sat as amount_change_sat, 'received_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
+from
+ orders
+WHERE
+ orders.paid
+AND
+ orders.shipped
+AND
+ orders.seller_user_id = ?
+UNION ALL
+select orders.buyer_user_id as user_id, orders.amount_owed_sat as amount_change_sat, 'refunded_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
+from
+ orders
+WHERE
+ orders.paid
+AND
+ (orders.canceled_by_seller OR orders.canceled_by_buyer)
+AND
+ orders.buyer_user_id = ?
+UNION ALL
+select withdrawals.user_id as user_id, (0 - withdrawals.amount_sat) as amount_change_sat, 'withdrawal' as event_type, withdrawals.public_id as event_id, withdrawals.created_time_ms as event_time_ms
+from
+ withdrawals
+WHERE
+ withdrawals.user_id = ?)
+;")
+            .bind(user_id)
+            .bind(user_id)
+            .bind(user_id)
+            .fetch_one(&mut **db)
+            .map_ok(|r|  {
+                let balance_sat_i64: i64 = r.try_get("total_account_balance_sat").unwrap();
+                balance_sat_i64
+            })
+            .await?;
 
-    //         Ok(total_account_balance_result)
-    //     }
+        Ok(account_balance_sat)
+    }
 
     pub async fn all_account_balance_changes(
         db: &mut Connection<Db>,
@@ -2663,7 +2656,7 @@ OFFSET ?
         // TODO: Order by event time in SQL query. When this is fixed: https://github.com/launchbadge/sqlx/issues/1350
         let offset = (page_num - 1) * page_size;
         let limit = page_size;
-        let account_balance_changes = sqlx::query!("
+        let account_balance_changes = sqlx::query("
 SELECT * FROM
 (select orders.seller_user_id as user_id, orders.seller_credit_sat as amount_change_sat, 'received_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
 from
@@ -2681,25 +2674,78 @@ WHERE
 AND
  (orders.canceled_by_seller OR orders.canceled_by_buyer)
 UNION ALL
+select orders.buyer_user_id as user_id, orders.amount_owed_sat as amount_change_sat, 'processing_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
+from
+ orders
+WHERE
+ orders.paid
+AND
+ NOT (orders.shipped OR orders.canceled_by_seller OR orders.canceled_by_buyer)
+UNION ALL
 select withdrawals.user_id as user_id, (0 - withdrawals.amount_sat) as amount_change_sat, 'withdrawal' as event_type, withdrawals.public_id as event_id, withdrawals.created_time_ms as event_time_ms
 from
  withdrawals)
 ORDER BY event_time_ms DESC
 LIMIT ?
 OFFSET ?
-;", limit, offset)
+;")
+            .bind(limit)
+            .bind(offset)
             .fetch(&mut **db)
             .map_ok(|r| AccountBalanceChange {
-                    amount_change_sat: r.amount_change_sat.unwrap(),
-                    event_type: r.event_type.unwrap(),
-                    event_id: r.event_id.unwrap(),
-                    event_time_ms: r.event_time_ms.unwrap().try_into().unwrap(),
-                }
-            )
+                amount_change_sat: r.try_get("amount_change_sat").unwrap(),
+                event_type: r.try_get("event_type").unwrap(),
+                event_id: r.try_get("event_id").unwrap(),
+                event_time_ms: {
+                    let time_ms_i64: i64 = r.try_get("event_time_ms").unwrap();
+                    time_ms_i64 as u64
+                },
+            })
             .try_collect::<Vec<_>>()
             .await?;
 
         Ok(account_balance_changes)
+    }
+
+    pub async fn total_market_liabilities_sat(db: &mut Connection<Db>) -> Result<i64, sqlx::Error> {
+        let market_liabilities_sat = sqlx::query("
+SELECT SUM(amount_change_sat) as total_market_liabilities_sat FROM
+(select orders.seller_user_id as user_id, orders.seller_credit_sat as amount_change_sat, 'received_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
+from
+ orders
+WHERE
+ orders.paid
+AND
+ orders.shipped
+UNION ALL
+select orders.buyer_user_id as user_id, orders.amount_owed_sat as amount_change_sat, 'refunded_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
+from
+ orders
+WHERE
+ orders.paid
+AND
+ (orders.canceled_by_seller OR orders.canceled_by_buyer)
+UNION ALL
+select orders.buyer_user_id as user_id, orders.amount_owed_sat as amount_change_sat, 'processing_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
+from
+ orders
+WHERE
+ orders.paid
+AND
+ NOT (orders.shipped OR orders.canceled_by_seller OR orders.canceled_by_buyer)
+UNION ALL
+select withdrawals.user_id as user_id, (0 - withdrawals.amount_sat) as amount_change_sat, 'withdrawal' as event_type, withdrawals.public_id as event_id, withdrawals.created_time_ms as event_time_ms
+from
+ withdrawals)
+;")
+            .fetch_one(&mut **db)
+            .map_ok(|r|  {
+                let balance_sat_i64: i64 = r.try_get("total_market_liabilities_sat").unwrap();
+                balance_sat_i64
+            })
+            .await?;
+
+        Ok(market_liabilities_sat)
     }
 
     // TODO: Use when sqlx is fixed.
@@ -2750,14 +2796,23 @@ OFFSET ?
 }
 
 impl Withdrawal {
-    /// Returns the id of the inserted row.
-    pub async fn insert(
+    pub async fn do_withdrawal(
         withdrawal: Withdrawal,
         db: &mut Connection<Db>,
-    ) -> Result<i32, sqlx::Error> {
+        send_withdrawal_funds_future: impl Future<
+            Output = Result<tonic_openssl_lnd::lnrpc::SendResponse, String>,
+        >,
+        max_withdrawals_per_interval: u32,
+        interval_start_time_ms: u64,
+    ) -> Result<i32, String> {
+        let mut tx = db
+            .begin()
+            .await
+            .map_err(|_| "failed to begin transaction.")?;
+
+        // Insert the new withdrawal.
         let amount_sat: i64 = withdrawal.amount_sat.try_into().unwrap();
         let created_time_ms: i64 = withdrawal.created_time_ms.try_into().unwrap();
-
         let insert_result = sqlx::query!(
             "INSERT INTO withdrawals (public_id, user_id, amount_sat, invoice_hash, invoice_payment_request, created_time_ms) VALUES (?, ?, ?, ?, ?, ?)",
             withdrawal.public_id,
@@ -2767,10 +2822,101 @@ impl Withdrawal {
             withdrawal.invoice_payment_request,
             created_time_ms,
         )
-            .execute(&mut **db)
-            .await?;
+            .execute(&mut *tx)
+            .await
+            .map_err(|_| "failed to insert new withdrawal.")?;
+        let new_withdrawal_id = insert_result.last_insert_rowid();
 
-        Ok(insert_result.last_insert_rowid() as _)
+        // Check if any constraints are violated.
+        let user_id = withdrawal.user_id;
+
+        let start_time_ms_i64: i64 = interval_start_time_ms.try_into().unwrap();
+        let withdrawal_count = sqlx::query!(
+            "
+select count(id) as withdrawal_count from withdrawals
+WHERE
+ user_id = ?
+AND
+ created_time_ms > ?
+ORDER BY withdrawals.created_time_ms ASC;",
+            user_id,
+            start_time_ms_i64,
+        )
+        .fetch_one(&mut *tx)
+        .map_ok(|r| r.withdrawal_count as u32)
+        .await
+        .map_err(|_| "failed to get withdrawal count.")?;
+
+        if withdrawal_count > max_withdrawals_per_interval {
+            return Err(format!(
+                "More than {:?} withdrawals in a single day not allowed.",
+                max_withdrawals_per_interval,
+            ));
+        }
+
+        let account_balance_sat = sqlx::query("
+SELECT SUM(amount_change_sat) as total_account_balance_sat FROM
+(select orders.seller_user_id as user_id, orders.seller_credit_sat as amount_change_sat, 'received_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
+from
+ orders
+WHERE
+ orders.paid
+AND
+ orders.shipped
+AND
+ orders.seller_user_id = ?
+UNION ALL
+select orders.buyer_user_id as user_id, orders.amount_owed_sat as amount_change_sat, 'refunded_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
+from
+ orders
+WHERE
+ orders.paid
+AND
+ (orders.canceled_by_seller OR orders.canceled_by_buyer)
+AND
+ orders.buyer_user_id = ?
+UNION ALL
+select withdrawals.user_id as user_id, (0 - withdrawals.amount_sat) as amount_change_sat, 'withdrawal' as event_type, withdrawals.public_id as event_id, withdrawals.created_time_ms as event_time_ms
+from
+ withdrawals
+WHERE
+ withdrawals.user_id = ?)
+;")
+            .bind(user_id)
+            .bind(user_id)
+            .bind(user_id)
+            .fetch_one(&mut *tx)
+            .map_ok(|r|  {
+                let balance_sat_i64: i64 = r.try_get("total_account_balance_sat").unwrap();
+                balance_sat_i64
+            })
+            .await
+            .map_err(|_| "failed to insert get account balance changes.")?;
+
+        if account_balance_sat < 0 {
+            return Err("Insufficient funds for withdrawal.".to_string());
+        }
+
+        let send_response = send_withdrawal_funds_future
+            .await
+            .map_err(|e| format!("failed to send withdrawal payment: {:?}", e))?;
+
+        // Update the withdrawal row with the payment invoice hash.
+        let payment_hash_hex = util::to_hex(&send_response.payment_hash);
+        sqlx::query!(
+            "UPDATE withdrawals SET invoice_hash = ? WHERE id = ?",
+            payment_hash_hex,
+            new_withdrawal_id,
+        )
+        .execute(&mut *tx)
+        .await
+        .map_err(|_| "failed to update new withdrawal payment hash.")?;
+
+        tx.commit()
+            .await
+            .map_err(|_| "failed to begin transaction.")?;
+
+        Ok(new_withdrawal_id as _)
     }
 
     pub async fn single_by_public_id(
@@ -2793,30 +2939,30 @@ impl Withdrawal {
         Ok(withdrawal)
     }
 
-    pub async fn count_for_user_since_time_ms(
-        db: &mut Connection<Db>,
-        user_id: i32,
-        start_time_ms: u64,
-    ) -> Result<u32, sqlx::Error> {
-        let start_time_ms_i64: i64 = start_time_ms.try_into().unwrap();
+    //     pub async fn count_for_user_since_time_ms(
+    //         db: &mut Connection<Db>,
+    //         user_id: i32,
+    //         start_time_ms: u64,
+    //     ) -> Result<u32, sqlx::Error> {
+    //         let start_time_ms_i64: i64 = start_time_ms.try_into().unwrap();
 
-        let withdrawal_count = sqlx::query!(
-            "
-select count(id) as withdrawal_count from withdrawals
-WHERE
- user_id = ?
-AND
- created_time_ms > ?
-ORDER BY withdrawals.created_time_ms ASC;",
-            user_id,
-            start_time_ms_i64,
-        )
-        .fetch_one(&mut **db)
-        .map_ok(|r| r.withdrawal_count)
-        .await?;
+    //         let withdrawal_count = sqlx::query!(
+    //             "
+    // select count(id) as withdrawal_count from withdrawals
+    // WHERE
+    //  user_id = ?
+    // AND
+    //  created_time_ms > ?
+    // ORDER BY withdrawals.created_time_ms ASC;",
+    //             user_id,
+    //             start_time_ms_i64,
+    //         )
+    //         .fetch_one(&mut **db)
+    //         .map_ok(|r| r.withdrawal_count)
+    //         .await?;
 
-        Ok(withdrawal_count.try_into().unwrap())
-    }
+    //         Ok(withdrawal_count.try_into().unwrap())
+    //     }
 }
 
 impl AdminInfo {

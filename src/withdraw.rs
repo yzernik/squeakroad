@@ -84,73 +84,80 @@ async fn withdraw(
 ) -> Result<String, String> {
     let now = util::current_time_millis();
     let one_day_in_ms = 24 * 60 * 60 * 1000;
-    let recent_withdrawal_count =
-        Withdrawal::count_for_user_since_time_ms(db, user.id(), now - one_day_in_ms)
-            .await
-            .map_err(|_| "failed to get number of recent withdrawals.")?;
 
     if withdrawal_info.invoice_payment_request.is_empty() {
-        Err("Invoice payment request cannot be empty.".to_string())
-    } else if user.is_admin {
-        Err("Admin user cannot withdraw funds.".to_string())
-    } else if recent_withdrawal_count >= MAX_WITHDRAWALS_PER_USER_PER_DAY {
-        Err(format!(
-            "More than {:?} withdrawals in a single day not allowed.",
-            MAX_WITHDRAWALS_PER_USER_PER_DAY,
-        ))
-    } else {
-        let mut lightning_client = lightning::get_lnd_lightning_client(
-            config.lnd_host.clone(),
-            config.lnd_port,
-            config.lnd_tls_cert_path.clone(),
-            config.lnd_macaroon_path.clone(),
-        )
-        .await
-        .expect("failed to get lightning client");
-        let decoded_pay_req = lightning_client
-            .decode_pay_req(tonic_openssl_lnd::lnrpc::PayReqString {
-                pay_req: withdrawal_info.invoice_payment_request.clone(),
-            })
-            .await
-            .map_err(|_| "failed to decode payment request string.")?
-            .into_inner();
-        let amount_sat: u64 = decoded_pay_req.num_satoshis.try_into().unwrap();
-        let account_info = AccountInfo::account_info_for_user(db, user.id)
-            .await
-            .map_err(|_| "failed to get account info.")?;
-        let account_balance_sat_u64: u64 = account_info.account_balance_sat.try_into().unwrap();
-        if amount_sat > account_balance_sat_u64 {
-            Err("Insufficient funds in account.".to_string())
-        } else if user.is_admin {
-            Err("Admin user cannot withdraw funds.".to_string())
-        } else {
-            let send_response = lightning_client
-                .send_payment_sync(tonic_openssl_lnd::lnrpc::SendRequest {
-                    payment_request: withdrawal_info.invoice_payment_request.clone(),
-                    ..Default::default()
-                })
-                .await
-                .map_err(|e| format!("failed to send payment: {:?}", e))?
-                .into_inner();
-            let withdrawal = Withdrawal {
-                id: None,
-                public_id: util::create_uuid(),
-                user_id: user.id(),
-                amount_sat,
-                invoice_hash: util::to_hex(&send_response.payment_hash),
-                invoice_payment_request: withdrawal_info.invoice_payment_request,
-                created_time_ms: now,
-            };
+        return Err("Invoice payment request cannot be empty.".to_string());
+    };
 
-            match Withdrawal::insert(withdrawal, db).await {
-                Ok(_) => Ok("Inserted.".to_string()),
-                Err(e) => {
-                    error_!("DB insertion error: {}", e);
-                    Err("Order could not be inserted due an internal error.".to_string())
-                }
-            }
+    if user.is_admin {
+        return Err("Admin user cannot withdraw funds.".to_string());
+    }
+
+    let mut lightning_client = lightning::get_lnd_lightning_client(
+        config.lnd_host.clone(),
+        config.lnd_port,
+        config.lnd_tls_cert_path.clone(),
+        config.lnd_macaroon_path.clone(),
+    )
+    .await
+    .expect("failed to get lightning client");
+    let decoded_pay_req = lightning_client
+        .decode_pay_req(tonic_openssl_lnd::lnrpc::PayReqString {
+            pay_req: withdrawal_info.invoice_payment_request.clone(),
+        })
+        .await
+        .map_err(|_| "failed to decode payment request string.")?
+        .into_inner();
+    let amount_sat: u64 = decoded_pay_req.num_satoshis.try_into().unwrap();
+    let invoice_payment_request = withdrawal_info.invoice_payment_request;
+    let withdrawal = Withdrawal {
+        id: None,
+        public_id: util::create_uuid(),
+        user_id: user.id(),
+        amount_sat,
+        invoice_hash: "".to_string(),
+        invoice_payment_request: invoice_payment_request.clone(),
+        created_time_ms: now,
+    };
+    let send_withdrawal_funds_ret = send_withdrawal_funds(invoice_payment_request, config);
+    match Withdrawal::do_withdrawal(
+        withdrawal,
+        db,
+        send_withdrawal_funds_ret,
+        MAX_WITHDRAWALS_PER_USER_PER_DAY,
+        now - one_day_in_ms,
+    )
+    .await
+    {
+        Ok(_) => Ok("Inserted.".to_string()),
+        Err(e) => {
+            error_!("DB insertion error: {}", e);
+            Err(e)
         }
     }
+}
+
+async fn send_withdrawal_funds(
+    invoice_payment_request: String,
+    config: Config,
+) -> Result<tonic_openssl_lnd::lnrpc::SendResponse, String> {
+    let mut lightning_client = lightning::get_lnd_lightning_client(
+        config.lnd_host.clone(),
+        config.lnd_port,
+        config.lnd_tls_cert_path.clone(),
+        config.lnd_macaroon_path.clone(),
+    )
+    .await
+    .expect("failed to get lightning client");
+    let send_response = lightning_client
+        .send_payment_sync(tonic_openssl_lnd::lnrpc::SendRequest {
+            payment_request: invoice_payment_request,
+            ..Default::default()
+        })
+        .await
+        .map_err(|e| format!("failed to send payment: {:?}", e))?
+        .into_inner();
+    Ok(send_response)
 }
 
 #[get("/")]
