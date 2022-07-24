@@ -2606,8 +2606,7 @@ OFFSET ?
                     let time_ms_i64: i64 = r.try_get("event_time_ms").unwrap();
                     time_ms_i64 as u64
                 },
-                }
-            )
+            })
             .try_collect::<Vec<_>>()
             .await?;
 
@@ -2667,7 +2666,7 @@ WHERE
         // TODO: Order by event time in SQL query. When this is fixed: https://github.com/launchbadge/sqlx/issues/1350
         let offset = (page_num - 1) * page_size;
         let limit = page_size;
-        let account_balance_changes = sqlx::query!("
+        let account_balance_changes = sqlx::query("
 SELECT * FROM
 (select orders.seller_user_id as user_id, orders.seller_credit_sat as amount_change_sat, 'received_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
 from
@@ -2691,15 +2690,19 @@ from
 ORDER BY event_time_ms DESC
 LIMIT ?
 OFFSET ?
-;", limit, offset)
+;")
+            .bind(limit)
+            .bind(offset)
             .fetch(&mut **db)
             .map_ok(|r| AccountBalanceChange {
-                    amount_change_sat: r.amount_change_sat.unwrap(),
-                    event_type: r.event_type.unwrap(),
-                    event_id: r.event_id.unwrap(),
-                    event_time_ms: r.event_time_ms.unwrap().try_into().unwrap(),
-                }
-            )
+                amount_change_sat: r.try_get("amount_change_sat").unwrap(),
+                event_type: r.try_get("event_type").unwrap(),
+                event_id: r.try_get("event_id").unwrap(),
+                event_time_ms: {
+                    let time_ms_i64: i64 = r.try_get("event_time_ms").unwrap();
+                    time_ms_i64 as u64
+                },
+            })
             .try_collect::<Vec<_>>()
             .await?;
 
