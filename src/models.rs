@@ -2542,16 +2542,6 @@ impl AccountInfo {
         })
     }
 
-    pub async fn total_market_liabilities_sat(db: &mut Connection<Db>) -> Result<i64, sqlx::Error> {
-        let account_balance_changes =
-            AccountInfo::all_account_balance_changes(db, u32::MAX, 1).await?;
-        let market_liabilities_sat: i64 = account_balance_changes
-            .iter()
-            .map(|c| c.amount_change_sat)
-            .sum();
-        Ok(market_liabilities_sat)
-    }
-
     pub async fn all_account_balance_changes_for_user(
         db: &mut Connection<Db>,
         user_id: i32,
@@ -2715,6 +2705,47 @@ OFFSET ?
             .await?;
 
         Ok(account_balance_changes)
+    }
+
+    pub async fn total_market_liabilities_sat(db: &mut Connection<Db>) -> Result<i64, sqlx::Error> {
+        let market_liabilities_sat = sqlx::query("
+SELECT SUM(amount_change_sat) as total_market_liabilities_sat FROM
+(select orders.seller_user_id as user_id, orders.seller_credit_sat as amount_change_sat, 'received_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
+from
+ orders
+WHERE
+ orders.paid
+AND
+ orders.shipped
+UNION ALL
+select orders.buyer_user_id as user_id, orders.amount_owed_sat as amount_change_sat, 'refunded_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
+from
+ orders
+WHERE
+ orders.paid
+AND
+ (orders.canceled_by_seller OR orders.canceled_by_buyer)
+UNION ALL
+select orders.buyer_user_id as user_id, orders.amount_owed_sat as amount_change_sat, 'processing_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
+from
+ orders
+WHERE
+ orders.paid
+AND
+ NOT (orders.shipped OR orders.canceled_by_seller OR orders.canceled_by_buyer)
+UNION ALL
+select withdrawals.user_id as user_id, (0 - withdrawals.amount_sat) as amount_change_sat, 'withdrawal' as event_type, withdrawals.public_id as event_id, withdrawals.created_time_ms as event_time_ms
+from
+ withdrawals)
+;")
+            .fetch_one(&mut **db)
+            .map_ok(|r|  {
+                let balance_sat_i64: i64 = r.try_get("total_market_liabilities_sat").unwrap();
+                balance_sat_i64
+            })
+            .await?;
+
+        Ok(market_liabilities_sat)
     }
 
     // TODO: Use when sqlx is fixed.
