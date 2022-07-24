@@ -2807,8 +2807,8 @@ impl Withdrawal {
 
         // Check if any constraints are violated.
         let user_id = withdrawal.user_id;
-        let account_balance_changes = sqlx::query("
-SELECT * FROM
+        let account_balance_sat = sqlx::query("
+SELECT SUM(amount_change_sat) as total_account_balance_sat FROM
 (select orders.seller_user_id as user_id, orders.seller_credit_sat as amount_change_sat, 'received_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
 from
  orders
@@ -2839,23 +2839,13 @@ ORDER BY event_time_ms DESC
             .bind(user_id)
             .bind(user_id)
             .bind(user_id)
-            .fetch(&mut *tx)
-            .map_ok(|r| AccountBalanceChange {
-                amount_change_sat: r.try_get("amount_change_sat").unwrap(),
-                event_type: r.try_get("event_type").unwrap(),
-                event_id: r.try_get("event_id").unwrap(),
-                event_time_ms: {
-                    let time_i64: i64 = r.try_get("event_time_ms").unwrap();
-                    time_i64.try_into().unwrap()
-                },
+            .fetch_one(&mut *tx)
+            .map_ok(|r|  {
+                let balance_sat_i64: i64 = r.try_get("total_account_balance_sat").unwrap();
+                balance_sat_i64
             })
-            .try_collect::<Vec<_>>()
             .await
             .map_err(|_| "failed to insert get account balance changes.")?;
-        let account_balance_sat: i64 = account_balance_changes
-            .iter()
-            .map(|c| c.amount_change_sat)
-            .sum();
 
         if account_balance_sat < 0 {
             return Err("Insufficient funds for withdrawal.".to_string());
@@ -2867,7 +2857,7 @@ ORDER BY event_time_ms DESC
 
         // Update the withdrawal row with the payment invoice hash.
         let payment_hash_hex = util::to_hex(&send_response.payment_hash);
-        let update_result = sqlx::query!(
+        sqlx::query!(
             "UPDATE withdrawals SET invoice_hash = ? WHERE id = ?",
             payment_hash_hex,
             new_withdrawal_id,
