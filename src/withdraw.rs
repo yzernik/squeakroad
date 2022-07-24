@@ -84,10 +84,10 @@ async fn withdraw(
 ) -> Result<String, String> {
     let now = util::current_time_millis();
     let one_day_in_ms = 24 * 60 * 60 * 1000;
-    let recent_withdrawal_count =
-        Withdrawal::count_for_user_since_time_ms(db, user.id(), now - one_day_in_ms)
-            .await
-            .map_err(|_| "failed to get number of recent withdrawals.")?;
+    // let recent_withdrawal_count =
+    //     Withdrawal::count_for_user_since_time_ms(db, user.id(), now - one_day_in_ms)
+    //         .await
+    //         .map_err(|_| "failed to get number of recent withdrawals.")?;
 
     if withdrawal_info.invoice_payment_request.is_empty() {
         Err("Invoice payment request cannot be empty.".to_string())
@@ -126,7 +126,15 @@ async fn withdraw(
             created_time_ms: now,
         };
         let send_withdrawal_funds_ret = send_withdrawal_funds(invoice_payment_request, config);
-        match Withdrawal::do_withdrawal(withdrawal, db, send_withdrawal_funds_ret).await {
+        match Withdrawal::do_withdrawal(
+            withdrawal,
+            db,
+            send_withdrawal_funds_ret,
+            MAX_WITHDRAWALS_PER_USER_PER_DAY,
+            now - one_day_in_ms,
+        )
+        .await
+        {
             Ok(_) => Ok("Inserted.".to_string()),
             Err(e) => {
                 error_!("DB insertion error: {}", e);

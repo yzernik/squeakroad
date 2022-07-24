@@ -2802,6 +2802,8 @@ impl Withdrawal {
         send_withdrawal_funds_future: impl Future<
             Output = Result<tonic_openssl_lnd::lnrpc::SendResponse, String>,
         >,
+        max_withdrawals_per_interval: u32,
+        interval_start_time_ms: u64,
     ) -> Result<i32, String> {
         let mut tx = db
             .begin()
@@ -2827,6 +2829,31 @@ impl Withdrawal {
 
         // Check if any constraints are violated.
         let user_id = withdrawal.user_id;
+
+        let start_time_ms_i64: i64 = interval_start_time_ms.try_into().unwrap();
+        let withdrawal_count = sqlx::query!(
+            "
+select count(id) as withdrawal_count from withdrawals
+WHERE
+ user_id = ?
+AND
+ created_time_ms > ?
+ORDER BY withdrawals.created_time_ms ASC;",
+            user_id,
+            start_time_ms_i64,
+        )
+        .fetch_one(&mut *tx)
+        .map_ok(|r| r.withdrawal_count as u32)
+        .await
+        .map_err(|_| "failed to get withdrawal count.")?;
+
+        if withdrawal_count > max_withdrawals_per_interval {
+            return Err(format!(
+                "More than {:?} withdrawals in a single day not allowed.",
+                max_withdrawals_per_interval,
+            ));
+        }
+
         let account_balance_sat = sqlx::query("
 SELECT SUM(amount_change_sat) as total_account_balance_sat FROM
 (select orders.seller_user_id as user_id, orders.seller_credit_sat as amount_change_sat, 'received_order' as event_type, orders.public_id as event_id, orders.created_time_ms as event_time_ms
@@ -2912,30 +2939,30 @@ WHERE
         Ok(withdrawal)
     }
 
-    pub async fn count_for_user_since_time_ms(
-        db: &mut Connection<Db>,
-        user_id: i32,
-        start_time_ms: u64,
-    ) -> Result<u32, sqlx::Error> {
-        let start_time_ms_i64: i64 = start_time_ms.try_into().unwrap();
+    //     pub async fn count_for_user_since_time_ms(
+    //         db: &mut Connection<Db>,
+    //         user_id: i32,
+    //         start_time_ms: u64,
+    //     ) -> Result<u32, sqlx::Error> {
+    //         let start_time_ms_i64: i64 = start_time_ms.try_into().unwrap();
 
-        let withdrawal_count = sqlx::query!(
-            "
-select count(id) as withdrawal_count from withdrawals
-WHERE
- user_id = ?
-AND
- created_time_ms > ?
-ORDER BY withdrawals.created_time_ms ASC;",
-            user_id,
-            start_time_ms_i64,
-        )
-        .fetch_one(&mut **db)
-        .map_ok(|r| r.withdrawal_count)
-        .await?;
+    //         let withdrawal_count = sqlx::query!(
+    //             "
+    // select count(id) as withdrawal_count from withdrawals
+    // WHERE
+    //  user_id = ?
+    // AND
+    //  created_time_ms > ?
+    // ORDER BY withdrawals.created_time_ms ASC;",
+    //             user_id,
+    //             start_time_ms_i64,
+    //         )
+    //         .fetch_one(&mut **db)
+    //         .map_ok(|r| r.withdrawal_count)
+    //         .await?;
 
-        Ok(withdrawal_count.try_into().unwrap())
-    }
+    //         Ok(withdrawal_count.try_into().unwrap())
+    //     }
 }
 
 impl AdminInfo {
