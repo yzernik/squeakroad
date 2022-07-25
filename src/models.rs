@@ -2549,10 +2549,7 @@ impl AccountInfo {
         user_id: i32,
     ) -> Result<AccountInfo, sqlx::Error> {
         let account_balance_sat = AccountInfo::total_account_balance_for_user(db, user_id).await?;
-        // let unshipped_orders = OrderCard::all_processing_for_user(db, user_id, u32::MAX, 1).await?;
-        // let num_unshipped_orders = unshipped_orders.len();
         let num_unshipped_orders = OrderCard::num_processing_for_user(db, user_id).await?;
-        //let num_unshipped_orders = 0;
         Ok(AccountInfo {
             account_balance_sat,
             num_unshipped_orders,
