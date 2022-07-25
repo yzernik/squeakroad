@@ -1974,7 +1974,7 @@ AND
         })
         .await?;
 
-        let weighted_average_rating = sqlx::query!(
+        let weighted_average_rating = sqlx::query(
             "
             select
              SUM(orders.amount_owed_sat * orders.review_rating * 1000) / SUM(orders.amount_owed_sat) as weighted_average
@@ -1986,13 +1986,13 @@ AND
              orders.seller_user_id = ?
             GROUP BY
              orders.seller_user_id
-            ;",
-            user_id,
-        )
-        .fetch_optional(&mut **db)
+            ;")
+.bind(user_id)
+            .fetch_optional(&mut **db)
             .map_ok(|maybe_r| maybe_r.map(|r| {
-                let average_rating_i64: f32 = (r.weighted_average as f32) / 1000.0;
-                average_rating_i64
+                let average_rating_numerator: i64 = r.try_get("weighted_average").unwrap();
+                let average_rating: f32 = (average_rating_numerator as f32) / 1000.0;
+                average_rating
             }))
         .await?;
 
