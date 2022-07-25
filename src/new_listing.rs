@@ -81,49 +81,55 @@ async fn create_listing(
     let price_sat = listing_info.price_sat.unwrap_or(0);
 
     if listing_info.title.is_empty() {
-        Err("Title cannot be empty.".to_string())
-    } else if listing_info.description.is_empty() {
-        Err("Description cannot be empty.".to_string())
-    } else if listing_info.title.len() > 64 {
-        Err("Title length is too long.".to_string())
-    } else if listing_info.description.len() > 4096 {
-        Err("Description length is too long.".to_string())
-    } else if price_sat == 0 {
-        Err("Price must be a positive number.".to_string())
-    } else if recent_listing_count >= MAX_LISTINGS_PER_USER_PER_DAY {
-        Err(format!(
+        return Err("Title cannot be empty.".to_string());
+    };
+    if listing_info.description.is_empty() {
+        return Err("Description cannot be empty.".to_string());
+    };
+    if listing_info.title.len() > 64 {
+        return Err("Title length is too long.".to_string());
+    };
+    if listing_info.description.len() > 4096 {
+        return Err("Description length is too long.".to_string());
+    };
+    if price_sat == 0 {
+        return Err("Price must be a positive number.".to_string());
+    };
+    if recent_listing_count >= MAX_LISTINGS_PER_USER_PER_DAY {
+        return Err(format!(
             "More than {:?} listings in a single day not allowed.",
             MAX_LISTINGS_PER_USER_PER_DAY,
-        ))
-    } else if user.is_admin {
-        Err("Admin user cannot create a listing.".to_string())
-    } else {
-        let listing = Listing {
-            id: None,
-            public_id: util::create_uuid(),
-            user_id: user.id(),
-            title: listing_info.title,
-            description: listing_info.description,
-            price_sat,
-            fee_rate_basis_points: admin_settings.fee_rate_basis_points,
-            submitted: false,
-            reviewed: false,
-            approved: false,
-            removed: false,
-            created_time_ms: now,
-        };
-        match Listing::insert(listing, db).await {
-            Ok(listing_id) => match Listing::single(db, listing_id).await {
-                Ok(new_listing) => Ok(new_listing.public_id),
-                Err(e) => {
-                    error_!("DB insertion error: {}", e);
-                    Err("New listing could not be found after inserting.".to_string())
-                }
-            },
+        ));
+    };
+    if user.is_admin {
+        return Err("Admin user cannot create a listing.".to_string());
+    };
+
+    let listing = Listing {
+        id: None,
+        public_id: util::create_uuid(),
+        user_id: user.id(),
+        title: listing_info.title,
+        description: listing_info.description,
+        price_sat,
+        fee_rate_basis_points: admin_settings.fee_rate_basis_points,
+        submitted: false,
+        reviewed: false,
+        approved: false,
+        removed: false,
+        created_time_ms: now,
+    };
+    match Listing::insert(listing, db).await {
+        Ok(listing_id) => match Listing::single(db, listing_id).await {
+            Ok(new_listing) => Ok(new_listing.public_id),
             Err(e) => {
                 error_!("DB insertion error: {}", e);
-                Err("Listing could not be inserted due an internal error.".to_string())
+                Err("New listing could not be found after inserting.".to_string())
             }
+        },
+        Err(e) => {
+            error_!("DB insertion error: {}", e);
+            Err("Listing could not be inserted due an internal error.".to_string())
         }
     }
 }
