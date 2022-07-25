@@ -70,11 +70,6 @@ async fn new(
         ),
         Err(e) => Flash::error(Redirect::to(uri!("/update_shipping_options", index(id))), e),
     }
-
-    // Flash::error(
-    //     Redirect::to(uri!("/update_shipping_options", index(id))),
-    //     "not implemented".to_string(),
-    // )
 }
 
 async fn add_shipping_option(
@@ -94,35 +89,41 @@ async fn add_shipping_option(
         .map_err(|_| "failed to get shipping options for listing")?;
 
     if title.is_empty() {
-        Err("Title cannot be empty.".to_string())
-    } else if description.is_empty() {
-        Err("Description cannot be empty.".to_string())
-    } else if title.len() > 64 {
-        Err("Title length is too long.".to_string())
-    } else if description.len() > 4096 {
-        Err("Description length is too long.".to_string())
-    } else if listing.user_id != user.id() {
-        Err("Listing belongs to a different user.".to_string())
-    } else if listing.submitted {
-        Err("Listing is already submitted.".to_string())
-    } else if shipping_options.len() >= 5 {
-        Err("Maximum number of shipping options already exist.".to_string())
-    } else {
-        let shipping_option = ShippingOption {
-            id: None,
-            public_id: util::create_uuid(),
-            listing_id: listing.id.unwrap(),
-            title,
-            description,
-            price_sat,
-        };
+        return Err("Title cannot be empty.".to_string());
+    };
+    if description.is_empty() {
+        return Err("Description cannot be empty.".to_string());
+    };
+    if title.len() > 64 {
+        return Err("Title length is too long.".to_string());
+    };
+    if description.len() > 4096 {
+        return Err("Description length is too long.".to_string());
+    };
+    if listing.user_id != user.id() {
+        return Err("Listing belongs to a different user.".to_string());
+    };
+    if listing.submitted {
+        return Err("Listing is already submitted.".to_string());
+    };
+    if shipping_options.len() >= 5 {
+        return Err("Maximum number of shipping options already exist.".to_string());
+    };
 
-        ShippingOption::insert(shipping_option, db)
-            .await
-            .map_err(|_| "failed to save shipping option.")?;
+    let shipping_option = ShippingOption {
+        id: None,
+        public_id: util::create_uuid(),
+        listing_id: listing.id.unwrap(),
+        title,
+        description,
+        price_sat,
+    };
 
-        Ok(())
-    }
+    ShippingOption::insert(shipping_option, db)
+        .await
+        .map_err(|_| "failed to save shipping option.")?;
+
+    Ok(())
 }
 
 #[delete("/<id>/add_shipping_option/<shipping_option_id>")]
@@ -171,23 +172,20 @@ async fn delete_shipping_option(
         .map_err(|_| "failed to get shipping option")?;
 
     if shipping_option.listing_id != listing.id.unwrap() {
-        Err("Invalid listing id given.".to_string())
-    } else if listing.submitted {
-        Err("Listing is already submitted.".to_string())
-    } else if listing.user_id != user.id() {
-        Err("Listing belongs to a different user.".to_string())
-    } else {
-        match ShippingOption::delete_with_public_id(shipping_option_id, &mut *db).await {
-            Ok(num_deleted) => {
-                if num_deleted > 0 {
-                    Ok(())
-                } else {
-                    Err("No shipping options deleted.".to_string())
-                }
-            }
-            Err(_) => Err("failed to delete shipping option.".to_string()),
-        }
-    }
+        return Err("Invalid listing id given.".to_string());
+    };
+    if listing.submitted {
+        return Err("Listing is already submitted.".to_string());
+    };
+    if listing.user_id != user.id() {
+        return Err("Listing belongs to a different user.".to_string());
+    };
+
+    ShippingOption::delete_with_public_id(shipping_option_id, &mut *db)
+        .await
+        .map_err(|_| "failed to delete shipping option.".to_string())?;
+
+    Ok(())
 }
 
 #[get("/<id>")]

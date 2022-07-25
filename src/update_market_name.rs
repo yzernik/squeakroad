@@ -63,16 +63,17 @@ async fn change_market_name(
     db: &mut Connection<Db>,
 ) -> Result<(), String> {
     if new_market_name.is_empty() {
-        Err("Market name cannot be empty.".to_string())
-    } else if new_market_name.len() >= 64 {
-        Err("Market name is too long.".to_string())
-    } else {
-        AdminSettings::set_market_name(db, &new_market_name)
-            .await
-            .map_err(|_| "failed to update market name.")?;
+        return Err("Market name cannot be empty.".to_string());
+    };
+    if new_market_name.len() >= 64 {
+        return Err("Market name is too long.".to_string());
+    };
 
-        Ok(())
-    }
+    AdminSettings::set_market_name(db, &new_market_name)
+        .await
+        .map_err(|_| "failed to update market name.")?;
+
+    Ok(())
 }
 
 #[get("/")]
