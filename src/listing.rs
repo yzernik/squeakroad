@@ -23,18 +23,6 @@ struct Context {
 }
 
 impl Context {
-    // pub async fn err<M: std::fmt::Display>(
-    //     db: Connection<Db>,
-    //     msg: M,
-    //     user: Option<User>,
-    // ) -> Context {
-    //     Context {
-    //         flash: Some(("error".into(), msg.to_string())),
-    //         listings: Listing::all(db).await.unwrap_or_default(),
-    //         user: user,
-    //     }
-    // }
-
     pub async fn raw(
         mut db: Connection<Db>,
         listing_id: &str,
@@ -49,30 +37,35 @@ impl Context {
         let listing_display = ListingDisplay::single_by_public_id(&mut db, listing_id)
             .await
             .map_err(|_| "failed to get admin settings.")?;
-        // Do not show listing if listing is not approved (unless user is seller or admin).
-        if !(listing_display.listing.approved
-            || user.as_ref().map(|u| u.id()) == Some(listing_display.listing.user_id)
+
+        // Do not show listing if it is not active (unless user is seller or admin).
+        if !(user.as_ref().map(|u| u.id()) == Some(listing_display.listing.user_id)
             || admin_user.is_some())
         {
-            Err("Listing is not approved.".to_string())
-        } else {
-            let maybe_shipping_option = match shipping_option_id {
-                Some(sid) => {
-                    let shipping_option = ShippingOption::single_by_public_id(&mut db, sid).await;
-                    shipping_option.ok()
-                }
-                None => None,
-            };
+            if !listing_display.listing.approved {
+                return Err("Listing is not approved.".to_string());
+            }
+            if listing_display.listing.removed {
+                return Err("Listing has been removed.".to_string());
+            }
+        };
 
-            Ok(Context {
-                base_context,
-                flash,
-                listing_display,
-                selected_shipping_option: maybe_shipping_option,
-                user,
-                admin_user,
-            })
-        }
+        let maybe_shipping_option = match shipping_option_id {
+            Some(sid) => {
+                let shipping_option = ShippingOption::single_by_public_id(&mut db, sid).await;
+                shipping_option.ok()
+            }
+            None => None,
+        };
+
+        Ok(Context {
+            base_context,
+            flash,
+            listing_display,
+            selected_shipping_option: maybe_shipping_option,
+            user,
+            admin_user,
+        })
     }
 }
 
@@ -105,21 +98,25 @@ async fn submit_listing(db: &mut Connection<Db>, id: &str, user: User) -> Result
         .await
         .map_err(|_| "failed to get shipping options for listing")?;
     if listing.user_id != user.id() {
-        Err("Listing belongs to a different user.".to_string())
-    } else if listing.submitted {
-        Err("Listing is already submitted.".to_string())
-    } else if listing.approved {
-        Err("Listing is already approved.".to_string())
-    } else if listing.removed {
-        Err("Listing is already removed.".to_string())
-    } else if shipping_options.is_empty() {
-        Err("At least one shipping option required.".to_string())
-    } else {
-        Listing::mark_as_submitted(db, id)
-            .await
-            .map_err(|_| "failed to update listing")?;
-        Ok(())
-    }
+        return Err("Listing belongs to a different user.".to_string());
+    };
+    if listing.submitted {
+        return Err("Listing is already submitted.".to_string());
+    };
+    if listing.approved {
+        return Err("Listing is already approved.".to_string());
+    };
+    if listing.removed {
+        return Err("Listing is already removed.".to_string());
+    };
+    if shipping_options.is_empty() {
+        return Err("At least one shipping option required.".to_string());
+    };
+
+    Listing::mark_as_submitted(db, id)
+        .await
+        .map_err(|_| "failed to update listing")?;
+    Ok(())
 }
 
 #[put("/<id>/approve")]
@@ -149,17 +146,19 @@ async fn approve_listing(db: &mut Connection<Db>, id: &str) -> Result<(), String
         .await
         .map_err(|_| "failed to get listing")?;
     if !listing.submitted {
-        Err("Listing is not submitted.".to_string())
-    } else if listing.reviewed {
-        Err("Listing is already reviewed.".to_string())
-    } else if listing.removed {
-        Err("Listing is already removed.".to_string())
-    } else {
-        Listing::mark_as_approved(db, id)
-            .await
-            .map_err(|_| "failed to approve listing")?;
-        Ok(())
-    }
+        return Err("Listing is not submitted.".to_string());
+    };
+    if listing.reviewed {
+        return Err("Listing is already reviewed.".to_string());
+    };
+    if listing.removed {
+        return Err("Listing is already removed.".to_string());
+    };
+
+    Listing::mark_as_approved(db, id)
+        .await
+        .map_err(|_| "failed to approve listing")?;
+    Ok(())
 }
 
 #[put("/<id>/reject")]
@@ -189,17 +188,19 @@ async fn reject_listing(db: &mut Connection<Db>, id: &str) -> Result<(), String>
         .await
         .map_err(|_| "failed to get listing")?;
     if !listing.submitted {
-        Err("Listing is not submitted.".to_string())
-    } else if listing.reviewed {
-        Err("Listing is already reviewed.".to_string())
-    } else if listing.removed {
-        Err("Listing is already removed.".to_string())
-    } else {
-        Listing::mark_as_rejected(db, id)
-            .await
-            .map_err(|_| "failed to reject listing")?;
-        Ok(())
+        return Err("Listing is not submitted.".to_string());
+    };
+    if listing.reviewed {
+        return Err("Listing is already reviewed.".to_string());
+    };
+    if listing.removed {
+        return Err("Listing is already removed.".to_string());
     }
+
+    Listing::mark_as_rejected(db, id)
+        .await
+        .map_err(|_| "failed to reject listing")?;
+    Ok(())
 }
 
 #[put("/<id>/remove")]
@@ -234,15 +235,16 @@ async fn remove_listing(
         .await
         .map_err(|_| "failed to get listing")?;
     if listing.user_id != user.id() && admin_user.is_none() {
-        Err("Listing belongs to a different user.".to_string())
-    } else if listing.removed {
-        Err("Listing is already removed.".to_string())
-    } else {
-        Listing::mark_as_removed(db, id)
-            .await
-            .map_err(|_| "failed to remove listing")?;
-        Ok(())
-    }
+        return Err("Listing belongs to a different user.".to_string());
+    };
+    if listing.removed {
+        return Err("Listing is already removed.".to_string());
+    };
+
+    Listing::mark_as_removed(db, id)
+        .await
+        .map_err(|_| "failed to remove listing")?;
+    Ok(())
 }
 
 #[get("/<id>?<shipping_option_id>")]
