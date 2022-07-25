@@ -430,6 +430,28 @@ ORDER BY listings.created_time_ms ASC;",
 
         Ok(listing_count.try_into().unwrap())
     }
+
+    pub async fn num_pending(db: &mut Connection<Db>) -> Result<u32, sqlx::Error> {
+        let num_listings = sqlx::query!(
+            "
+select
+ COUNT(listings.id) as num_pending_listings
+from
+ listings
+WHERE
+ listings.submitted
+AND
+ NOT listings.reviewed
+AND
+ not listings.removed
+;",
+        )
+        .fetch_one(&mut **db)
+        .map_ok(|r| r.num_pending_listings as u32)
+        .await?;
+
+        Ok(num_listings)
+    }
 }
 
 impl ListingImage {
@@ -747,28 +769,6 @@ OFFSET ?
                 .await?;
 
         Ok(listing_cards)
-    }
-
-    pub async fn num_pending(db: &mut Connection<Db>) -> Result<u32, sqlx::Error> {
-        let num_listings = sqlx::query!(
-            "
-select
- COUNT(listings.id) as num_pending_listings
-from
- listings
-WHERE
- listings.submitted
-AND
- NOT listings.reviewed
-AND
- not listings.removed
-;",
-        )
-        .fetch_one(&mut **db)
-        .map_ok(|r| r.num_pending_listings as u32)
-        .await?;
-
-        Ok(num_listings)
     }
 
     pub async fn all_unsubmitted_for_user(
@@ -3003,7 +3003,7 @@ WHERE
 
 impl AdminInfo {
     pub async fn admin_info(db: &mut Connection<Db>) -> Result<AdminInfo, sqlx::Error> {
-        let num_pending_listings = ListingCard::num_pending(db).await?;
+        let num_pending_listings = Listing::num_pending(db).await?;
         Ok(AdminInfo {
             num_pending_listings,
         })
