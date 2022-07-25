@@ -1949,52 +1949,7 @@ AND
         db: &mut Connection<Db>,
         user_id: i32,
     ) -> Result<SellerInfo, sqlx::Error> {
-        // TODO: Use this query when sqlx is fixed: https://github.com/launchbadge/sqlx/issues/1350
-        //         let seller_info = sqlx::query!(
-        //             "
-        // SELECT weighted_average, total_amount_sold_sat, users.email
-        // FROM
-        //  users
-        // LEFT JOIN
-        //     (select
-        //      SUM(orders.amount_owed_sat) as total_amount_sold_sat, orders.seller_user_id as shipped_seller_user_id
-        //     FROM
-        //      orders
-        //     WHERE
-        //      orders.shipped
-        //     AND
-        //      shipped
-        //     GROUP BY
-        //      orders.seller_user_id) as seller_infos
-        // ON
-        //  users.id = seller_infos.shipped_seller_user_id
-        // LEFT JOIN
-        //     (select
-        //      SUM(orders.amount_owed_sat * orders.review_rating * 1000) / SUM(orders.amount_owed_sat) as weighted_average, orders.seller_user_id as reviewed_seller_user_id
-        //     FROM
-        //      orders
-        //     WHERE
-        //      orders.reviewed
-        //     AND
-        //      shipped
-        //     GROUP BY
-        //      orders.seller_user_id) as seller_infos
-        // ON
-        //  users.id = seller_infos.reviewed_seller_user_id
-        // WHERE
-        //  users.id = ?
-        //     ;",
-        //             user_id,
-        //         )
-        //             .fetch_optional(&mut **db)
-        //             .map_ok(|maybe_r| maybe_r.map(|r| SellerInfo {
-        //                 username: r.email.unwrap(),
-        //                 total_amount_sold_sat: r.total_amount_sold_sat.unwrap().try_into().unwrap(),
-        //                 weighted_average_rating: (r.weighted_average.unwrap_or(0) as f32) / 1000.0,
-        //             }))
-        //             .await?;
-
-        let total_amount_sold_sat = sqlx::query!(
+        let total_amount_sold_sat = sqlx::query(
             "
             select
              SUM(orders.amount_owed_sat) as total_amount_sold_sat
@@ -2007,10 +1962,16 @@ AND
             GROUP BY
              orders.seller_user_id
             ;",
-            user_id,
         )
+        .bind(user_id)
         .fetch_optional(&mut **db)
-        .map_ok(|maybe_r| maybe_r.map(|r| r.total_amount_sold_sat.try_into().unwrap()))
+        .map_ok(|maybe_r| {
+            maybe_r.map(|r| {
+                let amount_sat_i64: i64 = r.try_get("total_amount_sold_sat").unwrap();
+                let amount_sat_u64: u64 = amount_sat_i64.try_into().unwrap();
+                amount_sat_u64
+            })
+        })
         .await?;
 
         let weighted_average_rating = sqlx::query!(
@@ -2029,7 +1990,10 @@ AND
             user_id,
         )
         .fetch_optional(&mut **db)
-        .map_ok(|maybe_r| maybe_r.map(|r| (r.weighted_average as f32) / 1000.0))
+            .map_ok(|maybe_r| maybe_r.map(|r| {
+                let average_rating_i64: f32 = (r.weighted_average as f32) / 1000.0;
+                average_rating_i64
+            }))
         .await?;
 
         let seller_info = SellerInfo {
