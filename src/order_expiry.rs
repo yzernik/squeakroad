@@ -57,9 +57,7 @@ async fn cancel_order_invoice(
     payment_hash: Vec<u8>,
 ) -> Result<tonic_openssl_lnd::invoicesrpc::CancelInvoiceResp, String> {
     let cancel_response = lightning_invoices_client
-        .cancel_invoice(tonic_openssl_lnd::invoicesrpc::CancelInvoiceMsg {
-            payment_hash: payment_hash,
-        })
+        .cancel_invoice(tonic_openssl_lnd::invoicesrpc::CancelInvoiceMsg { payment_hash })
         .await
         .expect("failed to cancel invoice")
         .into_inner();
