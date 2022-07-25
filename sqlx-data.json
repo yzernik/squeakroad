@@ -2582,6 +2582,24 @@
     },
     "query": "\nselect count(id) as listing_count from listings\nWHERE\n user_id = ?\nAND\n created_time_ms > ?\nORDER BY listings.created_time_ms ASC;"
   },
+  "a4942efac1bd81602189e8fd136ddc3a274f6baada63dd59ab62e743ac97e022": {
+    "describe": {
+      "columns": [
+        {
+          "name": "num_pending_listings",
+          "ordinal": 0,
+          "type_info": "Int"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "\nselect\n COUNT(listings.id) as num_pending_listings\nfrom\n listings\nWHERE\n listings.submitted\nAND\n NOT listings.reviewed\nAND\n not listings.removed\n;"
+  },
   "a927f6366b841697e1d859cd3779fbd54b30dbcd10ba943c548a1e63aadb3a5d": {
     "describe": {
       "columns": [
