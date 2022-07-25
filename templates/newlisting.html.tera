@@ -13,20 +13,19 @@
       <label for="title">Enter the item name</label>
       <input type="text" placeholder="item name..."
              name="title" id="title" value="" autofocus
-             class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" />
+             class="{% if flash %}field-{{flash.0}}{% endif %}" />
       <label for="title">Enter the description of the item</label>
       <textarea placeholder="item description..."
-		name="description" id="description" value=""
-		class="u-full-width"></textarea>
+		name="description" id="description" value="" class="u-full-width"></textarea>
       <label for="title">Enter the price of each item in sats</label>
       <input type="number" placeholder="item price in sats..."
-	     name="price_sat" id="price_sat" value=""
-	     class="u-full-width" />
+	     name="price_sat" id="price_sat" value="" />
       {% if flash %}
       <small class="field-{{flash.0}}-msg">
 	{{ flash.1 }}
       </small>
       {% endif %}
+      <label for="submit"></label>
       <input type="submit" value="create listing">
     </form>
   </div>
