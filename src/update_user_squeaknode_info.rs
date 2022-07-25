@@ -70,19 +70,20 @@ async fn change_squeaknode_info(
     let new_squeaknode_address = squeaknode_info.squeaknode_address;
 
     if new_squeaknode_pubkey.len() != 64 {
-        Err("Pubkey is not valid.".to_string())
-    } else if new_squeaknode_address.len() > 128 {
-        Err("Address is too long.".to_string())
-    } else {
-        UserSettings::set_squeaknode_pubkey(db, user.id(), &new_squeaknode_pubkey)
-            .await
-            .map_err(|_| "failed to update squeaknode pubkey.")?;
-        UserSettings::set_squeaknode_address(db, user.id(), &new_squeaknode_address)
-            .await
-            .map_err(|_| "failed to update squeaknode address.")?;
+        return Err("Pubkey is not valid.".to_string());
+    };
+    if new_squeaknode_address.len() > 128 {
+        return Err("Address is too long.".to_string());
+    };
 
-        Ok(())
-    }
+    UserSettings::set_squeaknode_pubkey(db, user.id(), &new_squeaknode_pubkey)
+        .await
+        .map_err(|_| "failed to update squeaknode pubkey.")?;
+    UserSettings::set_squeaknode_address(db, user.id(), &new_squeaknode_address)
+        .await
+        .map_err(|_| "failed to update squeaknode address.")?;
+
+    Ok(())
 }
 
 #[get("/")]

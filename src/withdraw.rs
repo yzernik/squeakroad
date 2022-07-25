@@ -81,14 +81,13 @@ async fn withdraw(
     db: &mut Connection<Db>,
     user: User,
     config: Config,
-) -> Result<String, String> {
+) -> Result<(), String> {
     let now = util::current_time_millis();
     let one_day_in_ms = 24 * 60 * 60 * 1000;
 
     if withdrawal_info.invoice_payment_request.is_empty() {
         return Err("Invoice payment request cannot be empty.".to_string());
     };
-
     if user.is_admin {
         return Err("Admin user cannot withdraw funds.".to_string());
     }
@@ -120,7 +119,7 @@ async fn withdraw(
         created_time_ms: now,
     };
     let send_withdrawal_funds_ret = send_withdrawal_funds(invoice_payment_request, config);
-    match Withdrawal::do_withdrawal(
+    Withdrawal::do_withdrawal(
         withdrawal,
         db,
         send_withdrawal_funds_ret,
@@ -128,13 +127,12 @@ async fn withdraw(
         now - one_day_in_ms,
     )
     .await
-    {
-        Ok(_) => Ok("Inserted.".to_string()),
-        Err(e) => {
-            error_!("DB insertion error: {}", e);
-            Err(e)
-        }
-    }
+    .map_err(|e| {
+        error_!("Failed withdrawal: {}", e);
+        e
+    })?;
+
+    Ok(())
 }
 
 async fn send_withdrawal_funds(

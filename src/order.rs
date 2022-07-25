@@ -126,17 +126,18 @@ async fn mark_order_as_shipped(
         .map_err(|_| "failed to get order.")?;
 
     if order.seller_user_id != user.id() {
-        Err("User is not the order seller.".to_string())
-    } else if order.shipped {
-        Err("order is already shipped.".to_string())
-    } else if order.canceled_by_seller || order.canceled_by_buyer {
-        Err("order is already canceled.".to_string())
-    } else {
-        match Order::mark_as_shipped(&mut *db, order.id.unwrap()).await {
-            Ok(_) => Ok(()),
-            Err(_) => Err("failed to mark order as shipped.".to_string()),
-        }
+        return Err("User is not the order seller.".to_string());
+    };
+    if order.shipped {
+        return Err("order is already shipped.".to_string());
+    };
+    if order.canceled_by_seller || order.canceled_by_buyer {
+        return Err("order is already canceled.".to_string());
     }
+
+    Order::mark_as_shipped(&mut *db, order.id.unwrap())
+        .await
+        .map_err(|_| "failed to mark order as shipped.".to_string())
 }
 
 #[put("/<id>/seller_cancel")]
@@ -172,17 +173,18 @@ async fn mark_order_as_canceled_by_seller(
         .map_err(|_| "failed to get order.")?;
 
     if order.seller_user_id != user.id() {
-        Err("User is not the order seller.".to_string())
-    } else if order.shipped {
-        Err("order is already shipped.".to_string())
-    } else if order.canceled_by_seller || order.canceled_by_buyer {
-        Err("order is already canceled.".to_string())
-    } else {
-        match Order::mark_as_canceled_by_seller(&mut *db, order.id.unwrap()).await {
-            Ok(_) => Ok(()),
-            Err(_) => Err("failed to mark order as canceled by seller.".to_string()),
-        }
+        return Err("User is not the order seller.".to_string());
+    };
+    if order.shipped {
+        return Err("order is already shipped.".to_string());
+    };
+    if order.canceled_by_seller || order.canceled_by_buyer {
+        return Err("order is already canceled.".to_string());
     }
+
+    Order::mark_as_canceled_by_seller(&mut *db, order.id.unwrap())
+        .await
+        .map_err(|_| "failed to mark order as canceled by seller.".to_string())
 }
 
 #[put("/<id>/buyer_cancel")]
@@ -218,17 +220,18 @@ async fn mark_order_as_canceled_by_buyer(
         .map_err(|_| "failed to get order.")?;
 
     if order.buyer_user_id != user.id() {
-        Err("User is not the order buyer.".to_string())
-    } else if order.shipped {
-        Err("order is already shipped.".to_string())
-    } else if order.canceled_by_seller || order.canceled_by_buyer {
-        Err("order is already canceled.".to_string())
-    } else {
-        match Order::mark_as_canceled_by_buyer(&mut *db, order.id.unwrap()).await {
-            Ok(_) => Ok(()),
-            Err(_) => Err("failed to mark order as canceled by buyer.".to_string()),
-        }
-    }
+        return Err("User is not the order buyer.".to_string());
+    };
+    if order.shipped {
+        return Err("order is already shipped.".to_string());
+    };
+    if order.canceled_by_seller || order.canceled_by_buyer {
+        return Err("order is already canceled.".to_string());
+    };
+
+    Order::mark_as_canceled_by_buyer(&mut *db, order.id.unwrap())
+        .await
+        .map_err(|_| "failed to mark order as canceled by buyer.".to_string())
 }
 
 #[post("/<id>/new_review", data = "<order_review_form>")]
@@ -269,36 +272,36 @@ async fn create_order_review(
     let review_text = order_review_info.review_text;
 
     if !order.shipped {
-        Err("Cannot post review for order that is not shipped.".to_string())
-    } else if user.id() != order.buyer_user_id {
-        Err("User is not the buyer.".to_string())
-    } else if !(1..=5).contains(&review_rating) {
-        Err("Review rating must be between 1 and 5.".to_string())
-    } else if review_text.len() > 4096 {
-        Err("Review text is too long.".to_string())
-    } else {
-        let new_review_time_ms = if order.review_time_ms > 0 {
-            order.review_time_ms
-        } else {
-            now
-        };
+        return Err("Cannot post review for order that is not shipped.".to_string());
+    };
+    if user.id() != order.buyer_user_id {
+        return Err("User is not the buyer.".to_string());
+    };
+    if !(1..=5).contains(&review_rating) {
+        return Err("Review rating must be between 1 and 5.".to_string());
+    };
+    if review_text.len() > 4096 {
+        return Err("Review text is too long.".to_string());
+    };
 
-        match Order::set_order_review(
-            db,
-            order_id,
-            review_rating,
-            &review_text,
-            new_review_time_ms,
-        )
-        .await
-        {
-            Ok(_) => Ok(()),
-            Err(e) => {
-                error_!("DB insertion error: {}", e);
-                Err("Order Review could not be inserted due an internal error.".to_string())
-            }
-        }
-    }
+    let new_review_time_ms = if order.review_time_ms > 0 {
+        order.review_time_ms
+    } else {
+        now
+    };
+
+    Order::set_order_review(
+        db,
+        order_id,
+        review_rating,
+        &review_text,
+        new_review_time_ms,
+    )
+    .await
+    .map_err(|e| {
+        error_!("DB insertion error: {}", e);
+        "Order Review could not be inserted due an internal error.".to_string()
+    })
 }
 
 #[get("/<id>")]

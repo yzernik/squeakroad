@@ -93,33 +93,37 @@ async fn upload_image(
         .map_err(|_| "failed to get listing")?;
 
     if listing.user_id != user.id() {
-        Err("Listing belongs to a different user.".to_string())
-    } else if listing.submitted {
-        Err("Listing is already submitted.".to_string())
-    } else if listing_images.len() >= 5 {
-        Err("Maximum number of images already exist.".to_string())
-    } else if tmp_file.len() == 0 {
-        Err("File is empty.".to_string())
-    } else if tmp_file.len() >= 1000000 {
-        Err("File is bigger than maximum allowed size.".to_string())
-    } else {
-        let image_bytes = get_file_bytes(tmp_file).map_err(|_| "failed to get bytes.")?;
+        return Err("Listing belongs to a different user.".to_string());
+    };
+    if listing.submitted {
+        return Err("Listing is already submitted.".to_string());
+    };
+    if listing_images.len() >= 5 {
+        return Err("Maximum number of images already exist.".to_string());
+    };
+    if tmp_file.len() == 0 {
+        return Err("File is empty.".to_string());
+    };
+    if tmp_file.len() >= 1000000 {
+        return Err("File is bigger than maximum allowed size.".to_string());
+    };
 
-        let listing_image = ListingImage {
-            id: None,
-            public_id: util::create_uuid(),
-            listing_id: listing.id.unwrap(),
-            image_data: image_bytes,
-            is_primary: false,
-        };
+    let image_bytes = get_file_bytes(tmp_file).map_err(|_| "failed to get bytes.")?;
 
-        ListingImage::insert(listing_image, db).await.map_err(|e| {
-            error!("failed to save image in db: {}", e);
-            "failed to save image in db."
-        })?;
+    let listing_image = ListingImage {
+        id: None,
+        public_id: util::create_uuid(),
+        listing_id: listing.id.unwrap(),
+        image_data: image_bytes,
+        is_primary: false,
+    };
 
-        Ok(())
-    }
+    ListingImage::insert(listing_image, db).await.map_err(|e| {
+        error!("failed to save image in db: {}", e);
+        "failed to save image in db."
+    })?;
+
+    Ok(())
 }
 
 #[delete("/<id>/add_image/<image_id>")]
@@ -161,23 +165,20 @@ async fn delete_image_with_public_id(
         .map_err(|_| "failed to get listing")?;
 
     if listing_image.listing_id != listing.id.unwrap() {
-        Err("Invalid listing id given.".to_string())
-    } else if listing.submitted {
-        Err("Listing is already submitted.".to_string())
-    } else if listing.user_id != user.id() {
-        Err("Listing belongs to a different user.".to_string())
-    } else {
-        match ListingImage::delete_with_public_id(image_id, &mut *db).await {
-            Ok(num_deleted) => {
-                if num_deleted > 0 {
-                    Ok(())
-                } else {
-                    Err("No images deleted.".to_string())
-                }
-            }
-            Err(_) => Err("failed to delete image.".to_string()),
-        }
-    }
+        return Err("Invalid listing id given.".to_string());
+    };
+    if listing.submitted {
+        return Err("Listing is already submitted.".to_string());
+    };
+    if listing.user_id != user.id() {
+        return Err("Listing belongs to a different user.".to_string());
+    };
+
+    ListingImage::delete_with_public_id(image_id, &mut *db)
+        .await
+        .map_err(|_| "failed to delete image.".to_string())?;
+
+    Ok(())
 }
 
 #[put("/<id>/set_primary/<image_id>")]
@@ -218,29 +219,20 @@ async fn mark_as_primary(
         .map_err(|_| "failed to get listing")?;
 
     if listing_image.listing_id != listing.id.unwrap() {
-        Err("Invalid listing id given.".to_string())
-    } else if listing.submitted {
-        Err("Listing is already submitted.".to_string())
-    } else if listing.user_id != user.id() {
-        Err("Listing belongs to a different user.".to_string())
-    } else {
-        match ListingImage::mark_image_as_primary_by_public_id(
-            &mut *db,
-            listing.id.unwrap(),
-            image_id,
-        )
+        return Err("Invalid listing id given.".to_string());
+    };
+    if listing.submitted {
+        return Err("Listing is already submitted.".to_string());
+    };
+    if listing.user_id != user.id() {
+        return Err("Listing belongs to a different user.".to_string());
+    };
+
+    ListingImage::mark_image_as_primary_by_public_id(&mut *db, listing.id.unwrap(), image_id)
         .await
-        {
-            Ok(num_marked) => {
-                if num_marked > 0 {
-                    Ok(())
-                } else {
-                    Err("No images marked as primary.".to_string())
-                }
-            }
-            Err(_) => Err("failed to mark image as primary.".to_string()),
-        }
-    }
+        .map_err(|_| "failed to mark image as primary.".to_string())?;
+
+    Ok(())
 }
 
 #[get("/<id>")]

@@ -134,76 +134,83 @@ async fn create_order(
     info!("message: {:?}", &message);
 
     if shipping_instructions.is_empty() {
-        Err("Shipping instructions cannot be empty.".to_string())
-    } else if shipping_instructions.len() > 4096 {
-        Err("Shipping instructions length is too long.".to_string())
-    } else if listing.user_id == user.id() {
-        Err("Listing belongs to same user as buyer.".to_string())
-    } else if !listing.approved {
-        Err("Listing has not been approved by admin.".to_string())
-    } else if listing.removed {
-        Err("Listing has not been removed.".to_string())
-    } else if shipping_option.listing_id != listing.id.unwrap() {
-        Err("Shipping option not associated with listing.".to_string())
-    } else if user.is_admin {
-        Err("Admin user cannot create an order.".to_string())
-    } else if quantity == 0 {
-        Err("Quantity must be postive.".to_string())
-    } else {
-        let mut lightning_client = lightning::get_lnd_lightning_client(
-            config.lnd_host.clone(),
-            config.lnd_port,
-            config.lnd_tls_cert_path.clone(),
-            config.lnd_macaroon_path.clone(),
-        )
+        return Err("Shipping instructions cannot be empty.".to_string());
+    };
+    if shipping_instructions.len() > 4096 {
+        return Err("Shipping instructions length is too long.".to_string());
+    };
+    if listing.user_id == user.id() {
+        return Err("Listing belongs to same user as buyer.".to_string());
+    };
+    if !listing.approved {
+        return Err("Listing has not been approved by admin.".to_string());
+    };
+    if listing.removed {
+        return Err("Listing has not been removed.".to_string());
+    };
+    if shipping_option.listing_id != listing.id.unwrap() {
+        return Err("Shipping option not associated with listing.".to_string());
+    };
+    if user.is_admin {
+        return Err("Admin user cannot create an order.".to_string());
+    };
+    if quantity == 0 {
+        return Err("Quantity must be postive.".to_string());
+    };
+
+    let mut lightning_client = lightning::get_lnd_lightning_client(
+        config.lnd_host.clone(),
+        config.lnd_port,
+        config.lnd_tls_cert_path.clone(),
+        config.lnd_macaroon_path.clone(),
+    )
+    .await
+    .expect("failed to get lightning client");
+    let invoice = lightning_client
+        .add_invoice(tonic_openssl_lnd::lnrpc::Invoice {
+            value_msat: (amount_owed_sat as i64) * 1000,
+            ..Default::default()
+        })
         .await
-        .expect("failed to get lightning client");
-        let invoice = lightning_client
-            .add_invoice(tonic_openssl_lnd::lnrpc::Invoice {
-                value_msat: (amount_owed_sat as i64) * 1000,
-                ..Default::default()
-            })
-            .await
-            .expect("failed to get new invoice")
-            .into_inner();
+        .expect("failed to get new invoice")
+        .into_inner();
 
-        let order = Order {
-            id: None,
-            public_id: util::create_uuid(),
-            quantity,
-            buyer_user_id: user.id(),
-            seller_user_id: listing.user_id,
-            listing_id: listing.id.unwrap(),
-            shipping_option_id: shipping_option.id.unwrap(),
-            shipping_instructions: shipping_instructions.to_string(),
-            amount_owed_sat,
-            seller_credit_sat,
-            paid: false,
-            shipped: false,
-            canceled_by_seller: false,
-            canceled_by_buyer: false,
-            reviewed: false,
-            invoice_hash: util::to_hex(&invoice.r_hash),
-            invoice_payment_request: invoice.payment_request,
-            review_rating: 0,
-            review_text: "".to_string(),
-            created_time_ms: now,
-            payment_time_ms: 0,
-            review_time_ms: 0,
-        };
+    let order = Order {
+        id: None,
+        public_id: util::create_uuid(),
+        quantity,
+        buyer_user_id: user.id(),
+        seller_user_id: listing.user_id,
+        listing_id: listing.id.unwrap(),
+        shipping_option_id: shipping_option.id.unwrap(),
+        shipping_instructions: shipping_instructions.to_string(),
+        amount_owed_sat,
+        seller_credit_sat,
+        paid: false,
+        shipped: false,
+        canceled_by_seller: false,
+        canceled_by_buyer: false,
+        reviewed: false,
+        invoice_hash: util::to_hex(&invoice.r_hash),
+        invoice_payment_request: invoice.payment_request,
+        review_rating: 0,
+        review_text: "".to_string(),
+        created_time_ms: now,
+        payment_time_ms: 0,
+        review_time_ms: 0,
+    };
 
-        match Order::insert(order, db).await {
-            Ok(order_id) => match Order::single(db, order_id).await {
-                Ok(new_order) => Ok(new_order.public_id),
-                Err(e) => {
-                    error_!("DB insertion error: {}", e);
-                    Err("New order could not be found after inserting.".to_string())
-                }
-            },
+    match Order::insert(order, db).await {
+        Ok(order_id) => match Order::single(db, order_id).await {
+            Ok(new_order) => Ok(new_order.public_id),
             Err(e) => {
                 error_!("DB insertion error: {}", e);
-                Err("Order could not be inserted due an internal error.".to_string())
+                Err("New order could not be found after inserting.".to_string())
             }
+        },
+        Err(e) => {
+            error_!("DB insertion error: {}", e);
+            Err("Order could not be inserted due an internal error.".to_string())
         }
     }
 }
