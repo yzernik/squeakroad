@@ -2439,7 +2439,7 @@ WHERE
 AND
  not (orders.shipped OR orders.canceled_by_seller OR orders.canceled_by_buyer)
 AND
- listing_user_id = ?
+ orders.seller_user_id = ?
 GROUP BY
  orders.id
 ORDER BY orders.payment_time_ms DESC
