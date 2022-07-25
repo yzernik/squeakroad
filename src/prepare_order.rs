@@ -52,6 +52,7 @@ impl Context {
         let seller_user_settings = UserSettings::single(&mut db, listing_display.listing.user_id)
             .await
             .map_err(|_| "failed to get visited user settings.")?;
+        println!("quantity: {:?}", quantity);
         Ok(Context {
             base_context,
             flash,
@@ -92,7 +93,7 @@ async fn new(
             Err(Flash::error(
                 Redirect::to(uri!(
                     "/prepare_order",
-                    index(id, Some(order_info.shipping_option_id), Some(1))
+                    index(id, order_info.shipping_option_id, 1)
                 )),
                 e,
             ))
@@ -223,20 +224,25 @@ fn divide_round_up(dividend: u64, divisor: u64) -> u64 {
 async fn index(
     flash: Option<FlashMessage<'_>>,
     id: &str,
-    shipping_option_id: Option<&str>,
-    quantity: Option<i32>,
+    shipping_option_id: &str,
+    quantity: usize,
     db: Connection<Db>,
     user: User,
     admin_user: Option<AdminUser>,
 ) -> Template {
-    // TODO: Don't use unwrap.
-    let sid = shipping_option_id.unwrap();
-    let quantity = quantity.unwrap_or(0);
-
     let flash = flash.map(FlashMessage::into_inner);
     Template::render(
         "prepareorder",
-        Context::raw(db, id, sid, quantity, flash, user, admin_user).await,
+        Context::raw(
+            db,
+            id,
+            shipping_option_id,
+            quantity.try_into().unwrap(),
+            flash,
+            user,
+            admin_user,
+        )
+        .await,
     )
 }
 
