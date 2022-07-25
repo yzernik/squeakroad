@@ -93,18 +93,18 @@
 	  {% if listing_display.listing.approved %}
 	  <form action="/prepare_order/{{ listing_display.listing.public_id }}" method="get">
 
-	    <label for="shipping_options">choose a shipping option:</label>
+	    <label for="shipping_options">Choose a shipping option:</label>
 	    <select required id="shipping_option_id" name="shipping_option_id">
 	      <option disabled selected value> -- select an option -- </option>
 	      {% for shipping_option in listing_display.shipping_options %}
 	      <option value="{{ shipping_option.public_id }}" {% if selected_shipping_option and shipping_option.id == selected_shipping_option.id %}selected{% endif %}>{{ shipping_option.title }} ({{ shipping_option.price_sat }} sats)</option>
 	      {% endfor %}
 	    </select>
-
 	    <label for="quantity">Choose quantity:</label>
 	    <input type="number" placeholder="enter the quantity of items..."
-		   name="quantity" id="quantity" value="1"
-		   class="u-full-width" />
+		   name="quantity" id="quantity" value="1"/>
+
+	    <label for="submit"></label>
 	    <input type="submit" value="Prepare Order">
 	  </form>
 	  {% endif %}
