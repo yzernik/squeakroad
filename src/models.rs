@@ -1911,7 +1911,15 @@ AND
     pub async fn delete_expired_order(
         db: &mut PoolConnection<Sqlite>,
         order_id: i32,
-    ) -> Result<(), sqlx::Error> {
+        cancel_order_invoice_future: impl Future<
+            Output = Result<tonic_openssl_lnd::invoicesrpc::CancelInvoiceResp, String>,
+        >,
+    ) -> Result<(), String> {
+        let mut tx = db
+            .begin()
+            .await
+            .map_err(|_| "failed to begin transaction.")?;
+
         sqlx::query!(
             "
 DELETE FROM orders
@@ -1922,8 +1930,17 @@ AND
 ;",
             order_id,
         )
-        .execute(&mut **db)
-        .await?;
+        .execute(&mut *tx)
+        .await
+        .map_err(|_| "failed to delete order from database.")?;
+
+        cancel_order_invoice_future
+            .await
+            .map_err(|e| format!("failed to cancel order invoice: {:?}", e))?;
+
+        tx.commit()
+            .await
+            .map_err(|_| "failed to begin transaction.")?;
 
         Ok(())
     }

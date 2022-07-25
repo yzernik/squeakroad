@@ -42,16 +42,26 @@ async fn remove_order(
     lightning_invoices_client: &mut LndInvoicesClient,
 ) -> Result<(), String> {
     println!("deleting expired order: {:?}", order);
-    lightning_invoices_client
-        .cancel_invoice(tonic_openssl_lnd::invoicesrpc::CancelInvoiceMsg {
-            payment_hash: util::from_hex(&order.invoice_hash),
-        })
-        .await
-        .expect("failed to cancel invoice");
-
-    Order::delete_expired_order(conn, order.id.unwrap())
+    let cancel_order_invoice_ret = cancel_order_invoice(
+        lightning_invoices_client,
+        util::from_hex(&order.invoice_hash),
+    );
+    Order::delete_expired_order(conn, order.id.unwrap(), cancel_order_invoice_ret)
         .await
         .ok();
-
     Ok(())
+}
+
+async fn cancel_order_invoice(
+    lightning_invoices_client: &mut LndInvoicesClient,
+    payment_hash: Vec<u8>,
+) -> Result<tonic_openssl_lnd::invoicesrpc::CancelInvoiceResp, String> {
+    let cancel_response = lightning_invoices_client
+        .cancel_invoice(tonic_openssl_lnd::invoicesrpc::CancelInvoiceMsg {
+            payment_hash: payment_hash,
+        })
+        .await
+        .expect("failed to cancel invoice")
+        .into_inner();
+    Ok(cancel_response)
 }
