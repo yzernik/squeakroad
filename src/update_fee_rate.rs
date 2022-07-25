@@ -63,16 +63,17 @@ async fn change_fee_rate(
     db: &mut Connection<Db>,
 ) -> Result<(), String> {
     if new_fee_rate_basis_points < 0 {
-        Err("Fee rate cannot be negative.".to_string())
-    } else if new_fee_rate_basis_points > 10000 {
-        Err("Fee rate basis points cannot be > 10000.".to_string())
-    } else {
-        AdminSettings::set_fee_rate(db, new_fee_rate_basis_points)
-            .await
-            .map_err(|_| "failed to update fee rate.")?;
+        return Err("Fee rate cannot be negative.".to_string());
+    };
+    if new_fee_rate_basis_points > 10000 {
+        return Err("Fee rate basis points cannot be > 10000.".to_string());
+    };
 
-        Ok(())
-    }
+    AdminSettings::set_fee_rate(db, new_fee_rate_basis_points)
+        .await
+        .map_err(|_| "failed to update fee rate.")?;
+
+    Ok(())
 }
 
 #[get("/")]
