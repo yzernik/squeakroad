@@ -2582,6 +2582,24 @@
     },
     "query": "\nselect count(id) as listing_count from listings\nWHERE\n user_id = ?\nAND\n created_time_ms > ?\nORDER BY listings.created_time_ms ASC;"
   },
+  "a927f6366b841697e1d859cd3779fbd54b30dbcd10ba943c548a1e63aadb3a5d": {
+    "describe": {
+      "columns": [
+        {
+          "name": "num_processing_orders",
+          "ordinal": 0,
+          "type_info": "Int"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\nselect\n COUNT(orders.id) as num_processing_orders\nfrom\n orders\nWHERE\n orders.paid\nAND\n not (orders.shipped OR orders.canceled_by_seller OR orders.canceled_by_buyer)\nAND\n orders.seller_user_id = ?\n;"
+  },
   "ac5550e56a3605c06f943cd68b5dc6e8aa82582f4384cef402b5d9d6a63f5d0b": {
     "describe": {
       "columns": [],
