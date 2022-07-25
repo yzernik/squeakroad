@@ -2085,6 +2085,32 @@ LIMIT 1
 
         Ok(latest_paid_order_invoice_hash)
     }
+
+    pub async fn num_processing_for_user(
+        db: &mut Connection<Db>,
+        user_id: i32,
+    ) -> Result<u32, sqlx::Error> {
+        let num_orders = sqlx::query!(
+            "
+select
+ COUNT(orders.id) as num_processing_orders
+from
+ orders
+WHERE
+ orders.paid
+AND
+ not (orders.shipped OR orders.canceled_by_seller OR orders.canceled_by_buyer)
+AND
+ orders.seller_user_id = ?
+;",
+            user_id,
+        )
+        .fetch_one(&mut **db)
+        .map_ok(|r| r.num_processing_orders as u32)
+        .await?;
+
+        Ok(num_orders)
+    }
 }
 
 impl OrderCard {
@@ -2515,32 +2541,6 @@ OFFSET ?
 
         Ok(orders)
     }
-
-    pub async fn num_processing_for_user(
-        db: &mut Connection<Db>,
-        user_id: i32,
-    ) -> Result<u32, sqlx::Error> {
-        let num_orders = sqlx::query!(
-            "
-select
- COUNT(orders.id) as num_processing_orders
-from
- orders
-WHERE
- orders.paid
-AND
- not (orders.shipped OR orders.canceled_by_seller OR orders.canceled_by_buyer)
-AND
- orders.seller_user_id = ?
-;",
-            user_id,
-        )
-        .fetch_one(&mut **db)
-        .map_ok(|r| r.num_processing_orders as u32)
-        .await?;
-
-        Ok(num_orders)
-    }
 }
 
 impl AccountInfo {
@@ -2549,7 +2549,7 @@ impl AccountInfo {
         user_id: i32,
     ) -> Result<AccountInfo, sqlx::Error> {
         let account_balance_sat = AccountInfo::total_account_balance_for_user(db, user_id).await?;
-        let num_unshipped_orders = OrderCard::num_processing_for_user(db, user_id).await?;
+        let num_unshipped_orders = Order::num_processing_for_user(db, user_id).await?;
         Ok(AccountInfo {
             account_balance_sat,
             num_unshipped_orders,
