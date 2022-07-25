@@ -17,7 +17,6 @@ struct Context {
     base_context: BaseContext,
     flash: Option<(String, String)>,
     listing_display: ListingDisplay,
-    selected_shipping_option: Option<ShippingOption>,
     user: Option<User>,
     admin_user: Option<AdminUser>,
 }
@@ -26,7 +25,6 @@ impl Context {
     pub async fn raw(
         mut db: Connection<Db>,
         listing_id: &str,
-        shipping_option_id: Option<&str>,
         flash: Option<(String, String)>,
         user: Option<User>,
         admin_user: Option<AdminUser>,
@@ -50,19 +48,10 @@ impl Context {
             }
         };
 
-        let maybe_shipping_option = match shipping_option_id {
-            Some(sid) => {
-                let shipping_option = ShippingOption::single_by_public_id(&mut db, sid).await;
-                shipping_option.ok()
-            }
-            None => None,
-        };
-
         Ok(Context {
             base_context,
             flash,
             listing_display,
-            selected_shipping_option: maybe_shipping_option,
             user,
             admin_user,
         })
@@ -77,15 +66,12 @@ async fn submit(
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
     match submit_listing(&mut db, id, user).await {
         Ok(_) => Ok(Flash::success(
-            Redirect::to(uri!("/listing", index(id, Some("")))),
+            Redirect::to(uri!("/listing", index(id))),
             "Marked as submitted".to_string(),
         )),
         Err(e) => {
             error_!("Mark submitted({}) error: {}", id, e);
-            Err(Flash::error(
-                Redirect::to(uri!("/listing", index(id, Some("")))),
-                e,
-            ))
+            Err(Flash::error(Redirect::to(uri!("/listing", index(id))), e))
         }
     }
 }
@@ -128,15 +114,12 @@ async fn approve(
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
     match approve_listing(&mut db, id).await {
         Ok(_) => Ok(Flash::success(
-            Redirect::to(uri!("/listing", index(id, Some("")))),
+            Redirect::to(uri!("/listing", index(id))),
             "Marked as approved".to_string(),
         )),
         Err(e) => {
             error_!("Mark approved({}) error: {}", id, e);
-            Err(Flash::error(
-                Redirect::to(uri!("/listing", index(id, Some("")))),
-                e,
-            ))
+            Err(Flash::error(Redirect::to(uri!("/listing", index(id))), e))
         }
     }
 }
@@ -170,15 +153,12 @@ async fn reject(
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
     match reject_listing(&mut db, id).await {
         Ok(_) => Ok(Flash::success(
-            Redirect::to(uri!("/listing", index(id, Some("")))),
+            Redirect::to(uri!("/listing", index(id))),
             "Marked as rejected".to_string(),
         )),
         Err(e) => {
             error_!("Mark rejected({}) error: {}", id, e);
-            Err(Flash::error(
-                Redirect::to(uri!("/listing", index(id, Some("")))),
-                e,
-            ))
+            Err(Flash::error(Redirect::to(uri!("/listing", index(id,))), e))
         }
     }
 }
@@ -212,15 +192,12 @@ async fn remove(
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
     match remove_listing(&mut db, id, user, admin_user).await {
         Ok(_) => Ok(Flash::success(
-            Redirect::to(uri!("/listing", index(id, Some("")))),
+            Redirect::to(uri!("/listing", index(id))),
             "Marked as removed".to_string(),
         )),
         Err(e) => {
             error_!("Mark removed({}) error: {}", id, e);
-            Err(Flash::error(
-                Redirect::to(uri!("/listing", index(id, Some("")))),
-                e,
-            ))
+            Err(Flash::error(Redirect::to(uri!("/listing", index(id))), e))
         }
     }
 }
@@ -247,11 +224,10 @@ async fn remove_listing(
     Ok(())
 }
 
-#[get("/<id>?<shipping_option_id>")]
+#[get("/<id>")]
 async fn index(
     flash: Option<FlashMessage<'_>>,
     id: &str,
-    shipping_option_id: Option<&str>,
     db: Connection<Db>,
     user: Option<User>,
     admin_user: Option<AdminUser>,
@@ -259,7 +235,7 @@ async fn index(
     let flash = flash.map(FlashMessage::into_inner);
     Template::render(
         "listing",
-        Context::raw(db, id, shipping_option_id, flash, user, admin_user).await,
+        Context::raw(db, id, flash, user, admin_user).await,
     )
 }
 
