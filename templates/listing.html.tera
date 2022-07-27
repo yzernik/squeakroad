@@ -37,6 +37,9 @@
       <button class="small" type="submit">Remove Listing</button>
     </form>
     {% endif %}
+    <form class="inline" action="/delete_listing/{{ listing_display.listing.public_id }}" method="get">
+      <button class="small" type="submit">Delete Listing</button>
+    </form>
     {% endif %}
 
     <!-- Options for admin -->
@@ -66,6 +69,9 @@
       <button class="small" type="submit">Remove Listing</button>
     </form>
     {% endif %}
+    <form class="inline" action="/delete_listing/{{ listing_display.listing.public_id }}" method="get">
+      <button class="small" type="submit">Delete Listing</button>
+    </form>
     {% endif %}
 
     <!-- there are a few shorthand columns widths as well -->

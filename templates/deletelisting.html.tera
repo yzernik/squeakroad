@@ -1,0 +1,42 @@
+{% extends "base" %}
+{% block body %}
+
+<div class="full-width-container">
+  <p><!--Nothing to see here --></p>
+
+  <h3>{{ listing_display.listing.title }}</h3>
+
+  <h5>Delete Listing</h5>
+  <p><a href="/listing/{{ listing_display.listing.public_id }}">Back to listing</a></p>
+
+  <div class="row">
+
+    <div class="full column">
+
+      <div class="container">
+	<p><!--Nothing to see here --></p>
+
+	<br>
+
+	<p>Are you sure you want to delete this listing?</p>
+
+	  <form class="inline" action="/delete_listing/{{listing_display.listing.public_id}}" method="post">
+            <input type="hidden" name="_method" value="delete" />
+            {% if flash %}
+            <small class="field-{{flash.0}}-msg">
+	      {{ flash.1 }}
+            </small>
+            {% endif %}
+            <button class="primary small" type="submit">delete</button>
+	  </form>
+
+      </div>
+    </div>
+
+  </div>
+
+
+</div>
+
+
+{% endblock body %}

@@ -53,15 +53,15 @@
 	  {% endif %}</p>
         <p><b>Order time</b>: {{ (order.created_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}</p>
 
-	<p><b>Listing</b>: <a href="/listing/{{ listing.public_id }}">{{ listing.title }}</a> ({{ listing.price_sat }} sats)</p>
+	<p><b>Listing</b>: {% if maybe_listing %}<a href="/listing/{{ maybe_listing.public_id }}">{{ maybe_listing.title }}</a> ({{ maybe_listing.price_sat }} sats){% else %}Not found{% endif %}</p>
 	<p><b>Seller</b>: <a href="/user/{{ seller_user.username }}">{{ seller_user.username }}</a></p>
-	<p><b>Shipping option</b>: {{ shipping_option.title }} ({{ shipping_option.price_sat }} sats)</p>
-	<p><b>Shipping option description</b>: {{ shipping_option.description }}</p>
+	<p><b>Shipping option</b>: {% if maybe_shipping_option %}{{ maybe_shipping_option.title }} ({{ maybe_shipping_option.price_sat }} sats){% else %}Not found{% endif %}</p>
+	<p><b>Shipping option description</b>: {% if maybe_shipping_option %}{{ maybe_shipping_option.description }}{% else %}Not found{% endif %}</p>
 	<p><b>Quantity</b>: {{ order.quantity }}</p>
-	<p><b>Payment amount</b>: {{ order.quantity }} x ({{ listing.price_sat }} sats + {{ shipping_option.price_sat }} sats) = <b>{{ order.amount_owed_sat }} sats</b></p>
+	<p><b>Payment amount</b>: {% if maybe_listing and maybe_shipping_option %}{{ order.quantity }} x ({{ maybe_listing.price_sat }} sats + {{ maybe_shipping_option.price_sat }} sats) = {% endif %}<b>{{ order.amount_owed_sat }} sats</b></p>
 	{% if user %}
 	{% if order.seller_user_id == user.id or admin_user %}
-	<p><b>Market fee amount</b>: {{ listing.fee_rate_basis_points / 10000 }} x {{ order.amount_owed_sat }} sats = {{ order.amount_owed_sat - order.seller_credit_sat }} sats</p>
+	<p><b>Market fee amount</b>: {% if maybe_listing %}{{ maybe_listing.fee_rate_basis_points / 10000 }} x {{ order.amount_owed_sat }} sats = {% endif %}{{ order.amount_owed_sat - order.seller_credit_sat }} sats</p>
 	<p><b>Seller credit amount</b>: {{ order.amount_owed_sat }} sats - {{ order.amount_owed_sat - order.seller_credit_sat }} sats = {{ order.seller_credit_sat }} sats</p>
 	{% endif %}
 	{% endif %}

@@ -22,8 +22,8 @@ struct Context {
     base_context: BaseContext,
     flash: Option<(String, String)>,
     order: Order,
-    listing: Listing,
-    shipping_option: ShippingOption,
+    maybe_listing: Option<Listing>,
+    maybe_shipping_option: Option<ShippingOption>,
     seller_user: RocketAuthUser,
     user: Option<User>,
     admin_user: Option<AdminUser>,
@@ -46,13 +46,17 @@ impl Context {
         let order = Order::single_by_public_id(&mut db, order_id)
             .await
             .map_err(|_| "failed to get order.")?;
-        let listing = Listing::single(&mut db, order.listing_id)
+        let maybe_listing = Listing::single(&mut db, order.listing_id).await.ok();
+        // .map_err(|_| "failed to get listing.")?;
+        // {
+        //     Ok(listing) => Some(listing),
+        //     Err(_) => None
+        // };
+        let maybe_shipping_option = ShippingOption::single(&mut db, order.shipping_option_id)
             .await
-            .map_err(|_| "failed to get listing.")?;
-        let shipping_option = ShippingOption::single(&mut db, order.shipping_option_id)
-            .await
-            .map_err(|_| "failed to get shipping option.")?;
-        let seller_user = RocketAuthUser::single(&mut db, listing.user_id)
+            .ok();
+        // .map_err(|_| "failed to get shipping option.")?;
+        let seller_user = RocketAuthUser::single(&mut db, order.seller_user_id)
             .await
             .map_err(|_| "failed to get order messages.")?;
         let qr_svg_bytes = util::generate_qr(&order.invoice_payment_request);
@@ -64,8 +68,8 @@ impl Context {
             base_context,
             flash,
             order,
-            listing,
-            shipping_option,
+            maybe_listing,
+            maybe_shipping_option,
             seller_user,
             user,
             admin_user,

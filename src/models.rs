@@ -452,6 +452,56 @@ AND
 
         Ok(num_listings)
     }
+
+    pub async fn delete(listing_id: i32, db: &mut Connection<Db>) -> Result<usize, String> {
+        let mut tx = db
+            .begin()
+            .await
+            .map_err(|_| "failed to begin transaction.")?;
+
+        let delete_result = sqlx::query!(
+            "
+DELETE FROM listings
+WHERE
+ id = ?
+;",
+            listing_id
+        )
+        .execute(&mut *tx)
+        .await
+        .map_err(|_| "failed to delete listing.")?;
+
+        let delete_listing_images = sqlx::query!(
+            "
+DELETE from listingimages
+WHERE
+ listing_id = ?
+;",
+            listing_id
+        )
+        .execute(&mut *tx)
+        .await
+        .map_err(|_| "failed to delete images for listing.")?;
+
+        let delete_listing_shipping_options = sqlx::query!(
+            "
+DELETE from shippingoptions
+WHERE
+ listing_id = ?
+;",
+            listing_id
+        )
+        .execute(&mut *tx)
+        .await
+        .map_err(|_| "failed to delete shipping options for listing.")?;
+
+        tx.commit()
+            .await
+            .map_err(|_| "failed to commit transaction.")?;
+
+        Ok(delete_result.rows_affected() as _)
+        //Ok(())
+    }
 }
 
 impl ListingImage {
@@ -2379,7 +2429,7 @@ ON
 WHERE
  orders.shipped
 AND
- listing_user_id = ?
+ order_seller_user_id = ?
 GROUP BY
  orders.id
 ORDER BY orders.payment_time_ms DESC
