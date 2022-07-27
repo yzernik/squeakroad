@@ -2429,7 +2429,7 @@ ON
 WHERE
  orders.shipped
 AND
- listing_user_id = ?
+ order_seller_user_id = ?
 GROUP BY
  orders.id
 ORDER BY orders.payment_time_ms DESC
