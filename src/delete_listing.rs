@@ -69,11 +69,6 @@ async fn delete(
             ))
         }
     }
-
-    // Err(Flash::error(
-    //     Redirect::to(uri!("/delete_listing", index(id))),
-    //     "Failed to delete listing.",
-    // ))
 }
 
 async fn delete_listing(
