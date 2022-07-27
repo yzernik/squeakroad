@@ -471,7 +471,7 @@ WHERE
         .await
         .map_err(|_| "failed to delete listing.")?;
 
-        let delete_listing_images = sqlx::query!(
+        sqlx::query!(
             "
 DELETE from listingimages
 WHERE
@@ -483,7 +483,7 @@ WHERE
         .await
         .map_err(|_| "failed to delete images for listing.")?;
 
-        let delete_listing_shipping_options = sqlx::query!(
+        sqlx::query!(
             "
 DELETE from shippingoptions
 WHERE
