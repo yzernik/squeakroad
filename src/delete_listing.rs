@@ -36,16 +36,16 @@ impl Context {
         let listing_display = ListingDisplay::single_by_public_id(&mut db, listing_id)
             .await
             .map_err(|_| "failed to get listing display.")?;
-        if listing_display.listing.user_id == user.id() {
-            Ok(Context {
-                base_context,
-                flash,
-                listing_display: Some(listing_display),
-            })
-        } else {
-            error_!("Listing belongs to other user.");
-            Err("Listing belongs to other user".into())
-        }
+
+        if listing_display.listing.user_id != user.id() && admin_user.is_none() {
+            return Err("User does not have permission to delete listing.".to_string());
+        };
+
+        Ok(Context {
+            base_context,
+            flash,
+            listing_display: Some(listing_display),
+        })
     }
 }
 
