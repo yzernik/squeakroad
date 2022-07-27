@@ -25,6 +25,9 @@
       <input type="hidden" name="_method" value="put" />
       <button class="small" type="submit">Submit Listing</button>
     </form>
+    <form class="inline" action="/delete_listing/{{ listing_display.listing.public_id }}" method="get">
+      <button class="small" type="submit">Delete Listing</button>
+    </form>
     {% elif not listing_display.listing.reviewed %}
     <h5>Pending Listing (waiting for admin approval)</h5>
     {% elif not listing_display.listing.approved %}

@@ -11,6 +11,7 @@ mod auth;
 mod base;
 mod config;
 mod db;
+mod delete_listing;
 mod lightning;
 mod listing;
 mod listings;

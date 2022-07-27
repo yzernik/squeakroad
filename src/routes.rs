@@ -166,6 +166,7 @@ pub fn stage(config: Config) -> AdHoc {
             .attach(crate::update_user_squeaknode_info::update_user_squeaknode_info_stage())
             .attach(crate::update_user_pgp_info::update_user_pgp_info_stage())
             .attach(crate::review_pending_listings::review_pending_listings_stage())
+            .attach(crate::delete_listing::delete_listing_stage())
             .attach(crate::account::account_stage())
             .attach(crate::my_unsubmitted_listings::my_unsubmitted_listings_stage())
             .attach(crate::my_pending_listings::my_pending_listings_stage())
