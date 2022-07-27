@@ -24,20 +24,20 @@
 	  <label for="title">Enter the name of the shipping option</label>
           <input type="text" placeholder="shipping option name..."
 		 name="title" id="title" value="" autofocus
-		 class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" />
+		 class="{% if flash %}field-{{flash.0}}{% endif %}" />
 	  <label for="title">Enter the description of the shipping option. Describe how the item will be shipped, and describe any restrictions on where and when it can be shipped</label>
           <textarea placeholder="shipping item description..."
 		    name="description" id="description" value=""
 		    class="u-full-width"></textarea>
 	  <label for="title">Enter the price of the shipping option in sats</label>
 	  <input type="number" placeholder="shipping option price..."
-		 name="price_sat" id="price_sat" value=""
-		 class="u-full-width" />
+		 name="price_sat" id="price_sat" value="" />
 	  {% if flash %}
 	  <small class="field-{{flash.0}}-msg">
 	    {{ flash.1 }}
 	  </small>
 	  {% endif %}
+	  <label for="submit"></label>
 	  <input type="submit" value="add shipping option">
 	</form>
 

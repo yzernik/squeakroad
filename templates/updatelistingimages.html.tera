@@ -22,12 +22,13 @@
 	  <label for="file">Select an image file to upload</label>
           <input type="file" placeholder="upload a file..."
 		 name="file" id="file" value="" autofocus
-		 class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" />
+		 class="{% if flash %}field-{{flash.0}}{% endif %}" />
           {% if flash %}
           <small class="field-{{flash.0}}-msg">
 	    {{ flash.1 }}
           </small>
           {% endif %}
+	  <label for="submit"></label>
           <input type="submit" value="add image">
 	</form>
 
