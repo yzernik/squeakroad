@@ -61,7 +61,7 @@
 	<p><b>Payment amount</b>: {% if maybe_listing and maybe_shipping_option %}{{ order.quantity }} x ({{ maybe_listing.price_sat }} sats + {{ maybe_shipping_option.price_sat }} sats) = {% endif %}<b>{{ order.amount_owed_sat }} sats</b></p>
 	{% if user %}
 	{% if order.seller_user_id == user.id or admin_user %}
-	<p><b>Market fee amount</b>: {{ maybe_listing.fee_rate_basis_points / 10000 }} x {{ order.amount_owed_sat }} sats = {{ order.amount_owed_sat - order.seller_credit_sat }} sats</p>
+	<p><b>Market fee amount</b>: {% if maybe_listing %}{{ maybe_listing.fee_rate_basis_points / 10000 }} x {{ order.amount_owed_sat }} sats = {% endif %}{{ order.amount_owed_sat - order.seller_credit_sat }} sats</p>
 	<p><b>Seller credit amount</b>: {{ order.amount_owed_sat }} sats - {{ order.amount_owed_sat - order.seller_credit_sat }} sats = {{ order.seller_credit_sat }} sats</p>
 	{% endif %}
 	{% endif %}
