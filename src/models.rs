@@ -3,7 +3,7 @@ use crate::rocket::futures::TryFutureExt;
 use crate::rocket::futures::TryStreamExt;
 use crate::util;
 use rocket::fs::TempFile;
-use rocket::serde::{Deserialize, Serialize};
+use rocket::serde::Serialize;
 use rocket_db_pools::{sqlx, Connection};
 use sqlx::pool::PoolConnection;
 use sqlx::Acquire;
@@ -11,15 +11,6 @@ use sqlx::Row;
 use sqlx::Sqlite;
 use std::future::Future;
 use std::result::Result;
-
-#[derive(Debug, Clone, Deserialize, Serialize)]
-#[serde(crate = "rocket::serde")]
-pub struct Post {
-    #[serde(skip_deserializing, skip_serializing_if = "Option::is_none")]
-    pub id: Option<i64>,
-    pub title: String,
-    pub text: String,
-}
 
 #[derive(Serialize, Debug, Clone)]
 #[serde(crate = "rocket::serde")]
