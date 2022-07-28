@@ -25,7 +25,6 @@ pub struct Listing {
     pub submitted: bool,
     pub reviewed: bool,
     pub approved: bool,
-    pub removed: bool,
     pub deactivated_by_seller: bool,
     pub deactivated_by_admin: bool,
     pub created_time_ms: u64,
@@ -281,7 +280,7 @@ impl Listing {
         let created_time_ms: i64 = listing.created_time_ms.try_into().unwrap();
 
         let insert_result = sqlx::query!(
-            "INSERT INTO listings (public_id, user_id, title, description, price_sat, fee_rate_basis_points, submitted, reviewed, approved, removed, deactivated_by_seller, deactivated_by_admin, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO listings (public_id, user_id, title, description, price_sat, fee_rate_basis_points, submitted, reviewed, approved, deactivated_by_seller, deactivated_by_admin, created_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             listing.public_id,
             listing.user_id,
             listing.title,
@@ -291,7 +290,6 @@ impl Listing {
             listing.submitted,
             listing.reviewed,
             listing.approved,
-            listing.removed,
             listing.deactivated_by_seller,
             listing.deactivated_by_admin,
             created_time_ms,
@@ -316,7 +314,6 @@ impl Listing {
                 submitted: r.submitted,
                 reviewed: r.reviewed,
                 approved: r.approved,
-                removed: r.removed,
                 deactivated_by_seller: r.deactivated_by_seller,
                 deactivated_by_admin: r.deactivated_by_admin,
                 created_time_ms: r.created_time_ms.try_into().unwrap(),
@@ -343,7 +340,6 @@ impl Listing {
                 submitted: r.submitted,
                 reviewed: r.reviewed,
                 approved: r.approved,
-                removed: r.removed,
                 deactivated_by_seller: r.deactivated_by_seller,
                 deactivated_by_admin: r.deactivated_by_admin,
                 created_time_ms: r.created_time_ms.try_into().unwrap(),
@@ -707,7 +703,7 @@ impl ListingCard {
         let listing_cards =
             sqlx::query!("
 select
- listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.deactivated_by_seller, listings.deactivated_by_admin, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+ listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.deactivated_by_seller, listings.deactivated_by_admin, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  listings
 LEFT JOIN
@@ -723,7 +719,7 @@ ON
 WHERE
  listings.approved
 AND
- not (listings.removed OR listings.deactivated_by_seller OR listings.deactivated_by_admin)
+ not (listings.deactivated_by_seller OR listings.deactivated_by_admin)
 GROUP BY
  listings.id
 ORDER BY listings.created_time_ms DESC
@@ -743,7 +739,6 @@ OFFSET ?
                     submitted: r.submitted.unwrap(),
                     reviewed: r.reviewed.unwrap(),
                     approved: r.approved.unwrap(),
-                    removed: r.removed.unwrap(),
                     deactivated_by_seller: r.deactivated_by_seller.unwrap(),
                     deactivated_by_admin: r.deactivated_by_admin.unwrap(),
                     created_time_ms: r.created_time_ms.unwrap().try_into().unwrap(),
@@ -785,7 +780,7 @@ OFFSET ?
         let listing_cards =
             sqlx::query!("
 select
- listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.deactivated_by_seller, listings.deactivated_by_admin, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+ listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.deactivated_by_seller, listings.deactivated_by_admin, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  listings
 LEFT JOIN
@@ -821,7 +816,6 @@ OFFSET ?
                     submitted: r.submitted.unwrap(),
                     reviewed: r.reviewed.unwrap(),
                     approved: r.approved.unwrap(),
-                    removed: r.removed.unwrap(),
                     deactivated_by_seller: r.deactivated_by_seller.unwrap(),
                     deactivated_by_admin: r.deactivated_by_admin.unwrap(),
                     created_time_ms: r.created_time_ms.unwrap().try_into().unwrap(),
@@ -864,7 +858,7 @@ OFFSET ?
         let listing_cards =
             sqlx::query!("
 select
- listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.deactivated_by_seller, listings.deactivated_by_admin, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+ listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.deactivated_by_seller, listings.deactivated_by_admin, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  listings
 LEFT JOIN
@@ -900,7 +894,6 @@ OFFSET ?
                     submitted: r.submitted.unwrap(),
                     reviewed: r.reviewed.unwrap(),
                     approved: r.approved.unwrap(),
-                    removed: r.removed.unwrap(),
                     deactivated_by_seller: r.deactivated_by_seller.unwrap(),
                     deactivated_by_admin: r.deactivated_by_admin.unwrap(),
                     created_time_ms: r.created_time_ms.unwrap().try_into().unwrap(),
@@ -943,7 +936,7 @@ OFFSET ?
         let listing_cards =
             sqlx::query!("
 select
- listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.deactivated_by_seller, listings.deactivated_by_admin, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+ listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.deactivated_by_seller, listings.deactivated_by_admin, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  listings
 LEFT JOIN
@@ -981,7 +974,6 @@ OFFSET ?
                     submitted: r.submitted.unwrap(),
                     reviewed: r.reviewed.unwrap(),
                     approved: r.approved.unwrap(),
-                    removed: r.removed.unwrap(),
                     deactivated_by_seller: r.deactivated_by_seller.unwrap(),
                     deactivated_by_admin: r.deactivated_by_admin.unwrap(),
                     created_time_ms: r.created_time_ms.unwrap().try_into().unwrap(),
@@ -1024,7 +1016,7 @@ OFFSET ?
         let listing_cards =
             sqlx::query!("
 select
- listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.deactivated_by_seller, listings.deactivated_by_admin, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+ listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.deactivated_by_seller, listings.deactivated_by_admin, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  listings
 LEFT JOIN
@@ -1062,7 +1054,6 @@ OFFSET ?
                     submitted: r.submitted.unwrap(),
                     reviewed: r.reviewed.unwrap(),
                     approved: r.approved.unwrap(),
-                    removed: r.removed.unwrap(),
                     deactivated_by_seller: r.deactivated_by_admin.unwrap(),
                     deactivated_by_admin: r.deactivated_by_admin.unwrap(),
                     created_time_ms: r.created_time_ms.unwrap().try_into().unwrap(),
@@ -1105,7 +1096,7 @@ OFFSET ?
         let listing_cards =
             sqlx::query!("
 select
- listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.deactivated_by_seller, listings.deactivated_by_admin, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+ listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.deactivated_by_seller, listings.deactivated_by_admin, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  listings
 LEFT JOIN
@@ -1145,7 +1136,6 @@ OFFSET ?
                     submitted: r.submitted.unwrap(),
                     reviewed: r.reviewed.unwrap(),
                     approved: r.approved.unwrap(),
-                    removed: r.removed.unwrap(),
                     deactivated_by_seller: r.deactivated_by_seller.unwrap(),
                     deactivated_by_admin: r.deactivated_by_admin.unwrap(),
                     created_time_ms: r.created_time_ms.unwrap().try_into().unwrap(),
@@ -1190,7 +1180,7 @@ OFFSET ?
         let listing_cards =
             sqlx::query!("
 select
- listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.deactivated_by_seller, listings.deactivated_by_admin, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+ listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.deactivated_by_seller, listings.deactivated_by_admin, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  listings
 LEFT JOIN
@@ -1208,7 +1198,7 @@ WHERE
 AND
  listings.reviewed
 AND
- NOT (listings.removed OR listings.deactivated_by_seller OR listings.deactivated_by_admin)
+ NOT (listings.deactivated_by_seller OR listings.deactivated_by_admin)
 AND
  (UPPER(listings.title) like ? OR UPPER(listings.description) like ?)
 GROUP BY
@@ -1230,7 +1220,6 @@ OFFSET ?
                     submitted: r.submitted.unwrap(),
                     reviewed: r.reviewed.unwrap(),
                     approved: r.approved.unwrap(),
-                    removed: r.removed.unwrap(),
                     deactivated_by_seller: r.deactivated_by_seller.unwrap(),
                     deactivated_by_admin: r.deactivated_by_admin.unwrap(),
                     created_time_ms: r.created_time_ms.unwrap().try_into().unwrap(),
@@ -2229,7 +2218,7 @@ impl OrderCard {
         let orders = sqlx::query!(
             "
 select
- orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.quantity as order_quantity, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.shipped, orders.canceled_by_seller, orders.canceled_by_buyer, orders.reviewed as order_reviewed, orders.invoice_hash, orders.invoice_payment_request, orders.review_rating, orders.review_text, orders.created_time_ms, orders.payment_time_ms, orders.review_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.deactivated_by_seller, listings.deactivated_by_admin, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+ orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.quantity as order_quantity, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.shipped, orders.canceled_by_seller, orders.canceled_by_buyer, orders.reviewed as order_reviewed, orders.invoice_hash, orders.invoice_payment_request, orders.review_rating, orders.review_text, orders.created_time_ms, orders.payment_time_ms, orders.review_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.deactivated_by_seller, listings.deactivated_by_admin, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  orders
 LEFT JOIN
@@ -2297,7 +2286,6 @@ OFFSET ?
                     submitted: r.submitted.unwrap(),
                     reviewed: r.reviewed.unwrap(),
                     approved: r.approved.unwrap(),
-                    removed: r.removed.unwrap(),
                     deactivated_by_seller: r.deactivated_by_seller.unwrap(),
                     deactivated_by_admin: r.deactivated_by_admin.unwrap(),
                     created_time_ms: r.listing_created_time_ms.unwrap().try_into().unwrap(),
@@ -2337,7 +2325,7 @@ OFFSET ?
         let orders = sqlx::query!(
             "
 select
- orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.quantity as order_quantity, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.shipped, orders.canceled_by_seller, orders.canceled_by_buyer, orders.reviewed as order_reviewed, orders.invoice_hash, orders.invoice_payment_request, orders.review_rating, orders.review_text, orders.created_time_ms, orders.payment_time_ms, orders.review_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.deactivated_by_seller, listings.deactivated_by_admin, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+ orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.quantity as order_quantity, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.shipped, orders.canceled_by_seller, orders.canceled_by_buyer, orders.reviewed as order_reviewed, orders.invoice_hash, orders.invoice_payment_request, orders.review_rating, orders.review_text, orders.created_time_ms, orders.payment_time_ms, orders.review_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.deactivated_by_seller, listings.deactivated_by_admin, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  orders
 LEFT JOIN
@@ -2405,7 +2393,6 @@ OFFSET ?
                     submitted: r.submitted.unwrap(),
                     reviewed: r.reviewed.unwrap(),
                     approved: r.approved.unwrap(),
-                    removed: r.removed.unwrap(),
                     deactivated_by_seller: r.deactivated_by_seller.unwrap(),
                     deactivated_by_admin: r.deactivated_by_admin.unwrap(),
                     created_time_ms: r.listing_created_time_ms.unwrap().try_into().unwrap(),
@@ -2445,7 +2432,7 @@ OFFSET ?
         let orders = sqlx::query!(
             "
 select
- orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.quantity as order_quantity, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.shipped, orders.canceled_by_seller, orders.canceled_by_buyer, orders.reviewed as order_reviewed, orders.invoice_hash, orders.invoice_payment_request, orders.review_rating, orders.review_text, orders.created_time_ms, orders.payment_time_ms, orders.review_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.deactivated_by_seller, listings.deactivated_by_admin, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+ orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.quantity as order_quantity, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.shipped, orders.canceled_by_seller, orders.canceled_by_buyer, orders.reviewed as order_reviewed, orders.invoice_hash, orders.invoice_payment_request, orders.review_rating, orders.review_text, orders.created_time_ms, orders.payment_time_ms, orders.review_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.deactivated_by_seller, listings.deactivated_by_admin, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  orders
 LEFT JOIN
@@ -2513,7 +2500,6 @@ OFFSET ?
                     submitted: r.submitted.unwrap(),
                     reviewed: r.reviewed.unwrap(),
                     approved: r.approved.unwrap(),
-                    removed: r.removed.unwrap(),
                     deactivated_by_seller: r.deactivated_by_seller.unwrap(),
                     deactivated_by_admin: r.deactivated_by_admin.unwrap(),
                     created_time_ms: r.listing_created_time_ms.unwrap().try_into().unwrap(),
@@ -2553,7 +2539,7 @@ OFFSET ?
         let orders = sqlx::query!(
             "
 select
- orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.quantity as order_quantity, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.shipped, orders.canceled_by_seller, orders.canceled_by_buyer, orders.reviewed as order_reviewed, orders.invoice_hash, orders.invoice_payment_request, orders.review_rating, orders.review_text, orders.created_time_ms, orders.payment_time_ms, orders.review_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.removed, listings.deactivated_by_seller, listings.deactivated_by_admin, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
+ orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.quantity as order_quantity, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.shipped, orders.canceled_by_seller, orders.canceled_by_buyer, orders.reviewed as order_reviewed, orders.invoice_hash, orders.invoice_payment_request, orders.review_rating, orders.review_text, orders.created_time_ms, orders.payment_time_ms, orders.review_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.deactivated_by_seller, listings.deactivated_by_admin, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username
 from
  orders
 LEFT JOIN
@@ -2624,7 +2610,6 @@ OFFSET ?
                     submitted: r.submitted.unwrap(),
                     reviewed: r.reviewed.unwrap(),
                     approved: r.approved.unwrap(),
-                    removed: r.removed.unwrap(),
                     deactivated_by_seller: r.deactivated_by_seller.unwrap(),
                     deactivated_by_admin: r.deactivated_by_admin.unwrap(),
                     created_time_ms: r.listing_created_time_ms.unwrap().try_into().unwrap(),

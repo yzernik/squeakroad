@@ -116,7 +116,6 @@ async fn create_listing(
         submitted: false,
         reviewed: false,
         approved: false,
-        removed: false,
         deactivated_by_seller: false,
         deactivated_by_admin: false,
         created_time_ms: now,
