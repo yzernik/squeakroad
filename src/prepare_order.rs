@@ -228,7 +228,6 @@ async fn index(
     shipping_option_id: &str,
     quantity: usize,
     db: Connection<Db>,
-    user: User,
     active_user: ActiveUser,
     admin_user: Option<AdminUser>,
 ) -> Template {
@@ -241,7 +240,7 @@ async fn index(
             shipping_option_id,
             quantity.try_into().unwrap(),
             flash,
-            user,
+            active_user.user,
             admin_user,
         )
         .await,

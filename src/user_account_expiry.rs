@@ -6,8 +6,7 @@ use sqlx::pool::PoolConnection;
 use sqlx::Sqlite;
 use tonic_openssl_lnd::LndInvoicesClient;
 
-// const USER_ACCOUNT_EXPIRY_INTERVAL_MS: u64 = 3600000;
-const USER_ACCOUNT_EXPIRY_INTERVAL_MS: u64 = 10000;
+const USER_ACCOUNT_EXPIRY_INTERVAL_MS: u64 = 3600000;
 
 pub async fn remove_expired_user_accounts(
     config: Config,
@@ -21,6 +20,11 @@ pub async fn remove_expired_user_accounts(
     )
     .await
     .map_err(|e| format!("failed to get lightning client: {:?}", e))?;
+
+    // Delete all users without a corresponding user account.
+    UserAccount::delete_users_with_no_account(&mut conn)
+        .await
+        .map_err(|_| "failed to delete users with no account.")?;
 
     // Get all unactivated user accounts older than expiry time limit.
     let now = util::current_time_millis();

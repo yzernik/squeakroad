@@ -8,7 +8,7 @@ use rocket::fairing::AdHoc;
 use rocket::State;
 use rocket::{form::*, get, post, response::Redirect, routes};
 use rocket_auth::Users;
-use rocket_auth::{Auth, Error, Login, Signup, User};
+use rocket_auth::{Auth, Login, Signup, User};
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
 use serde_json::json;

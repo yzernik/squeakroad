@@ -10,8 +10,8 @@ use rocket_db_pools::Connection;
 pub struct ActiveUser {
     //pub user: User,
     //pub user_account: UserAccount,
-    pub user: Option<User>,
-    pub user_account: Option<UserAccount>,
+    pub user: User,
+    pub user_account: UserAccount,
 }
 
 #[rocket::async_trait]
@@ -36,10 +36,7 @@ impl<'r> FromRequest<'r> for ActiveUser {
 
         if let Some(user_account) = maybe_user_account {
             if user_account.paid {
-                Outcome::Success(ActiveUser {
-                    user: Some(user),
-                    user_account: None,
-                })
+                Outcome::Success(ActiveUser { user, user_account })
             } else {
                 Outcome::Failure((Status::Unauthorized, ()))
             }

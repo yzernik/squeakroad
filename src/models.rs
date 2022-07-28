@@ -3285,4 +3285,30 @@ WHERE
 
         Ok(())
     }
+
+    pub async fn delete_users_with_no_account(
+        db: &mut PoolConnection<Sqlite>,
+    ) -> Result<(), String> {
+        sqlx::query!(
+            "
+DELETE FROM users
+WHERE
+ NOT is_admin
+AND
+ id IN
+(SELECT users.id FROM users
+LEFT JOIN
+ useraccounts
+ON
+ users.id=useraccounts.user_id
+WHERE
+ useraccounts.user_id IS NULL);
+;"
+        )
+        .execute(&mut **db)
+        .await
+        .map_err(|_| "failed to delete user account from database.")?;
+
+        Ok(())
+    }
 }
