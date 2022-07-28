@@ -844,6 +844,16 @@
     },
     "query": "UPDATE adminsettings SET squeaknode_pubkey = ?"
   },
+  "7e4420d7d131c94e8f7854b59470950d828491621d19fa88b6b9338ec63e4ece": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\nUPDATE listings\nSET deactivated_by_admin = true\nWHERE\n public_id = ?\nAND\n approved\nAND NOT (deactivated_by_seller OR deactivated_by_admin)\n;"
+  },
   "814a6a824f4178ecb9911e94b7e7c7317f7ce22340e392b281113d2b9d54fb87": {
     "describe": {
       "columns": [
@@ -3175,6 +3185,16 @@
       }
     },
     "query": "DELETE FROM listingimages WHERE public_id = ?"
+  },
+  "d070f262d09873048798c38a4f6170a133dacc97c387728ef9063de9cff19d69": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\nUPDATE listings\nSET deactivated_by_seller = true\nWHERE\n public_id = ?\nAND\n approved\nAND NOT (deactivated_by_seller OR deactivated_by_admin)\n;"
   },
   "d071f19567ccc606eee005bce9d3f889ef1c49df909432195006bd7c3d9197fa": {
     "describe": {

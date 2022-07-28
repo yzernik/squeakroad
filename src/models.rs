@@ -405,6 +405,48 @@ impl Listing {
         Ok(())
     }
 
+    pub async fn mark_as_deactivated_by_seller(
+        db: &mut Connection<Db>,
+        public_id: &str,
+    ) -> Result<(), sqlx::Error> {
+        sqlx::query!(
+            "
+UPDATE listings
+SET deactivated_by_seller = true
+WHERE
+ public_id = ?
+AND
+ approved
+AND NOT (deactivated_by_seller OR deactivated_by_admin)
+;",
+            public_id,
+        )
+        .execute(&mut **db)
+        .await?;
+        Ok(())
+    }
+
+    pub async fn mark_as_deactivated_by_admin(
+        db: &mut Connection<Db>,
+        public_id: &str,
+    ) -> Result<(), sqlx::Error> {
+        sqlx::query!(
+            "
+UPDATE listings
+SET deactivated_by_admin = true
+WHERE
+ public_id = ?
+AND
+ approved
+AND NOT (deactivated_by_seller OR deactivated_by_admin)
+;",
+            public_id,
+        )
+        .execute(&mut **db)
+        .await?;
+        Ok(())
+    }
+
     pub async fn count_for_user_since_time_ms(
         db: &mut Connection<Db>,
         user_id: i32,

@@ -224,6 +224,79 @@ async fn remove_listing(
     Ok(())
 }
 
+#[put("/<id>/deactivate_as_admin")]
+async fn admin_deactivate(
+    id: &str,
+    mut db: Connection<Db>,
+    _user: User,
+    _admin_user: AdminUser,
+) -> Result<Flash<Redirect>, Flash<Redirect>> {
+    match deactivate_listing_as_admin(&mut db, id).await {
+        Ok(_) => Ok(Flash::success(
+            Redirect::to(uri!("/listing", index(id))),
+            "Marked as deactivated by admin".to_string(),
+        )),
+        Err(e) => {
+            error_!("Mark as deactivated error({}) error: {}", id, e);
+            Err(Flash::error(Redirect::to(uri!("/listing", index(id))), e))
+        }
+    }
+}
+
+#[put("/<id>/deactivate")]
+async fn deactivate(
+    id: &str,
+    mut db: Connection<Db>,
+    user: User,
+    _admin_user: Option<AdminUser>,
+) -> Result<Flash<Redirect>, Flash<Redirect>> {
+    match deactivate_listing_as_seller(&mut db, id, user).await {
+        Ok(_) => Ok(Flash::success(
+            Redirect::to(uri!("/listing", index(id))),
+            "Marked as deactivated by seller".to_string(),
+        )),
+        Err(e) => {
+            error_!("Mark as deactivated error({}) error: {}", id, e);
+            Err(Flash::error(Redirect::to(uri!("/listing", index(id))), e))
+        }
+    }
+}
+
+async fn deactivate_listing_as_seller(
+    db: &mut Connection<Db>,
+    id: &str,
+    user: User,
+) -> Result<(), String> {
+    let listing = Listing::single_by_public_id(db, id)
+        .await
+        .map_err(|_| "failed to get listing")?;
+    if listing.user_id != user.id() {
+        return Err("Listing belongs to a different user.".to_string());
+    };
+    if listing.deactivated_by_seller || listing.deactivated_by_admin {
+        return Err("Listing is already deactivated.".to_string());
+    };
+
+    Listing::mark_as_deactivated_by_seller(db, id)
+        .await
+        .map_err(|_| "failed to deactivate listing by seller")?;
+    Ok(())
+}
+
+async fn deactivate_listing_as_admin(db: &mut Connection<Db>, id: &str) -> Result<(), String> {
+    let listing = Listing::single_by_public_id(db, id)
+        .await
+        .map_err(|_| "failed to get listing")?;
+    if listing.deactivated_by_seller || listing.deactivated_by_admin {
+        return Err("Listing is already deactivated.".to_string());
+    };
+
+    Listing::mark_as_deactivated_by_admin(db, id)
+        .await
+        .map_err(|_| "failed to deactivate listing by admin")?;
+    Ok(())
+}
+
 #[get("/<id>")]
 async fn index(
     flash: Option<FlashMessage<'_>>,
@@ -241,6 +314,17 @@ async fn index(
 
 pub fn listing_stage() -> AdHoc {
     AdHoc::on_ignite("Listing Stage", |rocket| async {
-        rocket.mount("/listing", routes![index, submit, approve, reject, remove])
+        rocket.mount(
+            "/listing",
+            routes![
+                index,
+                submit,
+                approve,
+                reject,
+                remove,
+                deactivate,
+                admin_deactivate
+            ],
+        )
     })
 }
