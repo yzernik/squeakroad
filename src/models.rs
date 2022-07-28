@@ -3154,7 +3154,8 @@ impl UserAccount {
         let payment_time_ms: i64 = user_account.payment_time_ms.try_into().unwrap();
 
         let insert_result = sqlx::query!(
-            "INSERT INTO useraccounts (user_id, amount_owed_sat, paid, disabled, invoice_payment_request, invoice_hash, created_time_ms, payment_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO useraccounts (public_id, user_id, amount_owed_sat, paid, disabled, invoice_payment_request, invoice_hash, created_time_ms, payment_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            user_account.public_id,
             user_account.user_id,
             amount_owed_sat,
             user_account.paid,

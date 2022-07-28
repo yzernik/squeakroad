@@ -2826,6 +2826,16 @@
     },
     "query": "INSERT INTO withdrawals (public_id, user_id, amount_sat, invoice_hash, invoice_payment_request, created_time_ms) VALUES (?, ?, ?, ?, ?, ?)"
   },
+  "b05ea8c37a0a37b2b9487152647e42c0350b8b132db5929cc6645f157e6e7a81": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 9
+      }
+    },
+    "query": "INSERT INTO useraccounts (public_id, user_id, amount_owed_sat, paid, disabled, invoice_payment_request, invoice_hash, created_time_ms, payment_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+  },
   "b14d97273a369caa9073a52ecb122e0229a6877de710eecaaf442b05f6b2d4c7": {
     "describe": {
       "columns": [
@@ -3023,16 +3033,6 @@
       }
     },
     "query": "\nSELECT\n invoice_hash\nFROM\n(SELECT invoice_hash, payment_time_ms FROM useraccounts\n UNION ALL\nSELECT invoice_hash, payment_time_ms FROM orders)\nWHERE\n payment_time_ms = (SELECT MAX(payment_time_ms) FROM\n(SELECT invoice_hash, payment_time_ms FROM useraccounts\n UNION ALL\nSELECT invoice_hash, payment_time_ms FROM orders))\nLIMIT 1\n;"
-  },
-  "bb5769287269603a778c9785e1db81f3df42862aca7f641759c65d17eece1322": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 8
-      }
-    },
-    "query": "INSERT INTO useraccounts (user_id, amount_owed_sat, paid, disabled, invoice_payment_request, invoice_hash, created_time_ms, payment_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
   },
   "be99d8673183a949c574c4f6ad6dbdc625755f69f860876ee64737ffbb1a9bbf": {
     "describe": {
