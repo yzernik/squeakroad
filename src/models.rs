@@ -2188,7 +2188,9 @@ AND
 SELECT
  invoice_hash
 FROM
- orders
+(SELECT invoice_hash, payment_time_ms FROM useraccounts
+ UNION ALL
+SELECT invoice_hash, payment_time_ms FROM orders)
 WHERE
  payment_time_ms = (SELECT MAX(payment_time_ms) FROM orders)
 LIMIT 1
@@ -3135,7 +3137,7 @@ impl UserAccount {
     }
 
     pub async fn single(db: &mut Connection<Db>, id: i32) -> Result<UserAccount, sqlx::Error> {
-        let listing = sqlx::query!("select * from useraccounts WHERE user_id = ?;", id)
+        let user_account = sqlx::query!("select * from useraccounts WHERE user_id = ?;", id)
             .fetch_one(&mut **db)
             .map_ok(|r| UserAccount {
                 id: Some(r.id.try_into().unwrap()),
@@ -3150,6 +3152,49 @@ impl UserAccount {
             })
             .await?;
 
-        Ok(listing)
+        Ok(user_account)
+    }
+
+    pub async fn single_by_invoice_hash(
+        db: &mut PoolConnection<Sqlite>,
+        invoice_hash: &str,
+    ) -> Result<UserAccount, sqlx::Error> {
+        let user_account = sqlx::query!(
+            "select * from useraccounts WHERE invoice_hash = ?;",
+            invoice_hash
+        )
+        .fetch_one(&mut **db)
+        .map_ok(|r| UserAccount {
+            id: Some(r.id.try_into().unwrap()),
+            user_id: r.user_id.try_into().unwrap(),
+            amount_owed_sat: r.amount_owed_sat.try_into().unwrap(),
+            paid: r.paid.try_into().unwrap(),
+            disabled: r.disabled.try_into().unwrap(),
+            invoice_payment_request: r.invoice_payment_request.try_into().unwrap(),
+            invoice_hash: r.invoice_hash.try_into().unwrap(),
+            created_time_ms: r.created_time_ms.try_into().unwrap(),
+            payment_time_ms: r.payment_time_ms.try_into().unwrap(),
+        })
+        .await?;
+
+        Ok(user_account)
+    }
+
+    pub async fn mark_as_paid(
+        db: &mut PoolConnection<Sqlite>,
+        user_account_id: i32,
+        time_now_ms: u64,
+    ) -> Result<(), sqlx::Error> {
+        let time_now_ms_i64: i64 = time_now_ms.try_into().unwrap();
+
+        sqlx::query!(
+            "UPDATE useraccounts SET paid = true, payment_time_ms = ? WHERE id = ?",
+            time_now_ms_i64,
+            user_account_id,
+        )
+        .execute(&mut **db)
+        .await?;
+
+        Ok(())
     }
 }
