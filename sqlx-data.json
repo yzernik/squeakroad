@@ -78,16 +78,6 @@
     },
     "query": "\nUPDATE\n orders\nSET\n canceled_by_buyer = true\nWHERE\n id = ?\nAND\n not (shipped OR canceled_by_seller OR canceled_by_buyer)\n;"
   },
-  "12986ccce72c654f36e323cea9271b54570be88f6105d39e7744cdcb456a6981": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "UPDATE listings SET removed = true WHERE public_id = ?"
-  },
   "1dec33bb907789c678357a383a33faa10b0aaf9b290a0eed03dd12b52b254a18": {
     "describe": {
       "columns": [
