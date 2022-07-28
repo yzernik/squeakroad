@@ -86,7 +86,7 @@ pub fn stage(config: Config) -> AdHoc {
             .attach(AdHoc::try_on_ignite("SQLx Create Admin User", |r| {
                 create_admin_user(r, config_clone_2)
             }))
-            .attach(AdHoc::on_liftoff("DB polling", |rocket| {
+            .attach(AdHoc::on_liftoff("Process Payments", |rocket| {
                 // Copied from: https://stackoverflow.com/a/72457117/1639564
                 Box::pin(async move {
                     let pool = match Db::fetch(rocket) {
