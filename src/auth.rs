@@ -69,7 +69,7 @@ async fn post_signup(
         .await
         .map_err(|_| "failed to create new user account.")?;
 
-    Ok(Redirect::to("/"))
+    Ok(Redirect::to("/activate_account"))
 }
 
 #[get("/logout")]
