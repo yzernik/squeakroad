@@ -6,7 +6,7 @@ use sqlx::pool::PoolConnection;
 use sqlx::Sqlite;
 use tonic_openssl_lnd::LndInvoicesClient;
 
-const USER_ACCOUNT_EXPIRY_INTERVAL_MS: u64 = 3600000;
+const USER_ACCOUNT_EXPIRY_INTERVAL_MS: u64 = 600000; // 10 minutes
 
 pub async fn remove_expired_user_accounts(
     config: Config,

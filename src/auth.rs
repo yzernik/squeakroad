@@ -2,7 +2,7 @@ use crate::base::BaseContext;
 use crate::config::Config;
 use crate::db::Db;
 use crate::lightning;
-use crate::models::UserAccount;
+use crate::models::{AdminSettings, UserAccount};
 use crate::util;
 use rocket::fairing::AdHoc;
 use rocket::State;
@@ -90,7 +90,11 @@ async fn create_user_account(
     config: Config,
 ) -> Result<(), String> {
     let now = util::current_time_millis();
-    let amount_owed_sat: u64 = 555;
+
+    let admin_settings = AdminSettings::single(db)
+        .await
+        .map_err(|_| "failed to update market name.")?;
+    let amount_owed_sat: u64 = admin_settings.user_bond_price_sat;
 
     let mut lightning_client = lightning::get_lnd_lightning_client(
         config.lnd_host.clone(),

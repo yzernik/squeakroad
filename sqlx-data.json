@@ -3060,9 +3060,15 @@
           "name": "squeaknode_pubkey",
           "ordinal": 5,
           "type_info": "Text"
+        },
+        {
+          "name": "user_bond_price_sat",
+          "ordinal": 6,
+          "type_info": "Int64"
         }
       ],
       "nullable": [
+        false,
         false,
         false,
         false,
