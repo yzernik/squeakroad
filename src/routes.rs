@@ -13,7 +13,7 @@ use rocket_dyn_templates::Template;
 
 const PAYMENT_PROCESSOR_TASK_INTERVAL_S: u64 = 10;
 // const ORDER_EXPIRY_TASK_INTERVAL_S: u64 = 600;
-const ORDER_EXPIRY_TASK_INTERVAL_S: u64 = 60;
+const ORDER_EXPIRY_TASK_INTERVAL_S: u64 = 10;
 
 async fn run_migrations(rocket: Rocket<Build>) -> fairing::Result {
     match Db::fetch(&rocket) {

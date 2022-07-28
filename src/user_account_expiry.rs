@@ -7,7 +7,7 @@ use sqlx::Sqlite;
 use tonic_openssl_lnd::LndInvoicesClient;
 
 // const USER_ACCOUNT_EXPIRY_INTERVAL_MS: u64 = 3600000;
-const USER_ACCOUNT_EXPIRY_INTERVAL_MS: u64 = 60000;
+const USER_ACCOUNT_EXPIRY_INTERVAL_MS: u64 = 10000;
 
 pub async fn remove_expired_user_accounts(
     config: Config,
@@ -32,7 +32,7 @@ pub async fn remove_expired_user_accounts(
     for user_account in expired_user_accounts {
         remove_user_account(&mut conn, &user_account, &mut lightning_invoices_client)
             .await
-            .ok();
+            .expect("failed to remove user account.");
     }
     Ok(())
 }
@@ -49,7 +49,7 @@ async fn remove_user_account(
     );
     UserAccount::delete_expired_user_account(
         conn,
-        user_account.id.unwrap(),
+        user_account.user_id,
         cancel_user_account_invoice_ret,
     )
     .await

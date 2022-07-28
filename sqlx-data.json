@@ -804,16 +804,6 @@
     },
     "query": "\nDELETE from listingimages\nWHERE\n listing_id = ?\n;"
   },
-  "4581b6627dbe08d26e98ee5c96a687158b252d03ea6093e3b5c97af9d223f3d5": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "\nDELETE FROM useraccounts\nWHERE\n id = ?\nAND\n NOT paid\n;"
-  },
   "4a904d9675c25971e6efb6356aa13ad1c515f7d95a9807e524e627c7ce3e7078": {
     "describe": {
       "columns": [],
@@ -1709,6 +1699,16 @@
       }
     },
     "query": "select * from listings WHERE public_id = ?;"
+  },
+  "8b31981437454097293102bc74e11e34606b97d470977197690a0769dcb6bd76": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\nDELETE FROM useraccounts\nWHERE\n user_id = ?\nAND\n NOT paid\n;"
   },
   "8eb0be69aa18a6620b09201ad740e4ea553e49a797c20d7c3038076ce30f119e": {
     "describe": {
