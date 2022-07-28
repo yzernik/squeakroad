@@ -2101,7 +2101,11 @@ AND
 
     pub async fn seller_info_for_all_users(
         db: &mut Connection<Db>,
+        page_size: u32,
+        page_num: u32,
     ) -> Result<Vec<SellerInfo>, sqlx::Error> {
+        let offset = (page_num - 1) * page_size;
+        let limit = page_size;
         let seller_infos = sqlx::query(
                     "
         SELECT weighted_average, total_amount_sold_sat, users.email
@@ -2135,24 +2139,28 @@ AND
          total_amount_sold_sat > 0
         ORDER BY
          total_amount_sold_sat DESC
+        LIMIT ?
+        OFFSET ?
             ;")
-                    .fetch(&mut **db)
-                    .map_ok(|r| {
-                        SellerInfo {
-                            username: r.try_get("email").unwrap(),
-                            total_amount_sold_sat: {
-                                let amount_sat_i64: i64 = r.try_get("total_amount_sold_sat").unwrap();
-                                let amount_sat_u64: u64 = amount_sat_i64.try_into().unwrap();
-                                amount_sat_u64
-                            },
-                            weighted_average_rating: {
-                                let average_rating_numerator: i64 = r.try_get("weighted_average").unwrap();
-                                let average_rating: f32 = (average_rating_numerator as f32) / 1000.0;
-                                average_rating
-                            },
-                    }})
-                    .try_collect::<Vec<_>>()
-                    .await?;
+            .bind(limit)
+            .bind(offset)
+            .fetch(&mut **db)
+            .map_ok(|r| {
+                SellerInfo {
+                    username: r.try_get("email").unwrap(),
+                    total_amount_sold_sat: {
+                        let amount_sat_i64: i64 = r.try_get("total_amount_sold_sat").unwrap();
+                        let amount_sat_u64: u64 = amount_sat_i64.try_into().unwrap();
+                        amount_sat_u64
+                    },
+                    weighted_average_rating: {
+                        let average_rating_numerator: i64 = r.try_get("weighted_average").unwrap();
+                        let average_rating: f32 = (average_rating_numerator as f32) / 1000.0;
+                        average_rating
+                    },
+                }})
+            .try_collect::<Vec<_>>()
+            .await?;
 
         Ok(seller_infos)
     }

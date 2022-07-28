@@ -32,6 +32,8 @@
           {% endfor %}
 	</table>
 
+	<span>{% if page_num > 1 %}<a href="?page_num={{ page_num - 1 }}">Prev</a>{% else %}Prev{% endif %} - Page {{ page_num }} - <a href="?page_num={{ page_num + 1 }}">Next</a></span>
+
       </div>
     </div>
   </div>
