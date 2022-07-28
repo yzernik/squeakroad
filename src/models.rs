@@ -2848,7 +2848,11 @@ AND
 UNION ALL
 select withdrawals.user_id as user_id, (0 - withdrawals.amount_sat) as amount_change_sat, 'withdrawal' as event_type, withdrawals.public_id as event_id, withdrawals.created_time_ms as event_time_ms
 from
- withdrawals)
+ withdrawals
+UNION ALL
+select useraccounts.user_id as user_id, useraccounts.amount_owed_sat as amount_change_sat, 'user_activation' as event_type, 'foo' as event_id, useraccounts.created_time_ms as event_time_ms
+from
+ useraccounts)
 ORDER BY event_time_ms DESC
 LIMIT ?
 OFFSET ?
