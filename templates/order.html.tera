@@ -54,7 +54,7 @@
         <p><b>Order time</b>: {{ (order.created_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}</p>
 
 	<p><b>Listing</b>: {% if maybe_listing %}<a href="/listing/{{ maybe_listing.public_id }}">{{ maybe_listing.title }}</a> ({{ maybe_listing.price_sat }} sats){% else %}Not found{% endif %}</p>
-	<p><b>Seller</b>: <a href="/user/{{ seller_user.username }}">{{ seller_user.username }}</a></p>
+	<p><b>Seller</b>: {% if maybe_seller_user %}<a href="/user/{{ maybe_seller_user.username }}">{{ maybe_seller_user.username }}</a>{% else %}Not found{% endif %}</p>
 	<p><b>Shipping option</b>: {% if maybe_shipping_option %}{{ maybe_shipping_option.title }} ({{ maybe_shipping_option.price_sat }} sats){% else %}Not found{% endif %}</p>
 	<p><b>Shipping option description</b>: {% if maybe_shipping_option %}{{ maybe_shipping_option.description }}{% else %}Not found{% endif %}</p>
 	<p><b>Quantity</b>: {{ order.quantity }}</p>

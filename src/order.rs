@@ -25,7 +25,7 @@ struct Context {
     order: Order,
     maybe_listing: Option<Listing>,
     maybe_shipping_option: Option<ShippingOption>,
-    seller_user: RocketAuthUser,
+    maybe_seller_user: Option<RocketAuthUser>,
     user: Option<User>,
     admin_user: Option<AdminUser>,
     qr_svg_base64: String,
@@ -57,9 +57,9 @@ impl Context {
             .await
             .ok();
         // .map_err(|_| "failed to get shipping option.")?;
-        let seller_user = RocketAuthUser::single(&mut db, order.seller_user_id)
+        let maybe_seller_user = RocketAuthUser::single(&mut db, order.seller_user_id)
             .await
-            .map_err(|_| "failed to get order messages.")?;
+            .ok();
         let qr_svg_bytes = util::generate_qr(&order.invoice_payment_request);
         let qr_svg_base64 = util::to_base64(&qr_svg_bytes);
         let lightning_node_pubkey = get_lightning_node_pubkey(config)
@@ -71,7 +71,7 @@ impl Context {
             order,
             maybe_listing,
             maybe_shipping_option,
-            seller_user,
+            maybe_seller_user,
             user,
             admin_user,
             qr_svg_base64,
