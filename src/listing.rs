@@ -43,8 +43,11 @@ impl Context {
             if !listing_display.listing.approved {
                 return Err("Listing is not approved.".to_string());
             }
-            if listing_display.listing.removed {
-                return Err("Listing has been removed.".to_string());
+            if listing_display.listing.deactivated_by_seller {
+                return Err("Listing has been deactivated by seller.".to_string());
+            }
+            if listing_display.listing.deactivated_by_admin {
+                return Err("Listing has been deactivated by admin.".to_string());
             }
         };
 
@@ -92,9 +95,6 @@ async fn submit_listing(db: &mut Connection<Db>, id: &str, user: User) -> Result
     if listing.approved {
         return Err("Listing is already approved.".to_string());
     };
-    if listing.removed {
-        return Err("Listing is already removed.".to_string());
-    };
     if shipping_options.is_empty() {
         return Err("At least one shipping option required.".to_string());
     };
@@ -134,9 +134,6 @@ async fn approve_listing(db: &mut Connection<Db>, id: &str) -> Result<(), String
     if listing.reviewed {
         return Err("Listing is already reviewed.".to_string());
     };
-    if listing.removed {
-        return Err("Listing is already removed.".to_string());
-    };
 
     Listing::mark_as_approved(db, id)
         .await
@@ -173,9 +170,6 @@ async fn reject_listing(db: &mut Connection<Db>, id: &str) -> Result<(), String>
     if listing.reviewed {
         return Err("Listing is already reviewed.".to_string());
     };
-    if listing.removed {
-        return Err("Listing is already removed.".to_string());
-    }
 
     Listing::mark_as_rejected(db, id)
         .await
@@ -183,44 +177,76 @@ async fn reject_listing(db: &mut Connection<Db>, id: &str) -> Result<(), String>
     Ok(())
 }
 
-#[put("/<id>/remove")]
-async fn remove(
+#[put("/<id>/deactivate_as_admin")]
+async fn admin_deactivate(
     id: &str,
     mut db: Connection<Db>,
-    user: User,
-    admin_user: Option<AdminUser>,
+    _user: User,
+    _admin_user: AdminUser,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
-    match remove_listing(&mut db, id, user, admin_user).await {
+    match deactivate_listing_as_admin(&mut db, id).await {
         Ok(_) => Ok(Flash::success(
             Redirect::to(uri!("/listing", index(id))),
-            "Marked as removed".to_string(),
+            "Marked as deactivated by admin".to_string(),
         )),
         Err(e) => {
-            error_!("Mark removed({}) error: {}", id, e);
+            error_!("Mark as deactivated error({}) error: {}", id, e);
             Err(Flash::error(Redirect::to(uri!("/listing", index(id))), e))
         }
     }
 }
 
-async fn remove_listing(
+#[put("/<id>/deactivate")]
+async fn deactivate(
+    id: &str,
+    mut db: Connection<Db>,
+    user: User,
+    _admin_user: Option<AdminUser>,
+) -> Result<Flash<Redirect>, Flash<Redirect>> {
+    match deactivate_listing_as_seller(&mut db, id, user).await {
+        Ok(_) => Ok(Flash::success(
+            Redirect::to(uri!("/listing", index(id))),
+            "Marked as deactivated by seller".to_string(),
+        )),
+        Err(e) => {
+            error_!("Mark as deactivated error({}) error: {}", id, e);
+            Err(Flash::error(Redirect::to(uri!("/listing", index(id))), e))
+        }
+    }
+}
+
+async fn deactivate_listing_as_seller(
     db: &mut Connection<Db>,
     id: &str,
     user: User,
-    admin_user: Option<AdminUser>,
 ) -> Result<(), String> {
     let listing = Listing::single_by_public_id(db, id)
         .await
         .map_err(|_| "failed to get listing")?;
-    if listing.user_id != user.id() && admin_user.is_none() {
+    if listing.user_id != user.id() {
         return Err("Listing belongs to a different user.".to_string());
     };
-    if listing.removed {
-        return Err("Listing is already removed.".to_string());
+    if listing.deactivated_by_seller || listing.deactivated_by_admin {
+        return Err("Listing is already deactivated.".to_string());
     };
 
-    Listing::mark_as_removed(db, id)
+    Listing::mark_as_deactivated_by_seller(db, id)
         .await
-        .map_err(|_| "failed to remove listing")?;
+        .map_err(|_| "failed to deactivate listing by seller")?;
+    Ok(())
+}
+
+async fn deactivate_listing_as_admin(db: &mut Connection<Db>, id: &str) -> Result<(), String> {
+    let listing = Listing::single_by_public_id(db, id)
+        .await
+        .map_err(|_| "failed to get listing")?;
+    if listing.deactivated_by_seller || listing.deactivated_by_admin {
+        return Err("Listing is already deactivated.".to_string());
+    };
+
+    Listing::mark_as_deactivated_by_admin(db, id)
+        .await
+        .map_err(|_| "failed to deactivate listing by admin")?;
     Ok(())
 }
 
@@ -241,6 +267,9 @@ async fn index(
 
 pub fn listing_stage() -> AdHoc {
     AdHoc::on_ignite("Listing Stage", |rocket| async {
-        rocket.mount("/listing", routes![index, submit, approve, reject, remove])
+        rocket.mount(
+            "/listing",
+            routes![index, submit, approve, reject, deactivate, admin_deactivate],
+        )
     })
 }

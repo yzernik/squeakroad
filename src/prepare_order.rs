@@ -146,8 +146,8 @@ async fn create_order(
     if !listing.approved {
         return Err("Listing has not been approved by admin.".to_string());
     };
-    if listing.removed {
-        return Err("Listing has not been removed.".to_string());
+    if listing.deactivated_by_seller || listing.deactivated_by_admin {
+        return Err("Listing has been deactivated.".to_string());
     };
     if shipping_option.listing_id != listing.id.unwrap() {
         return Err("Shipping option not associated with listing.".to_string());
