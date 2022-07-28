@@ -259,6 +259,7 @@ pub struct SellerInfo {
 #[serde(crate = "rocket::serde")]
 pub struct UserAccount {
     pub id: Option<i32>,
+    pub public_id: String,
     pub user_id: i32,
     pub amount_owed_sat: u64,
     pub paid: bool,
@@ -2850,7 +2851,7 @@ select withdrawals.user_id as user_id, (0 - withdrawals.amount_sat) as amount_ch
 from
  withdrawals
 UNION ALL
-select useraccounts.user_id as user_id, useraccounts.amount_owed_sat as amount_change_sat, 'user_activation' as event_type, 'foo' as event_id, useraccounts.created_time_ms as event_time_ms
+select useraccounts.user_id as user_id, useraccounts.amount_owed_sat as amount_change_sat, 'user_activation' as event_type, useraccounts.public_id as event_id, useraccounts.created_time_ms as event_time_ms
 from
  useraccounts)
 ORDER BY event_time_ms DESC
@@ -3174,6 +3175,7 @@ impl UserAccount {
             .fetch_one(&mut **db)
             .map_ok(|r| UserAccount {
                 id: Some(r.id.try_into().unwrap()),
+                public_id: r.public_id,
                 user_id: r.user_id.try_into().unwrap(),
                 amount_owed_sat: r.amount_owed_sat.try_into().unwrap(),
                 paid: r.paid,
@@ -3199,6 +3201,7 @@ impl UserAccount {
         .fetch_one(&mut **db)
         .map_ok(|r| UserAccount {
             id: Some(r.id.try_into().unwrap()),
+            public_id: r.public_id,
             user_id: r.user_id.try_into().unwrap(),
             amount_owed_sat: r.amount_owed_sat.try_into().unwrap(),
             paid: r.paid,
@@ -3252,6 +3255,7 @@ AND
         .fetch(&mut **db)
         .map_ok(|r| UserAccount {
             id: Some(r.id.try_into().unwrap()),
+            public_id: r.public_id,
             user_id: r.user_id.try_into().unwrap(),
             amount_owed_sat: r.amount_owed_sat.try_into().unwrap(),
             paid: r.paid,

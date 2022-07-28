@@ -299,9 +299,15 @@
           "name": "payment_time_ms",
           "ordinal": 8,
           "type_info": "Int64"
+        },
+        {
+          "name": "public_id",
+          "ordinal": 9,
+          "type_info": "Text"
         }
       ],
       "nullable": [
+        false,
         false,
         false,
         false,
@@ -3129,9 +3135,15 @@
           "name": "payment_time_ms",
           "ordinal": 8,
           "type_info": "Int64"
+        },
+        {
+          "name": "public_id",
+          "ordinal": 9,
+          "type_info": "Text"
         }
       ],
       "nullable": [
+        false,
         false,
         false,
         false,
@@ -3821,9 +3833,15 @@
           "name": "payment_time_ms",
           "ordinal": 8,
           "type_info": "Int64"
+        },
+        {
+          "name": "public_id",
+          "ordinal": 9,
+          "type_info": "Text"
         }
       ],
       "nullable": [
+        false,
         false,
         false,
         false,

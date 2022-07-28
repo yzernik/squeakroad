@@ -115,6 +115,7 @@ async fn create_user_account(
 
     let user_account = UserAccount {
         id: None,
+        public_id: util::create_uuid(),
         user_id: user.id(),
         amount_owed_sat,
         paid: false,
