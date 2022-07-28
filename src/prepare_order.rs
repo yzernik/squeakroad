@@ -3,6 +3,7 @@ use crate::config::Config;
 use crate::db::Db;
 use crate::lightning;
 use crate::models::{Listing, ListingDisplay, Order, OrderInfo, ShippingOption, UserSettings};
+use crate::user_account::ActiveUser;
 use crate::util;
 use pgp::composed::{Deserializable, Message};
 use rocket::fairing::AdHoc;
@@ -228,6 +229,7 @@ async fn index(
     quantity: usize,
     db: Connection<Db>,
     user: User,
+    active_user: ActiveUser,
     admin_user: Option<AdminUser>,
 ) -> Template {
     let flash = flash.map(FlashMessage::into_inner);

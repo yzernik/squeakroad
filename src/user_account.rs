@@ -1,5 +1,6 @@
 use crate::db::Db;
 use crate::models::UserAccount;
+use rocket::http::Status;
 use rocket::outcome::try_outcome;
 use rocket::request::{FromRequest, Outcome, Request};
 use rocket_auth::User;
@@ -40,10 +41,10 @@ impl<'r> FromRequest<'r> for ActiveUser {
                     user_account: None,
                 })
             } else {
-                Outcome::Forward(())
+                Outcome::Failure((Status::Unauthorized, ()))
             }
         } else {
-            Outcome::Forward(())
+            Outcome::Failure((Status::Unauthorized, ()))
         }
     }
 }
