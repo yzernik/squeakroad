@@ -2192,7 +2192,10 @@ FROM
  UNION ALL
 SELECT invoice_hash, payment_time_ms FROM orders)
 WHERE
- payment_time_ms = (SELECT MAX(payment_time_ms) FROM orders)
+ payment_time_ms = (SELECT MAX(payment_time_ms) FROM
+(SELECT invoice_hash, payment_time_ms FROM useraccounts
+ UNION ALL
+SELECT invoice_hash, payment_time_ms FROM orders))
 LIMIT 1
 ;"
         )
@@ -3194,6 +3197,91 @@ impl UserAccount {
         )
         .execute(&mut **db)
         .await?;
+
+        Ok(())
+    }
+
+    pub async fn all_older_than(
+        db: &mut PoolConnection<Sqlite>,
+        created_time_ms: u64,
+    ) -> Result<Vec<UserAccount>, sqlx::Error> {
+        let created_time_ms_i64: i64 = created_time_ms.try_into().unwrap();
+
+        let user_accounts = sqlx::query!(
+            "
+select *
+from
+ useraccounts
+WHERE
+ created_time_ms < ?
+AND
+ NOT paid
+;",
+            created_time_ms_i64,
+        )
+        .fetch(&mut **db)
+        .map_ok(|r| UserAccount {
+            id: Some(r.id.try_into().unwrap()),
+            user_id: r.user_id.try_into().unwrap(),
+            amount_owed_sat: r.amount_owed_sat.try_into().unwrap(),
+            paid: r.paid.try_into().unwrap(),
+            disabled: r.disabled.try_into().unwrap(),
+            invoice_payment_request: r.invoice_payment_request.try_into().unwrap(),
+            invoice_hash: r.invoice_hash.try_into().unwrap(),
+            created_time_ms: r.created_time_ms.try_into().unwrap(),
+            payment_time_ms: r.payment_time_ms.try_into().unwrap(),
+        })
+        .try_collect::<Vec<_>>()
+        .await?;
+
+        Ok(user_accounts)
+    }
+
+    pub async fn delete_expired_user_account(
+        db: &mut PoolConnection<Sqlite>,
+        user_account_id: i32,
+        cancel_user_account_invoice_future: impl Future<
+            Output = Result<tonic_openssl_lnd::invoicesrpc::CancelInvoiceResp, String>,
+        >,
+    ) -> Result<(), String> {
+        let mut tx = db
+            .begin()
+            .await
+            .map_err(|_| "failed to begin transaction.")?;
+
+        sqlx::query!(
+            "
+DELETE FROM useraccounts
+WHERE
+ id = ?
+AND
+ NOT paid
+;",
+            user_account_id,
+        )
+        .execute(&mut *tx)
+        .await
+        .map_err(|_| "failed to delete user account from database.")?;
+
+        sqlx::query!(
+            "
+DELETE FROM users
+WHERE
+ id = ?
+;",
+            user_account_id,
+        )
+        .execute(&mut *tx)
+        .await
+        .map_err(|_| "failed to delete user from database.")?;
+
+        cancel_user_account_invoice_future
+            .await
+            .map_err(|e| format!("failed to cancel user account invoice: {:?}", e))?;
+
+        tx.commit()
+            .await
+            .map_err(|_| "failed to begin transaction.")?;
 
         Ok(())
     }

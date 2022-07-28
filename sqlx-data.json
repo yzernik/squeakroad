@@ -774,6 +774,16 @@
     },
     "query": "\nselect\n listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.deactivated_by_seller, listings.deactivated_by_admin, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username\nfrom\n listings\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nINNER JOIN\n users\nON\n listings.user_id = users.id\nWHERE\n listings.approved\nAND\n listings.reviewed\nAND\n NOT (listings.deactivated_by_seller OR listings.deactivated_by_admin)\nAND\n users.id = ?\nGROUP BY\n listings.id\nORDER BY listings.created_time_ms DESC\nLIMIT ?\nOFFSET ?\n;"
   },
+  "40411324ade12e257749deca1b068d3f75c94291aaf050e9b7d2b544b0f76969": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\nDELETE FROM users\nWHERE\n id = ?\n;"
+  },
   "417b70b0cf983b0616d03dd8124beb47fe91119a93e062978c002bfde68ddd7a": {
     "describe": {
       "columns": [],
@@ -793,6 +803,16 @@
       }
     },
     "query": "\nDELETE from listingimages\nWHERE\n listing_id = ?\n;"
+  },
+  "4581b6627dbe08d26e98ee5c96a687158b252d03ea6093e3b5c97af9d223f3d5": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\nDELETE FROM useraccounts\nWHERE\n id = ?\nAND\n NOT paid\n;"
   },
   "4a904d9675c25971e6efb6356aa13ad1c515f7d95a9807e524e627c7ce3e7078": {
     "describe": {
@@ -1599,24 +1619,6 @@
       }
     },
     "query": "UPDATE adminsettings SET market_name = ?"
-  },
-  "850ae23325f0b36e9b25d446dc28d633a435fb03ac3b11771b633632b49b4afd": {
-    "describe": {
-      "columns": [
-        {
-          "name": "invoice_hash",
-          "ordinal": 0,
-          "type_info": "Text"
-        }
-      ],
-      "nullable": [
-        false
-      ],
-      "parameters": {
-        "Right": 0
-      }
-    },
-    "query": "\nSELECT\n invoice_hash\nFROM\n(SELECT invoice_hash, payment_time_ms FROM useraccounts\n UNION ALL\nSELECT invoice_hash, payment_time_ms FROM orders)\nWHERE\n payment_time_ms = (SELECT MAX(payment_time_ms) FROM orders)\nLIMIT 1\n;"
   },
   "88bd66872045161c59db2a2eb7d828bb3fd56a96dbe99d9773a89b0d7b935538": {
     "describe": {
@@ -2988,6 +2990,24 @@
     },
     "query": "\nselect count(id) as withdrawal_count from withdrawals\nWHERE\n user_id = ?\nAND\n created_time_ms > ?\nORDER BY withdrawals.created_time_ms ASC;"
   },
+  "b76de8f341da55e0ebd2f7a7faf256f9be6feb7d5e47885ecb29cee40bbe21e9": {
+    "describe": {
+      "columns": [
+        {
+          "name": "invoice_hash",
+          "ordinal": 0,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "\nSELECT\n invoice_hash\nFROM\n(SELECT invoice_hash, payment_time_ms FROM useraccounts\n UNION ALL\nSELECT invoice_hash, payment_time_ms FROM orders)\nWHERE\n payment_time_ms = (SELECT MAX(payment_time_ms) FROM\n(SELECT invoice_hash, payment_time_ms FROM useraccounts\n UNION ALL\nSELECT invoice_hash, payment_time_ms FROM orders))\nLIMIT 1\n;"
+  },
   "bb5769287269603a778c9785e1db81f3df42862aca7f641759c65d17eece1322": {
     "describe": {
       "columns": [],
@@ -3045,6 +3065,72 @@
       }
     },
     "query": "select * from adminsettings;"
+  },
+  "c08c9b70c1af03a3aaa0a00d41467e760b97b39954476196648773166275797b": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        },
+        {
+          "name": "amount_owed_sat",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "paid",
+          "ordinal": 3,
+          "type_info": "Bool"
+        },
+        {
+          "name": "disabled",
+          "ordinal": 4,
+          "type_info": "Bool"
+        },
+        {
+          "name": "invoice_payment_request",
+          "ordinal": 5,
+          "type_info": "Text"
+        },
+        {
+          "name": "invoice_hash",
+          "ordinal": 6,
+          "type_info": "Text"
+        },
+        {
+          "name": "created_time_ms",
+          "ordinal": 7,
+          "type_info": "Int64"
+        },
+        {
+          "name": "payment_time_ms",
+          "ordinal": 8,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\nselect *\nfrom\n useraccounts\nWHERE\n created_time_ms < ?\nAND\n NOT paid\n;"
   },
   "c6546f3763831dd89341d505a13eb492a3a434cfe5218ee02617502099344607": {
     "describe": {

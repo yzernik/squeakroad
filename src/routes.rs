@@ -2,6 +2,7 @@ use crate::config::Config;
 use crate::db::Db;
 use crate::order_expiry;
 use crate::payment_processor;
+use crate::user_account_expiry;
 use rocket::fairing::{self, AdHoc};
 use rocket::fs::{relative, FileServer};
 use rocket::{Build, Rocket};
@@ -11,7 +12,8 @@ use rocket_db_pools::{sqlx, Database};
 use rocket_dyn_templates::Template;
 
 const PAYMENT_PROCESSOR_TASK_INTERVAL_S: u64 = 10;
-const ORDER_EXPIRY_TASK_INTERVAL_S: u64 = 600;
+// const ORDER_EXPIRY_TASK_INTERVAL_S: u64 = 600;
+const ORDER_EXPIRY_TASK_INTERVAL_S: u64 = 60;
 
 async fn run_migrations(rocket: Rocket<Build>) -> fairing::Result {
     match Db::fetch(&rocket) {
@@ -68,6 +70,7 @@ pub fn stage(config: Config) -> AdHoc {
     let config_clone = config.clone();
     let config_clone_2 = config.clone();
     let config_clone_3 = config.clone();
+    let config_clone_4 = config.clone();
 
     AdHoc::on_ignite("SQLx Stage", |rocket| async {
         rocket
@@ -131,6 +134,7 @@ pub fn stage(config: Config) -> AdHoc {
                         );
                         loop {
                             if let Ok(conn) = pool.acquire().await {
+                                // Remove expired orders
                                 match order_expiry::remove_expired_orders(
                                     config_clone_3.clone(),
                                     conn,
@@ -146,6 +150,41 @@ pub fn stage(config: Config) -> AdHoc {
                     });
                 })
             }))
+            .attach(AdHoc::on_liftoff(
+                "Remove expired user accounts",
+                |rocket| {
+                    Box::pin(async move {
+                        let pool = match Db::fetch(rocket) {
+                            Some(pool) => pool.0.clone(), // clone the wrapped pool
+                            None => panic!("failed to get db for background task."),
+                        };
+                        rocket::tokio::spawn(async move {
+                            let mut interval = rocket::tokio::time::interval(
+                                rocket::tokio::time::Duration::from_secs(
+                                    ORDER_EXPIRY_TASK_INTERVAL_S,
+                                ),
+                            );
+                            loop {
+                                if let Ok(conn) = pool.acquire().await {
+                                    // Remove expired orders
+                                    match user_account_expiry::remove_expired_user_accounts(
+                                        config_clone_4.clone(),
+                                        conn,
+                                    )
+                                    .await
+                                    {
+                                        Ok(_) => (),
+                                        Err(e) => {
+                                            println!("user account expiry task failed: {:?}", e)
+                                        }
+                                    }
+                                }
+                                interval.tick().await;
+                            }
+                        });
+                    })
+                },
+            ))
             .attach(Template::fairing())
             .mount("/", FileServer::from(relative!("static")))
             .attach(crate::about::about_stage())

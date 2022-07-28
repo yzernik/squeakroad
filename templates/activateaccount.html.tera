@@ -30,6 +30,7 @@
 
 	{% if user_account.paid %}
         <p><b>Payment time</b>: {{ (user_account.payment_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}</p>
+	<p><a href="/">Continue as activated user</a></p>
 	{% else %}
 	<p><b>Payment request</b>:<p>
 	  <img src="data:image/bmp;base64,{{ qr_svg_base64 }}" style="width:256px;height:256px;" />

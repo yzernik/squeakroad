@@ -19,11 +19,14 @@ pub async fn handle_received_payments(
     .await
     .map_err(|e| format!("failed to get lightning client: {:?}", e))?;
 
-    let settle_index = get_latest_settle_index(&mut conn, &mut lightning_client).await?;
+    let latest_settle_index = get_latest_settle_index(&mut conn, &mut lightning_client).await?;
 
-    println!("Starting subscribe invoices...");
+    println!(
+        "Starting subscribe invoices with latest settle index: {:?}",
+        latest_settle_index
+    );
     let invoice_subscription = tonic_openssl_lnd::lnrpc::InvoiceSubscription {
-        settle_index,
+        settle_index: latest_settle_index,
         ..Default::default()
     };
     let mut update_stream = lightning_client
