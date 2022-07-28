@@ -1,6 +1,7 @@
 use crate::base::BaseContext;
 use crate::db::Db;
 use crate::models::{SqueaknodeInfoInput, UserSettings};
+use crate::user_account::ActiveUser;
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
 use rocket::request::FlashMessage;
@@ -44,12 +45,12 @@ impl Context {
 async fn update(
     squeaknode_info_form: Form<SqueaknodeInfoInput>,
     mut db: Connection<Db>,
-    user: User,
+    active_user: ActiveUser,
     _admin_user: Option<AdminUser>,
 ) -> Flash<Redirect> {
     let squeaknode_info = squeaknode_info_form.into_inner();
 
-    match change_squeaknode_info(user, squeaknode_info, &mut db).await {
+    match change_squeaknode_info(active_user.user, squeaknode_info, &mut db).await {
         Ok(_) => Flash::success(
             Redirect::to(uri!("/update_user_squeaknode_info", index())),
             "Squeaknode info successfully updated.",
@@ -90,13 +91,13 @@ async fn change_squeaknode_info(
 async fn index(
     flash: Option<FlashMessage<'_>>,
     db: Connection<Db>,
-    user: User,
+    active_user: ActiveUser,
     admin_user: Option<AdminUser>,
 ) -> Template {
     let flash = flash.map(FlashMessage::into_inner);
     Template::render(
         "updateusersqueaknodeinfo",
-        Context::raw(db, flash, user, admin_user).await,
+        Context::raw(db, flash, active_user.user, admin_user).await,
     )
 }
 

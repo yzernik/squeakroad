@@ -2,6 +2,7 @@ use crate::base::BaseContext;
 use crate::db::Db;
 use crate::models::FileUploadForm;
 use crate::models::{Listing, ListingDisplay, ListingImage};
+use crate::user_account::ActiveUser;
 use crate::util;
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
@@ -54,13 +55,13 @@ async fn new(
     id: &str,
     upload_image_form: Form<FileUploadForm<'_>>,
     mut db: Connection<Db>,
-    user: User,
+    active_user: ActiveUser,
     admin_user: Option<AdminUser>,
 ) -> Flash<Redirect> {
     let image_info = upload_image_form.into_inner();
     let file = image_info.file;
 
-    match upload_image(id, file, &mut db, user, admin_user).await {
+    match upload_image(id, file, &mut db, active_user.user, admin_user).await {
         Ok(_) => Flash::success(
             Redirect::to(uri!("/update_listing_images", index(id))),
             "Listing image successfully added.",
@@ -131,10 +132,17 @@ async fn delete(
     id: &str,
     image_id: &str,
     mut db: Connection<Db>,
-    user: User,
+    active_user: ActiveUser,
     admin_user: Option<AdminUser>,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
-    match delete_image_with_public_id(id, image_id, &mut db, user.clone(), admin_user.clone()).await
+    match delete_image_with_public_id(
+        id,
+        image_id,
+        &mut db,
+        active_user.user.clone(),
+        admin_user.clone(),
+    )
+    .await
     {
         Ok(_) => Ok(Flash::success(
             Redirect::to(uri!("/update_listing_images", index(id))),
@@ -186,10 +194,18 @@ async fn set_primary(
     id: &str,
     image_id: &str,
     mut db: Connection<Db>,
-    user: User,
+    active_user: ActiveUser,
     admin_user: Option<AdminUser>,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
-    match mark_as_primary(id, image_id, &mut db, user.clone(), admin_user.clone()).await {
+    match mark_as_primary(
+        id,
+        image_id,
+        &mut db,
+        active_user.user.clone(),
+        admin_user.clone(),
+    )
+    .await
+    {
         Ok(_) => Ok(Flash::success(
             Redirect::to(uri!("/update_listing_images", index(id))),
             "Image was marked as primary.",
@@ -240,13 +256,13 @@ async fn index(
     flash: Option<FlashMessage<'_>>,
     id: &str,
     db: Connection<Db>,
-    user: User,
+    active_user: ActiveUser,
     admin_user: Option<AdminUser>,
 ) -> Template {
     let flash = flash.map(FlashMessage::into_inner);
     Template::render(
         "updatelistingimages",
-        Context::raw(db, id, flash, user, admin_user).await,
+        Context::raw(db, id, flash, active_user.user, admin_user).await,
     )
 }
 

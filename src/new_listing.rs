@@ -48,11 +48,11 @@ impl Context {
 async fn new(
     listing_form: Form<InitialListingInfo>,
     mut db: Connection<Db>,
-    user: User,
+    active_user: ActiveUser,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
     let listing_info = listing_form.into_inner();
 
-    match create_listing(listing_info, &mut db, user.clone()).await {
+    match create_listing(listing_info, &mut db, active_user.user.clone()).await {
         Ok(listing_id) => Ok(Flash::success(
             Redirect::to(format!("/{}/{}", "listing", listing_id)),
             "Listing successfully added.",
@@ -140,16 +140,15 @@ async fn create_listing(
 async fn index(
     flash: Option<FlashMessage<'_>>,
     db: Connection<Db>,
-    user: User,
-    admin_user: Option<AdminUser>,
     active_user: ActiveUser,
+    admin_user: Option<AdminUser>,
 ) -> Template {
     println!("active_user: {:?}", active_user);
 
     let flash = flash.map(FlashMessage::into_inner);
     Template::render(
         "newlisting",
-        Context::raw(flash, db, Some(user), admin_user).await,
+        Context::raw(flash, db, Some(active_user.user), admin_user).await,
     )
 }
 

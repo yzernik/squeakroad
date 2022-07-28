@@ -1,6 +1,7 @@
 use crate::base::BaseContext;
 use crate::db::Db;
 use crate::models::{Listing, ListingDisplay, ShippingOption};
+use crate::user_account::ActiveUser;
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::response::Flash;
@@ -65,9 +66,9 @@ impl Context {
 async fn submit(
     id: &str,
     mut db: Connection<Db>,
-    user: User,
+    active_user: ActiveUser,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
-    match submit_listing(&mut db, id, user).await {
+    match submit_listing(&mut db, id, active_user.user).await {
         Ok(_) => Ok(Flash::success(
             Redirect::to(uri!("/listing", index(id))),
             "Marked as submitted".to_string(),
@@ -109,7 +110,7 @@ async fn submit_listing(db: &mut Connection<Db>, id: &str, user: User) -> Result
 async fn approve(
     id: &str,
     mut db: Connection<Db>,
-    _user: User,
+    _active_user: ActiveUser,
     _admin_user: AdminUser,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
     match approve_listing(&mut db, id).await {
@@ -145,7 +146,7 @@ async fn approve_listing(db: &mut Connection<Db>, id: &str) -> Result<(), String
 async fn reject(
     id: &str,
     mut db: Connection<Db>,
-    _user: User,
+    _active_user: ActiveUser,
     _admin_user: AdminUser,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
     match reject_listing(&mut db, id).await {
@@ -181,7 +182,7 @@ async fn reject_listing(db: &mut Connection<Db>, id: &str) -> Result<(), String>
 async fn admin_deactivate(
     id: &str,
     mut db: Connection<Db>,
-    _user: User,
+    _active_user: ActiveUser,
     _admin_user: AdminUser,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
     match deactivate_listing_as_admin(&mut db, id).await {
@@ -200,10 +201,10 @@ async fn admin_deactivate(
 async fn deactivate(
     id: &str,
     mut db: Connection<Db>,
-    user: User,
+    active_user: ActiveUser,
     _admin_user: Option<AdminUser>,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
-    match deactivate_listing_as_seller(&mut db, id, user).await {
+    match deactivate_listing_as_seller(&mut db, id, active_user.user).await {
         Ok(_) => Ok(Flash::success(
             Redirect::to(uri!("/listing", index(id))),
             "Marked as deactivated by seller".to_string(),

@@ -70,7 +70,7 @@ async fn new(
     id: &str,
     order_form: Form<OrderInfo>,
     mut db: Connection<Db>,
-    user: User,
+    active_user: ActiveUser,
     _admin_user: Option<AdminUser>,
     config: &State<Config>,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
@@ -80,7 +80,7 @@ async fn new(
         id,
         order_info.clone(),
         &mut db,
-        user.clone(),
+        active_user.user.clone(),
         config.inner().clone(),
     )
     .await

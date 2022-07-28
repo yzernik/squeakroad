@@ -3,6 +3,7 @@ use crate::config::Config;
 use crate::db::Db;
 use crate::lightning;
 use crate::models::{AccountInfo, Withdrawal, WithdrawalInfo};
+use crate::user_account::ActiveUser;
 use crate::util;
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
@@ -52,7 +53,7 @@ impl Context {
 async fn new(
     withdrawal_form: Form<WithdrawalInfo>,
     mut db: Connection<Db>,
-    user: User,
+    active_user: ActiveUser,
     _admin_user: Option<AdminUser>,
     config: &State<Config>,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
@@ -60,7 +61,7 @@ async fn new(
     match withdraw(
         withdrawal_info.clone(),
         &mut db,
-        user.clone(),
+        active_user.user.clone(),
         config.inner().clone(),
     )
     .await
@@ -162,11 +163,14 @@ async fn send_withdrawal_funds(
 async fn index(
     flash: Option<FlashMessage<'_>>,
     db: Connection<Db>,
-    user: User,
+    active_user: ActiveUser,
     admin_user: Option<AdminUser>,
 ) -> Template {
     let flash = flash.map(FlashMessage::into_inner);
-    Template::render("withdraw", Context::raw(db, flash, user, admin_user).await)
+    Template::render(
+        "withdraw",
+        Context::raw(db, flash, active_user.user, admin_user).await,
+    )
 }
 
 pub fn withdraw_stage() -> AdHoc {

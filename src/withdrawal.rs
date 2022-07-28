@@ -1,6 +1,7 @@
 use crate::base::BaseContext;
 use crate::db::Db;
 use crate::models::{RocketAuthUser, Withdrawal};
+use crate::user_account::ActiveUser;
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::serde::Serialize;
@@ -51,11 +52,11 @@ async fn index(
     flash: Option<FlashMessage<'_>>,
     id: &str,
     db: Connection<Db>,
-    user: User,
+    active_user: ActiveUser,
     admin_user: Option<AdminUser>,
 ) -> Template {
     let flash = flash.map(FlashMessage::into_inner);
-    let context = match Context::raw(db, id, flash, user, admin_user).await {
+    let context = match Context::raw(db, id, flash, active_user.user, admin_user).await {
         Ok(ctx) => ctx,
         Err(e) => {
             error!("{}", e);

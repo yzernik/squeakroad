@@ -1,6 +1,7 @@
 use crate::base::BaseContext;
 use crate::db::Db;
 use crate::models::{PGPInfoInput, UserSettings};
+use crate::user_account::ActiveUser;
 use pgp::Deserializable;
 use pgp::SignedPublicKey;
 use rocket::fairing::AdHoc;
@@ -46,12 +47,12 @@ impl Context {
 async fn update(
     pgp_info_form: Form<PGPInfoInput>,
     mut db: Connection<Db>,
-    user: User,
+    active_user: ActiveUser,
     _admin_user: Option<AdminUser>,
 ) -> Flash<Redirect> {
     let pgp_info = pgp_info_form.into_inner();
 
-    match change_pgp_info(user, pgp_info, &mut db).await {
+    match change_pgp_info(active_user.user, pgp_info, &mut db).await {
         Ok(_) => Flash::success(
             Redirect::to(uri!("/update_user_pgp_info", index())),
             "PGP info successfully updated.",
@@ -79,13 +80,13 @@ async fn change_pgp_info(
 async fn index(
     flash: Option<FlashMessage<'_>>,
     db: Connection<Db>,
-    user: User,
+    active_user: ActiveUser,
     admin_user: Option<AdminUser>,
 ) -> Template {
     let flash = flash.map(FlashMessage::into_inner);
     Template::render(
         "updateuserpgpinfo",
-        Context::raw(db, flash, user, admin_user).await,
+        Context::raw(db, flash, active_user.user, admin_user).await,
     )
 }
 
