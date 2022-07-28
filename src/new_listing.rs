@@ -2,6 +2,7 @@ use crate::base::BaseContext;
 use crate::db::Db;
 use crate::models::AdminSettings;
 use crate::models::{InitialListingInfo, Listing};
+use crate::user_account::ActiveUser;
 use crate::util;
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
@@ -141,7 +142,10 @@ async fn index(
     db: Connection<Db>,
     user: User,
     admin_user: Option<AdminUser>,
+    active_user: ActiveUser,
 ) -> Template {
+    println!("active_user: {:?}", active_user);
+
     let flash = flash.map(FlashMessage::into_inner);
     Template::render(
         "newlisting",

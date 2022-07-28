@@ -2904,6 +2904,16 @@
     },
     "query": "\nselect count(id) as withdrawal_count from withdrawals\nWHERE\n user_id = ?\nAND\n created_time_ms > ?\nORDER BY withdrawals.created_time_ms ASC;"
   },
+  "bb5769287269603a778c9785e1db81f3df42862aca7f641759c65d17eece1322": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 8
+      }
+    },
+    "query": "INSERT INTO useraccounts (user_id, amount_owed_sat, paid, disabled, invoice_payment_request, invoice_hash, created_time_ms, payment_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+  },
   "be99d8673183a949c574c4f6ad6dbdc625755f69f860876ee64737ffbb1a9bbf": {
     "describe": {
       "columns": [
@@ -3557,6 +3567,72 @@
       }
     },
     "query": "UPDATE orders SET paid = true, payment_time_ms = ? WHERE id = ?"
+  },
+  "fa267c6ee3582da2759f0b5227db58e73611f48fd9ccfb1bb9b3dca27079aaba": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        },
+        {
+          "name": "amount_owed_sat",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "paid",
+          "ordinal": 3,
+          "type_info": "Bool"
+        },
+        {
+          "name": "disabled",
+          "ordinal": 4,
+          "type_info": "Bool"
+        },
+        {
+          "name": "invoice_payment_request",
+          "ordinal": 5,
+          "type_info": "Text"
+        },
+        {
+          "name": "invoice_hash",
+          "ordinal": 6,
+          "type_info": "Text"
+        },
+        {
+          "name": "created_time_ms",
+          "ordinal": 7,
+          "type_info": "Int64"
+        },
+        {
+          "name": "payment_time_ms",
+          "ordinal": 8,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "select * from useraccounts WHERE user_id = ?;"
   },
   "fd259d3f6df1cc10ef3a0874ac1da595c1cee9fab81b486c52fd5700c71180c3": {
     "describe": {

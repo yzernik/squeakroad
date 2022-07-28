@@ -44,6 +44,7 @@ mod update_squeaknode_info;
 mod update_user_pgp_info;
 mod update_user_squeaknode_info;
 mod user;
+mod user_account;
 mod user_profile;
 mod util;
 mod withdraw;

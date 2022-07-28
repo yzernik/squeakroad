@@ -249,6 +249,20 @@ pub struct SellerInfo {
     pub weighted_average_rating: f32,
 }
 
+#[derive(Serialize, Debug, Clone)]
+#[serde(crate = "rocket::serde")]
+pub struct UserAccount {
+    pub id: Option<i32>,
+    pub user_id: i32,
+    pub amount_owed_sat: u64,
+    pub paid: bool,
+    pub disabled: bool,
+    pub invoice_hash: String,
+    pub invoice_payment_request: String,
+    pub created_time_ms: u64,
+    pub payment_time_ms: u64,
+}
+
 impl Default for AdminSettings {
     fn default() -> AdminSettings {
         AdminSettings {
@@ -3090,5 +3104,52 @@ impl AdminInfo {
         Ok(AdminInfo {
             num_pending_listings,
         })
+    }
+}
+
+impl UserAccount {
+    /// Returns the id of the inserted row.
+    pub async fn insert(
+        user_account: UserAccount,
+        db: &mut Connection<Db>,
+    ) -> Result<i32, sqlx::Error> {
+        let amount_owed_sat: i64 = user_account.amount_owed_sat.try_into().unwrap();
+        let created_time_ms: i64 = user_account.created_time_ms.try_into().unwrap();
+        let payment_time_ms: i64 = user_account.payment_time_ms.try_into().unwrap();
+
+        let insert_result = sqlx::query!(
+            "INSERT INTO useraccounts (user_id, amount_owed_sat, paid, disabled, invoice_payment_request, invoice_hash, created_time_ms, payment_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            user_account.user_id,
+            amount_owed_sat,
+            user_account.paid,
+            user_account.disabled,
+            user_account.invoice_payment_request,
+            user_account.invoice_hash,
+            created_time_ms,
+            payment_time_ms,
+        )
+            .execute(&mut **db)
+            .await?;
+
+        Ok(insert_result.last_insert_rowid() as _)
+    }
+
+    pub async fn single(db: &mut Connection<Db>, id: i32) -> Result<UserAccount, sqlx::Error> {
+        let listing = sqlx::query!("select * from useraccounts WHERE user_id = ?;", id)
+            .fetch_one(&mut **db)
+            .map_ok(|r| UserAccount {
+                id: Some(r.id.try_into().unwrap()),
+                user_id: r.user_id.try_into().unwrap(),
+                amount_owed_sat: r.amount_owed_sat.try_into().unwrap(),
+                paid: r.paid.try_into().unwrap(),
+                disabled: r.disabled.try_into().unwrap(),
+                invoice_payment_request: r.invoice_payment_request.try_into().unwrap(),
+                invoice_hash: r.invoice_hash.try_into().unwrap(),
+                created_time_ms: r.created_time_ms.try_into().unwrap(),
+                payment_time_ms: r.payment_time_ms.try_into().unwrap(),
+            })
+            .await?;
+
+        Ok(listing)
     }
 }
