@@ -17,46 +17,45 @@ struct Context {
     base_context: BaseContext,
     flash: Option<(String, String)>,
     seller_infos: Vec<SellerInfo>,
+    page_num: u32,
 }
 
 impl Context {
     pub async fn raw(
         flash: Option<(String, String)>,
         mut db: Connection<Db>,
+        maybe_page_num: Option<u32>,
         user: Option<User>,
         admin_user: Option<AdminUser>,
     ) -> Result<Context, String> {
         let base_context = BaseContext::raw(&mut db, user.clone(), admin_user.clone())
             .await
             .map_err(|_| "failed to get base template.")?;
-        let seller_infos_for_all = Order::seller_info_for_all_users(&mut db)
+        let page_num = maybe_page_num.unwrap_or(1);
+        let seller_infos = Order::seller_info_for_all_users(&mut db, PAGE_SIZE, page_num)
             .await
             .map_err(|_| "failed to get seller infos for top users.")?;
-        // Use db query to take only top N sellers.
-        let seller_infos = seller_infos_for_all
-            .iter()
-            .take(PAGE_SIZE.try_into().unwrap())
-            .cloned()
-            .collect::<Vec<_>>();
         Ok(Context {
             base_context,
             flash,
             seller_infos,
+            page_num,
         })
     }
 }
 
-#[get("/")]
+#[get("/?<page_num>")]
 async fn index(
     flash: Option<FlashMessage<'_>>,
     db: Connection<Db>,
+    page_num: Option<u32>,
     user: Option<User>,
     admin_user: Option<AdminUser>,
 ) -> Result<Template, NotFound<String>> {
     let flash = flash.map(FlashMessage::into_inner);
     Ok(Template::render(
         "topsellers",
-        Context::raw(flash, db, user, admin_user).await,
+        Context::raw(flash, db, page_num, user, admin_user).await,
     ))
 }
 
