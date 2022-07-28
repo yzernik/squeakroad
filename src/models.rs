@@ -3263,8 +3263,6 @@ AND
         .await
         .map_err(|_| "failed to delete user account from database.")?;
 
-        println!("deleting user table row with id: {:?}", user_account_id);
-
         sqlx::query!(
             "
 DELETE FROM users
