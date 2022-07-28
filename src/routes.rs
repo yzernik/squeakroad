@@ -91,11 +91,6 @@ pub fn stage(config: Config) -> AdHoc {
                         None => panic!("failed to get db for background task."),
                     };
                     rocket::tokio::spawn(async move {
-                        let mut interval = rocket::tokio::time::interval(
-                            rocket::tokio::time::Duration::from_secs(
-                                PAYMENT_PROCESSOR_TASK_INTERVAL_S,
-                            ),
-                        );
                         loop {
                             if let Ok(conn) = pool.acquire().await {
                                 match payment_processor::handle_received_payments(
@@ -109,12 +104,17 @@ pub fn stage(config: Config) -> AdHoc {
                                     ),
                                     Err(e) => println!("payment processor task failed: {:?}", e),
                                 }
+                                println!(
+                                    "Subscription failed. Trying again in {:?} seconds.",
+                                    PAYMENT_PROCESSOR_TASK_INTERVAL_S
+                                );
+                                rocket::tokio::time::sleep(
+                                    rocket::tokio::time::Duration::from_secs(
+                                        PAYMENT_PROCESSOR_TASK_INTERVAL_S,
+                                    ),
+                                )
+                                .await;
                             }
-                            println!(
-                                "Subscription failed. Trying again in {:?} seconds.",
-                                PAYMENT_PROCESSOR_TASK_INTERVAL_S
-                            );
-                            interval.tick().await;
                         }
                     });
                 })
