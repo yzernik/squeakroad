@@ -1,0 +1,34 @@
+{% extends "base" %}
+{% block body %}
+
+<br>
+
+
+<div class="container">
+  <p><!--Nothing to see here --></p>
+
+  <div class="row">
+    <h4>Update User Bond Price</h4>
+
+    <p>Bond Price: {{ admin_settings.user_bond_price_sat }} sats</p>
+
+    <form action="/update_user_bond_price/change" method="post">
+      <div class="ten columns">
+        <input type="text" placeholder="enter a new user bond price in sats..."
+               name="user_bond_price_sat" id="user_bond_price_sat" value="" autofocus
+               class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" />
+        {% if flash %}
+        <small class="field-{{flash.0}}-msg">
+          {{ flash.1 }}
+        </small>
+        {% endif %}
+      </div>
+      <div class="two columns">
+        <input type="submit" value="Change User Bond Price">
+      </div>
+    </form>
+  </div>
+
+</div>
+
+{% endblock body %}

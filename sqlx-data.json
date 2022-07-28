@@ -3148,6 +3148,16 @@
     },
     "query": "\nselect *\nfrom\n useraccounts\nWHERE\n created_time_ms < ?\nAND\n NOT paid\n;"
   },
+  "c1e4eb4dba045f9a863dd1bff128a621d3c1ada88ea73c8159c15863320b0221": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "UPDATE adminsettings SET user_bond_price_sat = ?"
+  },
   "c6546f3763831dd89341d505a13eb492a3a434cfe5218ee02617502099344607": {
     "describe": {
       "columns": [

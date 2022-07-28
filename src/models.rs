@@ -154,6 +154,11 @@ pub struct FeeRateInput {
     pub fee_rate_basis_points: Option<i32>,
 }
 
+#[derive(Debug, FromForm)]
+pub struct UserBondPriceInput {
+    pub user_bond_price_sat: Option<u64>,
+}
+
 #[derive(Serialize, Debug, Clone)]
 #[serde(crate = "rocket::serde")]
 pub struct Order {
@@ -1548,6 +1553,24 @@ WHERE NOT EXISTS(SELECT 1 FROM adminsettings)
         sqlx::query!(
             "UPDATE adminsettings SET fee_rate_basis_points = ?",
             new_fee_rate_basis_points,
+        )
+        .execute(&mut **db)
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn set_user_bond_price(
+        db: &mut Connection<Db>,
+        new_user_bond_price_sat: u64,
+    ) -> Result<(), sqlx::Error> {
+        let user_bond_price_sat_i64: i64 = new_user_bond_price_sat.try_into().unwrap();
+
+        AdminSettings::insert_if_doesnt_exist(db).await?;
+
+        sqlx::query!(
+            "UPDATE adminsettings SET user_bond_price_sat = ?",
+            user_bond_price_sat_i64,
         )
         .execute(&mut **db)
         .await?;
