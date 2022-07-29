@@ -1,30 +1,15 @@
-use crate::base::BaseContext;
-use crate::config::Config;
 use crate::db::Db;
-use crate::lightning;
 use crate::models::UserAccount;
-use crate::util;
 use rocket::fairing::AdHoc;
-use rocket::request::FlashMessage;
 use rocket::response::Redirect;
-use rocket::serde::Serialize;
-use rocket::State;
-use rocket_auth::AdminUser;
 use rocket_auth::User;
 use rocket_db_pools::Connection;
-use rocket_dyn_templates::Template;
 
 #[get("/")]
-async fn index(
-    flash: Option<FlashMessage<'_>>,
-    mut db: Connection<Db>,
-    user: Option<User>,
-) -> Result<Redirect, Redirect> {
-    let flash = flash.map(FlashMessage::into_inner);
+async fn index(mut db: Connection<Db>, user: Option<User>) -> Result<Redirect, Redirect> {
     match user {
         Some(user) => {
             let maybe_user_account = UserAccount::single(&mut db, user.id()).await.ok();
-            println!("maybe_user_account: {:?}", maybe_user_account);
             match maybe_user_account {
                 Some(user_account) => Ok(Redirect::to(format!(
                     "/{}/{}",

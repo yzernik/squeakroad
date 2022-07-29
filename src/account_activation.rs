@@ -10,7 +10,6 @@ use rocket::response::Redirect;
 use rocket::serde::Serialize;
 use rocket::State;
 use rocket_auth::AdminUser;
-use rocket_auth::Auth;
 use rocket_auth::User;
 use rocket_auth::Users;
 use rocket_db_pools::Connection;

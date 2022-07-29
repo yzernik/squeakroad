@@ -4,7 +4,6 @@ use crate::db::Db;
 use crate::lightning;
 use crate::models::{UserAccount, WithdrawalInfo};
 use crate::user_account::ActiveUser;
-use crate::util;
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
 use rocket::request::FlashMessage;
@@ -13,7 +12,6 @@ use rocket::response::Redirect;
 use rocket::serde::Serialize;
 use rocket::State;
 use rocket_auth::AdminUser;
-use rocket_auth::Auth;
 use rocket_auth::User;
 use rocket_auth::Users;
 use rocket_db_pools::Connection;
@@ -37,7 +35,6 @@ impl Context {
         user: User,
         user_account: UserAccount,
         admin_user: Option<AdminUser>,
-        config: &Config,
         users: &Users,
     ) -> Result<Context, String> {
         let base_context = BaseContext::raw(&mut db, Some(user.clone()), admin_user.clone())
@@ -91,12 +88,9 @@ async fn withdraw_account_deactivation_funds(
     withdrawal_info: WithdrawalInfo,
     user_account: UserAccount,
     db: &mut Connection<Db>,
-    user: User,
+    _user: User,
     config: Config,
 ) -> Result<(), String> {
-    let now = util::current_time_millis();
-    let one_day_in_ms = 24 * 60 * 60 * 1000;
-
     if withdrawal_info.invoice_payment_request.is_empty() {
         return Err("Invoice payment request cannot be empty.".to_string());
     };
@@ -171,7 +165,6 @@ async fn index(
     db: Connection<Db>,
     active_user: ActiveUser,
     admin_user: Option<AdminUser>,
-    config: &State<Config>,
     users: &State<Users>,
 ) -> Template {
     let flash = flash.map(FlashMessage::into_inner);
@@ -183,7 +176,6 @@ async fn index(
             active_user.user,
             active_user.user_account,
             admin_user,
-            config,
             users,
         )
         .await,
