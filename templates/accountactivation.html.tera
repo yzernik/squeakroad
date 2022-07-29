@@ -16,8 +16,9 @@
 	</small>
 	{% endif %}
 
-	<h3>Activate Account</h3>
+	<h3>Account Activation</h3>
 
+	<p><b>User</b>: {% if maybe_account_user %}<a href="/user/{{ maybe_account_user.email }}">{{ maybe_account_user.email }}</a>{% else %}Not found{% endif %}</p>
 	<p><b>Status</b>:
 	  {% if not user_account.paid %}
 	  Not paid

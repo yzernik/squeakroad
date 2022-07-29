@@ -24,7 +24,7 @@
 {% elif account_balance_change.event_type == "withdrawal" %}
 /withdrawal/{{ account_balance_change.event_id }}
 {% elif account_balance_change.event_type == "user_activation" %}
-/user_activation/{{ account_balance_change.event_id }}
+/account_activation/{{ account_balance_change.event_id }}
 {% endif %}
 ">{{ account_balance_change.event_id }}</a></td>
     </tr>

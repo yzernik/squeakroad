@@ -6,6 +6,7 @@ mod tests;
 
 mod about;
 mod account;
+mod account_activation;
 mod activate_account;
 mod admin;
 mod auth;

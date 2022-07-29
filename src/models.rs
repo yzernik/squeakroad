@@ -3191,6 +3191,30 @@ impl UserAccount {
         Ok(user_account)
     }
 
+    pub async fn single_by_public_id(
+        db: &mut Connection<Db>,
+        public_id: &str,
+    ) -> Result<UserAccount, sqlx::Error> {
+        let user_account =
+            sqlx::query!("select * from useraccounts WHERE public_id = ?;", public_id)
+                .fetch_one(&mut **db)
+                .map_ok(|r| UserAccount {
+                    id: Some(r.id.try_into().unwrap()),
+                    public_id: r.public_id,
+                    user_id: r.user_id.try_into().unwrap(),
+                    amount_owed_sat: r.amount_owed_sat.try_into().unwrap(),
+                    paid: r.paid,
+                    disabled: r.disabled,
+                    invoice_payment_request: r.invoice_payment_request,
+                    invoice_hash: r.invoice_hash,
+                    created_time_ms: r.created_time_ms.try_into().unwrap(),
+                    payment_time_ms: r.payment_time_ms.try_into().unwrap(),
+                })
+                .await?;
+
+        Ok(user_account)
+    }
+
     pub async fn single_by_invoice_hash(
         db: &mut PoolConnection<Sqlite>,
         invoice_hash: &str,
