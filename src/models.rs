@@ -1626,15 +1626,17 @@ impl AdminSettings {
 
     async fn insert_if_doesnt_exist(db: &mut Connection<Db>) -> Result<(), sqlx::Error> {
         let admin_settings = AdminSettings::default();
+        let user_bond_price_sat_i64: i64 = admin_settings.user_bond_price_sat.try_into().unwrap();
         sqlx::query!(
             "
 INSERT INTO
- adminsettings (market_name, fee_rate_basis_points, pgp_key, squeaknode_pubkey, squeaknode_address)
-SELECT ?, ?, ?, ?, ?
+ adminsettings (market_name, fee_rate_basis_points, user_bond_price_sat, pgp_key, squeaknode_pubkey, squeaknode_address)
+SELECT ?, ?, ?, ?, ?, ?
 WHERE NOT EXISTS(SELECT 1 FROM adminsettings)
 ;",
             admin_settings.market_name,
             admin_settings.fee_rate_basis_points,
+            user_bond_price_sat_i64,
             admin_settings.squeaknode_pubkey,
             admin_settings.pgp_key,
             admin_settings.squeaknode_address,
