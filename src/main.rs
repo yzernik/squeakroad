@@ -17,6 +17,7 @@ mod db;
 mod deactivate_account;
 mod delete_listing;
 mod disabled_users;
+mod image_util;
 mod lightning;
 mod listing;
 mod listings;
