@@ -3370,4 +3370,56 @@ WHERE
 
         Ok(())
     }
+
+    pub async fn do_deactivation(
+        amount_sat: u64,
+        user_account: UserAccount,
+        db: &mut Connection<Db>,
+        send_deactivation_funds_future: impl Future<
+            Output = Result<tonic_openssl_lnd::lnrpc::SendResponse, String>,
+        >,
+    ) -> Result<(), String> {
+        let mut tx = db
+            .begin()
+            .await
+            .map_err(|_| "failed to begin transaction.")?;
+
+        // Insert the new withdrawal.
+        let activation_bond_amount_sat: i64 = user_account.amount_owed_sat.try_into().unwrap();
+        let amount_sat: i64 = amount_sat.try_into().unwrap();
+        let delete_user_account_result = sqlx::query!(
+            "
+DELETE FROM useraccounts
+WHERE user_id = ?
+;",
+            user_account.user_id,
+        )
+        .execute(&mut *tx)
+        .await
+        .map_err(|_| "failed to delete user account.")?;
+        sqlx::query!(
+            "
+DELETE FROM users
+WHERE id = ?
+;",
+            user_account.user_id,
+        )
+        .execute(&mut *tx)
+        .await
+        .map_err(|_| "failed to delete user.")?;
+
+        if activation_bond_amount_sat - amount_sat < 0 {
+            return Err("Insufficient funds for deactivation.".to_string());
+        }
+
+        send_deactivation_funds_future
+            .await
+            .map_err(|e| format!("failed to send deactivation payment: {:?}", e))?;
+
+        tx.commit()
+            .await
+            .map_err(|_| "failed to commit transaction.")?;
+
+        Ok(())
+    }
 }

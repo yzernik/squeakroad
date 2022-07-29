@@ -13,6 +13,7 @@ mod auth;
 mod base;
 mod config;
 mod db;
+mod deactivate_account;
 mod delete_listing;
 mod lightning;
 mod listing;

@@ -1,0 +1,38 @@
+{% extends "base" %}
+{% block body %}
+
+<div class="container">
+  <p><!--Nothing to see here --></p>
+
+  <div class="row">
+
+    {% if flash %}
+    <small class="field-{{flash.0}}-msg">
+      {{ flash.1 }}
+    </small>
+    {% endif %}
+
+    <h3>Deactivate Account</h3>
+    <p>This action is permanent. Once you deactivate your account, you will not be able to access your account anymore.</p>
+    <p>Be sure to withdraw all funds from your account before deactivating.</p>
+    <p>When you are ready to deactive, you can submit a payment request for the amount of your account activation bond.</p>
+
+    <p><a href="/my_account_balance">View Account Balance</a></p>
+
+    <p><b>Account Activation Deposit</b>: {{ user_account.amount_owed_sat }} sats</p>
+
+    <form action="/deactivate_account/new" method="post">
+      <div class="ten columns">
+        <input type="text" placeholder="enter a lightning invoice payment request..."
+	       name="invoice_payment_request" id="invoice_payment_request" value="" autofocus
+	       class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" />
+      </div>
+      <div class="two columns">
+        <input type="submit" value="deactivate account">
+      </div>
+    </form>
+
+  </div>
+</div>
+
+{% endblock body %}
