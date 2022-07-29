@@ -17,8 +17,6 @@ use rocket_auth::AdminUser;
 use rocket_auth::User;
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
-use std::time::SystemTime;
-use std::time::UNIX_EPOCH;
 
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -115,10 +113,7 @@ async fn create_order(
     let shipping_option = ShippingOption::single_by_public_id(db, &order_info.shipping_option_id)
         .await
         .map_err(|_| "failed to get shipping option.")?;
-    let now = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap()
-        .as_millis() as u64;
+    let now = util::current_time_millis();
     let shipping_instructions = order_info.shipping_instructions;
     let quantity = order_info.quantity.unwrap_or(0);
 
