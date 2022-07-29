@@ -15,6 +15,9 @@
 <a href="withdraw">Withdraw Funds</a>
 <br>
 
+<a href="/account_activation/{{ user_account.public_id }}">Account Activation</a>
+<br>
+
 
 <div class="container">
   <p><!--Nothing to see here --></p>
