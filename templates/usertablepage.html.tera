@@ -1,0 +1,46 @@
+<table class="u-full-width">
+  <thead>
+    <tr>
+      <th>Username</th>
+      <th>Creation Time</th>
+      <th>User Bond Amount</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+
+  {% for card in user_cards %}
+  <tbody>
+    <tr>
+      <td>
+	<a href="/user/{{ card.user.username }}">
+	  {{ card.user.username }}
+	</a>
+      </td>
+      <td>
+	{{ (card.user_account.created_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}
+      </td>
+      <td>
+	{{ card.user_account.amount_owed_sat }} sats
+      </td>
+      <td>
+	{% if  card.user_account.disabled %}Disabled{% else %}Active{% endif %}
+      </td>
+    </tr>
+  </tbody>
+  {% endfor %}
+</table>
+
+
+{% if page_num > 1 %}
+<form class="inline" action="" method="get">
+  <input type="hidden" id="page_num" name="page_num" value="{{ page_num - 1 }}">
+  <button class="link" type="submit">Prev</button>
+</form>
+{% else %}
+Prev
+{% endif %}
+<span> - Page {{ page_num }} - </span>
+<form class="inline" action="" method="get">
+  <input type="hidden" id="page_num" name="page_num" value="{{ page_num + 1 }}">
+  <button class="link" type="submit">Next</button>
+</form>

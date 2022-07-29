@@ -9,6 +9,7 @@ mod account;
 mod account_activation;
 mod activate_account;
 mod admin;
+mod all_users;
 mod auth;
 mod base;
 mod config;
