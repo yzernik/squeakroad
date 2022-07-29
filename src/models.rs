@@ -297,7 +297,16 @@ impl Default for UserSettings {
 
 impl Listing {
     /// Returns the id of the inserted row.
-    pub async fn insert(listing: Listing, db: &mut Connection<Db>) -> Result<i32, sqlx::Error> {
+    pub async fn insert(
+        listing: Listing,
+        max_unapproved_listings: u32,
+        db: &mut Connection<Db>,
+    ) -> Result<i32, String> {
+        let mut tx = db
+            .begin()
+            .await
+            .map_err(|_| "failed to begin transaction.")?;
+
         let price_sat: i64 = listing.price_sat.try_into().unwrap();
         let created_time_ms: i64 = listing.created_time_ms.try_into().unwrap();
 
@@ -316,8 +325,38 @@ impl Listing {
             listing.deactivated_by_admin,
             created_time_ms,
         )
-            .execute(&mut **db)
-            .await?;
+            .execute(&mut *tx)
+            .await
+            .map_err(|_| "failed to insert new listing.")?;
+
+        let num_unapproved_listings = sqlx::query!(
+            "
+select
+ COUNT(listings.id) as num_unapproved_listings
+from
+ listings
+WHERE
+ listings.user_id = ?
+AND
+ NOT listings.approved
+;",
+            listing.user_id,
+        )
+        .fetch_one(&mut *tx)
+        .map_ok(|r| r.num_unapproved_listings as u32)
+        .await
+        .map_err(|_| "failed to get count of unapproved listings.")?;
+
+        if num_unapproved_listings > max_unapproved_listings {
+            return Err(format!(
+                "more than {:?} unapproved listings not allowed.",
+                max_unapproved_listings
+            ));
+        }
+
+        tx.commit()
+            .await
+            .map_err(|_| "failed to commit transaction.")?;
 
         Ok(insert_result.last_insert_rowid() as _)
     }
@@ -450,31 +489,6 @@ AND NOT (deactivated_by_seller OR deactivated_by_admin)
         .execute(&mut **db)
         .await?;
         Ok(())
-    }
-
-    pub async fn count_for_user_since_time_ms(
-        db: &mut Connection<Db>,
-        user_id: i32,
-        start_time_ms: u64,
-    ) -> Result<u32, sqlx::Error> {
-        let start_time_ms_i64: i64 = start_time_ms.try_into().unwrap();
-
-        let listing_count = sqlx::query!(
-            "
-select count(id) as listing_count from listings
-WHERE
- user_id = ?
-AND
- created_time_ms > ?
-ORDER BY listings.created_time_ms ASC;",
-            user_id,
-            start_time_ms_i64,
-        )
-        .fetch_one(&mut **db)
-        .map_ok(|r| r.listing_count)
-        .await?;
-
-        Ok(listing_count.try_into().unwrap())
     }
 
     pub async fn num_pending(db: &mut Connection<Db>) -> Result<u32, sqlx::Error> {

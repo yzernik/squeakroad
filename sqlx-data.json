@@ -1840,6 +1840,24 @@
     },
     "query": "UPDATE adminsettings SET market_name = ?"
   },
+  "856abbf24892e4e130199bd2ea8431884e251f991342693ad9b969ade91291f4": {
+    "describe": {
+      "columns": [
+        {
+          "name": "num_unapproved_listings",
+          "ordinal": 0,
+          "type_info": "Int"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\nselect\n COUNT(listings.id) as num_unapproved_listings\nfrom\n listings\nWHERE\n listings.user_id = ?\nAND\n NOT listings.approved\n;"
+  },
   "88bd66872045161c59db2a2eb7d828bb3fd56a96dbe99d9773a89b0d7b935538": {
     "describe": {
       "columns": [
@@ -2851,24 +2869,6 @@
       }
     },
     "query": "select * from orders WHERE public_id = ?;"
-  },
-  "a3fb13620332abfa1a0d8f2bf50f09de3ab661fbbe0d96dcee225087a94fefe8": {
-    "describe": {
-      "columns": [
-        {
-          "name": "listing_count",
-          "ordinal": 0,
-          "type_info": "Int"
-        }
-      ],
-      "nullable": [
-        false
-      ],
-      "parameters": {
-        "Right": 2
-      }
-    },
-    "query": "\nselect count(id) as listing_count from listings\nWHERE\n user_id = ?\nAND\n created_time_ms > ?\nORDER BY listings.created_time_ms ASC;"
   },
   "a3fe2d4cad9d9d9df3846a058ca50313dc3578cbc863711163aa95a2178d7e44": {
     "describe": {

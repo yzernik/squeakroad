@@ -13,7 +13,7 @@ use rocket_auth::{AdminUser, User};
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
 
-const MAX_LISTINGS_PER_USER_PER_DAY: u32 = 10;
+const MAX_UNAPPROVED_LISTINGS: u32 = 5;
 
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -73,11 +73,6 @@ async fn create_listing(
         .await
         .map_err(|_| "failed to update market name.")?;
     let now = util::current_time_millis();
-    let one_day_in_ms = 24 * 60 * 60 * 1000;
-    let recent_listing_count =
-        Listing::count_for_user_since_time_ms(db, user.id(), now - one_day_in_ms)
-            .await
-            .map_err(|_| "failed to get number of recent listings.")?;
 
     let price_sat = listing_info.price_sat.unwrap_or(0);
 
@@ -95,12 +90,6 @@ async fn create_listing(
     };
     if price_sat == 0 {
         return Err("Price must be a positive number.".to_string());
-    };
-    if recent_listing_count >= MAX_LISTINGS_PER_USER_PER_DAY {
-        return Err(format!(
-            "More than {:?} listings in a single day not allowed.",
-            MAX_LISTINGS_PER_USER_PER_DAY,
-        ));
     };
     if user.is_admin {
         return Err("Admin user cannot create a listing.".to_string());
@@ -121,7 +110,7 @@ async fn create_listing(
         deactivated_by_admin: false,
         created_time_ms: now,
     };
-    match Listing::insert(listing, db).await {
+    match Listing::insert(listing, MAX_UNAPPROVED_LISTINGS, db).await {
         Ok(listing_id) => match Listing::single(db, listing_id).await {
             Ok(new_listing) => Ok(new_listing.public_id),
             Err(e) => {
@@ -131,7 +120,7 @@ async fn create_listing(
         },
         Err(e) => {
             error_!("DB insertion error: {}", e);
-            Err("Listing could not be inserted due an internal error.".to_string())
+            Err(e)
         }
     }
 }
