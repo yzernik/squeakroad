@@ -1,0 +1,20 @@
+{% extends "base" %}
+{% block body %}
+
+<br>
+
+  <div class="container">
+    <p><!--Nothing to see here --></p>
+
+    <div class="row">
+
+      <h3>Disabled Users</h3>
+
+      <div class="twelve columns">
+	{% include "usertablepage" %}
+      </div>
+    </div>
+  </div>
+
+
+{% endblock body %}

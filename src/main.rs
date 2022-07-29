@@ -16,6 +16,7 @@ mod config;
 mod db;
 mod deactivate_account;
 mod delete_listing;
+mod disabled_users;
 mod lightning;
 mod listing;
 mod listings;

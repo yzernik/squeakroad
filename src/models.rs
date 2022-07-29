@@ -3638,4 +3638,60 @@ OFFSET ?
 
         Ok(user_cards)
     }
+
+    pub async fn all_disabled(
+        db: &mut Connection<Db>,
+        page_size: u32,
+        page_num: u32,
+    ) -> Result<Vec<UserCard>, sqlx::Error> {
+        let offset = (page_num - 1) * page_size;
+        let limit = page_size;
+        let user_cards =
+            sqlx::query!("
+select
+ users.id as rocket_auth_user_id, users.email as rocket_auth_user_username, useraccounts.id as useraccounts_id, useraccounts.public_id as useraccounts_public_id, useraccounts.user_id as useraccounts_user_id, useraccounts.amount_owed_sat as useraccounts_amount_owed_sat, useraccounts.paid as useraccounts_paid, useraccounts.disabled as useraccounts_disabled, useraccounts.invoice_payment_request as useraccounts_invoice_payment_request, useraccounts.invoice_hash as useraccounts_invoice_hash, useraccounts.created_time_ms as useraccounts_created_time_ms, useraccounts.payment_time_ms as useraccounts_payment_time_ms
+from
+ users
+INNER JOIN
+ useraccounts
+ON
+ users.id = useraccounts.user_id
+WHERE
+ useraccounts.paid
+AND
+ useraccounts.disabled
+GROUP BY
+ users.id
+ORDER BY useraccounts.created_time_ms DESC
+LIMIT ?
+OFFSET ?
+;", limit, offset)
+            .fetch(&mut **db)
+            .map_ok(|r| {
+                let u = r.rocket_auth_user_id.map(|rocket_auth_user_id| RocketAuthUser {
+                    id: Some(rocket_auth_user_id.try_into().unwrap()),
+                    username: r.rocket_auth_user_username.unwrap(),
+                });
+                let ua = r.useraccounts_id.map(|user_account_id| UserAccount {
+                    id: Some(user_account_id.try_into().unwrap()),
+                    public_id: r.useraccounts_public_id.unwrap(),
+                    user_id: r.useraccounts_user_id.unwrap().try_into().unwrap(),
+                    amount_owed_sat: r.useraccounts_amount_owed_sat.unwrap().try_into().unwrap(),
+                    paid: r.useraccounts_paid.unwrap(),
+                    disabled: r.useraccounts_disabled.unwrap(),
+                    invoice_payment_request: r.useraccounts_invoice_payment_request.unwrap(),
+                    invoice_hash: r.useraccounts_invoice_hash.unwrap(),
+                    created_time_ms: r.useraccounts_created_time_ms.unwrap().try_into().unwrap(),
+                    payment_time_ms: r.useraccounts_payment_time_ms.unwrap().try_into().unwrap(),
+                });
+                UserCard {
+                    user: u.unwrap(),
+                    user_account: ua.unwrap(),
+                }
+            })
+                .try_collect::<Vec<_>>()
+                .await?;
+
+        Ok(user_cards)
+    }
 }
