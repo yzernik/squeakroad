@@ -2853,7 +2853,9 @@ from
 UNION ALL
 select useraccounts.user_id as user_id, useraccounts.amount_owed_sat as amount_change_sat, 'user_activation' as event_type, useraccounts.public_id as event_id, useraccounts.created_time_ms as event_time_ms
 from
- useraccounts)
+ useraccounts
+WHERE
+ useraccounts.paid)
 ORDER BY event_time_ms DESC
 LIMIT ?
 OFFSET ?
@@ -2905,7 +2907,13 @@ AND
 UNION ALL
 select withdrawals.user_id as user_id, (0 - withdrawals.amount_sat) as amount_change_sat, 'withdrawal' as event_type, withdrawals.public_id as event_id, withdrawals.created_time_ms as event_time_ms
 from
- withdrawals)
+ withdrawals
+UNION ALL
+select useraccounts.user_id as user_id, useraccounts.amount_owed_sat as amount_change_sat, 'user_activation' as event_type, useraccounts.public_id as event_id, useraccounts.created_time_ms as event_time_ms
+from
+ useraccounts
+WHERE
+ useraccounts.paid)
 ;")
             .fetch_one(&mut **db)
             .map_ok(|r|  {
@@ -3390,13 +3398,22 @@ WHERE
         let delete_user_account_result = sqlx::query!(
             "
 DELETE FROM useraccounts
-WHERE user_id = ?
+WHERE
+ user_id = ?
+AND
+ paid = true
 ;",
             user_account.user_id,
         )
         .execute(&mut *tx)
         .await
         .map_err(|_| "failed to delete user account.")?;
+
+        // Validate that at least one paid user account was deleted
+        if delete_user_account_result.rows_affected() < 1 {
+            return Err("No user bond found.".to_string());
+        }
+
         sqlx::query!(
             "
 DELETE FROM users
