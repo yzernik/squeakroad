@@ -58,7 +58,7 @@ pub struct ListingDisplay {
     pub listing: Listing,
     pub images: Vec<ListingImageDisplay>,
     pub shipping_options: Vec<ShippingOption>,
-    pub user: RocketAuthUser,
+    pub user: Option<RocketAuthUser>,
 }
 
 #[derive(Serialize, Debug, Clone)]
@@ -697,7 +697,7 @@ impl ListingDisplay {
             .collect::<Vec<_>>();
         let shipping_options =
             ShippingOption::all_for_listing(&mut *db, listing.id.unwrap()).await?;
-        let rocket_auth_user = RocketAuthUser::single(&mut *db, listing.user_id).await?;
+        let rocket_auth_user = RocketAuthUser::single(&mut *db, listing.user_id).await.ok();
 
         let listing_display = ListingDisplay {
             listing,
