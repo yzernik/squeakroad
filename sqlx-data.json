@@ -78,16 +78,6 @@
     },
     "query": "\nUPDATE\n orders\nSET\n canceled_by_buyer = true\nWHERE\n id = ?\nAND\n not (shipped OR canceled_by_seller OR canceled_by_buyer)\n;"
   },
-  "1035a03077d74b33b330107024c4929937b7b32051be2cb2c56daec87d6762b0": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "\nDELETE FROM useraccounts\nWHERE user_id = ?\n;"
-  },
   "14ddd5add58460338751f8598286120bea17a5598ed15f735d3be3cfe0f569f4": {
     "describe": {
       "columns": [
@@ -789,6 +779,16 @@
       }
     },
     "query": "\nselect\n listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.deactivated_by_seller, listings.deactivated_by_admin, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username\nfrom\n listings\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nINNER JOIN\n users\nON\n listings.user_id = users.id\nWHERE\n listings.approved\nAND\n listings.reviewed\nAND\n NOT (listings.deactivated_by_seller OR listings.deactivated_by_admin)\nAND\n users.id = ?\nGROUP BY\n listings.id\nORDER BY listings.created_time_ms DESC\nLIMIT ?\nOFFSET ?\n;"
+  },
+  "3d6417a77030ee04567532f9e33f1822aebc84e3911fd69cb676eed42ce865f7": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\nDELETE FROM useraccounts\nWHERE\n user_id = ?\nAND\n paid = true\n;"
   },
   "401779baa04da3f798e83717ec0da32bb106742601f00610e02296fa36dbd385": {
     "describe": {
