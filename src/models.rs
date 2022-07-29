@@ -759,6 +759,12 @@ INNER JOIN
  users
 ON
  listings.user_id = users.id
+INNER JOIN
+ useraccounts
+ON
+ listings.user_id = useraccounts.user_id
+AND
+ NOT useraccounts.disabled
 WHERE
  listings.approved
 AND
@@ -1385,6 +1391,12 @@ INNER JOIN
  users
 ON
  listings.user_id = users.id
+INNER JOIN
+ useraccounts
+ON
+ listings.user_id = useraccounts.user_id
+AND
+ NOT useraccounts.disabled
 WHERE
  listings.approved
 AND
