@@ -30,6 +30,8 @@ Username: {{ user.email }}.
   <div class="row">
     <h5>Listings</h5>
     <a href="/review_pending_listings">Review Pending Listings</a>
+    <br>
+    <a href="/deactivated_listings">Deactivated Listings</a>
   </div>
 </div>
 

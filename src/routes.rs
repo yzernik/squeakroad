@@ -196,6 +196,7 @@ pub fn stage(config: Config) -> AdHoc {
             .attach(crate::deactivate_account::deactivate_account_stage())
             .attach(crate::market_liabilities::market_liabilities_stage())
             .attach(crate::listings::listings_stage())
+            .attach(crate::deactivated_listings::deactivated_listings_stage())
             .attach(crate::listing::listing_stage())
             .attach(crate::new_listing::new_listing_stage())
             .attach(crate::update_listing_images::update_listing_images_stage())

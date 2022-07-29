@@ -1,0 +1,20 @@
+{% extends "base" %}
+{% block body %}
+
+<a href="/new_listing">Add New Listing</a>
+
+  <div class="container">
+    <p><!--Nothing to see here --></p>
+
+    <div class="row">
+
+      <h3>Deactivated Listings</h3>
+
+      <div class="twelve columns">
+	{% include "listingtablepage" %}
+      </div>
+    </div>
+  </div>
+
+
+{% endblock body %}
