@@ -3,7 +3,6 @@
     <tr>
       <th></th>
       <th></th>
-      <th></th>
     </tr>
   </thead>
 
@@ -21,12 +20,14 @@
       </td>
       <td>
 	<a href="/listing/{{ card.listing.public_id }}">
-	  {{ card.listing.title }}
+	  <h4>{{ card.listing.title }}</h4>
 	</a>
-      </td>
-      <td>
 	<a href="/listing/{{ card.listing.public_id }}">
 	  {{ card.listing.price_sat }} sats
+	</a>
+	<br>
+	<a href="/user/{{ card.user.username }}">
+	  {{ card.user.username }}
 	</a>
       </td>
     </tr>
