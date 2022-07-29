@@ -110,7 +110,7 @@ async fn submit_listing(db: &mut Connection<Db>, id: &str, user: User) -> Result
 async fn approve(
     id: &str,
     mut db: Connection<Db>,
-    _active_user: ActiveUser,
+    _user: User,
     _admin_user: AdminUser,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
     match approve_listing(&mut db, id).await {
@@ -146,7 +146,7 @@ async fn approve_listing(db: &mut Connection<Db>, id: &str) -> Result<(), String
 async fn reject(
     id: &str,
     mut db: Connection<Db>,
-    _active_user: ActiveUser,
+    _user: User,
     _admin_user: AdminUser,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
     match reject_listing(&mut db, id).await {
@@ -182,7 +182,7 @@ async fn reject_listing(db: &mut Connection<Db>, id: &str) -> Result<(), String>
 async fn admin_deactivate(
     id: &str,
     mut db: Connection<Db>,
-    _active_user: ActiveUser,
+    _user: User,
     _admin_user: AdminUser,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
     match deactivate_listing_as_admin(&mut db, id).await {
@@ -202,7 +202,6 @@ async fn deactivate(
     id: &str,
     mut db: Connection<Db>,
     active_user: ActiveUser,
-    _admin_user: Option<AdminUser>,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
     match deactivate_listing_as_seller(&mut db, id, active_user.user).await {
         Ok(_) => Ok(Flash::success(

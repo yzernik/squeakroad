@@ -1,7 +1,6 @@
 use crate::base::BaseContext;
 use crate::db::Db;
 use crate::models::{Listing, ListingDisplay};
-use crate::user_account::ActiveUser;
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::response::{Flash, Redirect};
@@ -49,10 +48,10 @@ impl Context {
 async fn delete(
     id: &str,
     mut db: Connection<Db>,
-    active_user: ActiveUser,
+    user: User,
     admin_user: Option<AdminUser>,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
-    match delete_listing(id, &mut db, active_user.user.clone(), admin_user.clone()).await {
+    match delete_listing(id, &mut db, user.clone(), admin_user.clone()).await {
         Ok(_) => Ok(Flash::success(
             Redirect::to(uri!("/")),
             "Listing was deleted.",
@@ -93,13 +92,13 @@ async fn index(
     flash: Option<FlashMessage<'_>>,
     id: &str,
     db: Connection<Db>,
-    active_user: ActiveUser,
+    user: User,
     admin_user: Option<AdminUser>,
 ) -> Template {
     let flash = flash.map(FlashMessage::into_inner);
     Template::render(
         "deletelisting",
-        Context::raw(db, id, flash, active_user.user, admin_user).await,
+        Context::raw(db, id, flash, user, admin_user).await,
     )
 }
 
