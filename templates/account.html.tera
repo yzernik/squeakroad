@@ -36,6 +36,8 @@
     <a href="my_rejected_listings">My Rejected Listings</a>
     <br>
     <a href="my_active_listings">My Active Listings</a>
+    <br>
+    <a href="my_deactivated_listings">My Deactivated Listings</a>
   </div>
 </div>
 
