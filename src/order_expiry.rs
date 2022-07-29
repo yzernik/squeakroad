@@ -48,7 +48,7 @@ async fn remove_order(
     );
     Order::delete_expired_order(conn, order.id.unwrap(), cancel_order_invoice_ret)
         .await
-        .ok();
+        .expect("failed to delete expired user account.");
     Ok(())
 }
 

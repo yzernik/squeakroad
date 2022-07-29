@@ -118,6 +118,7 @@ pub struct AdminSettings {
     pub id: Option<i32>,
     pub market_name: String,
     pub fee_rate_basis_points: u32,
+    pub user_bond_price_sat: u64,
     pub pgp_key: String,
     pub squeaknode_pubkey: String,
     pub squeaknode_address: String,
@@ -151,6 +152,11 @@ pub struct SqueaknodeInfoInput {
 #[derive(Debug, FromForm)]
 pub struct FeeRateInput {
     pub fee_rate_basis_points: Option<i32>,
+}
+
+#[derive(Debug, FromForm)]
+pub struct UserBondPriceInput {
+    pub user_bond_price_sat: Option<u64>,
 }
 
 #[derive(Serialize, Debug, Clone)]
@@ -249,12 +255,28 @@ pub struct SellerInfo {
     pub weighted_average_rating: f32,
 }
 
+#[derive(Serialize, Debug, Clone)]
+#[serde(crate = "rocket::serde")]
+pub struct UserAccount {
+    pub id: Option<i32>,
+    pub public_id: String,
+    pub user_id: i32,
+    pub amount_owed_sat: u64,
+    pub paid: bool,
+    pub disabled: bool,
+    pub invoice_hash: String,
+    pub invoice_payment_request: String,
+    pub created_time_ms: u64,
+    pub payment_time_ms: u64,
+}
+
 impl Default for AdminSettings {
     fn default() -> AdminSettings {
         AdminSettings {
             id: None,
             market_name: "Squeak Road".to_string(),
             fee_rate_basis_points: 500,
+            user_bond_price_sat: 1,
             pgp_key: "".to_string(),
             squeaknode_pubkey: "".to_string(),
             squeaknode_address: "".to_string(),
@@ -1476,6 +1498,7 @@ impl AdminSettings {
                     id: Some(r.id.try_into().unwrap()),
                     market_name: r.market_name,
                     fee_rate_basis_points: r.fee_rate_basis_points.try_into().unwrap(),
+                    user_bond_price_sat: r.user_bond_price_sat.try_into().unwrap(),
                     pgp_key: r.pgp_key,
                     squeaknode_pubkey: r.squeaknode_pubkey,
                     squeaknode_address: r.squeaknode_address,
@@ -1531,6 +1554,24 @@ WHERE NOT EXISTS(SELECT 1 FROM adminsettings)
         sqlx::query!(
             "UPDATE adminsettings SET fee_rate_basis_points = ?",
             new_fee_rate_basis_points,
+        )
+        .execute(&mut **db)
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn set_user_bond_price(
+        db: &mut Connection<Db>,
+        new_user_bond_price_sat: u64,
+    ) -> Result<(), sqlx::Error> {
+        let user_bond_price_sat_i64: i64 = new_user_bond_price_sat.try_into().unwrap();
+
+        AdminSettings::insert_if_doesnt_exist(db).await?;
+
+        sqlx::query!(
+            "UPDATE adminsettings SET user_bond_price_sat = ?",
+            user_bond_price_sat_i64,
         )
         .execute(&mut **db)
         .await?;
@@ -2174,9 +2215,14 @@ AND
 SELECT
  invoice_hash
 FROM
- orders
+(SELECT invoice_hash, payment_time_ms FROM useraccounts
+ UNION ALL
+SELECT invoice_hash, payment_time_ms FROM orders)
 WHERE
- payment_time_ms = (SELECT MAX(payment_time_ms) FROM orders)
+ payment_time_ms = (SELECT MAX(payment_time_ms) FROM
+(SELECT invoice_hash, payment_time_ms FROM useraccounts
+ UNION ALL
+SELECT invoice_hash, payment_time_ms FROM orders))
 LIMIT 1
 ;"
         )
@@ -2803,7 +2849,11 @@ AND
 UNION ALL
 select withdrawals.user_id as user_id, (0 - withdrawals.amount_sat) as amount_change_sat, 'withdrawal' as event_type, withdrawals.public_id as event_id, withdrawals.created_time_ms as event_time_ms
 from
- withdrawals)
+ withdrawals
+UNION ALL
+select useraccounts.user_id as user_id, useraccounts.amount_owed_sat as amount_change_sat, 'user_activation' as event_type, useraccounts.public_id as event_id, useraccounts.created_time_ms as event_time_ms
+from
+ useraccounts)
 ORDER BY event_time_ms DESC
 LIMIT ?
 OFFSET ?
@@ -3090,5 +3140,286 @@ impl AdminInfo {
         Ok(AdminInfo {
             num_pending_listings,
         })
+    }
+}
+
+impl UserAccount {
+    /// Returns the id of the inserted row.
+    pub async fn insert(
+        user_account: UserAccount,
+        db: &mut Connection<Db>,
+    ) -> Result<i32, sqlx::Error> {
+        let amount_owed_sat: i64 = user_account.amount_owed_sat.try_into().unwrap();
+        let created_time_ms: i64 = user_account.created_time_ms.try_into().unwrap();
+        let payment_time_ms: i64 = user_account.payment_time_ms.try_into().unwrap();
+
+        let insert_result = sqlx::query!(
+            "INSERT INTO useraccounts (public_id, user_id, amount_owed_sat, paid, disabled, invoice_payment_request, invoice_hash, created_time_ms, payment_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            user_account.public_id,
+            user_account.user_id,
+            amount_owed_sat,
+            user_account.paid,
+            user_account.disabled,
+            user_account.invoice_payment_request,
+            user_account.invoice_hash,
+            created_time_ms,
+            payment_time_ms,
+        )
+            .execute(&mut **db)
+            .await?;
+
+        Ok(insert_result.last_insert_rowid() as _)
+    }
+
+    pub async fn single(db: &mut Connection<Db>, id: i32) -> Result<UserAccount, sqlx::Error> {
+        let user_account = sqlx::query!("select * from useraccounts WHERE user_id = ?;", id)
+            .fetch_one(&mut **db)
+            .map_ok(|r| UserAccount {
+                id: Some(r.id.try_into().unwrap()),
+                public_id: r.public_id,
+                user_id: r.user_id.try_into().unwrap(),
+                amount_owed_sat: r.amount_owed_sat.try_into().unwrap(),
+                paid: r.paid,
+                disabled: r.disabled,
+                invoice_payment_request: r.invoice_payment_request,
+                invoice_hash: r.invoice_hash,
+                created_time_ms: r.created_time_ms.try_into().unwrap(),
+                payment_time_ms: r.payment_time_ms.try_into().unwrap(),
+            })
+            .await?;
+
+        Ok(user_account)
+    }
+
+    pub async fn single_by_public_id(
+        db: &mut Connection<Db>,
+        public_id: &str,
+    ) -> Result<UserAccount, sqlx::Error> {
+        let user_account =
+            sqlx::query!("select * from useraccounts WHERE public_id = ?;", public_id)
+                .fetch_one(&mut **db)
+                .map_ok(|r| UserAccount {
+                    id: Some(r.id.try_into().unwrap()),
+                    public_id: r.public_id,
+                    user_id: r.user_id.try_into().unwrap(),
+                    amount_owed_sat: r.amount_owed_sat.try_into().unwrap(),
+                    paid: r.paid,
+                    disabled: r.disabled,
+                    invoice_payment_request: r.invoice_payment_request,
+                    invoice_hash: r.invoice_hash,
+                    created_time_ms: r.created_time_ms.try_into().unwrap(),
+                    payment_time_ms: r.payment_time_ms.try_into().unwrap(),
+                })
+                .await?;
+
+        Ok(user_account)
+    }
+
+    pub async fn single_by_invoice_hash(
+        db: &mut PoolConnection<Sqlite>,
+        invoice_hash: &str,
+    ) -> Result<UserAccount, sqlx::Error> {
+        let user_account = sqlx::query!(
+            "select * from useraccounts WHERE invoice_hash = ?;",
+            invoice_hash
+        )
+        .fetch_one(&mut **db)
+        .map_ok(|r| UserAccount {
+            id: Some(r.id.try_into().unwrap()),
+            public_id: r.public_id,
+            user_id: r.user_id.try_into().unwrap(),
+            amount_owed_sat: r.amount_owed_sat.try_into().unwrap(),
+            paid: r.paid,
+            disabled: r.disabled,
+            invoice_payment_request: r.invoice_payment_request,
+            invoice_hash: r.invoice_hash,
+            created_time_ms: r.created_time_ms.try_into().unwrap(),
+            payment_time_ms: r.payment_time_ms.try_into().unwrap(),
+        })
+        .await?;
+
+        Ok(user_account)
+    }
+
+    pub async fn mark_as_paid(
+        db: &mut PoolConnection<Sqlite>,
+        user_account_id: i32,
+        time_now_ms: u64,
+    ) -> Result<(), sqlx::Error> {
+        let time_now_ms_i64: i64 = time_now_ms.try_into().unwrap();
+
+        sqlx::query!(
+            "UPDATE useraccounts SET paid = true, payment_time_ms = ? WHERE id = ?",
+            time_now_ms_i64,
+            user_account_id,
+        )
+        .execute(&mut **db)
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn all_older_than(
+        db: &mut PoolConnection<Sqlite>,
+        created_time_ms: u64,
+    ) -> Result<Vec<UserAccount>, sqlx::Error> {
+        let created_time_ms_i64: i64 = created_time_ms.try_into().unwrap();
+
+        let user_accounts = sqlx::query!(
+            "
+select *
+from
+ useraccounts
+WHERE
+ created_time_ms < ?
+AND
+ NOT paid
+;",
+            created_time_ms_i64,
+        )
+        .fetch(&mut **db)
+        .map_ok(|r| UserAccount {
+            id: Some(r.id.try_into().unwrap()),
+            public_id: r.public_id,
+            user_id: r.user_id.try_into().unwrap(),
+            amount_owed_sat: r.amount_owed_sat.try_into().unwrap(),
+            paid: r.paid,
+            disabled: r.disabled,
+            invoice_payment_request: r.invoice_payment_request,
+            invoice_hash: r.invoice_hash,
+            created_time_ms: r.created_time_ms.try_into().unwrap(),
+            payment_time_ms: r.payment_time_ms.try_into().unwrap(),
+        })
+        .try_collect::<Vec<_>>()
+        .await?;
+
+        Ok(user_accounts)
+    }
+
+    pub async fn delete_expired_user_account(
+        db: &mut PoolConnection<Sqlite>,
+        user_account_id: i32,
+        cancel_user_account_invoice_future: impl Future<
+            Output = Result<tonic_openssl_lnd::invoicesrpc::CancelInvoiceResp, String>,
+        >,
+    ) -> Result<(), String> {
+        let mut tx = db
+            .begin()
+            .await
+            .map_err(|_| "failed to begin transaction.")?;
+
+        sqlx::query!(
+            "
+DELETE FROM useraccounts
+WHERE
+ user_id = ?
+AND
+ NOT paid
+;",
+            user_account_id,
+        )
+        .execute(&mut *tx)
+        .await
+        .map_err(|_| "failed to delete user account from database.")?;
+
+        sqlx::query!(
+            "
+DELETE FROM users
+WHERE
+ id = ?
+;",
+            user_account_id,
+        )
+        .execute(&mut *tx)
+        .await
+        .map_err(|_| "failed to delete user from database.")?;
+
+        cancel_user_account_invoice_future
+            .await
+            .map_err(|e| format!("failed to cancel user account invoice: {:?}", e))?;
+
+        tx.commit()
+            .await
+            .map_err(|_| "failed to begin transaction.")?;
+
+        Ok(())
+    }
+
+    pub async fn delete_users_with_no_account(
+        db: &mut PoolConnection<Sqlite>,
+    ) -> Result<(), String> {
+        sqlx::query!(
+            "
+DELETE FROM users
+WHERE
+ NOT is_admin
+AND
+ id IN
+(SELECT users.id FROM users
+LEFT JOIN
+ useraccounts
+ON
+ users.id=useraccounts.user_id
+WHERE
+ useraccounts.user_id IS NULL);
+;"
+        )
+        .execute(&mut **db)
+        .await
+        .map_err(|_| "failed to delete user account from database.")?;
+
+        Ok(())
+    }
+
+    pub async fn do_deactivation(
+        amount_sat: u64,
+        user_account: UserAccount,
+        db: &mut Connection<Db>,
+        send_deactivation_funds_future: impl Future<
+            Output = Result<tonic_openssl_lnd::lnrpc::SendResponse, String>,
+        >,
+    ) -> Result<(), String> {
+        let mut tx = db
+            .begin()
+            .await
+            .map_err(|_| "failed to begin transaction.")?;
+
+        // Insert the new withdrawal.
+        let activation_bond_amount_sat: i64 = user_account.amount_owed_sat.try_into().unwrap();
+        let amount_sat: i64 = amount_sat.try_into().unwrap();
+        let delete_user_account_result = sqlx::query!(
+            "
+DELETE FROM useraccounts
+WHERE user_id = ?
+;",
+            user_account.user_id,
+        )
+        .execute(&mut *tx)
+        .await
+        .map_err(|_| "failed to delete user account.")?;
+        sqlx::query!(
+            "
+DELETE FROM users
+WHERE id = ?
+;",
+            user_account.user_id,
+        )
+        .execute(&mut *tx)
+        .await
+        .map_err(|_| "failed to delete user.")?;
+
+        if activation_bond_amount_sat - amount_sat < 0 {
+            return Err("Insufficient funds for deactivation.".to_string());
+        }
+
+        send_deactivation_funds_future
+            .await
+            .map_err(|e| format!("failed to send deactivation payment: {:?}", e))?;
+
+        tx.commit()
+            .await
+            .map_err(|_| "failed to commit transaction.")?;
+
+        Ok(())
     }
 }

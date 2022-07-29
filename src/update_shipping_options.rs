@@ -1,6 +1,7 @@
 use crate::base::BaseContext;
 use crate::db::Db;
 use crate::models::{Listing, ListingDisplay, ShippingOption, ShippingOptionInfo};
+use crate::user_account::ActiveUser;
 use crate::util;
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
@@ -55,7 +56,7 @@ async fn new(
     id: &str,
     shipping_option_form: Form<ShippingOptionInfo>,
     mut db: Connection<Db>,
-    user: User,
+    active_user: ActiveUser,
     admin_user: Option<AdminUser>,
 ) -> Flash<Redirect> {
     let shipping_option_info = shipping_option_form.into_inner();
@@ -63,7 +64,17 @@ async fn new(
     let description = shipping_option_info.description;
     let price_sat = shipping_option_info.price_sat.unwrap_or(0);
 
-    match add_shipping_option(id, title, description, price_sat, &mut db, user, admin_user).await {
+    match add_shipping_option(
+        id,
+        title,
+        description,
+        price_sat,
+        &mut db,
+        active_user.user,
+        admin_user,
+    )
+    .await
+    {
         Ok(_) => Flash::success(
             Redirect::to(uri!("/update_shipping_options", index(id))),
             "Shipping option successfully added.",
@@ -131,14 +142,14 @@ async fn delete(
     id: &str,
     shipping_option_id: &str,
     mut db: Connection<Db>,
-    user: User,
+    active_user: ActiveUser,
     admin_user: Option<AdminUser>,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
     match delete_shipping_option(
         id,
         shipping_option_id,
         &mut db,
-        user.clone(),
+        active_user.user.clone(),
         admin_user.clone(),
     )
     .await
@@ -193,13 +204,13 @@ async fn index(
     flash: Option<FlashMessage<'_>>,
     id: &str,
     db: Connection<Db>,
-    user: User,
+    active_user: ActiveUser,
     admin_user: Option<AdminUser>,
 ) -> Template {
     let flash = flash.map(FlashMessage::into_inner);
     Template::render(
         "updateshippingoptions",
-        Context::raw(db, id, flash, user, admin_user).await,
+        Context::raw(db, id, flash, active_user.user, admin_user).await,
     )
 }
 

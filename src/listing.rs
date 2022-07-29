@@ -1,6 +1,7 @@
 use crate::base::BaseContext;
 use crate::db::Db;
 use crate::models::{Listing, ListingDisplay, ShippingOption};
+use crate::user_account::ActiveUser;
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::response::Flash;
@@ -65,9 +66,9 @@ impl Context {
 async fn submit(
     id: &str,
     mut db: Connection<Db>,
-    user: User,
+    active_user: ActiveUser,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
-    match submit_listing(&mut db, id, user).await {
+    match submit_listing(&mut db, id, active_user.user).await {
         Ok(_) => Ok(Flash::success(
             Redirect::to(uri!("/listing", index(id))),
             "Marked as submitted".to_string(),
@@ -200,10 +201,9 @@ async fn admin_deactivate(
 async fn deactivate(
     id: &str,
     mut db: Connection<Db>,
-    user: User,
-    _admin_user: Option<AdminUser>,
+    active_user: ActiveUser,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
-    match deactivate_listing_as_seller(&mut db, id, user).await {
+    match deactivate_listing_as_seller(&mut db, id, active_user.user).await {
         Ok(_) => Ok(Flash::success(
             Redirect::to(uri!("/listing", index(id))),
             "Marked as deactivated by seller".to_string(),

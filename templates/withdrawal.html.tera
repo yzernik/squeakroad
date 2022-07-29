@@ -17,7 +17,7 @@
     <h3>Withdrawal</h3>
 
     <p><b>Withdrawal id</b>: {{ withdrawal.public_id }}</p>
-    <p><b>User</b>: <a href="/user/{{ withdrawal_user.username }}">{{ withdrawal_user.username }}</a></p>
+    <p><b>User</b>: {% if maybe_withdrawal_user %}<a href="/user/{{ maybe_withdrawal_user.username }}">{{ maybe_withdrawal_user.username }}</a>{% else %}Not found{% endif %}</p>
     <p><b>Amount</b>: {{ withdrawal.amount_sat }} sats</p>
     <p><b>Withdrawal time</b>: {{ (withdrawal.created_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}</p>
     <p><b>Invoice hash</b>: {{ withdrawal.invoice_hash }}</p>

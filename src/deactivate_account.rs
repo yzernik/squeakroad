@@ -2,7 +2,7 @@ use crate::base::BaseContext;
 use crate::config::Config;
 use crate::db::Db;
 use crate::lightning;
-use crate::models::{AccountInfo, Withdrawal, WithdrawalInfo};
+use crate::models::{UserAccount, WithdrawalInfo};
 use crate::user_account::ActiveUser;
 use crate::util;
 use rocket::fairing::AdHoc;
@@ -13,18 +13,21 @@ use rocket::response::Redirect;
 use rocket::serde::Serialize;
 use rocket::State;
 use rocket_auth::AdminUser;
+use rocket_auth::Auth;
 use rocket_auth::User;
+use rocket_auth::Users;
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
-
-const MAX_WITHDRAWALS_PER_USER_PER_DAY: u32 = 5;
 
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
 struct Context {
     base_context: BaseContext,
     flash: Option<(String, String)>,
-    account_balance_sat: i64,
+    user_account: UserAccount,
+    maybe_account_user: Option<User>,
+    user: User,
+    admin_user: Option<AdminUser>,
 }
 
 impl Context {
@@ -32,19 +35,22 @@ impl Context {
         mut db: Connection<Db>,
         flash: Option<(String, String)>,
         user: User,
+        user_account: UserAccount,
         admin_user: Option<AdminUser>,
+        config: &Config,
+        users: &Users,
     ) -> Result<Context, String> {
         let base_context = BaseContext::raw(&mut db, Some(user.clone()), admin_user.clone())
             .await
             .map_err(|_| "failed to get base template.")?;
-        let account_info = AccountInfo::account_info_for_user(&mut db, user.id)
-            .await
-            .map_err(|_| "failed to get account info.")?;
-        let account_balance_sat = account_info.account_balance_sat;
+        let maybe_account_user = users.get_by_id(user_account.user_id).await.ok();
         Ok(Context {
             base_context,
             flash,
-            account_balance_sat,
+            user_account,
+            maybe_account_user,
+            user,
+            admin_user,
         })
     }
 }
@@ -58,8 +64,9 @@ async fn new(
     config: &State<Config>,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
     let withdrawal_info = withdrawal_form.into_inner();
-    match withdraw(
+    match withdraw_account_deactivation_funds(
         withdrawal_info.clone(),
+        active_user.user_account,
         &mut db,
         active_user.user.clone(),
         config.inner().clone(),
@@ -72,13 +79,17 @@ async fn new(
         )),
         Err(e) => {
             error_!("Withdrawal error: {}", e);
-            Err(Flash::error(Redirect::to(uri!("/withdraw", index())), e))
+            Err(Flash::error(
+                Redirect::to(uri!("/deactivate_account", index())),
+                e,
+            ))
         }
     }
 }
 
-async fn withdraw(
+async fn withdraw_account_deactivation_funds(
     withdrawal_info: WithdrawalInfo,
+    user_account: UserAccount,
     db: &mut Connection<Db>,
     user: User,
     config: Config,
@@ -89,9 +100,6 @@ async fn withdraw(
     if withdrawal_info.invoice_payment_request.is_empty() {
         return Err("Invoice payment request cannot be empty.".to_string());
     };
-    if user.is_admin {
-        return Err("Admin user cannot withdraw funds.".to_string());
-    }
 
     let mut lightning_client = lightning::get_lnd_lightning_client(
         config.lnd_host.clone(),
@@ -110,33 +118,31 @@ async fn withdraw(
         .into_inner();
     let amount_sat: u64 = decoded_pay_req.num_satoshis.try_into().unwrap();
     let invoice_payment_request = withdrawal_info.invoice_payment_request;
-    let withdrawal = Withdrawal {
-        id: None,
-        public_id: util::create_uuid(),
-        user_id: user.id(),
-        amount_sat,
-        invoice_hash: "".to_string(),
-        invoice_payment_request: invoice_payment_request.clone(),
-        created_time_ms: now,
-    };
-    let send_withdrawal_funds_ret = send_withdrawal_funds(invoice_payment_request, config);
-    Withdrawal::do_withdrawal(
-        withdrawal,
-        db,
-        send_withdrawal_funds_ret,
-        MAX_WITHDRAWALS_PER_USER_PER_DAY,
-        now - one_day_in_ms,
-    )
-    .await
-    .map_err(|e| {
-        error_!("Failed withdrawal: {}", e);
-        e
-    })?;
+    let send_deactivation_funds_ret =
+        send_account_deactivation_funds(invoice_payment_request, config);
+    // Withdrawal::do_withdrawal(
+    //     withdrawal,
+    //     db,
+    //     send_withdrawal_funds_ret,
+    //     MAX_WITHDRAWALS_PER_USER_PER_DAY,
+    //     now - one_day_in_ms,
+    // )
+    // .await
+    // .map_err(|e| {
+    //     error_!("Failed withdrawal: {}", e);
+    //     e
+    // })?;
+    UserAccount::do_deactivation(amount_sat, user_account, db, send_deactivation_funds_ret)
+        .await
+        .map_err(|e| {
+            error_!("Failed deactivation: {}", e);
+            e
+        })?;
 
     Ok(())
 }
 
-async fn send_withdrawal_funds(
+async fn send_account_deactivation_funds(
     invoice_payment_request: String,
     config: Config,
 ) -> Result<tonic_openssl_lnd::lnrpc::SendResponse, String> {
@@ -165,16 +171,27 @@ async fn index(
     db: Connection<Db>,
     active_user: ActiveUser,
     admin_user: Option<AdminUser>,
+    config: &State<Config>,
+    users: &State<Users>,
 ) -> Template {
     let flash = flash.map(FlashMessage::into_inner);
     Template::render(
-        "withdraw",
-        Context::raw(db, flash, active_user.user, admin_user).await,
+        "deactivateaccount",
+        Context::raw(
+            db,
+            flash,
+            active_user.user,
+            active_user.user_account,
+            admin_user,
+            config,
+            users,
+        )
+        .await,
     )
 }
 
-pub fn withdraw_stage() -> AdHoc {
-    AdHoc::on_ignite("Withdraw Stage", |rocket| async {
-        rocket.mount("/withdraw", routes![index, new])
+pub fn deactivate_account_stage() -> AdHoc {
+    AdHoc::on_ignite("Deactivate Account Stage", |rocket| async {
+        rocket.mount("/deactivate_account", routes![index, new])
     })
 }

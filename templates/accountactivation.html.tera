@@ -1,0 +1,59 @@
+{% extends "base" %}
+{% block body %}
+
+
+<div class="container">
+  <p><!--Nothing to see here --></p>
+
+  <div class="row">
+    <div class="one-half column">
+
+      <div class="row">
+
+	{% if flash %}
+	<small class="field-{{flash.0}}-msg">
+	  {{ flash.1 }}
+	</small>
+	{% endif %}
+
+	<h3>Account Activation</h3>
+
+	<p><b>User</b>: {% if maybe_account_user %}<a href="/user/{{ maybe_account_user.email }}">{{ maybe_account_user.email }}</a>{% else %}Not found{% endif %}</p>
+	<p><b>Status</b>:
+	  {% if not user_account.paid %}
+	  Not paid
+	  {% else %}
+	  Paid
+	  {% endif %}</p>
+        <p><b>Account creation time</b>: {{ (user_account.created_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}</p>
+
+	<p><b>Payment amount</b>: {{ user_account.amount_owed_sat }} sats</p>
+
+	{% if user_account.paid %}
+        <p><b>Payment time</b>: {{ (user_account.payment_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}</p>
+	{% if user.id == user_account.user_id %}
+	<p><a href="/">Continue as activated user</a></p>
+	<p><a href="/deactivate_account">Deactivate account</a></p>
+	{% endif %}
+	{% else %}
+	<p><b>Payment request</b>:<p>
+	  <img src="data:image/bmp;base64,{{ qr_svg_base64 }}" style="width:256px;height:256px;" />
+	<p>
+	  <pre>
+	    {{ user_account.invoice_payment_request }}
+	  </pre>
+	</p>
+	<p><b>Open a channel to the market</b>: <a href="https://amboss.space/node/{{ lightning_node_pubkey }}" rel="noreferrer noopener" target="_blank">{{ lightning_node_pubkey }}</a></p>
+	{% endif %}
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+</div>
+
+
+{% endblock body %}

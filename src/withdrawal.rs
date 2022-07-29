@@ -15,8 +15,8 @@ struct Context {
     base_context: BaseContext,
     flash: Option<(String, String)>,
     withdrawal: Withdrawal,
-    withdrawal_user: RocketAuthUser,
-    user: User,
+    maybe_withdrawal_user: Option<RocketAuthUser>,
+    user: Option<User>,
 }
 
 impl Context {
@@ -24,23 +24,23 @@ impl Context {
         mut db: Connection<Db>,
         withdrawal_id: &str,
         flash: Option<(String, String)>,
-        user: User,
+        user: Option<User>,
         admin_user: Option<AdminUser>,
     ) -> Result<Context, String> {
-        let base_context = BaseContext::raw(&mut db, Some(user.clone()), admin_user.clone())
+        let base_context = BaseContext::raw(&mut db, user.clone(), admin_user.clone())
             .await
             .map_err(|_| "failed to get base template.")?;
         let withdrawal = Withdrawal::single_by_public_id(&mut db, withdrawal_id)
             .await
             .map_err(|_| "failed to get withdrawal.")?;
-        let withdrawal_user = RocketAuthUser::single(&mut db, withdrawal.user_id)
+        let maybe_withdrawal_user = RocketAuthUser::single(&mut db, withdrawal.user_id)
             .await
-            .map_err(|_| "failed to get withdrawal user.")?;
+            .ok();
         Ok(Context {
             base_context,
             flash,
             withdrawal,
-            withdrawal_user,
+            maybe_withdrawal_user,
             user,
         })
     }
@@ -51,7 +51,7 @@ async fn index(
     flash: Option<FlashMessage<'_>>,
     id: &str,
     db: Connection<Db>,
-    user: User,
+    user: Option<User>,
     admin_user: Option<AdminUser>,
 ) -> Template {
     let flash = flash.map(FlashMessage::into_inner);

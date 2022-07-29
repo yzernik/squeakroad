@@ -1,6 +1,7 @@
 use crate::base::BaseContext;
 use crate::db::Db;
 use crate::models::OrderCard;
+use crate::user_account::ActiveUser;
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::response::status::NotFound;
@@ -49,13 +50,13 @@ async fn index(
     flash: Option<FlashMessage<'_>>,
     db: Connection<Db>,
     page_num: Option<u32>,
-    user: User,
+    active_user: ActiveUser,
     admin_user: Option<AdminUser>,
 ) -> Result<Template, NotFound<String>> {
     let flash = flash.map(FlashMessage::into_inner);
     Ok(Template::render(
         "mypaidorders",
-        Context::raw(flash, db, page_num, user, admin_user).await,
+        Context::raw(flash, db, page_num, active_user.user, admin_user).await,
     ))
 }
 

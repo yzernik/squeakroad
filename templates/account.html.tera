@@ -15,6 +15,9 @@
 <a href="withdraw">Withdraw Funds</a>
 <br>
 
+<a href="/account_activation/{{ user_account.public_id }}">Account Activation</a>
+<br>
+
 
 <div class="container">
   <p><!--Nothing to see here --></p>
@@ -30,9 +33,9 @@
     <br>
     <a href="my_pending_listings">My Pending Listings</a>
     <br>
-    <a href="my_active_listings">My Active Listings</a>
-    <br>
     <a href="my_rejected_listings">My Rejected Listings</a>
+    <br>
+    <a href="my_active_listings">My Active Listings</a>
   </div>
 </div>
 

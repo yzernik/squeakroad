@@ -1,6 +1,7 @@
 use crate::base::BaseContext;
 use crate::db::Db;
-use crate::models::AccountInfo;
+use crate::models::{AccountInfo, UserAccount};
+use crate::user_account::ActiveUser;
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::serde::Serialize;
@@ -16,6 +17,7 @@ struct Context {
     flash: Option<(String, String)>,
     user: User,
     account_info: AccountInfo,
+    user_account: UserAccount,
 }
 
 impl Context {
@@ -31,11 +33,15 @@ impl Context {
         let account_info = AccountInfo::account_info_for_user(&mut db, user.id())
             .await
             .map_err(|_| "failed to get account info.")?;
+        let user_account = UserAccount::single(&mut db, user.id())
+            .await
+            .map_err(|_| "failed to get user account.")?;
         Ok(Context {
             base_context,
             flash,
             user,
             account_info,
+            user_account,
         })
     }
 }
@@ -44,11 +50,14 @@ impl Context {
 async fn index(
     flash: Option<FlashMessage<'_>>,
     db: Connection<Db>,
-    user: User,
+    active_user: ActiveUser,
     admin_user: Option<AdminUser>,
 ) -> Template {
     let flash = flash.map(FlashMessage::into_inner);
-    Template::render("account", Context::raw(db, flash, user, admin_user).await)
+    Template::render(
+        "account",
+        Context::raw(db, flash, active_user.user, admin_user).await,
+    )
 }
 
 pub fn account_stage() -> AdHoc {

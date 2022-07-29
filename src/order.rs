@@ -3,6 +3,7 @@ use crate::config::Config;
 use crate::db::Db;
 use crate::lightning;
 use crate::models::{Listing, Order, ReviewInput, RocketAuthUser, ShippingOption};
+use crate::user_account::ActiveUser;
 use crate::util;
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
@@ -24,7 +25,7 @@ struct Context {
     order: Order,
     maybe_listing: Option<Listing>,
     maybe_shipping_option: Option<ShippingOption>,
-    seller_user: RocketAuthUser,
+    maybe_seller_user: Option<RocketAuthUser>,
     user: Option<User>,
     admin_user: Option<AdminUser>,
     qr_svg_base64: String,
@@ -56,9 +57,9 @@ impl Context {
             .await
             .ok();
         // .map_err(|_| "failed to get shipping option.")?;
-        let seller_user = RocketAuthUser::single(&mut db, order.seller_user_id)
+        let maybe_seller_user = RocketAuthUser::single(&mut db, order.seller_user_id)
             .await
-            .map_err(|_| "failed to get order messages.")?;
+            .ok();
         let qr_svg_bytes = util::generate_qr(&order.invoice_payment_request);
         let qr_svg_base64 = util::to_base64(&qr_svg_bytes);
         let lightning_node_pubkey = get_lightning_node_pubkey(config)
@@ -70,7 +71,7 @@ impl Context {
             order,
             maybe_listing,
             maybe_shipping_option,
-            seller_user,
+            maybe_seller_user,
             user,
             admin_user,
             qr_svg_base64,
@@ -101,10 +102,10 @@ async fn get_lightning_node_pubkey(config: &Config) -> Result<String, String> {
 async fn ship(
     id: &str,
     mut db: Connection<Db>,
-    user: User,
+    active_user: ActiveUser,
     admin_user: Option<AdminUser>,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
-    match mark_order_as_shipped(id, &mut db, user.clone(), admin_user.clone()).await {
+    match mark_order_as_shipped(id, &mut db, active_user.user.clone(), admin_user.clone()).await {
         Ok(_) => Ok(Flash::success(
             Redirect::to(format!("/{}/{}", "order", id)),
             "Order marked as shipped.",
@@ -148,10 +149,17 @@ async fn mark_order_as_shipped(
 async fn seller_cancel(
     id: &str,
     mut db: Connection<Db>,
-    user: User,
+    active_user: ActiveUser,
     admin_user: Option<AdminUser>,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
-    match mark_order_as_canceled_by_seller(id, &mut db, user.clone(), admin_user.clone()).await {
+    match mark_order_as_canceled_by_seller(
+        id,
+        &mut db,
+        active_user.user.clone(),
+        admin_user.clone(),
+    )
+    .await
+    {
         Ok(_) => Ok(Flash::success(
             Redirect::to(format!("/{}/{}", "order", id)),
             "Order marked as canceled by seller.",
@@ -195,10 +203,12 @@ async fn mark_order_as_canceled_by_seller(
 async fn buyer_cancel(
     id: &str,
     mut db: Connection<Db>,
-    user: User,
+    active_user: ActiveUser,
     admin_user: Option<AdminUser>,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
-    match mark_order_as_canceled_by_buyer(id, &mut db, user.clone(), admin_user.clone()).await {
+    match mark_order_as_canceled_by_buyer(id, &mut db, active_user.user.clone(), admin_user.clone())
+        .await
+    {
         Ok(_) => Ok(Flash::success(
             Redirect::to(format!("/{}/{}", "order", id)),
             "Order marked as canceled by buyer.",
@@ -243,11 +253,11 @@ async fn new_review(
     id: &str,
     order_review_form: Form<ReviewInput>,
     mut db: Connection<Db>,
-    user: User,
+    active_user: ActiveUser,
     _admin_user: Option<AdminUser>,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
     let order_review_info = order_review_form.into_inner();
-    match create_order_review(id, order_review_info, &mut db, user.clone()).await {
+    match create_order_review(id, order_review_info, &mut db, active_user.user.clone()).await {
         Ok(_) => Ok(Flash::success(
             Redirect::to(format!("/{}/{}", "order", id)),
             "Review Successfully Posted.",

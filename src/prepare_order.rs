@@ -3,6 +3,7 @@ use crate::config::Config;
 use crate::db::Db;
 use crate::lightning;
 use crate::models::{Listing, ListingDisplay, Order, OrderInfo, ShippingOption, UserSettings};
+use crate::user_account::ActiveUser;
 use crate::util;
 use pgp::composed::{Deserializable, Message};
 use rocket::fairing::AdHoc;
@@ -69,7 +70,7 @@ async fn new(
     id: &str,
     order_form: Form<OrderInfo>,
     mut db: Connection<Db>,
-    user: User,
+    active_user: ActiveUser,
     _admin_user: Option<AdminUser>,
     config: &State<Config>,
 ) -> Result<Flash<Redirect>, Flash<Redirect>> {
@@ -79,7 +80,7 @@ async fn new(
         id,
         order_info.clone(),
         &mut db,
-        user.clone(),
+        active_user.user.clone(),
         config.inner().clone(),
     )
     .await
@@ -227,7 +228,7 @@ async fn index(
     shipping_option_id: &str,
     quantity: usize,
     db: Connection<Db>,
-    user: User,
+    active_user: ActiveUser,
     admin_user: Option<AdminUser>,
 ) -> Template {
     let flash = flash.map(FlashMessage::into_inner);
@@ -239,7 +240,7 @@ async fn index(
             shipping_option_id,
             quantity.try_into().unwrap(),
             flash,
-            user,
+            active_user.user,
             admin_user,
         )
         .await,
