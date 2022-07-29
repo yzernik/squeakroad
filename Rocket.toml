@@ -1,2 +1,6 @@
 [default.databases.squeakroad]
 url = "db.sqlite"
+
+[default.limits]
+file = "10 MiB"
+data-form="10 MiB"
