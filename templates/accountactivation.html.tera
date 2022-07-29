@@ -36,6 +36,8 @@
 	<p><a href="/deactivate_account">Deactivate account</a></p>
 	{% endif %}
 	{% else %}
+	<p>A user bond is required to activate your account.</p>
+	<p>You can withdraw the bond at any time in the future when you deactivate your account (as long as you don't misbehave).</p>
 	<p><b>Payment request</b>:<p>
 	  <img src="data:image/bmp;base64,{{ qr_svg_base64 }}" style="width:256px;height:256px;" />
 	<p>
