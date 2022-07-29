@@ -1,5 +1,6 @@
 use crate::base::BaseContext;
 use crate::db::Db;
+use crate::image_util;
 use crate::models::FileUploadForm;
 use crate::models::{Listing, ListingDisplay, ListingImage};
 use crate::user_account::ActiveUser;
@@ -107,12 +108,14 @@ async fn upload_image(
     };
 
     let image_bytes = get_file_bytes(tmp_file).map_err(|_| "failed to get bytes.")?;
+    let cleared_metadata_image_bytes = image_util::get_stripped_image_bytes(&image_bytes)
+        .map_err(|_| "failed to clear image metadata.")?;
 
     let listing_image = ListingImage {
         id: None,
         public_id: util::create_uuid(),
         listing_id: listing.id.unwrap(),
-        image_data: image_bytes,
+        image_data: cleared_metadata_image_bytes,
         is_primary: false,
     };
 
