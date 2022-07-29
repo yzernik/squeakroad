@@ -14,7 +14,7 @@
 
     <form action="/update_pgp_info/change" method="post">
       <div class="ten columns">
-        <textarea placeholder="enter your PGP key id..."
+        <textarea placeholder="enter your PGP key..."
 		  name="pgp_key" id="pgp_key" value="" autofocus
 		  class="u-full-width"></textarea>
         {% if flash %}

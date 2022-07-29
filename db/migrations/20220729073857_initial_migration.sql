@@ -9,7 +9,8 @@ CREATE TABLE listings (
     reviewed BOOLEAN NOT NULL,
     submitted BOOLEAN NOT NULL,
     approved BOOLEAN NOT NULL,
-    removed BOOLEAN NOT NULL,
+    deactivated_by_seller boolean NOT NULL,
+    deactivated_by_admin boolean NOT NULL,
     created_time_ms UNSIGNED BIG INT NOT NULL
 );
 
@@ -28,15 +29,6 @@ CREATE TABLE shippingoptions (
     title VARCHAR NOT NULL,
     description VARCHAR NOT NULL,
     price_sat UNSIGNED BIG INT NOT NULL
-);
-
-CREATE TABLE adminsettings (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    market_name VARCHAR NOT NULL,
-    fee_rate_basis_points INTEGER NOT NULL,
-    pgp_key VARCHAR NOT NULL,
-    squeaknode_address VARCHAR NOT NULL,
-    squeaknode_pubkey VARCHAR NOT NULL
 );
 
 CREATE TABLE orders (
@@ -74,6 +66,19 @@ CREATE TABLE withdrawals (
     invoice_payment_request VARCHAR NOT NULL
 );
 
+CREATE TABLE useraccounts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    public_id VARCHAR NOT NULL,
+    user_id Integer NOT NULL,
+    amount_owed_sat UNSIGNED BIG INT NOT NULL,
+    paid BOOLEAN NOT NULL,
+    disabled boolean NOT NULL,
+    invoice_payment_request VARCHAR NOT NULL,
+    invoice_hash VARCHAR NOT NULL,
+    created_time_ms UNSIGNED BIG INT NOT NULL,
+    payment_time_ms UNSIGNED BIG INT NOT NULL
+);
+
 CREATE TABLE usersettings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
@@ -81,3 +86,14 @@ CREATE TABLE usersettings (
     squeaknode_pubkey VARCHAR NOT NULL,
     squeaknode_address VARCHAR NOT NULL
 );
+
+CREATE TABLE adminsettings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    market_name VARCHAR NOT NULL,
+    fee_rate_basis_points INTEGER NOT NULL,
+    user_bond_price_sat UNSIGNED BIG INT NOT NULL,
+    pgp_key VARCHAR NOT NULL,
+    squeaknode_address VARCHAR NOT NULL,
+    squeaknode_pubkey VARCHAR NOT NULL
+);
+

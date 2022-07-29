@@ -1637,8 +1637,8 @@ WHERE NOT EXISTS(SELECT 1 FROM adminsettings)
             admin_settings.market_name,
             admin_settings.fee_rate_basis_points,
             user_bond_price_sat_i64,
-            admin_settings.squeaknode_pubkey,
             admin_settings.pgp_key,
+            admin_settings.squeaknode_pubkey,
             admin_settings.squeaknode_address,
         )
         .execute(&mut **db)
