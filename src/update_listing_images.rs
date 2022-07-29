@@ -105,9 +105,6 @@ async fn upload_image(
     if tmp_file.len() == 0 {
         return Err("File is empty.".to_string());
     };
-    if tmp_file.len() >= 1000000 {
-        return Err("File is bigger than maximum allowed size.".to_string());
-    };
 
     let image_bytes = get_file_bytes(tmp_file).map_err(|_| "failed to get bytes.")?;
 
