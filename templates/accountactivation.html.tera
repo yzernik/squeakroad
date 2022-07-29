@@ -33,6 +33,7 @@
         <p><b>Payment time</b>: {{ (user_account.payment_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}</p>
 	{% if user.id == user_account.user_id %}
 	<p><a href="/">Continue as activated user</a></p>
+	<p><a href="/deactivate_account">Deactivate account</a></p>
 	{% endif %}
 	{% else %}
 	<p><b>Payment request</b>:<p>
