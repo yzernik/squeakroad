@@ -1560,6 +1560,16 @@
     },
     "query": "\nselect\n users.id as rocket_auth_user_id, users.email as rocket_auth_user_username, useraccounts.id as useraccounts_id, useraccounts.public_id as useraccounts_public_id, useraccounts.user_id as useraccounts_user_id, useraccounts.amount_owed_sat as useraccounts_amount_owed_sat, useraccounts.paid as useraccounts_paid, useraccounts.disabled as useraccounts_disabled, useraccounts.invoice_payment_request as useraccounts_invoice_payment_request, useraccounts.invoice_hash as useraccounts_invoice_hash, useraccounts.created_time_ms as useraccounts_created_time_ms, useraccounts.payment_time_ms as useraccounts_payment_time_ms\nfrom\n users\nINNER JOIN\n useraccounts\nON\n users.id = useraccounts.user_id\nWHERE\n useraccounts.paid\nAND\n NOT useraccounts.disabled\nGROUP BY\n users.id\nORDER BY useraccounts.created_time_ms DESC\nLIMIT ?\nOFFSET ?\n;"
   },
+  "780e88e3f730a7ffbb523f13cca943fcecf6901deab2d824ab578382ddca18d6": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\nDELETE FROM shippingoptions\nWHERE\n listing_id IN\n(SELECT listings.id FROM listings\nWHERE user_id = ?);\n;"
+  },
   "7a0050de10d11bf006391c43dac8abdf7b18678a44bc56df27e2643b539948a3": {
     "describe": {
       "columns": [
@@ -3436,6 +3446,16 @@
     },
     "query": "\nSELECT\n invoice_hash\nFROM\n(SELECT invoice_hash, payment_time_ms FROM useraccounts\n UNION ALL\nSELECT invoice_hash, payment_time_ms FROM orders)\nWHERE\n payment_time_ms = (SELECT MAX(payment_time_ms) FROM\n(SELECT invoice_hash, payment_time_ms FROM useraccounts\n UNION ALL\nSELECT invoice_hash, payment_time_ms FROM orders))\nLIMIT 1\n;"
   },
+  "ba9790769339b72b554d14295864b155ee063a7f7c482383c91ddd67ebec148a": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\nDELETE FROM listingimages\nWHERE\n listing_id IN\n(SELECT listings.id FROM listings\nWHERE user_id = ?);\n;"
+  },
   "be99d8673183a949c574c4f6ad6dbdc625755f69f860876ee64737ffbb1a9bbf": {
     "describe": {
       "columns": [
@@ -3895,6 +3915,16 @@
       }
     },
     "query": "UPDATE useraccounts SET disabled = true WHERE user_id = ?"
+  },
+  "e5ddc9a5a809ed853d75cd5dbc9187e2c869f8ca0dbe38674917a5c22bdeeaa3": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\nDELETE FROM listings\nWHERE user_id = ?\n;"
   },
   "e94cd0fbe6f4a8d90120733fb88081da00668901ed37ba6ca200f82dc2331aaa": {
     "describe": {

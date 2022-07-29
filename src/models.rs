@@ -3568,6 +3568,45 @@ WHERE id = ?
         .await
         .map_err(|_| "failed to delete user.")?;
 
+        sqlx::query!(
+            "
+DELETE FROM listingimages
+WHERE
+ listing_id IN
+(SELECT listings.id FROM listings
+WHERE user_id = ?);
+;",
+            user_account.user_id,
+        )
+        .execute(&mut *tx)
+        .await
+        .map_err(|_| "failed to delete user listing images.")?;
+
+        sqlx::query!(
+            "
+DELETE FROM shippingoptions
+WHERE
+ listing_id IN
+(SELECT listings.id FROM listings
+WHERE user_id = ?);
+;",
+            user_account.user_id,
+        )
+        .execute(&mut *tx)
+        .await
+        .map_err(|_| "failed to delete user shipping options.")?;
+
+        sqlx::query!(
+            "
+DELETE FROM listings
+WHERE user_id = ?
+;",
+            user_account.user_id,
+        )
+        .execute(&mut *tx)
+        .await
+        .map_err(|_| "failed to delete user listings.")?;
+
         if activation_bond_amount_sat - amount_sat < 0 {
             return Err("Insufficient funds for deactivation.".to_string());
         }
