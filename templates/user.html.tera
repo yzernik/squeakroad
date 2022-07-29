@@ -10,7 +10,28 @@
 
       <h3>User: {{ visited_user.username }}</h3>
 
+      {% if flash %}
+      <small class="field-{{flash.0}}-msg">
+	{{ flash.1 }}
+      </small>
+      {% endif %}
+
       <p><b>User rating</b>: {{ weighted_average_rating | round(method="ceil", precision=2) }} <a href="/seller_history/{{ visited_user.username }}">(See rating)</a></p>
+      <p><b>User account status</b>: {% if visited_user_account.disabled %}Disabled{% else %}Active{% endif %}</p>
+      {% if admin_user %}
+      {% if not visited_user_account.disabled %}
+      <form class="inline" action="/user/{{ visited_user.username }}/disable" method="post">
+	<input type="hidden" name="_method" value="put" />
+	<button class="small" type="submit">Disable Account</button>
+      </form>
+      {% else %}
+      <form class="inline" action="/user/{{ visited_user.username }}/enable" method="post">
+	<input type="hidden" name="_method" value="put" />
+	<button class="small" type="submit">Enable Account</button>
+      </form>
+      {% endif %}
+      {% endif %}
+
       <p><b><a href="/user_profile/{{ visited_user.username }}">User Profile</a></b></p>
 
       <div class="twelve columns">

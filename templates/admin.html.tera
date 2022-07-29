@@ -8,23 +8,40 @@ Username: {{ user.email }}.
 <br>
 <a href="market_liabilities">Show market liabilities</a>
 
-<br>
-<a href="/update_market_name">Update Market Name</a>
+<div class="container">
+  <p><!--Nothing to see here --></p>
+  <div class="row">
+    <h5>Settings</h5>
+    <a href="/update_market_name">Update Market Name</a>
+    <br>
+    <a href="/update_pgp_info">Update PGP Info</a>
+    <br>
+    <a href="/update_squeaknode_info">Update Squeaknode Info</a>
+    <br>
+    <a href="/update_fee_rate">Update Fee Rate</a>
+    <br>
+    <a href="/update_user_bond_price">Update User Bond Price</a>
+  </div>
+</div>
 
-<br>
-<a href="/update_pgp_info">Update PGP Info</a>
 
-<br>
-<a href="/update_squeaknode_info">Update Squeaknode Info</a>
+<div class="container">
+  <p><!--Nothing to see here --></p>
+  <div class="row">
+    <h5>Listings</h5>
+    <a href="/review_pending_listings">Review Pending Listings</a>
+  </div>
+</div>
 
-<br>
-<a href="/update_fee_rate">Update Fee Rate</a>
-
-<br>
-<a href="/update_user_bond_price">Update User Bond Price</a>
-
-<br>
-<a href="/review_pending_listings">Review Pending Listings</a>
+<div class="container">
+  <p><!--Nothing to see here --></p>
+  <div class="row">
+    <h5>Users</h5>
+    <a href="/active_users">Active Users</a>
+    <br>
+    <a href="/disabled_users">Disabled Users</a>
+  </div>
+</div>
 
 <br>
 

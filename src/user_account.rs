@@ -35,7 +35,7 @@ impl<'r> FromRequest<'r> for ActiveUser {
         let maybe_user_account = UserAccount::single(&mut db, user.id()).await.ok();
 
         if let Some(user_account) = maybe_user_account {
-            if user_account.paid {
+            if user_account.paid && !user_account.disabled {
                 Outcome::Success(ActiveUser { user, user_account })
             } else {
                 Outcome::Failure((Status::Unauthorized, ()))

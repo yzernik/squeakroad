@@ -1256,6 +1256,16 @@
     },
     "query": "\nselect\n listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.deactivated_by_seller, listings.deactivated_by_admin, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username\nfrom\n listings\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nINNER JOIN\n users\nON\n listings.user_id = users.id\nWHERE\n not listings.submitted\nAND\n users.id = ?\nGROUP BY\n listings.id\nORDER BY listings.created_time_ms DESC\nLIMIT ?\nOFFSET ?\n;"
   },
+  "6362339e640dc1b48efbbfaca7572c8fb680492da0bfb7645869a4770d202482": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "UPDATE useraccounts SET disabled = false WHERE user_id = ?"
+  },
   "714c4e0de57ccd557bb960add3db93f42a742411c949565b11a8a2da25ec78bb": {
     "describe": {
       "columns": [],
@@ -1455,6 +1465,90 @@
       }
     },
     "query": "\nselect\n listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.deactivated_by_seller, listings.deactivated_by_admin, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username\nfrom\n listings\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nINNER JOIN\n users\nON\n listings.user_id = users.id\nWHERE\n listings.approved\nAND\n (listings.deactivated_by_seller OR listings.deactivated_by_admin)\nAND\n users.id = ?\nGROUP BY\n listings.id\nORDER BY listings.created_time_ms DESC\nLIMIT ?\nOFFSET ?\n;"
+  },
+  "7797e71308f48df3d113a5b76c1a9e15e6d7877d4eaeef8ea7e175191d8460bb": {
+    "describe": {
+      "columns": [
+        {
+          "name": "rocket_auth_user_id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "rocket_auth_user_username",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "useraccounts_id",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "useraccounts_public_id",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "useraccounts_user_id",
+          "ordinal": 4,
+          "type_info": "Int64"
+        },
+        {
+          "name": "useraccounts_amount_owed_sat",
+          "ordinal": 5,
+          "type_info": "Int64"
+        },
+        {
+          "name": "useraccounts_paid",
+          "ordinal": 6,
+          "type_info": "Bool"
+        },
+        {
+          "name": "useraccounts_disabled",
+          "ordinal": 7,
+          "type_info": "Bool"
+        },
+        {
+          "name": "useraccounts_invoice_payment_request",
+          "ordinal": 8,
+          "type_info": "Text"
+        },
+        {
+          "name": "useraccounts_invoice_hash",
+          "ordinal": 9,
+          "type_info": "Text"
+        },
+        {
+          "name": "useraccounts_created_time_ms",
+          "ordinal": 10,
+          "type_info": "Int64"
+        },
+        {
+          "name": "useraccounts_payment_time_ms",
+          "ordinal": 11,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "\nselect\n users.id as rocket_auth_user_id, users.email as rocket_auth_user_username, useraccounts.id as useraccounts_id, useraccounts.public_id as useraccounts_public_id, useraccounts.user_id as useraccounts_user_id, useraccounts.amount_owed_sat as useraccounts_amount_owed_sat, useraccounts.paid as useraccounts_paid, useraccounts.disabled as useraccounts_disabled, useraccounts.invoice_payment_request as useraccounts_invoice_payment_request, useraccounts.invoice_hash as useraccounts_invoice_hash, useraccounts.created_time_ms as useraccounts_created_time_ms, useraccounts.payment_time_ms as useraccounts_payment_time_ms\nfrom\n users\nINNER JOIN\n useraccounts\nON\n users.id = useraccounts.user_id\nWHERE\n useraccounts.paid\nAND\n NOT useraccounts.disabled\nGROUP BY\n users.id\nORDER BY useraccounts.created_time_ms DESC\nLIMIT ?\nOFFSET ?\n;"
   },
   "7a0050de10d11bf006391c43dac8abdf7b18678a44bc56df27e2643b539948a3": {
     "describe": {
@@ -1801,6 +1895,90 @@
       }
     },
     "query": "\nUPDATE listings\nSET deactivated_by_admin = true\nWHERE\n public_id = ?\nAND\n approved\nAND NOT (deactivated_by_seller OR deactivated_by_admin)\n;"
+  },
+  "7ea71edca4c4275444b2627ce3cd4ee280c66bf997f3ab05197448bdea2dc5e8": {
+    "describe": {
+      "columns": [
+        {
+          "name": "rocket_auth_user_id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "rocket_auth_user_username",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "useraccounts_id",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "useraccounts_public_id",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "useraccounts_user_id",
+          "ordinal": 4,
+          "type_info": "Int64"
+        },
+        {
+          "name": "useraccounts_amount_owed_sat",
+          "ordinal": 5,
+          "type_info": "Int64"
+        },
+        {
+          "name": "useraccounts_paid",
+          "ordinal": 6,
+          "type_info": "Bool"
+        },
+        {
+          "name": "useraccounts_disabled",
+          "ordinal": 7,
+          "type_info": "Bool"
+        },
+        {
+          "name": "useraccounts_invoice_payment_request",
+          "ordinal": 8,
+          "type_info": "Text"
+        },
+        {
+          "name": "useraccounts_invoice_hash",
+          "ordinal": 9,
+          "type_info": "Text"
+        },
+        {
+          "name": "useraccounts_created_time_ms",
+          "ordinal": 10,
+          "type_info": "Int64"
+        },
+        {
+          "name": "useraccounts_payment_time_ms",
+          "ordinal": 11,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "\nselect\n users.id as rocket_auth_user_id, users.email as rocket_auth_user_username, useraccounts.id as useraccounts_id, useraccounts.public_id as useraccounts_public_id, useraccounts.user_id as useraccounts_user_id, useraccounts.amount_owed_sat as useraccounts_amount_owed_sat, useraccounts.paid as useraccounts_paid, useraccounts.disabled as useraccounts_disabled, useraccounts.invoice_payment_request as useraccounts_invoice_payment_request, useraccounts.invoice_hash as useraccounts_invoice_hash, useraccounts.created_time_ms as useraccounts_created_time_ms, useraccounts.payment_time_ms as useraccounts_payment_time_ms\nfrom\n users\nINNER JOIN\n useraccounts\nON\n users.id = useraccounts.user_id\nWHERE\n useraccounts.paid\nAND\n useraccounts.disabled\nGROUP BY\n users.id\nORDER BY useraccounts.created_time_ms DESC\nLIMIT ?\nOFFSET ?\n;"
   },
   "814a6a824f4178ecb9911e94b7e7c7317f7ce22340e392b281113d2b9d54fb87": {
     "describe": {
@@ -3707,6 +3885,16 @@
       }
     },
     "query": "\nDELETE FROM users\nWHERE id = ?\n;"
+  },
+  "e56222b06ef12cb38eca1b6467de6b1cb2cb64921f1c534c15aecf8b680c4b61": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "UPDATE useraccounts SET disabled = true WHERE user_id = ?"
   },
   "e94cd0fbe6f4a8d90120733fb88081da00668901ed37ba6ca200f82dc2331aaa": {
     "describe": {

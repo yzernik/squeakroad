@@ -189,6 +189,8 @@ pub fn stage(config: Config) -> AdHoc {
             .attach(crate::about::about_stage())
             .attach(crate::auth::auth_stage())
             .attach(crate::admin::admin_stage())
+            .attach(crate::active_users::active_users_stage())
+            .attach(crate::disabled_users::disabled_users_stage())
             .attach(crate::activate_account::activate_account_stage())
             .attach(crate::account_activation::account_activation_stage())
             .attach(crate::deactivate_account::deactivate_account_stage())
