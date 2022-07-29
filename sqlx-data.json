@@ -1256,6 +1256,16 @@
     },
     "query": "\nselect\n listings.id, listings.public_id, listings.user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.deactivated_by_seller, listings.deactivated_by_admin, listings.created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username\nfrom\n listings\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nINNER JOIN\n users\nON\n listings.user_id = users.id\nWHERE\n not listings.submitted\nAND\n users.id = ?\nGROUP BY\n listings.id\nORDER BY listings.created_time_ms DESC\nLIMIT ?\nOFFSET ?\n;"
   },
+  "6362339e640dc1b48efbbfaca7572c8fb680492da0bfb7645869a4770d202482": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "UPDATE useraccounts SET disabled = false WHERE user_id = ?"
+  },
   "714c4e0de57ccd557bb960add3db93f42a742411c949565b11a8a2da25ec78bb": {
     "describe": {
       "columns": [],
@@ -3791,6 +3801,16 @@
       }
     },
     "query": "\nDELETE FROM users\nWHERE id = ?\n;"
+  },
+  "e56222b06ef12cb38eca1b6467de6b1cb2cb64921f1c534c15aecf8b680c4b61": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "UPDATE useraccounts SET disabled = true WHERE user_id = ?"
   },
   "e94cd0fbe6f4a8d90120733fb88081da00668901ed37ba6ca200f82dc2331aaa": {
     "describe": {

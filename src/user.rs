@@ -1,8 +1,10 @@
 use crate::base::BaseContext;
 use crate::db::Db;
-use crate::models::{ListingCardDisplay, Order, RocketAuthUser};
+use crate::models::{ListingCardDisplay, Order, RocketAuthUser, UserAccount};
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
+use rocket::response::Flash;
+use rocket::response::Redirect;
 use rocket::serde::Serialize;
 use rocket_auth::AdminUser;
 use rocket_auth::User;
@@ -17,8 +19,10 @@ struct Context {
     base_context: BaseContext,
     flash: Option<(String, String)>,
     visited_user: RocketAuthUser,
+    visited_user_account: UserAccount,
     weighted_average_rating: f32,
     listing_cards: Vec<ListingCardDisplay>,
+    admin_user: Option<AdminUser>,
     page_num: u32,
 }
 
@@ -37,6 +41,9 @@ impl Context {
         let visited_user = RocketAuthUser::single_by_username(&mut db, username)
             .await
             .map_err(|_| "failed to get visited user.")?;
+        let visited_user_account = UserAccount::single(&mut db, visited_user.id.unwrap())
+            .await
+            .map_err(|_| "failed to get user account.")?;
         let page_num = maybe_page_num.unwrap_or(1);
         let listing_cards = ListingCardDisplay::all_active_for_user(
             &mut db,
@@ -54,11 +61,77 @@ impl Context {
             base_context,
             flash,
             visited_user,
+            visited_user_account,
             weighted_average_rating,
             listing_cards,
+            admin_user,
             page_num,
         })
     }
+}
+
+#[put("/<username>/disable")]
+async fn disable(
+    username: &str,
+    mut db: Connection<Db>,
+    _user: User,
+    _admin_user: AdminUser,
+) -> Result<Flash<Redirect>, Flash<Redirect>> {
+    match disable_user(&mut db, username).await {
+        Ok(_) => Ok(Flash::success(
+            Redirect::to(format!("/{}/{}", "user", username)),
+            "User disabled by admin".to_string(),
+        )),
+        Err(e) => {
+            error_!("Mark as disabled error({}) error: {}", username, e);
+            Err(Flash::error(
+                Redirect::to(format!("/{}/{}", "user", username)),
+                e,
+            ))
+        }
+    }
+}
+
+async fn disable_user(db: &mut Connection<Db>, username: &str) -> Result<(), String> {
+    let rocket_auth_user = RocketAuthUser::single_by_username(db, username.to_string())
+        .await
+        .map_err(|_| "failed to get user")?;
+    UserAccount::mark_as_disabled(db, rocket_auth_user.id.unwrap())
+        .await
+        .map_err(|_| "failed to disable user account.")?;
+    Ok(())
+}
+
+#[put("/<username>/enable")]
+async fn enable(
+    username: &str,
+    mut db: Connection<Db>,
+    _user: User,
+    _admin_user: AdminUser,
+) -> Result<Flash<Redirect>, Flash<Redirect>> {
+    match enable_user(&mut db, username).await {
+        Ok(_) => Ok(Flash::success(
+            Redirect::to(format!("/{}/{}", "user", username)),
+            "User enabled by admin".to_string(),
+        )),
+        Err(e) => {
+            error_!("Mark as enabled error({}) error: {}", username, e);
+            Err(Flash::error(
+                Redirect::to(format!("/{}/{}", "user", username)),
+                e,
+            ))
+        }
+    }
+}
+
+async fn enable_user(db: &mut Connection<Db>, username: &str) -> Result<(), String> {
+    let rocket_auth_user = RocketAuthUser::single_by_username(db, username.to_string())
+        .await
+        .map_err(|_| "failed to get user")?;
+    UserAccount::mark_as_enabled(db, rocket_auth_user.id.unwrap())
+        .await
+        .map_err(|_| "failed to enable user account.")?;
+    Ok(())
 }
 
 #[get("/<username>?<page_num>")]
@@ -79,6 +152,6 @@ async fn index(
 
 pub fn user_stage() -> AdHoc {
     AdHoc::on_ignite("User Stage", |rocket| async {
-        rocket.mount("/user", routes![index])
+        rocket.mount("/user", routes![index, disable, enable])
     })
 }

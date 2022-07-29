@@ -3380,6 +3380,34 @@ impl UserAccount {
         Ok(())
     }
 
+    pub async fn mark_as_disabled(
+        db: &mut PoolConnection<Sqlite>,
+        user_id: i32,
+    ) -> Result<(), sqlx::Error> {
+        sqlx::query!(
+            "UPDATE useraccounts SET disabled = true WHERE user_id = ?",
+            user_id,
+        )
+        .execute(&mut **db)
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn mark_as_enabled(
+        db: &mut PoolConnection<Sqlite>,
+        user_id: i32,
+    ) -> Result<(), sqlx::Error> {
+        sqlx::query!(
+            "UPDATE useraccounts SET disabled = false WHERE user_id = ?",
+            user_id,
+        )
+        .execute(&mut **db)
+        .await?;
+
+        Ok(())
+    }
+
     pub async fn all_older_than(
         db: &mut PoolConnection<Sqlite>,
         created_time_ms: u64,

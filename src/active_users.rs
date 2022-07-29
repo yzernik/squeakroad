@@ -57,13 +57,13 @@ async fn index(
 ) -> Result<Template, NotFound<String>> {
     let flash = flash.map(FlashMessage::into_inner);
     Ok(Template::render(
-        "allusers",
+        "activeusers",
         Context::raw(flash, db, page_num, user, Some(admin_user)).await,
     ))
 }
 
-pub fn all_users_stage() -> AdHoc {
-    AdHoc::on_ignite("All Users Stage", |rocket| async {
-        rocket.mount("/all_users", routes![index])
+pub fn active_users_stage() -> AdHoc {
+    AdHoc::on_ignite("Active Users Stage", |rocket| async {
+        rocket.mount("/active_users", routes![index])
     })
 }
