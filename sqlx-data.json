@@ -261,49 +261,49 @@
           "type_info": "Int64"
         },
         {
-          "name": "user_id",
+          "name": "public_id",
           "ordinal": 1,
-          "type_info": "Int64"
+          "type_info": "Text"
         },
         {
-          "name": "amount_owed_sat",
+          "name": "user_id",
           "ordinal": 2,
           "type_info": "Int64"
         },
         {
-          "name": "paid",
+          "name": "amount_owed_sat",
           "ordinal": 3,
-          "type_info": "Bool"
+          "type_info": "Int64"
         },
         {
-          "name": "disabled",
+          "name": "paid",
           "ordinal": 4,
           "type_info": "Bool"
         },
         {
-          "name": "invoice_payment_request",
+          "name": "disabled",
           "ordinal": 5,
-          "type_info": "Text"
+          "type_info": "Bool"
         },
         {
-          "name": "invoice_hash",
+          "name": "invoice_payment_request",
           "ordinal": 6,
           "type_info": "Text"
         },
         {
-          "name": "created_time_ms",
+          "name": "invoice_hash",
           "ordinal": 7,
-          "type_info": "Int64"
+          "type_info": "Text"
         },
         {
-          "name": "payment_time_ms",
+          "name": "created_time_ms",
           "ordinal": 8,
           "type_info": "Int64"
         },
         {
-          "name": "public_id",
+          "name": "payment_time_ms",
           "ordinal": 9,
-          "type_info": "Text"
+          "type_info": "Int64"
         }
       ],
       "nullable": [
@@ -1569,49 +1569,49 @@
           "type_info": "Int64"
         },
         {
-          "name": "user_id",
+          "name": "public_id",
           "ordinal": 1,
-          "type_info": "Int64"
+          "type_info": "Text"
         },
         {
-          "name": "amount_owed_sat",
+          "name": "user_id",
           "ordinal": 2,
           "type_info": "Int64"
         },
         {
-          "name": "paid",
+          "name": "amount_owed_sat",
           "ordinal": 3,
-          "type_info": "Bool"
+          "type_info": "Int64"
         },
         {
-          "name": "disabled",
+          "name": "paid",
           "ordinal": 4,
           "type_info": "Bool"
         },
         {
-          "name": "invoice_payment_request",
+          "name": "disabled",
           "ordinal": 5,
-          "type_info": "Text"
+          "type_info": "Bool"
         },
         {
-          "name": "invoice_hash",
+          "name": "invoice_payment_request",
           "ordinal": 6,
           "type_info": "Text"
         },
         {
-          "name": "created_time_ms",
+          "name": "invoice_hash",
           "ordinal": 7,
-          "type_info": "Int64"
+          "type_info": "Text"
         },
         {
-          "name": "payment_time_ms",
+          "name": "created_time_ms",
           "ordinal": 8,
           "type_info": "Int64"
         },
         {
-          "name": "public_id",
+          "name": "payment_time_ms",
           "ordinal": 9,
-          "type_info": "Text"
+          "type_info": "Int64"
         }
       ],
       "nullable": [
@@ -2100,19 +2100,19 @@
           "type_info": "Bool"
         },
         {
-          "name": "created_time_ms",
-          "ordinal": 10,
-          "type_info": "Int64"
-        },
-        {
           "name": "deactivated_by_seller",
-          "ordinal": 11,
+          "ordinal": 10,
           "type_info": "Bool"
         },
         {
           "name": "deactivated_by_admin",
-          "ordinal": 12,
+          "ordinal": 11,
           "type_info": "Bool"
+        },
+        {
+          "name": "created_time_ms",
+          "ordinal": 12,
+          "type_info": "Int64"
         }
       ],
       "nullable": [
@@ -2536,19 +2536,19 @@
           "type_info": "Bool"
         },
         {
-          "name": "created_time_ms",
-          "ordinal": 10,
-          "type_info": "Int64"
-        },
-        {
           "name": "deactivated_by_seller",
-          "ordinal": 11,
+          "ordinal": 10,
           "type_info": "Bool"
         },
         {
           "name": "deactivated_by_admin",
-          "ordinal": 12,
+          "ordinal": 11,
           "type_info": "Bool"
+        },
+        {
+          "name": "created_time_ms",
+          "ordinal": 12,
+          "type_info": "Int64"
         }
       ],
       "nullable": [
@@ -3455,24 +3455,24 @@
           "type_info": "Int64"
         },
         {
-          "name": "pgp_key",
+          "name": "user_bond_price_sat",
           "ordinal": 3,
-          "type_info": "Text"
+          "type_info": "Int64"
         },
         {
-          "name": "squeaknode_address",
+          "name": "pgp_key",
           "ordinal": 4,
           "type_info": "Text"
         },
         {
-          "name": "squeaknode_pubkey",
+          "name": "squeaknode_address",
           "ordinal": 5,
           "type_info": "Text"
         },
         {
-          "name": "user_bond_price_sat",
+          "name": "squeaknode_pubkey",
           "ordinal": 6,
-          "type_info": "Int64"
+          "type_info": "Text"
         }
       ],
       "nullable": [
@@ -3499,49 +3499,49 @@
           "type_info": "Int64"
         },
         {
-          "name": "user_id",
+          "name": "public_id",
           "ordinal": 1,
-          "type_info": "Int64"
+          "type_info": "Text"
         },
         {
-          "name": "amount_owed_sat",
+          "name": "user_id",
           "ordinal": 2,
           "type_info": "Int64"
         },
         {
-          "name": "paid",
+          "name": "amount_owed_sat",
           "ordinal": 3,
-          "type_info": "Bool"
+          "type_info": "Int64"
         },
         {
-          "name": "disabled",
+          "name": "paid",
           "ordinal": 4,
           "type_info": "Bool"
         },
         {
-          "name": "invoice_payment_request",
+          "name": "disabled",
           "ordinal": 5,
-          "type_info": "Text"
+          "type_info": "Bool"
         },
         {
-          "name": "invoice_hash",
+          "name": "invoice_payment_request",
           "ordinal": 6,
           "type_info": "Text"
         },
         {
-          "name": "created_time_ms",
+          "name": "invoice_hash",
           "ordinal": 7,
-          "type_info": "Int64"
+          "type_info": "Text"
         },
         {
-          "name": "payment_time_ms",
+          "name": "created_time_ms",
           "ordinal": 8,
           "type_info": "Int64"
         },
         {
-          "name": "public_id",
+          "name": "payment_time_ms",
           "ordinal": 9,
-          "type_info": "Text"
+          "type_info": "Int64"
         }
       ],
       "nullable": [
@@ -4207,49 +4207,49 @@
           "type_info": "Int64"
         },
         {
-          "name": "user_id",
+          "name": "public_id",
           "ordinal": 1,
-          "type_info": "Int64"
+          "type_info": "Text"
         },
         {
-          "name": "amount_owed_sat",
+          "name": "user_id",
           "ordinal": 2,
           "type_info": "Int64"
         },
         {
-          "name": "paid",
+          "name": "amount_owed_sat",
           "ordinal": 3,
-          "type_info": "Bool"
+          "type_info": "Int64"
         },
         {
-          "name": "disabled",
+          "name": "paid",
           "ordinal": 4,
           "type_info": "Bool"
         },
         {
-          "name": "invoice_payment_request",
+          "name": "disabled",
           "ordinal": 5,
-          "type_info": "Text"
+          "type_info": "Bool"
         },
         {
-          "name": "invoice_hash",
+          "name": "invoice_payment_request",
           "ordinal": 6,
           "type_info": "Text"
         },
         {
-          "name": "created_time_ms",
+          "name": "invoice_hash",
           "ordinal": 7,
-          "type_info": "Int64"
+          "type_info": "Text"
         },
         {
-          "name": "payment_time_ms",
+          "name": "created_time_ms",
           "ordinal": 8,
           "type_info": "Int64"
         },
         {
-          "name": "public_id",
+          "name": "payment_time_ms",
           "ordinal": 9,
-          "type_info": "Text"
+          "type_info": "Int64"
         }
       ],
       "nullable": [
