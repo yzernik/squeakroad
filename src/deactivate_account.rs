@@ -79,7 +79,10 @@ async fn new(
         )),
         Err(e) => {
             error_!("Withdrawal error: {}", e);
-            Err(Flash::error(Redirect::to(uri!("/withdraw", index())), e))
+            Err(Flash::error(
+                Redirect::to(uri!("/deactivate_account", index())),
+                e,
+            ))
         }
     }
 }
