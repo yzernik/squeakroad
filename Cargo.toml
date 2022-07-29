@@ -39,7 +39,7 @@ features = ["sqlite_pool"]
 [dependencies.rocket_auth]
 # version = "0.4.0"
 git = "https://github.com/yzernik/rocket_auth"
-branch = "internal_branch_for_rocket_sqlx_0_6_0_post2"
+branch = "internal_branch_for_rocket_sqlx_0_6_0_post3"
 features = ["sqlx-sqlite"]
 
 [dependencies.rocket_dyn_templates]
