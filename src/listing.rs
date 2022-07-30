@@ -40,10 +40,9 @@ impl Context {
         // Do not show listing if it is not active (unless user is seller or admin).
         if !(user.as_ref().map(|u| u.id()) == Some(listing_display.listing.user_id)
             || admin_user.is_some())
+            && !listing_display.listing.approved
         {
-            if !listing_display.listing.approved {
-                return Err("Listing is not approved.".to_string());
-            }
+            return Err("Listing is not approved.".to_string());
         };
 
         Ok(Context {
