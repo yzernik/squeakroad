@@ -51,7 +51,6 @@ impl Context {
         let seller_user_settings = UserSettings::single(&mut db, listing_display.listing.user_id)
             .await
             .map_err(|_| "failed to get visited user settings.")?;
-        println!("quantity: {:?}", quantity);
         Ok(Context {
             base_context,
             flash,
