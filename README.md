@@ -8,6 +8,8 @@
 ### Requirements
 * an LND node
 * Rust and Cargo
+* openssl
+* gexiv2
 
 ### Step 1. Create the configuration
 > Create a **config.toml** file and fill in the relevant sections to connect to your LND node:
