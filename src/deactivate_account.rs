@@ -114,18 +114,6 @@ async fn withdraw_account_deactivation_funds(
     let invoice_payment_request = withdrawal_info.invoice_payment_request;
     let send_deactivation_funds_ret =
         send_account_deactivation_funds(invoice_payment_request, config);
-    // Withdrawal::do_withdrawal(
-    //     withdrawal,
-    //     db,
-    //     send_withdrawal_funds_ret,
-    //     MAX_WITHDRAWALS_PER_USER_PER_DAY,
-    //     now - one_day_in_ms,
-    // )
-    // .await
-    // .map_err(|e| {
-    //     error_!("Failed withdrawal: {}", e);
-    //     e
-    // })?;
     UserAccount::do_deactivation(amount_sat, user_account, db, send_deactivation_funds_ret)
         .await
         .map_err(|e| {
@@ -156,6 +144,12 @@ async fn send_account_deactivation_funds(
         .await
         .map_err(|e| format!("failed to send payment: {:?}", e))?
         .into_inner();
+    if send_response.payment_preimage.is_empty() {
+        return Err(format!(
+            "Send Payment failure: {:?}.",
+            send_response.payment_error
+        ));
+    }
     Ok(send_response)
 }
 

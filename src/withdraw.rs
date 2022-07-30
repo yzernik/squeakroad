@@ -156,6 +156,12 @@ async fn send_withdrawal_funds(
         .await
         .map_err(|e| format!("failed to send payment: {:?}", e))?
         .into_inner();
+    if send_response.payment_preimage.is_empty() {
+        return Err(format!(
+            "Send Payment failure: {:?}.",
+            send_response.payment_error
+        ));
+    }
     Ok(send_response)
 }
 
