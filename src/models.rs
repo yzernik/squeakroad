@@ -1943,12 +1943,21 @@ WHERE NOT EXISTS(SELECT 1 FROM usersettings WHERE user_id = ?)
 
 impl Order {
     /// Returns the id of the inserted row.
-    pub async fn insert(order: Order, db: &mut Connection<Db>) -> Result<i32, sqlx::Error> {
+    pub async fn insert(
+        order: Order,
+        max_unpaid_orders: u32,
+        db: &mut Connection<Db>,
+    ) -> Result<i32, String> {
         let amount_owed_sat: i64 = order.amount_owed_sat.try_into().unwrap();
         let seller_credit_sat: i64 = order.seller_credit_sat.try_into().unwrap();
         let created_time_ms: i64 = order.created_time_ms.try_into().unwrap();
         let payment_time_ms: i64 = order.payment_time_ms.try_into().unwrap();
         let review_time_ms: i64 = order.review_time_ms.try_into().unwrap();
+
+        let mut tx = db
+            .begin()
+            .await
+            .map_err(|_| "failed to begin transaction.")?;
 
         let insert_result = sqlx::query!(
             "INSERT INTO orders (public_id, buyer_user_id, seller_user_id, quantity, listing_id, shipping_option_id, shipping_instructions, amount_owed_sat, seller_credit_sat, paid, shipped, canceled_by_seller, canceled_by_buyer, reviewed, review_text, review_rating, invoice_hash, invoice_payment_request, created_time_ms, payment_time_ms, review_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -1974,8 +1983,38 @@ impl Order {
             payment_time_ms,
             review_time_ms,
         )
-            .execute(&mut **db)
-            .await?;
+            .execute(&mut *tx)
+            .await
+            .map_err(|_| "failed to insert order.")?;
+
+        let num_unpaid_orders = sqlx::query!(
+            "
+select
+ COUNT(orders.id) as num_unpaid_orders
+from
+ orders
+WHERE
+ orders.buyer_user_id = ?
+AND
+ NOT orders.paid
+;",
+            order.buyer_user_id,
+        )
+        .fetch_one(&mut *tx)
+        .map_ok(|r| r.num_unpaid_orders as u32)
+        .await
+        .map_err(|_| "failed to get count of unpaid orders for buyer.")?;
+
+        if num_unpaid_orders > max_unpaid_orders {
+            return Err(format!(
+                "more than {:?} unpaid orders not allowed.",
+                max_unpaid_orders,
+            ));
+        }
+
+        tx.commit()
+            .await
+            .map_err(|_| "failed to commit transaction.")?;
 
         Ok(insert_result.last_insert_rowid() as _)
     }

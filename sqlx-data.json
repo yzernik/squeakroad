@@ -982,6 +982,24 @@
     },
     "query": "UPDATE usersettings SET squeaknode_address = ? WHERE user_id = ?;"
   },
+  "506a715d6ca6157c9b48f0892946fd827423ba20b679c814ea5b8a3824f28f49": {
+    "describe": {
+      "columns": [
+        {
+          "name": "num_unpaid_orders",
+          "ordinal": 0,
+          "type_info": "Int"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\nselect\n COUNT(orders.id) as num_unpaid_orders\nfrom\n orders\nWHERE\n orders.buyer_user_id = ?\nAND\n NOT orders.paid\n;"
+  },
   "5a24f9c5cf60ff7f2dc4ce2cf145931a81121bd7854c8b958625bd8ead17c0f8": {
     "describe": {
       "columns": [],

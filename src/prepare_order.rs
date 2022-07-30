@@ -18,6 +18,8 @@ use rocket_auth::User;
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
 
+const MAX_UNPAID_ORDERS: u32 = 100;
+
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
 struct Context {
@@ -196,7 +198,7 @@ async fn create_order(
         review_time_ms: 0,
     };
 
-    match Order::insert(order, db).await {
+    match Order::insert(order, MAX_UNPAID_ORDERS, db).await {
         Ok(order_id) => match Order::single(db, order_id).await {
             Ok(new_order) => Ok(new_order.public_id),
             Err(e) => {
@@ -206,7 +208,7 @@ async fn create_order(
         },
         Err(e) => {
             error_!("DB insertion error: {}", e);
-            Err("Order could not be inserted due an internal error.".to_string())
+            Err(e)
         }
     }
 }
