@@ -18,7 +18,7 @@ use rocket_auth::User;
 use rocket_db_pools::Connection;
 use rocket_dyn_templates::Template;
 
-const MAX_UNPAID_ORDERS: u32 = 10;
+const MAX_UNPAID_ORDERS: u32 = 100;
 
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
