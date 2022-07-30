@@ -132,8 +132,6 @@ async fn index(
     active_user: ActiveUser,
     admin_user: Option<AdminUser>,
 ) -> Template {
-    println!("active_user: {:?}", active_user);
-
     let flash = flash.map(FlashMessage::into_inner);
     Template::render(
         "newlisting",

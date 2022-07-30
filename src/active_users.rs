@@ -35,9 +35,6 @@ impl Context {
         let user_cards = UserCard::all_active(&mut db, PAGE_SIZE, page_num)
             .await
             .map_err(|_| "failed to get active users.")?;
-        for user_card in &user_cards {
-            println!("user_card: {:?}", user_card);
-        }
         Ok(Context {
             base_context,
             flash,
