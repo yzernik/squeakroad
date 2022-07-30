@@ -962,6 +962,16 @@
     },
     "query": "\nDELETE from listingimages\nWHERE\n listing_id = ?\n;"
   },
+  "45226115173a788e8b8f3b10b66cffbe7aecd354888cec848e7eed7911097245": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 7
+      }
+    },
+    "query": "\nINSERT INTO\n adminsettings (market_name, fee_rate_basis_points, user_bond_price_sat, pgp_key, squeaknode_pubkey, squeaknode_address, max_allowed_users)\nSELECT ?, ?, ?, ?, ?, ?, ?\nWHERE NOT EXISTS(SELECT 1 FROM adminsettings)\n;"
+  },
   "4a904d9675c25971e6efb6356aa13ad1c515f7d95a9807e524e627c7ce3e7078": {
     "describe": {
       "columns": [],
@@ -1273,16 +1283,6 @@
       }
     },
     "query": "\nselect\n orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.quantity as order_quantity, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.shipped, orders.canceled_by_seller, orders.canceled_by_buyer, orders.reviewed as order_reviewed, orders.invoice_hash, orders.invoice_payment_request, orders.review_rating, orders.review_text, orders.created_time_ms, orders.payment_time_ms, orders.review_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.deactivated_by_seller, listings.deactivated_by_admin, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username\nfrom\n orders\nLEFT JOIN\n listings\nON\n orders.listing_id = listings.id\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nLEFT JOIN\n users\nON\n listings.user_id = users.id\nWHERE\n orders.paid\nAND\n order_buyer_user_id = ?\nGROUP BY\n orders.id\nORDER BY orders.payment_time_ms DESC\nLIMIT ?\nOFFSET ?\n;"
-  },
-  "60ba45e7ebb20bddd85ee5defa0a9099233c4776d0de47452f1317b504f88c4c": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 6
-      }
-    },
-    "query": "\nINSERT INTO\n adminsettings (market_name, fee_rate_basis_points, user_bond_price_sat, pgp_key, squeaknode_pubkey, squeaknode_address)\nSELECT ?, ?, ?, ?, ?, ?\nWHERE NOT EXISTS(SELECT 1 FROM adminsettings)\n;"
   },
   "61d7798feebbf92262ef0e56c24e865dca6f028a4728caa912302493d22da96c": {
     "describe": {
@@ -2281,6 +2281,24 @@
       }
     },
     "query": "\nselect\n users.id as rocket_auth_user_id, users.email as rocket_auth_user_username, useraccounts.id as useraccounts_id, useraccounts.public_id as useraccounts_public_id, useraccounts.user_id as useraccounts_user_id, useraccounts.amount_owed_sat as useraccounts_amount_owed_sat, useraccounts.paid as useraccounts_paid, useraccounts.disabled as useraccounts_disabled, useraccounts.invoice_payment_request as useraccounts_invoice_payment_request, useraccounts.invoice_hash as useraccounts_invoice_hash, useraccounts.created_time_ms as useraccounts_created_time_ms, useraccounts.payment_time_ms as useraccounts_payment_time_ms\nfrom\n users\nINNER JOIN\n useraccounts\nON\n users.id = useraccounts.user_id\nWHERE\n useraccounts.paid\nAND\n useraccounts.disabled\nGROUP BY\n users.id\nORDER BY useraccounts.created_time_ms DESC\nLIMIT ?\nOFFSET ?\n;"
+  },
+  "7f7db8b1bc9624f37c3bb6d24d416d152283cb65bf49c4eb2d9e94a6eec30c07": {
+    "describe": {
+      "columns": [
+        {
+          "name": "num_users",
+          "ordinal": 0,
+          "type_info": "Int"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "\nselect\n COUNT(users.id) as num_users\nfrom\n users\nWHERE\n NOT users.is_admin\n;"
   },
   "814a6a824f4178ecb9911e94b7e7c7317f7ce22340e392b281113d2b9d54fb87": {
     "describe": {
@@ -3350,6 +3368,16 @@
     },
     "query": "select * from orders WHERE public_id = ?;"
   },
+  "a4104b4d29b91b0f7915eba98663d39675b9306c47e3d095fc46727ea6cff776": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "UPDATE adminsettings SET max_allowed_users = ?"
+  },
   "a927f6366b841697e1d859cd3779fbd54b30dbcd10ba943c548a1e63aadb3a5d": {
     "describe": {
       "columns": [
@@ -3775,9 +3803,15 @@
           "name": "squeaknode_pubkey",
           "ordinal": 6,
           "type_info": "Text"
+        },
+        {
+          "name": "max_allowed_users",
+          "ordinal": 7,
+          "type_info": "Int64"
         }
       ],
       "nullable": [
+        false,
         false,
         false,
         false,

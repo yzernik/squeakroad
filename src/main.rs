@@ -46,6 +46,7 @@ mod top_sellers;
 mod update_fee_rate;
 mod update_listing_images;
 mod update_market_name;
+mod update_max_allowed_users;
 mod update_pgp_info;
 mod update_shipping_options;
 mod update_squeaknode_info;

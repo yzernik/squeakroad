@@ -208,6 +208,7 @@ pub fn stage(config: Config) -> AdHoc {
             .attach(crate::update_user_bond_price::update_user_bond_price_stage())
             .attach(crate::update_squeaknode_info::update_squeaknode_info_stage())
             .attach(crate::update_pgp_info::update_pgp_info_stage())
+            .attach(crate::update_max_allowed_users::update_max_allowed_users_stage())
             .attach(crate::update_user_squeaknode_info::update_user_squeaknode_info_stage())
             .attach(crate::update_user_pgp_info::update_user_pgp_info_stage())
             .attach(crate::review_pending_listings::review_pending_listings_stage())

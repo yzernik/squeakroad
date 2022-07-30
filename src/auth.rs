@@ -55,6 +55,19 @@ async fn post_signup(
     config: &State<Config>,
     users: &State<Users>,
 ) -> Result<Redirect, String> {
+    let admin_settings = AdminSettings::single(&mut db)
+        .await
+        .map_err(|_| "failed to get admin settings.")?;
+
+    // Check current number of users against max users setting.
+    let num_users = UserAccount::number_of_users(&mut db)
+        .await
+        .map_err(|_| "failed to get number of users.")?;
+
+    if num_users >= admin_settings.max_allowed_users {
+        return Err("Exceeded maximum number of users.".to_string());
+    }
+
     auth.signup(&form)
         .await
         .map_err(|_| "failed to signup user.")?;

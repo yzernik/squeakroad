@@ -1,0 +1,34 @@
+{% extends "base" %}
+{% block body %}
+
+<br>
+
+
+<div class="container">
+  <p><!--Nothing to see here --></p>
+
+  <div class="row">
+    <h4>Update Max Allowed Users</h4>
+
+    <p>Max allowed users: {{ admin_settings.max_allowed_users }}</p>
+
+    <form action="/update_max_allowed_users/change" method="post">
+      <div class="ten columns">
+        <input type="text" placeholder="enter a new number of max allowed users..."
+               name="max_allowed_users" id="max_allowed_users" value="" autofocus
+               class="u-full-width {% if flash %}field-{{flash.0}}{% endif %}" />
+        {% if flash %}
+        <small class="field-{{flash.0}}-msg">
+          {{ flash.1 }}
+        </small>
+        {% endif %}
+      </div>
+      <div class="two columns">
+        <input type="submit" value="Change Max Allowed Users">
+      </div>
+    </form>
+  </div>
+
+</div>
+
+{% endblock body %}

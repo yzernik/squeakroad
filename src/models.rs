@@ -122,6 +122,7 @@ pub struct AdminSettings {
     pub pgp_key: String,
     pub squeaknode_pubkey: String,
     pub squeaknode_address: String,
+    pub max_allowed_users: u64,
 }
 
 #[derive(Serialize, Debug, Clone)]
@@ -157,6 +158,11 @@ pub struct FeeRateInput {
 #[derive(Debug, FromForm)]
 pub struct UserBondPriceInput {
     pub user_bond_price_sat: Option<u64>,
+}
+
+#[derive(Debug, FromForm)]
+pub struct MaxAllowedUsersInput {
+    pub max_allowed_users: Option<u64>,
 }
 
 #[derive(Serialize, Debug, Clone)]
@@ -287,6 +293,7 @@ impl Default for AdminSettings {
             pgp_key: "".to_string(),
             squeaknode_pubkey: "".to_string(),
             squeaknode_address: "".to_string(),
+            max_allowed_users: 10000,
         }
     }
 }
@@ -1714,6 +1721,7 @@ impl AdminSettings {
                     pgp_key: r.pgp_key,
                     squeaknode_pubkey: r.squeaknode_pubkey,
                     squeaknode_address: r.squeaknode_address,
+                    max_allowed_users: r.max_allowed_users.try_into().unwrap(),
                 })
             })
             .await?;
@@ -1726,11 +1734,12 @@ impl AdminSettings {
     async fn insert_if_doesnt_exist(db: &mut Connection<Db>) -> Result<(), sqlx::Error> {
         let admin_settings = AdminSettings::default();
         let user_bond_price_sat_i64: i64 = admin_settings.user_bond_price_sat.try_into().unwrap();
+        let max_allowed_users_i64: i64 = admin_settings.max_allowed_users.try_into().unwrap();
         sqlx::query!(
             "
 INSERT INTO
- adminsettings (market_name, fee_rate_basis_points, user_bond_price_sat, pgp_key, squeaknode_pubkey, squeaknode_address)
-SELECT ?, ?, ?, ?, ?, ?
+ adminsettings (market_name, fee_rate_basis_points, user_bond_price_sat, pgp_key, squeaknode_pubkey, squeaknode_address, max_allowed_users)
+SELECT ?, ?, ?, ?, ?, ?, ?
 WHERE NOT EXISTS(SELECT 1 FROM adminsettings)
 ;",
             admin_settings.market_name,
@@ -1739,6 +1748,7 @@ WHERE NOT EXISTS(SELECT 1 FROM adminsettings)
             admin_settings.pgp_key,
             admin_settings.squeaknode_pubkey,
             admin_settings.squeaknode_address,
+            max_allowed_users_i64,
         )
         .execute(&mut **db)
         .await?;
@@ -1831,6 +1841,24 @@ WHERE NOT EXISTS(SELECT 1 FROM adminsettings)
         sqlx::query!(
             "UPDATE adminsettings SET squeaknode_address = ?",
             new_squeaknode_address,
+        )
+        .execute(&mut **db)
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn set_max_allowed_users(
+        db: &mut Connection<Db>,
+        new_max_allowed_users: u64,
+    ) -> Result<(), sqlx::Error> {
+        let max_allowed_users_i64: i64 = new_max_allowed_users.try_into().unwrap();
+
+        AdminSettings::insert_if_doesnt_exist(db).await?;
+
+        sqlx::query!(
+            "UPDATE adminsettings SET max_allowed_users = ?",
+            max_allowed_users_i64,
         )
         .execute(&mut **db)
         .await?;
@@ -3546,6 +3574,24 @@ impl UserAccount {
         .await?;
 
         Ok(())
+    }
+
+    pub async fn number_of_users(db: &mut Connection<Db>) -> Result<u64, sqlx::Error> {
+        let num_users = sqlx::query!(
+            "
+select
+ COUNT(users.id) as num_users
+from
+ users
+WHERE
+ NOT users.is_admin
+;",
+        )
+        .fetch_one(&mut **db)
+        .map_ok(|r| r.num_users as u64)
+        .await?;
+
+        Ok(num_users)
     }
 
     pub async fn all_older_than(
