@@ -1,6 +1,6 @@
 [package]
 name = "squeakroad"
-version = "0.1.3"
+version = "0.1.4"
 description = "Anonymous market with Lighting Network payments"
 authors = ["Jonathan Zernik <yzernik@gmail.com>"]
 license = "MIT"
