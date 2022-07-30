@@ -41,6 +41,7 @@ Username: {{ user.email }}.
   <p><!--Nothing to see here --></p>
   <div class="row">
     <h5>Users</h5>
+    <span>Number of users: {{ num_users }}</span>
     <a href="/active_users">Active Users</a>
     <br>
     <a href="/disabled_users">Disabled Users</a>

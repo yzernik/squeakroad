@@ -1,5 +1,6 @@
 use crate::base::BaseContext;
 use crate::db::Db;
+use crate::models::UserAccount;
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::serde::Serialize;
@@ -13,6 +14,7 @@ use rocket_dyn_templates::Template;
 struct Context {
     base_context: BaseContext,
     flash: Option<(String, String)>,
+    num_users: u64,
     user: Option<User>,
     admin_user: Option<AdminUser>,
 }
@@ -27,9 +29,13 @@ impl Context {
         let base_context = BaseContext::raw(&mut db, user.clone(), admin_user.clone())
             .await
             .map_err(|_| "failed to get base template.")?;
+        let num_users = UserAccount::number_of_users(&mut db)
+            .await
+            .map_err(|_| "failed to get number of users.")?;
         Ok(Context {
             base_context,
             flash,
+            num_users,
             user,
             admin_user,
         })
@@ -53,6 +59,5 @@ async fn index(
 pub fn admin_stage() -> AdHoc {
     AdHoc::on_ignite("Admin Stage", |rocket| async {
         rocket.mount("/admin", routes![index])
-        // .mount("/listing", routes![new])
     })
 }
