@@ -208,7 +208,7 @@ async fn create_order(
         },
         Err(e) => {
             error_!("DB insertion error: {}", e);
-            Err("Order could not be inserted due an internal error.".to_string())
+            Err(e)
         }
     }
 }
