@@ -94,6 +94,7 @@ CREATE TABLE adminsettings (
     user_bond_price_sat UNSIGNED BIG INT NOT NULL,
     pgp_key VARCHAR NOT NULL,
     squeaknode_address VARCHAR NOT NULL,
-    squeaknode_pubkey VARCHAR NOT NULL
+    squeaknode_pubkey VARCHAR NOT NULL,
+    max_allowed_users UNSIGNED BIG INT NOT NULL
 );
 
