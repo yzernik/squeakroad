@@ -44,12 +44,6 @@ impl Context {
             if !listing_display.listing.approved {
                 return Err("Listing is not approved.".to_string());
             }
-            if listing_display.listing.deactivated_by_seller {
-                return Err("Listing has been deactivated by seller.".to_string());
-            }
-            if listing_display.listing.deactivated_by_admin {
-                return Err("Listing has been deactivated by admin.".to_string());
-            }
         };
 
         Ok(Context {

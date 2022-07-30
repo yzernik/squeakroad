@@ -12,53 +12,32 @@
     </small>
     {% endif %}
 
+    {% if user %}
+    {% if admin_user or listing_display.listing.user_id == user.id %}
     <!-- Options for the owner of the listing -->
-    {% if user and listing_display.listing.user_id == user.id %}
     {% if listing_display.listing.deactivated_by_seller %}
     <h5>Deactivated By Seller</h5>
     {% elif listing_display.listing.deactivated_by_admin %}
     <h5>Deactivated By Admin</h5>
     {% elif listing_display.listing.approved %}
     <h5>Active Listing</h5>
+    {% if user and listing_display.listing.user_id == user.id %}
     <form class="inline" action="/listing/{{ listing_display.listing.public_id }}/deactivate" method="post">
       <input type="hidden" name="_method" value="put" />
       <button class="small" type="submit">Deactivate Listing</button>
     </form>
-    {% elif listing_display.listing.reviewed and not listing_display.listing.approved %}
-    <h5>Rejected Listing</h5>
-    {% elif listing_display.listing.submitted and not listing_display.listing.reviewed %}
-    <h5>Pending Listing (waiting for admin approval)</h5>
-    {% elif not listing_display.listing.submitted %}
-    <h5>Unsubmitted Listing</h5>
-    <p><a href="/update_listing_images/{{ listing_display.listing.public_id }}">Update images</a></p>
-    <p><a href="/update_shipping_options/{{ listing_display.listing.public_id }}">Update shipping options</a></p>
-    <form class="inline" action="/listing/{{ listing_display.listing.public_id }}/submit" method="post">
-      <input type="hidden" name="_method" value="put" />
-      <button class="small" type="submit">Submit Listing</button>
-    </form>
-    {% else %}
     {% endif %}
-    <form class="inline" action="/delete_listing/{{ listing_display.listing.public_id }}" method="get">
-      <button class="small" type="submit">Delete Listing</button>
-    </form>
-    {% endif %}
-
-    <!-- Options for admin -->
     {% if admin_user %}
-    {% if listing_display.listing.deactivated_by_seller %}
-    <h5>Deactivated By Seller</h5>
-    {% elif listing_display.listing.deactivated_by_admin %}
-    <h5>Deactivated By Admin</h5>
-    {% elif listing_display.listing.approved %}
-    <h5>Active Listing</h5>
     <form class="inline" action="/listing/{{ listing_display.listing.public_id }}/deactivate_as_admin" method="post">
       <input type="hidden" name="_method" value="put" />
       <button class="small" type="submit">Deactivate Listing</button>
     </form>
+    {% endif %}
     {% elif listing_display.listing.reviewed and not listing_display.listing.approved %}
     <h5>Rejected Listing</h5>
     {% elif listing_display.listing.submitted and not listing_display.listing.reviewed %}
     <h5>Pending Listing (waiting for admin approval)</h5>
+    {% if admin_user %}
     <form class="inline" action="/listing/{{ listing_display.listing.public_id }}/approve" method="post">
       <input type="hidden" name="_method" value="put" />
       <button class="small" type="submit">Approve Listing</button>
@@ -67,14 +46,32 @@
       <input type="hidden" name="_method" value="put" />
       <button class="small" type="submit">Reject Listing</button>
     </form>
+    {% endif %}
     {% elif not listing_display.listing.submitted %}
     <h5>Unsubmitted Listing</h5>
+    {% if user and listing_display.listing.user_id == user.id %}
+    <p><a href="/update_listing_images/{{ listing_display.listing.public_id }}">Update images</a></p>
+    <p><a href="/update_shipping_options/{{ listing_display.listing.public_id }}">Update shipping options</a></p>
+    <form class="inline" action="/listing/{{ listing_display.listing.public_id }}/submit" method="post">
+      <input type="hidden" name="_method" value="put" />
+      <button class="small" type="submit">Submit Listing</button>
+    </form>
+    {% endif %}
     {% else %}
     {% endif %}
+    {% if user and listing_display.listing.user_id == user.id %}
     <form class="inline" action="/delete_listing/{{ listing_display.listing.public_id }}" method="get">
       <button class="small" type="submit">Delete Listing</button>
     </form>
     {% endif %}
+    {% if admin_user %}
+    <form class="inline" action="/delete_listing/{{ listing_display.listing.public_id }}" method="get">
+      <button class="small" type="submit">Delete Listing</button>
+    </form>
+    {% endif %}
+    {% endif %}
+    {% endif %}
+
 
     <!-- there are a few shorthand columns widths as well -->
     <div class="row">
