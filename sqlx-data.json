@@ -3368,6 +3368,16 @@
     },
     "query": "select * from orders WHERE public_id = ?;"
   },
+  "a4104b4d29b91b0f7915eba98663d39675b9306c47e3d095fc46727ea6cff776": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "UPDATE adminsettings SET max_allowed_users = ?"
+  },
   "a927f6366b841697e1d859cd3779fbd54b30dbcd10ba943c548a1e63aadb3a5d": {
     "describe": {
       "columns": [

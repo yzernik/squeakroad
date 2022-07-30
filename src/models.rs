@@ -160,6 +160,11 @@ pub struct UserBondPriceInput {
     pub user_bond_price_sat: Option<u64>,
 }
 
+#[derive(Debug, FromForm)]
+pub struct MaxAllowedUsersInput {
+    pub max_allowed_users: Option<u64>,
+}
+
 #[derive(Serialize, Debug, Clone)]
 #[serde(crate = "rocket::serde")]
 pub struct Order {
@@ -1836,6 +1841,24 @@ WHERE NOT EXISTS(SELECT 1 FROM adminsettings)
         sqlx::query!(
             "UPDATE adminsettings SET squeaknode_address = ?",
             new_squeaknode_address,
+        )
+        .execute(&mut **db)
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn set_max_allowed_users(
+        db: &mut Connection<Db>,
+        new_max_allowed_users: u64,
+    ) -> Result<(), sqlx::Error> {
+        let max_allowed_users_i64: i64 = new_max_allowed_users.try_into().unwrap();
+
+        AdminSettings::insert_if_doesnt_exist(db).await?;
+
+        sqlx::query!(
+            "UPDATE adminsettings SET max_allowed_users = ?",
+            max_allowed_users_i64,
         )
         .execute(&mut **db)
         .await?;
