@@ -20,16 +20,20 @@
 
 	<p><b>User</b>: {% if maybe_account_user %}<a href="/user/{{ maybe_account_user.email }}">{{ maybe_account_user.email }}</a>{% else %}Not found{% endif %}</p>
 	<p><b>Status</b>:
-	  {% if not user_account.paid %}
-	  Not paid
-	  {% else %}
+	  {% if user_account.disabled %}
+	  Disabled by admin
+	  {% elif user_account.paid %}
 	  Paid
+	  {% else %}
+	  Not paid
 	  {% endif %}</p>
         <p><b>Account creation time</b>: {{ (user_account.created_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}</p>
 
 	<p><b>Payment amount</b>: {{ user_account.amount_owed_sat }} sats</p>
 
-	{% if user_account.paid %}
+	{% if user_account.disabled %}
+	Please contact the admin to find out how to get your account re-enabled.
+	{% elif user_account.paid %}
         <p><b>Payment time</b>: {{ (user_account.payment_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}</p>
 	{% if user.id == user_account.user_id %}
 	<p><a href="/">Continue as activated user</a></p>
