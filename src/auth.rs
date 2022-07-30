@@ -64,7 +64,10 @@ async fn post_signup(
 
     // Get the new user and create a market account
     let signup: Signup = form.into_inner();
-    let user = users.get_by_email(&signup.email).await.unwrap();
+    let user = users
+        .get_by_email(&signup.email.to_lowercase())
+        .await
+        .unwrap();
     create_user_account(&mut db, user, config.inner().clone())
         .await
         .map_err(|_| "failed to create new user account.")?;
