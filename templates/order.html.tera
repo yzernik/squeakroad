@@ -65,9 +65,12 @@
 	<p><b>Seller credit amount</b>: {{ order.amount_owed_sat }} sats - {{ order.amount_owed_sat - order.seller_credit_sat }} sats = {{ order.seller_credit_sat }} sats</p>
 	{% endif %}
 	{% endif %}
+
+	{% if not order.shipped and not order.canceled_by_seller and not order.canceled_by_buyer %}
 	{% if user %}
 	{% if order.buyer_user_id == user.id or order.seller_user_id == user.id or admin_user %}
 	<p><b>Shipping instructions</b>: <pre>{{ order.shipping_instructions }}</pre></p>
+	{% endif %}
 	{% endif %}
 	{% endif %}
 
