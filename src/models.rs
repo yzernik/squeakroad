@@ -2261,7 +2261,7 @@ AND
 UPDATE
  orders
 SET
- shipped = true
+ shipped = true, shipping_instructions = ''
 WHERE
  id = ?
 AND
@@ -2286,7 +2286,7 @@ AND
 UPDATE
  orders
 SET
- canceled_by_seller = true
+ canceled_by_seller = true, shipping_instructions = ''
 WHERE
  id = ?
 AND
@@ -2309,7 +2309,7 @@ AND
 UPDATE
  orders
 SET
- canceled_by_buyer = true
+ canceled_by_buyer = true, shipping_instructions = ''
 WHERE
  id = ?
 AND
