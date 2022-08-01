@@ -68,16 +68,6 @@
     },
     "query": "UPDATE adminsettings SET fee_rate_basis_points = ?"
   },
-  "093fefef66affe8144f946cba3b0f5af400cca2929aab1b2078b988dcc1ea172": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "\nUPDATE\n orders\nSET\n canceled_by_buyer = true\nWHERE\n id = ?\nAND\n not (shipped OR canceled_by_seller OR canceled_by_buyer)\n;"
-  },
   "0ea7d39ba328c050fb19f3c3f284744c28a04d37a4aea7cc0c6fc420b84674fe": {
     "describe": {
       "columns": [
@@ -972,16 +962,6 @@
     },
     "query": "\nINSERT INTO\n adminsettings (market_name, fee_rate_basis_points, user_bond_price_sat, pgp_key, squeaknode_pubkey, squeaknode_address, max_allowed_users)\nSELECT ?, ?, ?, ?, ?, ?, ?\nWHERE NOT EXISTS(SELECT 1 FROM adminsettings)\n;"
   },
-  "4a904d9675c25971e6efb6356aa13ad1c515f7d95a9807e524e627c7ce3e7078": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "\nUPDATE\n orders\nSET\n canceled_by_seller = true\nWHERE\n id = ?\nAND\n not (shipped OR canceled_by_seller OR canceled_by_buyer)\n;"
-  },
   "4ab31501b30a8192da13b2379e956b154e446ba526dec5a50252d9cd493d5e73": {
     "describe": {
       "columns": [],
@@ -1425,6 +1405,16 @@
       }
     },
     "query": "UPDATE useraccounts SET disabled = false WHERE user_id = ?"
+  },
+  "6573bec1da8704be013f74741830c5fcbfd007f4a243559da97863b8022f596a": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\nUPDATE\n orders\nSET\n canceled_by_buyer = true, shipping_instructions = ''\nWHERE\n id = ?\nAND\n not (shipped OR canceled_by_seller OR canceled_by_buyer)\n;"
   },
   "714c4e0de57ccd557bb960add3db93f42a742411c949565b11a8a2da25ec78bb": {
     "describe": {
@@ -2719,6 +2709,16 @@
       }
     },
     "query": "\nselect\n orders.id as order_id, orders.public_id as order_public_id, orders.buyer_user_id as order_buyer_user_id, orders.seller_user_id as order_seller_user_id, orders.quantity as order_quantity, orders.listing_id as order_listing_id, orders.shipping_option_id, orders.shipping_instructions, orders.amount_owed_sat, orders.seller_credit_sat, orders.paid, orders.shipped, orders.canceled_by_seller, orders.canceled_by_buyer, orders.reviewed as order_reviewed, orders.invoice_hash, orders.invoice_payment_request, orders.review_rating, orders.review_text, orders.created_time_ms, orders.payment_time_ms, orders.review_time_ms, listings.id, listings.public_id as listing_public_id, listings.user_id as listing_user_id, listings.title, listings.description, listings.price_sat, listings.fee_rate_basis_points, listings.submitted, listings.reviewed, listings.approved, listings.deactivated_by_seller, listings.deactivated_by_admin, listings.created_time_ms as listing_created_time_ms, listingimages.id as image_id, listingimages.public_id as image_public_id, listingimages.listing_id, listingimages.image_data, listingimages.is_primary, users.id as rocket_auth_user_id, users.email as rocket_auth_user_username\nfrom\n orders\nLEFT JOIN\n listings\nON\n orders.listing_id = listings.id\nLEFT JOIN\n listingimages\nON\n listings.id = listingimages.listing_id\nAND\n listingimages.is_primary = (SELECT MAX(is_primary) FROM listingimages WHERE listing_id = listings.id)\nLEFT JOIN\n users\nON\n listings.user_id = users.id\nWHERE\n not orders.paid\nAND\n order_buyer_user_id = ?\nGROUP BY\n orders.id\nORDER BY orders.created_time_ms DESC\nLIMIT ?\nOFFSET ?\n;"
+  },
+  "906b9b9706bf688c0edb223cb9e02b1dfbc63668de9fa5c2f0221fd6777ec729": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\nUPDATE\n orders\nSET\n shipped = true, shipping_instructions = ''\nWHERE\n id = ?\nAND\n paid\nAND\n not (shipped OR canceled_by_seller OR canceled_by_buyer)\n;"
   },
   "95888610b35c9edb6b0105379cafc78f3752215f85adcbe4f18611545e5eb282": {
     "describe": {
@@ -4204,6 +4204,16 @@
     },
     "query": "select * from listingimages WHERE public_id = ?;"
   },
+  "f29178ea24c119286f61d9d7505b880e502b6f5d6bad781ed6d51d8a805139fb": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\nUPDATE\n orders\nSET\n canceled_by_seller = true, shipping_instructions = ''\nWHERE\n id = ?\nAND\n not (shipped OR canceled_by_seller OR canceled_by_buyer)\n;"
+  },
   "f2ca895de0a8649cbefd794eec10db72568c412c791c79e09901ec85c56bdba6": {
     "describe": {
       "columns": [],
@@ -4381,16 +4391,6 @@
       }
     },
     "query": "select * from orders WHERE id = ?;"
-  },
-  "f5ca85988dd697bf544798dddce2863d874076a057d933df318aa2f082085e9f": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "\nUPDATE\n orders\nSET\n shipped = true\nWHERE\n id = ?\nAND\n paid\nAND\n not (shipped OR canceled_by_seller OR canceled_by_buyer)\n;"
   },
   "f73a595900fa5a4746694d07678132d4945f5be98806fce7700bcfa8f7fbe341": {
     "describe": {
