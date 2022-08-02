@@ -23,7 +23,13 @@
 	{{ card.user_account.amount_owed_sat }} sats
       </td>
       <td>
-	{% if  card.user_account.disabled %}Disabled{% else %}Active{% endif %}
+	{% if card.user_account.disabled %}
+	Disabled by admin
+	{% elif card.user_account.paid %}
+	Paid
+	{% else %}
+	Not paid
+	{% endif %}
       </td>
     </tr>
   </tbody>
