@@ -7,6 +7,8 @@ use crate::util;
 use rocket::fairing::AdHoc;
 use rocket::State;
 use rocket::{form::*, get, post, response::Redirect, routes};
+use rocket_auth::prelude::Error;
+use rocket_auth::Error::FormValidationErrors;
 use rocket_auth::Users;
 use rocket_auth::{Auth, Login, Signup, User};
 use rocket_db_pools::Connection;
@@ -70,7 +72,7 @@ async fn post_signup(
 
     auth.signup(&form)
         .await
-        .map_err(|_| "failed to signup user.")?;
+        .map_err(|e| format!("failed to signup user: {}", validation_error_message(&e)))?;
     auth.login(&form.clone().into())
         .await
         .map_err(|_| "failed to signup user.")?;
@@ -147,6 +149,25 @@ async fn create_user_account(
         .map_err(|_| "failed to insert user account.")?;
 
     Ok(())
+}
+
+fn validation_error_message(error: &Error) -> String {
+    match error {
+        FormValidationErrors(source) => {
+            source
+                .field_errors()
+                .into_iter()
+                .map(|(_, error)| error)
+                .map(IntoIterator::into_iter)
+                .map(|errs| {
+                    errs //
+                        .map(|err| &err.code)
+                        .fold(String::new(), |a, b| a + b)
+                })
+                .fold(String::new(), |a, b| a + &b)
+        }
+        _ => "undefined".into(),
+    }
 }
 
 pub fn auth_stage() -> AdHoc {
