@@ -5,59 +5,47 @@
 <div class="container">
   <p><!--Nothing to see here --></p>
 
-  <div class="row">
-    <div class="one-half column">
+  {% if flash %}
+  <small class="field-{{flash.0}}-msg">
+    {{ flash.1 }}
+  </small>
+  {% endif %}
 
-      <div class="row">
+  <h3>Account Activation</h3>
 
-	{% if flash %}
-	<small class="field-{{flash.0}}-msg">
-	  {{ flash.1 }}
-	</small>
-	{% endif %}
+  <p><b>User</b>: {% if maybe_account_user %}<a href="/user/{{ maybe_account_user.email }}">{{ maybe_account_user.email }}</a>{% else %}Not found{% endif %}</p>
+  <p><b>Status</b>:
+    {% if user_account.disabled %}
+    Disabled by admin
+    {% elif user_account.paid %}
+    Paid
+    {% else %}
+    Not paid
+    {% endif %}</p>
+  <p><b>Account creation time</b>: {{ (user_account.created_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}</p>
 
-	<h3>Account Activation</h3>
+  <p><b>Payment amount</b>: {{ user_account.amount_owed_sat }} sats</p>
 
-	<p><b>User</b>: {% if maybe_account_user %}<a href="/user/{{ maybe_account_user.email }}">{{ maybe_account_user.email }}</a>{% else %}Not found{% endif %}</p>
-	<p><b>Status</b>:
-	  {% if user_account.disabled %}
-	  Disabled by admin
-	  {% elif user_account.paid %}
-	  Paid
-	  {% else %}
-	  Not paid
-	  {% endif %}</p>
-        <p><b>Account creation time</b>: {{ (user_account.created_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}</p>
-
-	<p><b>Payment amount</b>: {{ user_account.amount_owed_sat }} sats</p>
-
-	{% if user_account.disabled %}
-	Please contact the admin to find out how to get your account re-enabled.
-	{% elif user_account.paid %}
-        <p><b>Payment time</b>: {{ (user_account.payment_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}</p>
-	{% if user.id == user_account.user_id %}
-	<p><a href="/">Continue as activated user</a></p>
-	<p><a href="/deactivate_account">Deactivate account</a></p>
-	{% endif %}
-	{% else %}
-	<p>A user bond is required to activate your account.</p>
-	<p>You can withdraw the bond at any time in the future when you deactivate your account (as long as you don't misbehave).</p>
-	<p><b>Payment request</b>:<p>
-	  <img src="data:image/bmp;base64,{{ qr_svg_base64 }}" style="width:256px;height:256px;" />
-	<p>
-	  <pre>
-	    {{ user_account.invoice_payment_request }}
-	  </pre>
-	</p>
-	<p><b>Open a channel to the market</b>: <a href="https://amboss.space/node/{{ lightning_node_pubkey }}" rel="noreferrer noopener" target="_blank">{{ lightning_node_pubkey }}</a></p>
-	{% endif %}
-
-      </div>
-
-    </div>
-
-  </div>
-
+  {% if user_account.disabled %}
+  Please contact the admin to find out how to get your account re-enabled.
+  {% elif user_account.paid %}
+  <p><b>Payment time</b>: {{ (user_account.payment_time_ms / 1000) | int | date(format="%Y-%m-%d %H:%M") }}</p>
+  {% if user.id == user_account.user_id %}
+  <p><a href="/">Continue as activated user</a></p>
+  <p><a href="/deactivate_account">Deactivate account</a></p>
+  {% endif %}
+  {% else %}
+  <p>A user bond is required to activate your account.</p>
+  <p>You can withdraw the bond at any time in the future when you deactivate your account (as long as you don't misbehave).</p>
+  <p><b>Payment request</b>:<p>
+    <img src="data:image/bmp;base64,{{ qr_svg_base64 }}" style="width:256px;height:256px;" />
+  <p>
+    <pre>
+      {{ user_account.invoice_payment_request }}
+    </pre>
+  </p>
+  <p><b>Open a channel to the market</b>: <a href="https://amboss.space/node/{{ lightning_node_pubkey }}" rel="noreferrer noopener" target="_blank">{{ lightning_node_pubkey }}</a></p>
+  {% endif %}
 
 </div>
 
