@@ -3,17 +3,19 @@
 
 {% include "search_form" %}
 
+{% if user and not admin_user %}
 <a href="/new_listing">Add New Listing</a>
+{% endif %}
 
-  <div class="container">
-    <p><!--Nothing to see here --></p>
+<div class="container">
+  <p><!--Nothing to see here --></p>
 
-    <div class="row">
-      <div class="twelve columns">
-	{% include "listingtablepage" %}
-      </div>
+  <div class="row">
+    <div class="twelve columns">
+      {% include "listingtablepage" %}
     </div>
   </div>
+</div>
 
 
 {% endblock body %}
