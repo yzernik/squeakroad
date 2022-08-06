@@ -54,7 +54,6 @@ mod update_user_bond_price;
 mod update_user_pgp_info;
 mod update_user_squeaknode_info;
 mod user;
-mod user_account;
 mod user_account_expiry;
 mod user_profile;
 mod util;

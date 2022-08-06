@@ -1,7 +1,6 @@
 use crate::base::BaseContext;
 use crate::db::Db;
 use crate::models::{AccountInfo, UserAccount};
-use crate::user_account::ActiveUser;
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
 use rocket::serde::Serialize;
@@ -50,14 +49,11 @@ impl Context {
 async fn index(
     flash: Option<FlashMessage<'_>>,
     db: Connection<Db>,
-    active_user: ActiveUser,
+    user: User,
     admin_user: Option<AdminUser>,
 ) -> Template {
     let flash = flash.map(FlashMessage::into_inner);
-    Template::render(
-        "account",
-        Context::raw(db, flash, active_user.user, admin_user).await,
-    )
+    Template::render("account", Context::raw(db, flash, user, admin_user).await)
 }
 
 pub fn account_stage() -> AdHoc {
