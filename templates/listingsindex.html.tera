@@ -3,7 +3,9 @@
 
 {% include "search_form" %}
 
+{% if not admin_user %}
 <a href="/new_listing">Add New Listing</a>
+{% endif %}
 
   <div class="container">
     <p><!--Nothing to see here --></p>
