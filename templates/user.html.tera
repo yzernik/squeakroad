@@ -17,9 +17,9 @@
       {% endif %}
 
       <p><b>User rating</b>: {{ weighted_average_rating | round(method="ceil", precision=2) }} <a href="/seller_history/{{ visited_user.username }}">(See rating)</a></p>
-      <p><b>User account status</b>: {% if user_account.disabled %}
+      <p><b>User account status</b>: {% if visited_user_account.disabled %}
 	  Disabled by admin
-	  {% elif user_account.paid %}
+	  {% elif visited_user_account.paid %}
 	  Paid
 	  {% else %}
 	  Not paid
