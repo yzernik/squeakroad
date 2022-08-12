@@ -3,6 +3,8 @@
 [![GitHub release](https://img.shields.io/github/release/yzernik/squeakroad.svg)](https://github.com/yzernik/squeakroad/releases)
 [![GitHub CI workflow](https://github.com/yzernik/squeakroad/actions/workflows/ci.yaml/badge.svg)](https://github.com/yzernik/squeakroad/actions/workflows/ci.yaml)
 
+Open source darknet market with lightning network payments and withdrawals.
+
 ## Installation
 
 ### Requirements
