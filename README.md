@@ -10,8 +10,9 @@ Open source darknet market with lightning network payments and withdrawals.
 ### Requirements
 * an LND node
 * Rust and Cargo
-* openssl
-* gexiv2
+* openssl `apt install libssl-dev`
+* gexiv2 `apt install libgexiv2-dev`
+* compiler dependancies `apt install libprotobuf-dev protobuf-compiler cmake`
 
 ### Step 1. Create the configuration
 > Create a **config.toml** file and fill in the relevant sections to connect to your LND node:
@@ -43,6 +44,20 @@ cargo test
 ## Database Migrations
 
 Use [sqlx-cli](https://crates.io/crates/sqlx-cli/).
+
+`cargo install sqlx-cli`
+
+`sqlx migrate --source db/migrations add <YOUR_MIGRATION_NAME>`
+
+Then put your SQL changes in the new file. 
+
+`sqlx migrate --source db/migrations run`
+
+After runninig migrations, generate the schema for compile-time type-checking:
+
+`cargo sqlx prepare --database-url sqlite3://db.sqlite`
+
+Optional: create a `.env` with `DATABASE_URL=sqlite3://db.sqlite` to avoid passing `--database-url`
 
 ## Telegram
 
