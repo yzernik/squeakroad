@@ -47,7 +47,7 @@ Use [sqlx-cli](https://crates.io/crates/sqlx-cli/).
 
 `cargo install sqlx-cli`
 
-`sqlx migrate --source db/mirgations add <YOUR_MIGRATION_NAME>`
+`sqlx migrate --source db/migrations add <YOUR_MIGRATION_NAME>`
 
 Then put your SQL changes in the new file. 
 
