@@ -53,9 +53,9 @@ Then put your SQL changes in the new file.
 
 `sqlx migrate --source db/migrations run`
 
-After runninig migrations,
+After runninig migrations, generate the schema for compile-time type-checking:
 
-`cargo sqlx prepare --database-url sqlite3://db.sqlite` to generate the `sqlx-data.json` schema for compile-time type-checking.
+`cargo sqlx prepare --database-url sqlite3://db.sqlite`
 
 Optional: create a `.env` with `DATABASE_URL=sqlite3://db.sqlite` to avoid passing `--database-url`
 
