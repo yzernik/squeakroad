@@ -8,7 +8,7 @@
         integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 
     <link href="/css/fonts.css" rel="stylesheet" type="text/css">
-    <link rel="stylesheet" href="/css/normalize.css">
+    <link rel="stylesheet" href="/css/normalize.min.css">
     <link rel="stylesheet" href="/css/skeleton.min.css">
     <link rel="stylesheet" href="/css/style.css">
     <link rel="icon" type="image/png" href="/images/favicon.ico">
