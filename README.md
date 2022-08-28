@@ -12,7 +12,7 @@ Open source darknet market with lightning network payments and withdrawals.
 * Rust and Cargo
 * openssl `apt install libssl-dev`
 * gexiv2 `apt install libgexiv2-dev`
-* compiler dependancies `apt install libprotobuf-dev protobuf-compiler cmake`
+* compiler dependencies `apt install libprotobuf-dev protobuf-compiler cmake`
 
 ### Step 1. Create the configuration
 > Create a **config.toml** file and fill in the relevant sections to connect to your LND node:
@@ -47,13 +47,13 @@ Use [sqlx-cli](https://crates.io/crates/sqlx-cli/).
 
 `cargo install sqlx-cli`
 
-`sqlx migrate --source db/migrations add <YOUR_MIGRATION_NAME>`
+`cargo sqlx migrate --source db/migrations add <YOUR_MIGRATION_NAME>`
 
-Then put your SQL changes in the new file. 
+Then put your SQL changes in the new file.
 
-`sqlx migrate --source db/migrations run`
+`cargo sqlx migrate --source db/migrations run`
 
-After runninig migrations, generate the schema for compile-time type-checking:
+After running migrations, generate the schema for compile-time type-checking:
 
 `cargo sqlx prepare --database-url sqlite3://db.sqlite`
 
