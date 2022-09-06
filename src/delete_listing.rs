@@ -94,12 +94,12 @@ async fn index(
     db: Connection<Db>,
     user: User,
     admin_user: Option<AdminUser>,
-) -> Template {
+) -> Result<Template, String> {
     let flash = flash.map(FlashMessage::into_inner);
-    Template::render(
-        "deletelisting",
-        Context::raw(db, id, flash, user, admin_user).await,
-    )
+    let context = Context::raw(db, id, flash, user, admin_user)
+        .await
+        .map_err(|_| "failed to get template context.")?;
+    Ok(Template::render("deletelisting", context))
 }
 
 pub fn delete_listing_stage() -> AdHoc {

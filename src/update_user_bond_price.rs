@@ -79,12 +79,12 @@ async fn index(
     db: Connection<Db>,
     user: User,
     admin_user: AdminUser,
-) -> Template {
+) -> Result<Template, String> {
     let flash = flash.map(FlashMessage::into_inner);
-    Template::render(
-        "updateuserbondprice",
-        Context::raw(db, flash, user, Some(admin_user)).await,
-    )
+    let context = Context::raw(db, flash, user, Some(admin_user))
+        .await
+        .map_err(|_| "failed to get template context.")?;
+    Ok(Template::render("updateuserbondprice", context))
 }
 
 pub fn update_user_bond_price_stage() -> AdHoc {

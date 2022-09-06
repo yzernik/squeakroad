@@ -53,16 +53,12 @@ async fn index(
     db: Connection<Db>,
     user: Option<User>,
     admin_user: Option<AdminUser>,
-) -> Template {
+) -> Result<Template, String> {
     let flash = flash.map(FlashMessage::into_inner);
-    let context = match Context::raw(db, id, flash, user, admin_user).await {
-        Ok(ctx) => ctx,
-        Err(e) => {
-            error!("{}", e);
-            panic!("failed to get context.")
-        }
-    };
-    Template::render("withdrawal", context)
+    let context = Context::raw(db, id, flash, user, admin_user)
+        .await
+        .map_err(|_| "failed to get template context.")?;
+    Ok(Template::render("withdrawal", context))
 }
 
 pub fn withdrawal_stage() -> AdHoc {

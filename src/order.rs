@@ -326,16 +326,12 @@ async fn index(
     user: Option<User>,
     admin_user: Option<AdminUser>,
     config: &State<Config>,
-) -> Template {
+) -> Result<Template, String> {
     let flash = flash.map(FlashMessage::into_inner);
-    let context = match Context::raw(db, id, flash, user, admin_user, config).await {
-        Ok(ctx) => ctx,
-        Err(e) => {
-            error!("{}", e);
-            panic!("failed to get context.")
-        }
-    };
-    Template::render("order", context)
+    let context = Context::raw(db, id, flash, user, admin_user, config)
+        .await
+        .map_err(|_| "failed to get template context.")?;
+    Ok(Template::render("order", context))
 }
 
 pub fn order_stage() -> AdHoc {

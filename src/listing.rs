@@ -250,12 +250,12 @@ async fn index(
     db: Connection<Db>,
     user: Option<User>,
     admin_user: Option<AdminUser>,
-) -> Template {
+) -> Result<Template, String> {
     let flash = flash.map(FlashMessage::into_inner);
-    Template::render(
-        "listing",
-        Context::raw(db, id, flash, user, admin_user).await,
-    )
+    let context = Context::raw(db, id, flash, user, admin_user)
+        .await
+        .map_err(|_| "failed to get template context.")?;
+    Ok(Template::render("listing", context))
 }
 
 pub fn listing_stage() -> AdHoc {

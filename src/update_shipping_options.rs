@@ -206,12 +206,12 @@ async fn index(
     db: Connection<Db>,
     active_user: ActiveUser,
     admin_user: Option<AdminUser>,
-) -> Template {
+) -> Result<Template, String> {
     let flash = flash.map(FlashMessage::into_inner);
-    Template::render(
-        "updateshippingoptions",
-        Context::raw(db, id, flash, active_user.user, admin_user).await,
-    )
+    let context = Context::raw(db, id, flash, active_user.user, admin_user)
+        .await
+        .map_err(|_| "failed to get template context.")?;
+    Ok(Template::render("updateshippingoptions", context))
 }
 
 pub fn update_shipping_options_stage() -> AdHoc {

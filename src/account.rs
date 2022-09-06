@@ -52,12 +52,12 @@ async fn index(
     db: Connection<Db>,
     active_user: ActiveUser,
     admin_user: Option<AdminUser>,
-) -> Template {
+) -> Result<Template, String> {
     let flash = flash.map(FlashMessage::into_inner);
-    Template::render(
-        "account",
-        Context::raw(db, flash, active_user.user, admin_user).await,
-    )
+    let context = Context::raw(db, flash, active_user.user, admin_user)
+        .await
+        .map_err(|_| "failed to get template context.")?;
+    Ok(Template::render("account", context))
 }
 
 pub fn account_stage() -> AdHoc {

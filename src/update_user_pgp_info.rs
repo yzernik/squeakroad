@@ -82,12 +82,12 @@ async fn index(
     db: Connection<Db>,
     active_user: ActiveUser,
     admin_user: Option<AdminUser>,
-) -> Template {
+) -> Result<Template, String> {
     let flash = flash.map(FlashMessage::into_inner);
-    Template::render(
-        "updateuserpgpinfo",
-        Context::raw(db, flash, active_user.user, admin_user).await,
-    )
+    let context = Context::raw(db, flash, active_user.user, admin_user)
+        .await
+        .map_err(|_| "failed to get template context.")?;
+    Ok(Template::render("updateuserpgpinfo", context))
 }
 
 pub fn update_user_pgp_info_stage() -> AdHoc {

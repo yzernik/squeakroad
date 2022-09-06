@@ -226,21 +226,20 @@ async fn index(
     db: Connection<Db>,
     active_user: ActiveUser,
     admin_user: Option<AdminUser>,
-) -> Template {
+) -> Result<Template, String> {
     let flash = flash.map(FlashMessage::into_inner);
-    Template::render(
-        "prepareorder",
-        Context::raw(
-            db,
-            id,
-            shipping_option_id,
-            quantity.try_into().unwrap(),
-            flash,
-            active_user.user,
-            admin_user,
-        )
-        .await,
+    let context = Context::raw(
+        db,
+        id,
+        shipping_option_id,
+        quantity.try_into().unwrap(),
+        flash,
+        active_user.user,
+        admin_user,
     )
+    .await
+    .map_err(|_| "failed to get template context.")?;
+    Ok(Template::render("prepareorder", context))
 }
 
 pub fn prepare_order_stage() -> AdHoc {

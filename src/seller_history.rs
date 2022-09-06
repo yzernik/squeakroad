@@ -3,7 +3,6 @@ use crate::db::Db;
 use crate::models::{Order, OrderCard, RocketAuthUser};
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
-use rocket::response::status::NotFound;
 use rocket::serde::Serialize;
 use rocket_auth::{AdminUser, User};
 use rocket_db_pools::Connection;
@@ -73,12 +72,12 @@ async fn index(
     page_num: Option<u32>,
     user: Option<User>,
     admin_user: Option<AdminUser>,
-) -> Result<Template, NotFound<String>> {
+) -> Result<Template, String> {
     let flash = flash.map(FlashMessage::into_inner);
-    Ok(Template::render(
-        "sellerhistory",
-        Context::raw(flash, db, page_num, username, user, admin_user).await,
-    ))
+    let context = Context::raw(flash, db, page_num, username, user, admin_user)
+        .await
+        .map_err(|_| "failed to get template context.")?;
+    Ok(Template::render("sellerhistory", context))
 }
 
 pub fn seller_history_stage() -> AdHoc {
