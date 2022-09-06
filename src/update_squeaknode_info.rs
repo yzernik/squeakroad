@@ -87,12 +87,12 @@ async fn index(
     db: Connection<Db>,
     user: User,
     admin_user: AdminUser,
-) -> Template {
+) -> Result<Template, String> {
     let flash = flash.map(FlashMessage::into_inner);
-    Template::render(
-        "updatesqueaknodeinfo",
-        Context::raw(db, flash, user, Some(admin_user)).await,
-    )
+    let context = Context::raw(db, flash, user, Some(admin_user))
+        .await
+        .map_err(|_| "failed to get template context.")?;
+    Ok(Template::render("updatesqueaknodeinfo", context))
 }
 
 pub fn update_squeaknode_info_stage() -> AdHoc {
