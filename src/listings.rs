@@ -33,14 +33,10 @@ impl Context {
             .await
             .map_err(|_| "failed to get base template.")?;
 
-        println!("base_context: {:?}", base_context);
-
         let page_num = maybe_page_num.unwrap_or(1);
         let listing_cards = ListingCardDisplay::all_active(&mut db, PAGE_SIZE, page_num)
             .await
             .map_err(|_| "failed to update market name.")?;
-
-        println!("listing_cards: {:?}", listing_cards);
 
         Ok(Context {
             base_context,
