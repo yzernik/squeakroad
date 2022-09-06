@@ -12,7 +12,8 @@ pub async fn get_lnd_lightning_client(
     // TODO: don't use unwrap.
     let client = connect_lightning(lnd_host, lnd_port, lnd_tls_cert_path, lnd_macaroon_path)
         .await
-        .unwrap();
+        .map_err(|e| format!("Failed to get lightning lnd client: {:?}", e))?;
+
     Ok(client)
 }
 
@@ -25,6 +26,7 @@ pub async fn get_lnd_invoices_client(
     // TODO: don't use unwrap.
     let client = connect_invoices(lnd_host, lnd_port, lnd_tls_cert_path, lnd_macaroon_path)
         .await
-        .unwrap();
+        .map_err(|e| format!("Failed to get lightning invoices client: {:?}", e))?;
+
     Ok(client)
 }
