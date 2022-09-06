@@ -4,7 +4,6 @@ use crate::models::OrderCard;
 use crate::user_account::ActiveUser;
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
-use rocket::response::status::NotFound;
 use rocket::serde::Serialize;
 use rocket_auth::{AdminUser, User};
 use rocket_db_pools::Connection;
@@ -52,12 +51,12 @@ async fn index(
     page_num: Option<u32>,
     active_user: ActiveUser,
     admin_user: Option<AdminUser>,
-) -> Result<Template, NotFound<String>> {
+) -> Result<Template, String> {
     let flash = flash.map(FlashMessage::into_inner);
-    Ok(Template::render(
-        "mypaidorders",
-        Context::raw(flash, db, page_num, active_user.user, admin_user).await,
-    ))
+    let context = Context::raw(flash, db, page_num, active_user.user, admin_user)
+        .await
+        .map_err(|_| "failed to get template context.")?;
+    Ok(Template::render("mypaidorders", context))
 }
 
 pub fn my_paid_orders_stage() -> AdHoc {
