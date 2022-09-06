@@ -33,4 +33,4 @@ scripts/redirect.html
 examples/pastebin/upload/*
 
 # App config file
-config*.toml
+config.toml
