@@ -3,7 +3,6 @@ use crate::db::Db;
 use crate::models::UserCard;
 use rocket::fairing::AdHoc;
 use rocket::request::FlashMessage;
-use rocket::response::status::NotFound;
 use rocket::serde::Serialize;
 use rocket_auth::{AdminUser, User};
 use rocket_db_pools::Connection;
@@ -51,12 +50,12 @@ async fn index(
     page_num: Option<u32>,
     user: User,
     admin_user: AdminUser,
-) -> Result<Template, NotFound<String>> {
+) -> Result<Template, String> {
     let flash = flash.map(FlashMessage::into_inner);
-    Ok(Template::render(
-        "disabledusers",
-        Context::raw(flash, db, page_num, user, Some(admin_user)).await,
-    ))
+    let context = Context::raw(flash, db, page_num, user, Some(admin_user))
+        .await
+        .map_err(|_| "failed to get template context.")?;
+    Ok(Template::render("disabledusers", context))
 }
 
 pub fn disabled_users_stage() -> AdHoc {
