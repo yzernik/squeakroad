@@ -93,10 +93,12 @@ async fn index(
 ) -> Result<Template, Redirect> {
     let flash = flash.map(FlashMessage::into_inner);
     match user {
-        Some(user) => Ok(Template::render(
-            "accountactivation",
-            Context::raw(db, flash, id, user, admin_user, config, users).await,
-        )),
+        Some(user) => {
+            let context = Context::raw(db, flash, id, user, admin_user, config, users)
+                .await
+                .map_err(|_| Redirect::to(uri!("/login")))?;
+            Ok(Template::render("accountactivation", context))
+        }
         None => Err(Redirect::to(uri!("/login"))),
     }
 }

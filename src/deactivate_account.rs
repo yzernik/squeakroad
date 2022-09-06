@@ -160,20 +160,20 @@ async fn index(
     active_user: ActiveUser,
     admin_user: Option<AdminUser>,
     users: &State<Users>,
-) -> Template {
+) -> Result<Template, String> {
     let flash = flash.map(FlashMessage::into_inner);
-    Template::render(
-        "deactivateaccount",
-        Context::raw(
-            db,
-            flash,
-            active_user.user,
-            active_user.user_account,
-            admin_user,
-            users,
-        )
-        .await,
+    let context = Context::raw(
+        db,
+        flash,
+        active_user.user,
+        active_user.user_account,
+        admin_user,
+        users,
     )
+    .await
+    .map_err(|_| "failed to get template context.")?;
+
+    Ok(Template::render("deactivateaccount", context))
 }
 
 pub fn deactivate_account_stage() -> AdHoc {

@@ -48,12 +48,13 @@ async fn index(
     db: Connection<Db>,
     user: User,
     admin_user: AdminUser,
-) -> Template {
+) -> Result<Template, String> {
     let flash = flash.map(FlashMessage::into_inner);
-    Template::render(
-        "admin",
-        Context::raw(db, flash, Some(user), Some(admin_user)).await,
-    )
+    let context = Context::raw(db, flash, Some(user), Some(admin_user))
+        .await
+        .map_err(|_| "failed to get template context.")?;
+
+    Ok(Template::render("admin", context))
 }
 
 pub fn admin_stage() -> AdHoc {
