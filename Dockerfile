@@ -16,6 +16,14 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
 	openssl \
 	libgexiv2-dev
 
+RUN DEBIAN_FRONTEND=noninteractive \
+  apt-get update && \
+  apt-get install ca-certificates && \
+  apt-get clean
+
+COPY ./cacert.pem /usr/share/ca-certificates/cacert.pem
+RUN chmod 644 /usr/share/ca-certificates/cacert.pem && update-ca-certificates
+
 COPY --from=builder /usr/local/cargo/bin/squeakroad /usr/local/bin/squeakroad
 COPY ./static /static
 COPY ./templates /templates
