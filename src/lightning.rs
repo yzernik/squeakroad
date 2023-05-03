@@ -1,32 +1,45 @@
-use tonic_openssl_lnd::connect_invoices;
-use tonic_openssl_lnd::connect_lightning;
-use tonic_openssl_lnd::LndInvoicesClient;
-use tonic_openssl_lnd::LndLightningClient;
+use tonic_openssl_lnd::connect;
+use tonic_openssl_lnd::LndClient;
 
-pub async fn get_lnd_lightning_client(
+pub async fn get_lnd_client(
     lnd_host: String,
     lnd_port: u32,
     lnd_tls_cert_path: String,
     lnd_macaroon_path: String,
-) -> Result<LndLightningClient, String> {
+) -> Result<LndClient, String> {
     // TODO: don't use unwrap.
-    let client = connect_lightning(lnd_host, lnd_port, lnd_tls_cert_path, lnd_macaroon_path)
+    let client = connect(lnd_host, lnd_port, lnd_tls_cert_path, lnd_macaroon_path)
         .await
         .map_err(|e| format!("Failed to get lightning lnd client: {:?}", e))?;
-
     Ok(client)
 }
 
-pub async fn get_lnd_invoices_client(
-    lnd_host: String,
-    lnd_port: u32,
-    lnd_tls_cert_path: String,
-    lnd_macaroon_path: String,
-) -> Result<LndInvoicesClient, String> {
-    // TODO: don't use unwrap.
-    let client = connect_invoices(lnd_host, lnd_port, lnd_tls_cert_path, lnd_macaroon_path)
+pub async fn cancel_invoice(
+    lnd_client: &mut LndClient,
+    payment_hash: Vec<u8>,
+) -> Result<(), String> {
+    let maybe_invoice = lnd_client
+        .invoices()
+        .lookup_invoice_v2(tonic_openssl_lnd::invoicesrpc::LookupInvoiceMsg {
+            invoice_ref: Some(
+                tonic_openssl_lnd::invoicesrpc::lookup_invoice_msg::InvoiceRef::PaymentHash(
+                    payment_hash.clone(),
+                ),
+            ),
+            ..Default::default()
+        })
         .await
-        .map_err(|e| format!("Failed to get lightning invoices client: {:?}", e))?;
+        .ok();
 
-    Ok(client)
+    if maybe_invoice.is_none() {
+        return Ok(());
+    }
+
+    lnd_client
+        .invoices()
+        .cancel_invoice(tonic_openssl_lnd::invoicesrpc::CancelInvoiceMsg { payment_hash })
+        .await
+        .map_err(|_| "failed to cancel invoice")?;
+
+    Ok(())
 }
